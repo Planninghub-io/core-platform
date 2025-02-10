@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import SearchBar from "@/components/SearchBar";
 import EventCard from "@/components/EventCard";
 import FeaturedEvent from "@/components/FeaturedEvent";
@@ -53,6 +54,8 @@ const featuredEvent = {
 };
 
 const Index = () => {
+  const navigate = useNavigate();
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="relative overflow-hidden bg-primary pb-20 pt-10">
@@ -65,7 +68,15 @@ const Index = () => {
             <p className="animate-fade-up mx-auto mb-8 max-w-2xl text-lg text-white/90">
               Find and book tickets for the best concerts, sports events, and shows happening near you.
             </p>
-            <SearchBar />
+            <div className="flex flex-col items-center gap-4">
+              <SearchBar />
+              <button
+                onClick={() => navigate("/create-event")}
+                className="animate-fade-up rounded-lg bg-white px-6 py-3 text-base font-semibold text-primary transition-colors hover:bg-white/90"
+              >
+                Create Event
+              </button>
+            </div>
           </div>
         </div>
       </div>
