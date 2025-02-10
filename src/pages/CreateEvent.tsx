@@ -5,9 +5,17 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { createClient } from '@supabase/supabase-js';
+
+const supabase = createClient(
+  import.meta.env.VITE_SUPABASE_URL!,
+  import.meta.env.VITE_SUPABASE_ANON_KEY!
+);
 
 const CreateEvent = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -15,6 +23,7 @@ const CreateEvent = () => {
     location: "",
     price: "",
     imageUrl: "",
+    category: "",
   });
 
   const handleChange = (
@@ -29,8 +38,50 @@ const CreateEvent = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Add Supabase integration for event creation
-    console.log("Form submitted:", formData);
+    try {
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !userData.user) {
+        toast({
+          title: "Error",
+          description: "Please sign in to create an event",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('events')
+        .insert([
+          {
+            title: formData.title,
+            description: formData.description,
+            date: new Date(formData.date).toISOString(),
+            location: formData.location,
+            price: parseFloat(formData.price),
+            image_url: formData.imageUrl,
+            category: formData.category,
+            user_id: userData.user.id,
+          }
+        ])
+        .select();
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Event created successfully!",
+      });
+      
+      navigate("/");
+    } catch (error) {
+      console.error('Error creating event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create event. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -69,7 +120,7 @@ const CreateEvent = () => {
                 <Input
                   id="date"
                   name="date"
-                  type="date"
+                  type="datetime-local"
                   value={formData.date}
                   onChange={handleChange}
                   required
@@ -97,26 +148,39 @@ const CreateEvent = () => {
               <Input
                 id="price"
                 name="price"
-                type="text"
+                type="number"
+                step="0.01"
                 value={formData.price}
                 onChange={handleChange}
-                placeholder="$0.00"
+                placeholder="0.00"
                 required
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="imageUrl">Image URL</Label>
+              <Label htmlFor="category">Category</Label>
               <Input
-                id="imageUrl"
-                name="imageUrl"
-                type="url"
-                value={formData.imageUrl}
+                id="category"
+                name="category"
+                value={formData.category}
                 onChange={handleChange}
-                placeholder="https://example.com/image.jpg"
+                placeholder="e.g., Music, Sports, Arts"
                 required
               />
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="imageUrl">Image URL</Label>
+            <Input
+              id="imageUrl"
+              name="imageUrl"
+              type="url"
+              value={formData.imageUrl}
+              onChange={handleChange}
+              placeholder="https://example.com/image.jpg"
+              required
+            />
           </div>
 
           <div className="flex justify-end gap-4">
