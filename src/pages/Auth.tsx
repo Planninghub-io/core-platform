@@ -16,6 +16,14 @@ const Auth = () => {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      return;
+    }
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signUp({
@@ -30,7 +38,7 @@ const Auth = () => {
       navigate("/");
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Sign Up Error",
         description: error.message,
         variant: "destructive",
       });
@@ -47,11 +55,16 @@ const Auth = () => {
         email,
         password,
       });
-      if (error) throw error;
+      if (error) {
+        if (error.message === "Invalid login credentials") {
+          throw new Error("Invalid email or password. Please try again or sign up if you don't have an account.");
+        }
+        throw error;
+      }
       navigate("/");
     } catch (error: any) {
       toast({
-        title: "Error",
+        title: "Sign In Error",
         description: error.message,
         variant: "destructive",
       });
@@ -84,8 +97,9 @@ const Auth = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                placeholder="Enter your password (min. 6 characters)"
                 required
+                minLength={6}
               />
             </div>
             <div className="flex gap-4">
