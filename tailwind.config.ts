@@ -26,16 +26,16 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#E5DEFF", // Changed to a softer purple
-          foreground: "#1A1F2C",
+          DEFAULT: "#8B5CF6", // Changed to a vivid purple
+          foreground: "#FFFFFF",
         },
         secondary: {
           DEFAULT: "#F6F6F7",
           foreground: "#1A1F2C",
         },
         accent: {
-          DEFAULT: "#D6BCFA", // Changed to a light purple
-          foreground: "#1A1F2C",
+          DEFAULT: "#0EA5E9", // Changed to an ocean blue
+          foreground: "#FFFFFF",
         },
         muted: {
           DEFAULT: "hsl(var(--muted))",
@@ -95,3 +95,4 @@ export default {
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
+
