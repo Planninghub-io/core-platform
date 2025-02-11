@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const Auth = () => {
@@ -30,7 +30,18 @@ const Auth = () => {
         email,
         password,
       });
-      if (error) throw error;
+      if (error) {
+        if (error.message === "User already registered") {
+          toast({
+            title: "Account Exists",
+            description: "An account with this email already exists. Please sign in instead.",
+            variant: "destructive",
+          });
+        } else {
+          throw error;
+        }
+        return;
+      }
       toast({
         title: "Success!",
         description: "Check your email to confirm your account.",
@@ -49,6 +60,14 @@ const Auth = () => {
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!email || !password) {
+      toast({
+        title: "Error",
+        description: "Please enter both email and password",
+        variant: "destructive",
+      });
+      return;
+    }
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithPassword({
@@ -56,16 +75,26 @@ const Auth = () => {
         password,
       });
       if (error) {
-        if (error.message === "Invalid login credentials") {
-          throw new Error("Invalid email or password. Please try again or sign up if you don't have an account.");
+        if (error.message.includes("Invalid login credentials")) {
+          toast({
+            title: "Sign In Failed",
+            description: "Incorrect email or password. Please try again.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Sign In Error",
+            description: error.message,
+            variant: "destructive",
+          });
         }
-        throw error;
+        return;
       }
       navigate("/");
     } catch (error: any) {
       toast({
         title: "Sign In Error",
-        description: error.message,
+        description: "An unexpected error occurred. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -78,7 +107,7 @@ const Auth = () => {
       <div className="container max-w-md">
         <div className="rounded-xl bg-white p-8 shadow-lg">
           <h1 className="mb-6 text-2xl font-bold">Sign In or Sign Up</h1>
-          <form className="space-y-4">
+          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -104,7 +133,7 @@ const Auth = () => {
             </div>
             <div className="flex gap-4">
               <Button
-                type="submit"
+                type="button"
                 onClick={handleSignIn}
                 disabled={isLoading}
                 className="flex-1"
@@ -112,7 +141,7 @@ const Auth = () => {
                 Sign In
               </Button>
               <Button
-                type="submit"
+                type="button"
                 onClick={handleSignUp}
                 disabled={isLoading}
                 variant="outline"
