@@ -26,7 +26,7 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#8BFCF6", // Changed back to the original softer purple
+          DEFAULT: "#8B5CF6", // Changed back to the original softer purple
           foreground: "#1A1F2C",
         },
         secondary: {
