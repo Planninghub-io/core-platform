@@ -26,7 +26,7 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#E5DEFF", // Changed back to the original softer purple
+          DEFAULT: "#8BFCF6", // Changed back to the original softer purple
           foreground: "#1A1F2C",
         },
         secondary: {
@@ -34,7 +34,7 @@ export default {
           foreground: "#1A1F2C",
         },
         accent: {
-          DEFAULT: "#D6BCFA", // Changed back to the original light purple
+          DEFAULT: "#0EA5E9", // Changed back to the original light purple
           foreground: "#1A1F2C",
         },
         muted: {
