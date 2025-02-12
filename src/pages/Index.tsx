@@ -4,14 +4,54 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [prompt, setPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const handlePromptSubmit = () => {
-    // TODO: Handle prompt submission
-    console.log("Prompt submitted:", prompt);
+  const handlePromptSubmit = async () => {
+    if (!prompt.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter an event description",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGenerating(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-event', {
+        body: { prompt },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Event Generated!",
+        description: "Your event has been generated successfully.",
+      });
+
+      // For now, just log the generated event details
+      console.log('Generated event:', data);
+      
+      // TODO: Navigate to create event page with pre-filled data
+      // navigate('/create-event', { state: { eventDetails: data } });
+
+    } catch (error) {
+      console.error('Error generating event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate event. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -36,9 +76,10 @@ const Index = () => {
                 onClick={handlePromptSubmit}
                 size="sm"
                 className="absolute bottom-4 right-4 gap-2"
+                disabled={isGenerating}
               >
-                <Sparkles className="h-4 w-4" />
-                Generate
+                <Sparkles className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                {isGenerating ? 'Generating...' : 'Generate'}
               </Button>
             </div>
           </div>
