@@ -12,6 +12,7 @@ import CreateEvent from "./pages/CreateEvent";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import SideNav from "./components/SideNav";
+import Discover from "./pages/Discover";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,10 @@ const App = () => {
                   <Route 
                     path="/create-event" 
                     element={isAuthenticated ? <CreateEvent /> : <Navigate to="/auth" replace />} 
+                  />
+                  <Route 
+                    path="/discover" 
+                    element={isAuthenticated ? <Discover /> : <Navigate to="/auth" replace />} 
                   />
                   <Route 
                     path="/auth" 
