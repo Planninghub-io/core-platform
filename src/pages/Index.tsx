@@ -1,10 +1,18 @@
 
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 const Index = () => {
   const navigate = useNavigate();
+  const [prompt, setPrompt] = useState("");
+
+  const handlePromptSubmit = () => {
+    // TODO: Handle prompt submission
+    console.log("Prompt submitted:", prompt);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -16,6 +24,24 @@ const Index = () => {
           <p className="animate-fade-up mb-8 text-lg text-gray-600">
             Create, discover, and experience amazing events. Start your journey with us today.
           </p>
+          <div className="animate-fade-up mb-6 space-y-4">
+            <div className="relative mx-auto max-w-2xl">
+              <Textarea
+                placeholder="Describe your event idea... (e.g., 'Create a summer music festival in Central Park with local bands and food trucks')"
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                className="min-h-[120px] resize-none rounded-xl border-gray-200 p-4 text-base shadow-sm focus:border-primary focus:ring-primary"
+              />
+              <Button
+                onClick={handlePromptSubmit}
+                size="sm"
+                className="absolute bottom-4 right-4 gap-2"
+              >
+                <Sparkles className="h-4 w-4" />
+                Generate
+              </Button>
+            </div>
+          </div>
           <div className="flex justify-center gap-4">
             <Button
               onClick={() => navigate("/discover")}
