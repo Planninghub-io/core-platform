@@ -44,7 +44,12 @@ const EventsHub = () => {
     try {
       let query = supabase
         .from('events')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            email
+          )
+        `)
         .order('created_at', { ascending: false })
         .limit(showMore ? 100 : 8);
 
@@ -107,12 +112,14 @@ const EventsHub = () => {
               {events.map((event) => (
                 <EventCard
                   key={event.id}
+                  id={event.id}
                   title={event.title}
                   date={new Date(event.date).toLocaleDateString()}
                   location={event.location}
                   imageUrl={event.image_url}
-                  price={`$${event.price}`}
                   category={event.category}
+                  createdBy={event.profiles?.email || 'Unknown'}
+                  expectedAttendees={event.expected_attendees}
                 />
               ))}
             </div>

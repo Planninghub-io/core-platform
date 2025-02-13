@@ -1,21 +1,37 @@
 
-import { Calendar, MapPin } from "lucide-react";
+import { Calendar, MapPin, User, Users } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 interface EventCardProps {
+  id: string;
   title: string;
   date: string;
   location: string;
   imageUrl: string;
-  price: string;
   category: string;
+  createdBy: string;
+  expectedAttendees?: number;
 }
 
-const EventCard = ({ title, date, location, imageUrl, price, category }: EventCardProps) => {
+const EventCard = ({ 
+  id,
+  title, 
+  date, 
+  location, 
+  imageUrl, 
+  category,
+  createdBy,
+  expectedAttendees 
+}: EventCardProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const navigate = useNavigate();
 
   return (
-    <div className="group relative overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 hover:shadow-xl">
+    <div 
+      className="group relative overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 hover:shadow-xl cursor-pointer"
+      onClick={() => navigate(`/event/${id}`)}
+    >
       <div className="aspect-[16/9] overflow-hidden">
         <img
           src={imageUrl}
@@ -45,11 +61,20 @@ const EventCard = ({ title, date, location, imageUrl, price, category }: EventCa
             <MapPin className="h-4 w-4" />
             <span>{location}</span>
           </div>
+          <div className="flex items-center gap-2 text-sm text-gray-600">
+            <User className="h-4 w-4" />
+            <span>{createdBy}</span>
+          </div>
+          {expectedAttendees && (
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Users className="h-4 w-4" />
+              <span>{expectedAttendees} expected</span>
+            </div>
+          )}
         </div>
-        <div className="mt-4 flex items-center justify-between">
-          <span className="text-lg font-semibold text-primary">{price}</span>
+        <div className="mt-4 flex items-center justify-end">
           <button className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90">
-            Get Tickets
+            View
           </button>
         </div>
       </div>

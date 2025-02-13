@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +13,7 @@ import Auth from "./pages/Auth";
 import SideNav from "./components/SideNav";
 import Discover from "./pages/Discover";
 import EventsHub from "./pages/EventsHub";
+import EventDetails from "./pages/EventDetails";
 
 const queryClient = new QueryClient();
 
@@ -65,6 +65,10 @@ const App = () => {
                   <Route 
                     path="/events-hub" 
                     element={isAuthenticated ? <EventsHub /> : <Navigate to="/auth" replace />} 
+                  />
+                  <Route 
+                    path="/event/:id" 
+                    element={isAuthenticated ? <EventDetails /> : <Navigate to="/auth" replace />} 
                   />
                   <Route 
                     path="/auth" 
