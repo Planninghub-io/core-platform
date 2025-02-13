@@ -13,6 +13,7 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import SideNav from "./components/SideNav";
 import Discover from "./pages/Discover";
+import EventsHub from "./pages/EventsHub";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +61,10 @@ const App = () => {
                   <Route 
                     path="/discover" 
                     element={isAuthenticated ? <Discover /> : <Navigate to="/auth" replace />} 
+                  />
+                  <Route 
+                    path="/events-hub" 
+                    element={isAuthenticated ? <EventsHub /> : <Navigate to="/auth" replace />} 
                   />
                   <Route 
                     path="/auth" 
