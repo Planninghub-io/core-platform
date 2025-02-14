@@ -40,6 +40,15 @@ const SideNav = () => {
   return (
     <Sidebar className="border-r">
       <SidebarContent>
+        <div className="mb-8 px-4">
+          <Link to="/" className="block">
+            <img
+              src="/lovable-uploads/8b0ac681-c4e2-4d89-a308-46c082bd42ca.png"
+              alt="Company Logo"
+              className="h-12 w-12"
+            />
+          </Link>
+        </div>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
