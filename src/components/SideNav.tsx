@@ -40,12 +40,12 @@ const SideNav = () => {
   return (
     <Sidebar className="border-r">
       <SidebarContent>
-        <div className="mt-2 mb-2 p-2 flex justify-center">
+        <div className="mt-2 mb-2 p-0 flex justify-center">
           <Link to="/" className="block transition-transform hover:scale-105">
             <img
               src="/lovable-uploads/cb9a4c3e-89f7-4f9f-9cc2-9c506bc7be70.png"
               alt="Company Logo"
-              className="h-24 w-24 brightness-110"
+              className="h-18 w-18 brightness-110"
             />
           </Link>
         </div>
