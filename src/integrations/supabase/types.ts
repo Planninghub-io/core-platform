@@ -51,6 +51,42 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          contact_number: string | null
+          created_at: string
+          dob: string | null
+          email: string | null
+          first_name: string | null
+          id: string
+          last_name: string | null
+          middle_name: string | null
+          name_suffix: string | null
+        }
+        Insert: {
+          contact_number?: string | null
+          created_at?: string
+          dob?: string | null
+          email?: string | null
+          first_name?: string | null
+          id: string
+          last_name?: string | null
+          middle_name?: string | null
+          name_suffix?: string | null
+        }
+        Update: {
+          contact_number?: string | null
+          created_at?: string
+          dob?: string | null
+          email?: string | null
+          first_name?: string | null
+          id?: string
+          last_name?: string | null
+          middle_name?: string | null
+          name_suffix?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

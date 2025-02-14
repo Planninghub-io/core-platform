@@ -23,8 +23,10 @@ const EventDetails = () => {
         .from('events')
         .select(`
           *,
-          profiles:user_id (
-            email
+          user_profiles!events_user_id_fkey (
+            email,
+            first_name,
+            last_name
           )
         `)
         .eq('id', id)
@@ -77,7 +79,7 @@ const EventDetails = () => {
             <h1 className="mb-2 text-3xl font-bold">{event.title}</h1>
             <div className="flex items-center gap-2 text-muted-foreground">
               <User className="h-4 w-4" />
-              <span>Created by {event.profiles?.email}</span>
+              <span>Created by {event.user_profiles?.email}</span>
             </div>
           </div>
 
