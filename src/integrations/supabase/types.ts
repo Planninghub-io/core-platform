@@ -15,7 +15,6 @@ export type Database = {
           created_at: string
           date: string
           description: string | null
-          expected_attendees: number | null
           id: string
           image_url: string | null
           location: string | null
@@ -28,7 +27,6 @@ export type Database = {
           created_at?: string
           date: string
           description?: string | null
-          expected_attendees?: number | null
           id?: string
           image_url?: string | null
           location?: string | null
@@ -41,49 +39,12 @@ export type Database = {
           created_at?: string
           date?: string
           description?: string | null
-          expected_attendees?: number | null
           id?: string
           image_url?: string | null
           location?: string | null
           price?: number | null
           title?: string
           user_id?: string
-        }
-        Relationships: []
-      }
-      user_profiles: {
-        Row: {
-          contact_number: string | null
-          created_at: string
-          dob: string | null
-          email: string | null
-          first_name: string | null
-          id: string
-          last_name: string | null
-          middle_name: string | null
-          name_suffix: string | null
-        }
-        Insert: {
-          contact_number?: string | null
-          created_at?: string
-          dob?: string | null
-          email?: string | null
-          first_name?: string | null
-          id: string
-          last_name?: string | null
-          middle_name?: string | null
-          name_suffix?: string | null
-        }
-        Update: {
-          contact_number?: string | null
-          created_at?: string
-          dob?: string | null
-          email?: string | null
-          first_name?: string | null
-          id?: string
-          last_name?: string | null
-          middle_name?: string | null
-          name_suffix?: string | null
         }
         Relationships: []
       }

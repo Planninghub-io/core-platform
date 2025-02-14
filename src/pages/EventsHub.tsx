@@ -46,10 +46,8 @@ const EventsHub = () => {
         .from('events')
         .select(`
           *,
-          user_profiles (
-            email,
-            first_name,
-            last_name
+          profiles:user_id (
+            email
           )
         `)
         .order('created_at', { ascending: false })
@@ -120,7 +118,7 @@ const EventsHub = () => {
                   location={event.location}
                   imageUrl={event.image_url}
                   category={event.category}
-                  createdBy={event.user_profiles?.email || 'Unknown'}
+                  createdBy={event.profiles?.email || 'Unknown'}
                   expectedAttendees={event.expected_attendees}
                 />
               ))}
