@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import SearchBar from "@/components/SearchBar";
 import EventFilters from "@/components/EventFilters";
 import EventCard from "@/components/EventCard";
+import FeaturedEvent from "@/components/FeaturedEvent";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -15,6 +16,7 @@ const Discover = () => {
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
   const [events, setEvents] = useState<any[]>([]);
+  const [featuredEvent, setFeaturedEvent] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [loading, setLoading] = useState(true);
@@ -69,7 +71,13 @@ const Discover = () => {
 
       if (error) throw error;
 
-      setEvents(data || []);
+      // Set the first event as featured if available
+      if (data && data.length > 0) {
+        setFeaturedEvent(data[0]);
+        setEvents(data.slice(1));
+      } else {
+        setEvents([]);
+      }
     } catch (error) {
       console.error('Error fetching events:', error);
       toast({
@@ -95,6 +103,19 @@ const Discover = () => {
           Create Event
         </Button>
       </div>
+
+      {featuredEvent && (
+        <div className="mb-12">
+          <FeaturedEvent
+            title={featuredEvent.title}
+            description={featuredEvent.description || "Join us for this amazing event!"}
+            date={new Date(featuredEvent.date).toLocaleDateString()}
+            location={featuredEvent.location || "TBA"}
+            imageUrl={featuredEvent.image_url || "/placeholder.svg"}
+            price={featuredEvent.price ? `$${featuredEvent.price}` : "Free"}
+          />
+        </div>
+      )}
 
       <div className="mb-8 space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
