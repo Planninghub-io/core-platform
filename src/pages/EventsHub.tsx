@@ -46,7 +46,7 @@ const EventsHub = () => {
         .from('events')
         .select(`
           *,
-          user_profiles!events_user_id_fkey (
+          user_profiles (
             email,
             first_name,
             last_name
