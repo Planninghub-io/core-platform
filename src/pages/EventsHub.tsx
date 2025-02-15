@@ -105,8 +105,8 @@ const EventsHub = () => {
               key={event.id}
               id={event.id}
               title={event.title}
-              date={event.date}
-              endDate={event.end_date}
+              date={new Date(event.date).toLocaleDateString()}
+              endDate={new Date(event.end_date).toLocaleDateString()}
               location={event.location}
               imageUrl={event.image_url}
               category={event.category}
