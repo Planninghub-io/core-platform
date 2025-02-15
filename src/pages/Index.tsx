@@ -75,7 +75,7 @@ const Index = () => {
               <Button
                 onClick={handlePromptSubmit}
                 size="sm"
-                className="absolute bottom-4 right-4 gap-2"
+                className="absolute bottom-4 right-4 gap-2 bg-gray-600 hover:bg-gray-700"
                 disabled={isGenerating}
               >
                 <Sparkles className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
@@ -86,7 +86,7 @@ const Index = () => {
           <div className="flex justify-center gap-4">
             <Button
               onClick={() => navigate("/discover")}
-              className="animate-fade-up gap-2"
+              className="animate-fade-up gap-2 bg-gray-600 hover:bg-gray-700"
               size="lg"
             >
               Explore Events
@@ -95,7 +95,7 @@ const Index = () => {
             <Button
               onClick={() => navigate("/create-event")}
               variant="outline"
-              className="animate-fade-up"
+              className="animate-fade-up bg-accent text-white hover:bg-accent/90 border-0"
               size="lg"
             >
               Create Event
