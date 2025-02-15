@@ -32,7 +32,7 @@ const CreateEvent = () => {
   useEffect(() => {
     // Load Google Places API
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY}&libraries=places&callback=initializeAutocomplete`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places&callback=initializeAutocomplete`;
     script.async = true;
     
     window.initializeAutocomplete = () => {
