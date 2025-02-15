@@ -40,12 +40,12 @@ const SideNav = () => {
   return (
     <Sidebar className="border-r w-56">
       <SidebarContent>
-        <div className="mt-2 mb-2 p-0 flex justify-center">
+        <div className="mt-2 mb-2 p-2 flex justify-center">
           <Link to="/" className="block transition-transform hover:scale-105">
             <img
               src="/lovable-uploads/cb9a4c3e-89f7-4f9f-9cc2-9c506bc7be70.png"
               alt="Company Logo"
-              className="h-15 w-15 brightness-110"
+              className="h-14 w-14 brightness-110"
             />
           </Link>
         </div>
@@ -59,7 +59,7 @@ const SideNav = () => {
                     className={location.pathname === item.path ? "bg-accent/10" : ""}
                   >
                     <Link to={item.path} className="flex items-center gap-2">
-                      <item.icon className="h-5 w-5" />
+                      <item.icon className="h-6 w-6" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
