@@ -59,7 +59,7 @@ const Index = () => {
       <div className="container py-16">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="animate-fade-down mb-6 text-4xl font-bold text-gray-900 md:text-5xl lg:text-6xl">
-            Welcome to Your Event Platform
+            Welcome to Your AI Automated Event Platform
           </h1>
           <p className="animate-fade-up mb-8 text-lg text-gray-600">
             Create, discover, and experience amazing events. Start your journey with us today.
@@ -70,7 +70,7 @@ const Index = () => {
                 placeholder="Describe your event idea... (e.g., 'Create a summer music festival in Central Park with local bands and food trucks')"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                className="min-h-[180px] resize-none rounded-xl border-gray-200 p-4 text-base shadow-sm focus:border-primary focus:ring-primary"
+                className="min-h-[200px] resize-none rounded-xl border-gray-200 p-4 text-base shadow-sm focus:border-primary focus:ring-primary"
               />
               <Button
                 onClick={handlePromptSubmit}
@@ -95,7 +95,7 @@ const Index = () => {
             <Button
               onClick={() => navigate("/create-event")}
               variant="outline"
-              className="animate-fade-up bg-blue-400/60 text-white hover:bg-blue-400/70 border-0"
+              className="animate-fade-up bg-blue-300/60 text-white hover:bg-blue-400/70 border-0"
               size="lg"
             >
               Create Event
