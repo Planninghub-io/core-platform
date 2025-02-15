@@ -75,7 +75,7 @@ const Index = () => {
               <Button
                 onClick={handlePromptSubmit}
                 size="sm"
-                className="absolute bottom-4 right-4 gap-2 bg-gray-600 hover:bg-gray-700"
+                className="absolute bottom-4 right-4 gap-2 bg-primary/80 hover:bg-primary/90"
                 disabled={isGenerating}
               >
                 <Sparkles className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
@@ -86,7 +86,7 @@ const Index = () => {
           <div className="flex justify-center gap-4">
             <Button
               onClick={() => navigate("/discover")}
-              className="animate-fade-up gap-2 bg-gray-600 hover:bg-gray-700"
+              className="animate-fade-up gap-2 bg-primary/80 hover:bg-primary/90"
               size="lg"
             >
               Explore Events
