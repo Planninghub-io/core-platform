@@ -2,11 +2,13 @@
 import { Calendar, MapPin, User, Users } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 
 interface EventCardProps {
   id: string;
   title: string;
   date: string;
+  endDate: string;
   location: string;
   imageUrl: string;
   category: string;
@@ -17,7 +19,8 @@ interface EventCardProps {
 const EventCard = ({ 
   id,
   title, 
-  date, 
+  date,
+  endDate,
   location, 
   imageUrl, 
   category,
@@ -26,6 +29,11 @@ const EventCard = ({
 }: EventCardProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const navigate = useNavigate();
+
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, "MMM d, yyyy h:mm a");
+  };
 
   return (
     <div 
@@ -53,9 +61,15 @@ const EventCard = ({
           {title}
         </h3>
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Calendar className="h-4 w-4" />
-            <span>{date}</span>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Calendar className="h-4 w-4" />
+              <span>Starts: {formatDateTime(date)}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Calendar className="h-4 w-4" />
+              <span>Ends: {formatDateTime(endDate)}</span>
+            </div>
           </div>
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <MapPin className="h-4 w-4" />

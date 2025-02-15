@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -8,6 +8,13 @@ import { Calendar } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+declare global {
+  interface Window {
+    google: any;
+    initializeAutocomplete: () => void;
+  }
+}
+
 const CreateEvent = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -15,11 +22,38 @@ const CreateEvent = () => {
     title: "",
     description: "",
     date: "",
+    endDate: "",
     location: "",
     price: "",
     imageUrl: "",
     category: "",
   });
+
+  useEffect(() => {
+    // Load Google Places API
+    const script = document.createElement("script");
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.GOOGLE_MAPS_API_KEY}&libraries=places&callback=initializeAutocomplete`;
+    script.async = true;
+    
+    window.initializeAutocomplete = () => {
+      const input = document.getElementById("location") as HTMLInputElement;
+      const autocomplete = new window.google.maps.places.Autocomplete(input);
+      autocomplete.addListener("place_changed", () => {
+        const place = autocomplete.getPlace();
+        setFormData(prev => ({
+          ...prev,
+          location: place.formatted_address
+        }));
+      });
+    };
+
+    document.head.appendChild(script);
+
+    return () => {
+      document.head.removeChild(script);
+      delete window.initializeAutocomplete;
+    };
+  }, []);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -52,6 +86,7 @@ const CreateEvent = () => {
             title: formData.title,
             description: formData.description,
             date: new Date(formData.date).toISOString(),
+            end_date: new Date(formData.endDate).toISOString(),
             location: formData.location,
             price: parseFloat(formData.price),
             image_url: formData.imageUrl,
@@ -110,7 +145,7 @@ const CreateEvent = () => {
 
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="date">Date</Label>
+              <Label htmlFor="date">Start Date & Time</Label>
               <div className="relative">
                 <Input
                   id="date"
@@ -125,16 +160,31 @@ const CreateEvent = () => {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                name="location"
-                value={formData.location}
-                onChange={handleChange}
-                placeholder="Enter venue location"
-                required
-              />
+              <Label htmlFor="endDate">End Date & Time</Label>
+              <div className="relative">
+                <Input
+                  id="endDate"
+                  name="endDate"
+                  type="datetime-local"
+                  value={formData.endDate}
+                  onChange={handleChange}
+                  required
+                />
+                <Calendar className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              </div>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="location">Location</Label>
+            <Input
+              id="location"
+              name="location"
+              value={formData.location}
+              onChange={handleChange}
+              placeholder="Search for a location"
+              required
+            />
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
