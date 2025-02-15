@@ -45,7 +45,7 @@ const SideNav = () => {
             <img
               src="/lovable-uploads/cb9a4c3e-89f7-4f9f-9cc2-9c506bc7be70.png"
               alt="Company Logo"
-              className="h-14 w-14 brightness-110"
+              className="h-15 w-15 brightness-110"
             />
           </Link>
         </div>
