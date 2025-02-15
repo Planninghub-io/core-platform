@@ -59,7 +59,7 @@ const SideNav = () => {
                     className={location.pathname === item.path ? "bg-accent/10" : ""}
                   >
                     <Link to={item.path} className="flex items-center gap-2">
-                      <item.icon className="h-5 w-5" />
+                      <item.icon className="h-4 w-4" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
