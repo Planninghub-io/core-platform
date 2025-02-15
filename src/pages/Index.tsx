@@ -70,7 +70,7 @@ const Index = () => {
                 placeholder="Describe your event idea... (e.g., 'Create a summer music festival in Central Park with local bands and food trucks')"
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                className="min-h-[120px] resize-none rounded-xl border-gray-200 p-4 text-base shadow-sm focus:border-primary focus:ring-primary"
+                className="min-h-[180px] resize-none rounded-xl border-gray-200 p-4 text-base shadow-sm focus:border-primary focus:ring-primary"
               />
               <Button
                 onClick={handlePromptSubmit}
@@ -95,7 +95,7 @@ const Index = () => {
             <Button
               onClick={() => navigate("/create-event")}
               variant="outline"
-              className="animate-fade-up bg-blue-400/70 text-white hover:bg-blue-400/80 border-0"
+              className="animate-fade-up bg-blue-400/60 text-white hover:bg-blue-400/70 border-0"
               size="lg"
             >
               Create Event

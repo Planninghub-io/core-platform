@@ -38,14 +38,14 @@ const SideNav = () => {
   const location = useLocation();
 
   return (
-    <Sidebar className="border-r">
+    <Sidebar className="border-r w-56">
       <SidebarContent>
         <div className="mt-2 mb-2 p-0 flex justify-center">
           <Link to="/" className="block transition-transform hover:scale-105">
             <img
               src="/lovable-uploads/cb9a4c3e-89f7-4f9f-9cc2-9c506bc7be70.png"
               alt="Company Logo"
-              className="h-12 w-12 brightness-110"
+              className="h-15 w-15 brightness-110"
             />
           </Link>
         </div>
