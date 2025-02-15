@@ -20,6 +20,7 @@ export type Database = {
           image_url: string | null
           location: string | null
           price: number | null
+          status: string | null
           title: string
           user_id: string
         }
@@ -33,6 +34,7 @@ export type Database = {
           image_url?: string | null
           location?: string | null
           price?: number | null
+          status?: string | null
           title: string
           user_id: string
         }
@@ -46,6 +48,7 @@ export type Database = {
           image_url?: string | null
           location?: string | null
           price?: number | null
+          status?: string | null
           title?: string
           user_id?: string
         }
@@ -100,7 +103,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_event_status: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       [_ in never]: never

@@ -18,7 +18,6 @@ const EventsHub = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [loading, setLoading] = useState(true);
-  const [showMore, setShowMore] = useState(false);
 
   useEffect(() => {
     // Check current auth status
@@ -42,6 +41,9 @@ const EventsHub = () => {
 
   const fetchEvents = async () => {
     try {
+      // Update event statuses before fetching
+      await supabase.rpc('update_event_status');
+      
       let query = supabase
         .from('events')
         .select(`
@@ -50,8 +52,7 @@ const EventsHub = () => {
             email
           )
         `)
-        .order('created_at', { ascending: false })
-        .limit(showMore ? 100 : 8);
+        .order('date', { ascending: true });
 
       if (searchQuery) {
         query = query.ilike('title', `%${searchQuery}%`);
@@ -86,6 +87,37 @@ const EventsHub = () => {
     setSearchQuery(query);
   };
 
+  const getEventsByStatus = (status: string) => {
+    return events.filter(event => event.status === status);
+  };
+
+  const renderEventSection = (title: string, status: string) => {
+    const filteredEvents = getEventsByStatus(status);
+    
+    if (filteredEvents.length === 0) return null;
+
+    return (
+      <div className="space-y-4">
+        <h2 className="text-2xl font-semibold">{title}</h2>
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {filteredEvents.map((event) => (
+            <EventCard
+              key={event.id}
+              id={event.id}
+              title={event.title}
+              date={new Date(event.date).toLocaleDateString()}
+              location={event.location}
+              imageUrl={event.image_url}
+              category={event.category}
+              createdBy={event.profiles?.email || 'Unknown'}
+              expectedAttendees={event.expected_attendees}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="container py-8">
       <div className="mb-8 flex items-center justify-between">
@@ -103,36 +135,14 @@ const EventsHub = () => {
         </div>
       </div>
 
-      <div className="space-y-8">
+      <div className="space-y-12">
         {loading ? (
           <div className="text-center text-gray-500">Loading events...</div>
         ) : events.length > 0 ? (
           <>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {events.map((event) => (
-                <EventCard
-                  key={event.id}
-                  id={event.id}
-                  title={event.title}
-                  date={new Date(event.date).toLocaleDateString()}
-                  location={event.location}
-                  imageUrl={event.image_url}
-                  category={event.category}
-                  createdBy={event.profiles?.email || 'Unknown'}
-                  expectedAttendees={event.expected_attendees}
-                />
-              ))}
-            </div>
-            {events.length >= 8 && !showMore && (
-              <div className="mt-8 text-center">
-                <Button
-                  variant="outline"
-                  onClick={() => setShowMore(true)}
-                >
-                  Show More
-                </Button>
-              </div>
-            )}
+            {renderEventSection("In Progress", "in_progress")}
+            {renderEventSection("Upcoming", "upcoming")}
+            {renderEventSection("Completed", "completed")}
           </>
         ) : (
           <div className="text-center text-gray-500">No events found</div>
