@@ -59,7 +59,7 @@ const Index = () => {
       <div className="container py-16">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="animate-fade-down mb-6 text-4xl font-bold text-gray-900 md:text-5xl lg:text-6xl">
-            Your AI Automated Event Platform
+            Welcome to Your AI Event Planner
           </h1>
           <p className="animate-fade-up mb-8 text-lg text-gray-600">
             Create, discover, and experience amazing events. Start your journey with us today.
