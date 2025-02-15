@@ -45,7 +45,7 @@ const SideNav = () => {
             <img
               src="/lovable-uploads/cb9a4c3e-89f7-4f9f-9cc2-9c506bc7be70.png"
               alt="Company Logo"
-              className="h-18 w-18 brightness-110"
+              className="h-12 w-12 brightness-110"
             />
           </Link>
         </div>
@@ -59,7 +59,7 @@ const SideNav = () => {
                     className={location.pathname === item.path ? "bg-accent/10" : ""}
                   >
                     <Link to={item.path} className="flex items-center gap-2">
-                      <item.icon className="h-4 w-4" />
+                      <item.icon className="h-5 w-5" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
