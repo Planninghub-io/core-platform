@@ -95,7 +95,7 @@ const Index = () => {
             <Button
               onClick={() => navigate("/create-event")}
               variant="outline"
-              className="animate-fade-up bg-accent text-white hover:bg-accent/90 border-0"
+              className="animate-fade-up bg-sky-300/80 text-white hover:bg-sky-300/90 border-0"
               size="lg"
             >
               Create Event
