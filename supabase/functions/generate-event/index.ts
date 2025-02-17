@@ -34,9 +34,11 @@ serve(async (req) => {
           {
             role: 'system',
             content: `You are an event planning assistant. Generate detailed event information based on the user's description.
-            Always return a complete JSON response with all required fields:
+            Always return a complete JSON response that's either:
+            
+            1. A complete event:
             {
-              "title": "Event title (required, non-empty string)",
+              "title": "Event title",
               "description": "Detailed description",
               "date": "Event date and time",
               "location": "Event location",
@@ -45,12 +47,15 @@ serve(async (req) => {
               "imagePrompt": "Description for image generation"
             }
 
-            If critical information (date or location) is missing, respond with:
+            2. OR a request for more information:
             {
               "needsInfo": true,
               "missingFields": ["date", "location"],
               "message": "Please provide the following information to help plan your event"
-            }`
+            }
+            
+            If any critical information (like date or location) is missing from the user's prompt,
+            use the second format to request more details. Don't try to generate partial events.`
           },
           { role: 'user', content: prompt }
         ],
@@ -83,25 +88,6 @@ serve(async (req) => {
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', aiResponse);
       throw new Error('Failed to parse event details from AI response');
-    }
-
-    // Validate and ensure required fields
-    if (!eventDetails.needsInfo) {
-      if (!eventDetails.title || typeof eventDetails.title !== 'string' || eventDetails.title.trim() === '') {
-        console.error('Missing or invalid title in event details:', eventDetails);
-        throw new Error('Generated event must have a valid title');
-      }
-
-      // Ensure all required fields exist with default values if missing
-      eventDetails = {
-        title: eventDetails.title.trim(),
-        description: eventDetails.description || '',
-        date: eventDetails.date || '',
-        location: eventDetails.location || '',
-        category: eventDetails.category || '',
-        estimatedPrice: eventDetails.estimatedPrice || '',
-        imagePrompt: eventDetails.imagePrompt || `${eventDetails.title} event`,
-      };
     }
 
     console.log('Final event details being returned:', eventDetails);

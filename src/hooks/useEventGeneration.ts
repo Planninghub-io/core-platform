@@ -60,55 +60,60 @@ export const useEventGeneration = () => {
         fullPrompt = `${prompt}. Additional details: ${additionalDetails}`;
       }
 
-      console.log('Sending prompt to generate event:', fullPrompt); // Debug log
+      console.log('Sending prompt to generate event:', fullPrompt);
 
       const { data, error } = await supabase.functions.invoke('generate-event', {
         body: { prompt: fullPrompt },
       });
 
       if (error) {
-        console.error('Edge function error:', error); // Debug log
+        console.error('Edge function error:', error);
         throw error;
       }
 
-      console.log('Received response from generate-event:', data); // Debug log
+      console.log('Received response from generate-event:', data);
 
-      // Handle missing info response
-      if (data.needsInfo && !isResubmitting) {
-        const prePopulatedInfo: Record<string, string> = {};
+      // First, check if we received a needsInfo response
+      if (data && data.needsInfo === true) {
+        console.log('Missing information detected:', data.missingFields);
         
-        const dateTimeRegex = /(?:on|at)\s+((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}(?:\s+at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?)/i;
-        const dateTimeMatch = prompt.match(dateTimeRegex);
-        
-        const locationRegex = /(?:in|at)\s+([^,.]+(?:,[^,.]+)?)/i;
-        const locationMatch = prompt.match(locationRegex);
+        // Only handle missing info if we're not already resubmitting
+        if (!isResubmitting) {
+          const prePopulatedInfo: Record<string, string> = {};
+          
+          const dateTimeRegex = /(?:on|at)\s+((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}(?:\s+at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?)/i;
+          const dateTimeMatch = prompt.match(dateTimeRegex);
+          
+          const locationRegex = /(?:in|at)\s+([^,.]+(?:,[^,.]+)?)/i;
+          const locationMatch = prompt.match(locationRegex);
 
-        if (dateTimeMatch && data.missingFields.includes('date')) {
-          prePopulatedInfo.date = dateTimeMatch[1];
+          if (dateTimeMatch && data.missingFields.includes('date')) {
+            prePopulatedInfo.date = dateTimeMatch[1];
+          }
+          
+          if (locationMatch && (data.missingFields.includes('location') || data.missingFields.includes('city'))) {
+            const locationField = data.missingFields.includes('location') ? 'location' : 'city';
+            prePopulatedInfo[locationField] = locationMatch[1];
+          }
+
+          setAdditionalInfo(prePopulatedInfo);
+          setMissingInfo(data);
+          setShowMissingInfoDialog(true);
+          setIsResubmitting(true);
+          setIsGenerating(false);
+          return;
         }
-        
-        if (locationMatch && (data.missingFields.includes('location') || data.missingFields.includes('city'))) {
-          const locationField = data.missingFields.includes('location') ? 'location' : 'city';
-          prePopulatedInfo[locationField] = locationMatch[1];
-        }
-
-        setAdditionalInfo(prePopulatedInfo);
-        setMissingInfo(data);
-        setShowMissingInfoDialog(true);
-        setIsResubmitting(true);
-        setIsGenerating(false);
-        return;
       }
 
-      // Validate the response data
+      // Now handle the event data
       if (!data || typeof data !== 'object') {
-        console.error('Invalid response format:', data); // Debug log
+        console.error('Invalid response format:', data);
         throw new Error('Invalid response from event generation');
       }
 
       // Ensure we have a valid title
       if (!data.title || typeof data.title !== 'string' || data.title.trim() === '') {
-        console.error('Missing or invalid title in response:', data); // Debug log
+        console.error('Missing or invalid title in response:', data);
         throw new Error('Generated event must have a title');
       }
 
@@ -123,7 +128,7 @@ export const useEventGeneration = () => {
         imagePrompt: data.imagePrompt || `${data.title} event`,
       };
 
-      console.log('Created validated event:', validatedEvent); // Debug log
+      console.log('Created validated event:', validatedEvent);
 
       setGeneratedEvent(validatedEvent);
       setMissingInfo(null);
