@@ -38,6 +38,33 @@ export const GeneratedEventCard = ({
 }: GeneratedEventCardProps) => {
   const navigate = useNavigate();
 
+  const formatDate = (dateString: string) => {
+    try {
+      // Handle "flexible" date case
+      if (dateString === "flexible") {
+        return "Flexible Date & Time";
+      }
+
+      const date = new Date(dateString);
+      // Check if date is valid
+      if (isNaN(date.getTime())) {
+        return "Date to be determined";
+      }
+
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+      });
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return "Date to be determined";
+    }
+  };
+
   return (
     <Card className="mt-6 text-left">
       <div className="flex flex-col md:flex-row">
@@ -57,12 +84,7 @@ export const GeneratedEventCard = ({
             <CardTitle>{event.title}</CardTitle>
             <CardDescription className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              {new Date(event.date).toLocaleDateString('en-US', {
-                weekday: 'long',
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric',
-              })}
+              {formatDate(event.date)}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
