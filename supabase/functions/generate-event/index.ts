@@ -20,7 +20,7 @@ serve(async (req) => {
       throw new Error('OpenAI API key is not configured');
     }
 
-    console.log('Sending request to OpenAI with prompt:', prompt);
+    console.log('Starting event generation for prompt:', prompt);
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -29,64 +29,74 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
-            content: `You are an event planning assistant. Analyze the user's event description and identify if it's missing critical information like date/time or location. 
-            If information is missing, return a JSON response with 'needsInfo: true' and specify what information is needed.
-            If all required information is present, generate structured event details.
+            content: `You are an event planning assistant. Generate JSON response based on the user's event description.
             
-            Response format when information is missing:
+            Response format when critical information is missing:
             {
               "needsInfo": true,
-              "missingFields": ["date", "time", "city", "region"],
-              "message": "Please provide: [list what's needed]"
+              "missingFields": ["date", "time", "location"],
+              "message": "Please provide the following details: [list fields]"
             }
             
             Response format when all information is present:
             {
               "needsInfo": false,
-              "title": "string",
-              "description": "string",
-              "date": "string (ISO format)",
-              "location": "string",
-              "category": "string",
-              "estimatedPrice": "string",
-              "imagePrompt": "string"
-            }
-            
-            Always ensure dates are in the future and properly formatted.`
+              "title": "Event title",
+              "description": "Detailed description",
+              "date": "2024-03-20T18:00:00Z",
+              "location": "Venue name and address",
+              "category": "Event category",
+              "estimatedPrice": "$XX.XX",
+              "imagePrompt": "Detailed image generation prompt"
+            }`
           },
           { role: 'user', content: prompt }
         ],
+        temperature: 0.7,
+        max_tokens: 1000
       }),
     });
 
-    console.log('OpenAI response status:', response.status);
-
-    const responseData = await response.text();
-    console.log('Raw OpenAI response:', responseData);
+    console.log('OpenAI API response status:', response.status);
 
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${responseData}`);
+      const errorText = await response.text();
+      console.error('OpenAI API error response:', errorText);
+      throw new Error(`OpenAI API error: ${errorText}`);
     }
 
-    const data = JSON.parse(responseData);
+    const responseText = await response.text();
+    console.log('Raw OpenAI response:', responseText);
+
+    const data = JSON.parse(responseText);
     
     if (!data.choices?.[0]?.message?.content) {
+      console.error('Invalid OpenAI response structure:', data);
       throw new Error('Invalid response format from OpenAI');
     }
 
+    const aiResponse = data.choices[0].message.content;
+    console.log('AI response content:', aiResponse);
+
     let eventDetails;
     try {
-      eventDetails = JSON.parse(data.choices[0].message.content);
+      eventDetails = JSON.parse(aiResponse);
     } catch (parseError) {
-      console.error('Failed to parse OpenAI response:', data.choices[0].message.content);
+      console.error('Failed to parse AI response as JSON:', aiResponse);
       throw new Error('Failed to parse event details from AI response');
     }
 
-    console.log('Successfully generated event details:', eventDetails);
+    // Validate the response structure
+    if (typeof eventDetails.needsInfo !== 'boolean') {
+      console.error('Invalid event details structure:', eventDetails);
+      throw new Error('Invalid event details structure');
+    }
+
+    console.log('Successfully processed event details:', eventDetails);
 
     return new Response(JSON.stringify(eventDetails), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
