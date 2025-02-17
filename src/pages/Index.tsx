@@ -132,7 +132,14 @@ const Index = () => {
         title: "Success!",
         description: "Event created successfully.",
       });
-      navigate(`/create-event`);
+      
+      // Navigate to the event details page instead of create event page
+      navigate(`/event/${data.id}`);
+      
+      // Reset the form
+      setPrompt("");
+      setGeneratedEvent(null);
+      
     } catch (error: any) {
       console.error('Detailed error:', error);
       toast({
