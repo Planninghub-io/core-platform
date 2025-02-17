@@ -54,6 +54,44 @@ export type Database = {
         }
         Relationships: []
       }
+      company_members: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          role: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_members_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           category: string | null
@@ -121,6 +159,7 @@ export type Database = {
           last_name: string | null
           middle_name: string | null
           name_suffix: string | null
+          user_type: string | null
         }
         Insert: {
           contact_number?: string | null
@@ -132,6 +171,7 @@ export type Database = {
           last_name?: string | null
           middle_name?: string | null
           name_suffix?: string | null
+          user_type?: string | null
         }
         Update: {
           contact_number?: string | null
@@ -143,6 +183,7 @@ export type Database = {
           last_name?: string | null
           middle_name?: string | null
           name_suffix?: string | null
+          user_type?: string | null
         }
         Relationships: []
       }
@@ -167,6 +208,97 @@ export type Database = {
         }
         Relationships: []
       }
+      vendor_services: {
+        Row: {
+          company_id: string
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          price_range_end: number | null
+          price_range_start: number | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          price_range_end?: number | null
+          price_range_start?: number | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          price_range_end?: number | null
+          price_range_start?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vendor_services_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      venues: {
+        Row: {
+          amenities: Json | null
+          booking_policy: string | null
+          cancellation_policy: string | null
+          capacity: number | null
+          company_id: string
+          created_at: string
+          id: string
+          indoor_space_sqft: number | null
+          name: string
+          outdoor_space_sqft: number | null
+          updated_at: string
+        }
+        Insert: {
+          amenities?: Json | null
+          booking_policy?: string | null
+          cancellation_policy?: string | null
+          capacity?: number | null
+          company_id: string
+          created_at?: string
+          id?: string
+          indoor_space_sqft?: number | null
+          name: string
+          outdoor_space_sqft?: number | null
+          updated_at?: string
+        }
+        Update: {
+          amenities?: Json | null
+          booking_policy?: string | null
+          cancellation_policy?: string | null
+          capacity?: number | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          indoor_space_sqft?: number | null
+          name?: string
+          outdoor_space_sqft?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "venues_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -176,6 +308,20 @@ export type Database = {
         Args: {
           _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      is_company_admin: {
+        Args: {
+          _user_id: string
+          _company_id: string
+        }
+        Returns: boolean
+      }
+      is_company_member: {
+        Args: {
+          _user_id: string
+          _company_id: string
         }
         Returns: boolean
       }
