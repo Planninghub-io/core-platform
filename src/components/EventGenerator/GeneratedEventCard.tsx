@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, Tag } from "lucide-react";
+import { Calendar, MapPin, Tag, Pencil } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -9,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useNavigate } from "react-router-dom";
 
 interface GeneratedEvent {
   title: string;
@@ -23,14 +24,18 @@ interface GeneratedEvent {
 interface GeneratedEventCardProps {
   event: GeneratedEvent;
   isCreating: boolean;
+  eventId?: string;
   onCreateEvent: () => void;
 }
 
 export const GeneratedEventCard = ({
   event,
   isCreating,
+  eventId,
   onCreateEvent,
 }: GeneratedEventCardProps) => {
+  const navigate = useNavigate();
+
   return (
     <Card className="mt-6 text-left">
       <CardHeader>
@@ -59,14 +64,25 @@ export const GeneratedEventCard = ({
           <span>Starting from {event.estimatedPrice}</span>
         </div>
       </CardContent>
-      <CardFooter>
-        <Button 
-          onClick={onCreateEvent}
-          disabled={isCreating}
-          className="w-full"
-        >
-          {isCreating ? 'Creating Event...' : 'Create This Event'}
-        </Button>
+      <CardFooter className="flex gap-2">
+        {eventId ? (
+          <Button 
+            onClick={() => navigate(`/event/${eventId}/edit`)}
+            className="flex-1 gap-2"
+            variant="outline"
+          >
+            <Pencil className="h-4 w-4" />
+            Edit Event
+          </Button>
+        ) : (
+          <Button 
+            onClick={onCreateEvent}
+            disabled={isCreating}
+            className="flex-1"
+          >
+            {isCreating ? 'Creating Event...' : 'Create This Event'}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

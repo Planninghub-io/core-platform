@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -38,6 +37,7 @@ const Index = () => {
   const [generatedEvent, setGeneratedEvent] = useState<GeneratedEvent | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
+  const [createdEventId, setCreatedEventId] = useState<string | null>(null);
 
   const handlePromptSubmit = async () => {
     if (!prompt.trim()) {
@@ -133,13 +133,8 @@ const Index = () => {
         description: "Event created successfully.",
       });
       
-      // Navigate to the event details page instead of create event page
-      navigate(`/event/${data.id}`);
-      
-      // Reset the form
-      setPrompt("");
-      setGeneratedEvent(null);
-      
+      setCreatedEventId(data.id);
+
     } catch (error: any) {
       console.error('Detailed error:', error);
       toast({
@@ -176,6 +171,7 @@ const Index = () => {
               <GeneratedEventCard
                 event={generatedEvent}
                 isCreating={isCreating}
+                eventId={createdEventId || undefined}
                 onCreateEvent={handleCreateEvent}
               />
             )}
