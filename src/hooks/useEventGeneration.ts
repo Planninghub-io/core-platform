@@ -86,10 +86,13 @@ export const useEventGeneration = () => {
         setAdditionalInfo(prePopulatedInfo);
         setMissingInfo(data);
         setShowMissingInfoDialog(true);
-        setIsResubmitting(true);
+        if (!isResubmitting) {
+          setIsResubmitting(true);
+        }
         return;
       }
 
+      // Clear resubmission state and missing info when successful
       setGeneratedEvent(data);
       setMissingInfo(null);
       setShowMissingInfoDialog(false);
