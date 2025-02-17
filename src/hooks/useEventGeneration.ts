@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -126,26 +127,51 @@ export const useEventGeneration = () => {
 
     setIsCreating(true);
     try {
+      // First, try to generate the image
       const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-event-image', {
         body: { prompt: generatedEvent.imagePrompt },
       });
 
-      if (imageError) throw imageError;
+      if (imageError) {
+        console.error('Error generating image:', imageError);
+      }
 
+      // Parse price string to get numeric value
       const priceString = generatedEvent.estimatedPrice.replace(/[^0-9.]/g, '');
       const price = parseFloat(priceString) || 0;
+
+      // Format the date properly
+      let formattedStartDate: string;
+      let formattedEndDate: string;
+
+      if (generatedEvent.date === 'flexible') {
+        // If date is flexible, use a future date range
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() + 7); // Start a week from now
+        const endDate = new Date(startDate);
+        endDate.setHours(endDate.getHours() + 2); // Default 2-hour duration
+        formattedStartDate = startDate.toISOString();
+        formattedEndDate = endDate.toISOString();
+      } else {
+        // Parse the specific date
+        const startDate = new Date(generatedEvent.date);
+        const endDate = new Date(startDate);
+        endDate.setHours(endDate.getHours() + 2); // Default 2-hour duration
+        formattedStartDate = startDate.toISOString();
+        formattedEndDate = endDate.toISOString();
+      }
 
       const { data, error } = await supabase.from('events').insert({
         title: generatedEvent.title,
         description: generatedEvent.description,
-        date: new Date(generatedEvent.date).toISOString(),
-        end_date: new Date(new Date(generatedEvent.date).getTime() + (2 * 60 * 60 * 1000)).toISOString(),
+        date: formattedStartDate,
+        end_date: formattedEndDate,
         location: generatedEvent.location,
         category: generatedEvent.category,
         price: price,
         user_id: userData.user.id,
         status: 'upcoming',
-        image_url: imageData?.image_url
+        image_url: imageData?.image_url || null
       }).select().single();
 
       if (error) throw error;
@@ -158,7 +184,7 @@ export const useEventGeneration = () => {
       setCreatedEventId(data.id);
 
     } catch (error: any) {
-      console.error('Detailed error:', error);
+      console.error('Error creating event:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create event. Please try again.",
