@@ -2,10 +2,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Building, Sparkles, UserPlus } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 const Index = () => {
   const navigate = useNavigate();
@@ -35,12 +42,7 @@ const Index = () => {
         title: "Event Generated!",
         description: "Your event has been generated successfully.",
       });
-
-      // For now, just log the generated event details
       console.log('Generated event:', data);
-      
-      // TODO: Navigate to create event page with pre-filled data
-      // navigate('/create-event', { state: { eventDetails: data } });
 
     } catch (error) {
       console.error('Error generating event:', error);
@@ -55,15 +57,61 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="container py-16">
         <div className="mx-auto max-w-3xl text-center">
           <h1 className="animate-fade-down mb-6 text-4xl font-bold text-gray-900 md:text-5xl lg:text-6xl">
             Welcome to Your AI Event Planner
           </h1>
-          <p className="animate-fade-up mb-8 text-lg text-gray-600">
+          <p className="animate-fade-up mb-12 text-lg text-gray-600">
             Create, discover, and experience amazing events. Start your journey with us today.
           </p>
+
+          <div className="grid gap-6 md:grid-cols-2 mb-12">
+            <Card className="animate-fade-up group hover:shadow-lg transition-all duration-300">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-center gap-2">
+                  <UserPlus className="h-6 w-6 text-primary" />
+                  Individual Account
+                </CardTitle>
+                <CardDescription>
+                  Perfect for personal event planning and attending events
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={() => navigate("/auth")} 
+                  className="w-full gap-2"
+                >
+                  Sign Up as Individual
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </CardContent>
+            </Card>
+
+            <Card className="animate-fade-up group hover:shadow-lg transition-all duration-300">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-center gap-2">
+                  <Building className="h-6 w-6 text-primary" />
+                  Business Account
+                </CardTitle>
+                <CardDescription>
+                  For event planners, venues, and service providers
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button 
+                  onClick={() => navigate("/auth", { state: { type: 'business' } })} 
+                  variant="outline"
+                  className="w-full gap-2 bg-blue-300/40 text-black hover:bg-blue-400/70 border-0"
+                >
+                  Register Your Business
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+
           <div className="animate-fade-up mb-6 space-y-4">
             <div className="relative mx-auto max-w-2xl">
               <Textarea
