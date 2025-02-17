@@ -26,8 +26,17 @@ export const useEventCreation = () => {
     event: EventToCreate,
     additionalInfo: Record<string, string>
   ) => {
-    if (!event.title || event.title.trim() === '') {
+    console.log('Creating event with data:', event); // Debug log
+
+    if (!event.title) {
+      console.error('Title is missing from event data'); // Debug log
       return { error: new Error("Event title is required") };
+    }
+
+    const trimmedTitle = event.title.trim();
+    if (trimmedTitle === '') {
+      console.error('Title is empty after trimming'); // Debug log
+      return { error: new Error("Event title cannot be empty") };
     }
 
     const { data: userData, error: userError } = await supabase.auth.getUser();
@@ -37,6 +46,7 @@ export const useEventCreation = () => {
 
     setIsCreating(true);
     try {
+      console.log('Generating image for event...'); // Debug log
       const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-event-image', {
         body: { prompt: event.imagePrompt },
       });
@@ -48,25 +58,38 @@ export const useEventCreation = () => {
       const price = parseEventPrice(event.estimatedPrice);
       const { startDate, endDate } = formatEventDate(event.date, additionalInfo);
 
-      const { data, error } = await supabase.from('events').insert({
-        title: event.title.trim(),
-        description: event.description,
+      const eventData = {
+        title: trimmedTitle,
+        description: event.description || '',
         date: startDate,
         end_date: endDate,
-        location: event.location,
-        category: event.category,
+        location: event.location || '',
+        category: event.category || '',
         price,
         user_id: userData.user.id,
         status: 'upcoming',
         image_url: imageData?.image_url || null
-      }).select().single();
+      };
 
-      if (error) throw error;
+      console.log('Inserting event with data:', eventData); // Debug log
 
+      const { data, error } = await supabase
+        .from('events')
+        .insert(eventData)
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Database error:', error); // Debug log
+        throw error;
+      }
+
+      console.log('Event created successfully:', data); // Debug log
       setCreatedEventId(data.id);
       return { data, error: null };
 
     } catch (error: any) {
+      console.error('Error in createEvent:', error); // Debug log
       return { error };
     } finally {
       setIsCreating(false);
