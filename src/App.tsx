@@ -22,29 +22,33 @@ const App = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   useEffect(() => {
-    // Check initial auth state
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setIsAuthenticated(!!session);
-    });
+    const checkAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsAuthenticated(!!session);
+        
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+          setIsAuthenticated(!!session);
+        });
 
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setIsAuthenticated(!!session);
-    });
+        return () => subscription.unsubscribe();
+      } catch (error) {
+        console.error('Auth error:', error);
+        setIsAuthenticated(false);
+      }
+    };
 
-    return () => subscription.unsubscribe();
+    checkAuth();
   }, []);
 
   // Show loading state while checking authentication
   if (isAuthenticated === null) {
-    return null;
+    return <div>Loading...</div>;
   }
 
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <Toaster />
-        <Sonner />
         <BrowserRouter>
           <SidebarProvider>
             <div className="flex min-h-screen w-full">
@@ -78,6 +82,8 @@ const App = () => {
             </div>
           </SidebarProvider>
         </BrowserRouter>
+        <Toaster />
+        <Sonner />
       </TooltipProvider>
     </QueryClientProvider>
   );
