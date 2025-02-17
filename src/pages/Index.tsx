@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Building, Sparkles, UserPlus, X } from "lucide-react";
+import { ArrowRight, Building, Calendar, MapPin, Sparkles, Tag, UserPlus } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +10,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -21,6 +22,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+interface GeneratedEvent {
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  category: string;
+  estimatedPrice: string;
+  imagePrompt: string;
+}
+
 const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -28,6 +39,8 @@ const Index = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [promptCount, setPromptCount] = useState(0);
   const [showSignUpDialog, setShowSignUpDialog] = useState(false);
+  const [generatedEvent, setGeneratedEvent] = useState<GeneratedEvent | null>(null);
+  const [isCreating, setIsCreating] = useState(false);
 
   const handlePromptSubmit = async () => {
     if (!prompt.trim()) {
@@ -46,6 +59,7 @@ const Index = () => {
     }
 
     setIsGenerating(true);
+    setGeneratedEvent(null);
     try {
       const { data, error } = await supabase.functions.invoke('generate-event', {
         body: { prompt },
@@ -53,11 +67,11 @@ const Index = () => {
 
       if (error) throw error;
 
+      setGeneratedEvent(data);
       toast({
         title: "Event Generated!",
-        description: "Your event has been generated successfully.",
+        description: "Review the suggested event details below.",
       });
-      console.log('Generated event:', data);
       setPromptCount(prev => prev + 1);
 
     } catch (error) {
@@ -69,6 +83,50 @@ const Index = () => {
       });
     } finally {
       setIsGenerating(false);
+    }
+  };
+
+  const handleCreateEvent = async () => {
+    if (!generatedEvent) return;
+
+    const { data: userData, error: userError } = await supabase.auth.getUser();
+    if (userError || !userData.user) {
+      setShowSignUpDialog(true);
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      // Convert estimated price to number
+      const priceString = generatedEvent.estimatedPrice.replace(/[^0-9.]/g, '');
+      const price = parseFloat(priceString) || 0;
+
+      const { error } = await supabase.from('events').insert({
+        title: generatedEvent.title,
+        description: generatedEvent.description,
+        date: new Date(generatedEvent.date).toISOString(),
+        end_date: new Date(new Date(generatedEvent.date).getTime() + (2 * 60 * 60 * 1000)).toISOString(), // Default 2-hour duration
+        location: generatedEvent.location,
+        category: generatedEvent.category,
+        price: price,
+        user_id: userData.user.id
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success!",
+        description: "Event created successfully.",
+      });
+      navigate("/create-event");
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: "Failed to create event. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreating(false);
     }
   };
 
@@ -105,6 +163,46 @@ const Index = () => {
               <p className="text-sm text-gray-500">
                 You have used your free prompt. Sign up to generate more events!
               </p>
+            )}
+
+            {generatedEvent && (
+              <Card className="mt-6 text-left">
+                <CardHeader>
+                  <CardTitle>{generatedEvent.title}</CardTitle>
+                  <CardDescription className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4" />
+                    {new Date(generatedEvent.date).toLocaleDateString('en-US', {
+                      weekday: 'long',
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <p>{generatedEvent.description}</p>
+                  <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                    <span className="flex items-center gap-1">
+                      <MapPin className="h-4 w-4" />
+                      {generatedEvent.location}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Tag className="h-4 w-4" />
+                      {generatedEvent.category}
+                    </span>
+                    <span>Starting from {generatedEvent.estimatedPrice}</span>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button 
+                    onClick={handleCreateEvent}
+                    disabled={isCreating}
+                    className="w-full"
+                  >
+                    {isCreating ? 'Creating Event...' : 'Create This Event'}
+                  </Button>
+                </CardFooter>
+              </Card>
             )}
           </div>
 
