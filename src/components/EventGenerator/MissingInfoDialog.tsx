@@ -42,7 +42,7 @@ export const MissingInfoDialog = ({
   onSubmit,
 }: MissingInfoDialogProps) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+  const [selectedDate, setSelectedDate] = useState<Date>();
   const [isFlexible, setIsFlexible] = useState("no");
   const [time, setTime] = useState("");
 
@@ -97,16 +97,18 @@ export const MissingInfoDialog = ({
                         "justify-start text-left font-normal",
                         !selectedDate && "text-muted-foreground"
                       )}
+                      disabled={isFlexible === "yes"}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
                       {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
                       selected={selectedDate}
                       onSelect={setSelectedDate}
+                      disabled={(date) => date < new Date()}
                       initialFocus
                     />
                   </PopoverContent>
@@ -119,10 +121,6 @@ export const MissingInfoDialog = ({
                   disabled={isFlexible === "yes"}
                 />
                 <RadioGroup value={isFlexible} onValueChange={setIsFlexible} className="mt-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="fixed" />
-                    <Label htmlFor="fixed">Fixed date & time</Label>
-                  </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="yes" id="flexible" />
                     <Label htmlFor="flexible">Date & time is flexible</Label>
