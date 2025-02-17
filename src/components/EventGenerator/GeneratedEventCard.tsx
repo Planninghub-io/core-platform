@@ -41,32 +41,27 @@ export const GeneratedEventCard = ({
   const formatDate = (dateString: string) => {
     try {
       // Handle "flexible" date case
-      if (dateString === "flexible") {
+      if (dateString.toLowerCase() === "flexible") {
         return "Flexible Date & Time";
       }
 
-      // First try to parse the date directly
-      let date = new Date(dateString);
+      // Try to parse the date
+      const date = new Date(dateString);
       
-      // If the date is invalid, check if it's a datetime string
-      if (isNaN(date.getTime()) && dateString.includes('T')) {
-        // Try to parse ISO format
-        date = new Date(dateString);
+      // Check if the date is valid
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString('en-US', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+        });
       }
 
-      // If we still have an invalid date, return placeholder
-      if (isNaN(date.getTime())) {
-        return "Date to be determined";
-      }
-
-      return date.toLocaleDateString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-      });
+      // If we can't parse it, return the original string or a placeholder
+      return dateString || "Date to be determined";
     } catch (error) {
       console.error('Error formatting date:', error);
       return "Date to be determined";
@@ -89,24 +84,30 @@ export const GeneratedEventCard = ({
         )}
         <div className={`flex-1 ${imageUrl ? 'md:w-2/3' : 'w-full'}`}>
           <CardHeader>
-            <CardTitle>{event.title}</CardTitle>
+            <CardTitle>{event.title || 'Untitled Event'}</CardTitle>
             <CardDescription className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               {formatDate(event.date)}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p>{event.description}</p>
+            <p>{event.description || 'No description available'}</p>
             <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-              <span className="flex items-center gap-1">
-                <MapPin className="h-4 w-4" />
-                {event.location}
-              </span>
-              <span className="flex items-center gap-1">
-                <Tag className="h-4 w-4" />
-                {event.category}
-              </span>
-              <span>Starting from {event.estimatedPrice}</span>
+              {event.location && (
+                <span className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  {event.location}
+                </span>
+              )}
+              {event.category && (
+                <span className="flex items-center gap-1">
+                  <Tag className="h-4 w-4" />
+                  {event.category}
+                </span>
+              )}
+              {event.estimatedPrice && (
+                <span>Starting from {event.estimatedPrice}</span>
+              )}
             </div>
           </CardContent>
           <CardFooter className="flex gap-2">
