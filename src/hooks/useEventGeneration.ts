@@ -138,9 +138,16 @@ export const useEventGeneration = () => {
         console.error('Error generating image:', imageError);
       }
 
-      // Parse price string to get numeric value
-      const priceString = generatedEvent.estimatedPrice.replace(/[^0-9.]/g, '');
-      const price = parseFloat(priceString) || 0;
+      // Parse price string to get numeric value with safe fallback
+      let price = 0;
+      try {
+        if (generatedEvent.estimatedPrice) {
+          const priceString = generatedEvent.estimatedPrice.replace(/[^0-9.]/g, '');
+          price = parseFloat(priceString) || 0;
+        }
+      } catch (error) {
+        console.error('Error parsing price:', error);
+      }
 
       // Format the date properly
       let formattedStartDate: string;
