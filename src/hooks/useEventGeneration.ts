@@ -60,11 +60,18 @@ export const useEventGeneration = () => {
         fullPrompt = `${prompt}. Additional details: ${additionalDetails}`;
       }
 
+      console.log('Sending prompt to generate event:', fullPrompt); // Debug log
+
       const { data, error } = await supabase.functions.invoke('generate-event', {
         body: { prompt: fullPrompt },
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Edge function error:', error); // Debug log
+        throw error;
+      }
+
+      console.log('Received response from generate-event:', data); // Debug log
 
       // Handle missing info response
       if (data.needsInfo && !isResubmitting) {
@@ -89,16 +96,19 @@ export const useEventGeneration = () => {
         setMissingInfo(data);
         setShowMissingInfoDialog(true);
         setIsResubmitting(true);
+        setIsGenerating(false);
         return;
       }
 
       // Validate the response data
       if (!data || typeof data !== 'object') {
+        console.error('Invalid response format:', data); // Debug log
         throw new Error('Invalid response from event generation');
       }
 
-      // Explicitly validate required fields
+      // Ensure we have a valid title
       if (!data.title || typeof data.title !== 'string' || data.title.trim() === '') {
+        console.error('Missing or invalid title in response:', data); // Debug log
         throw new Error('Generated event must have a title');
       }
 
@@ -112,6 +122,8 @@ export const useEventGeneration = () => {
         estimatedPrice: data.estimatedPrice || '',
         imagePrompt: data.imagePrompt || `${data.title} event`,
       };
+
+      console.log('Created validated event:', validatedEvent); // Debug log
 
       setGeneratedEvent(validatedEvent);
       setMissingInfo(null);
