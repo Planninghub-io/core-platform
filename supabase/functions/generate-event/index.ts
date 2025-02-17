@@ -16,13 +16,6 @@ serve(async (req) => {
     const { prompt } = await req.json();
     const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
 
-    console.log('Environment variables available:', Deno.env.toObject());
-    console.log('OpenAI API Key exists:', !!openAIApiKey);
-    if (openAIApiKey) {
-      console.log('OpenAI API Key length:', openAIApiKey.length);
-      console.log('OpenAI API Key prefix:', openAIApiKey.substring(0, 7));
-    }
-
     if (!openAIApiKey) {
       throw new Error('OpenAI API key is not configured');
     }
@@ -41,12 +34,13 @@ serve(async (req) => {
           {
             role: 'system',
             content: `You are an event planning assistant. Generate JSON response based on the user's event description.
+            The only required fields are date/time and location.
             
             Response format when critical information is missing:
             {
               "needsInfo": true,
-              "missingFields": ["date", "time", "location"],
-              "message": "Please provide the following details: [list fields]"
+              "missingFields": ["datetime", "location"],
+              "message": "Please provide the following details to help plan your event"
             }
             
             Response format when all information is present:
@@ -68,18 +62,13 @@ serve(async (req) => {
       }),
     });
 
-    console.log('OpenAI API response status:', response.status);
-
     if (!response.ok) {
       const errorText = await response.text();
       console.error('OpenAI API error response:', errorText);
       throw new Error(`OpenAI API error: ${errorText}`);
     }
 
-    const responseText = await response.text();
-    console.log('Raw OpenAI response:', responseText);
-
-    const data = JSON.parse(responseText);
+    const data = await response.json();
     
     if (!data.choices?.[0]?.message?.content) {
       console.error('Invalid OpenAI response structure:', data);
@@ -87,8 +76,6 @@ serve(async (req) => {
     }
 
     const aiResponse = data.choices[0].message.content;
-    console.log('AI response content:', aiResponse);
-
     let eventDetails;
     try {
       eventDetails = JSON.parse(aiResponse);
@@ -97,13 +84,10 @@ serve(async (req) => {
       throw new Error('Failed to parse event details from AI response');
     }
 
-    // Validate the response structure
     if (typeof eventDetails.needsInfo !== 'boolean') {
       console.error('Invalid event details structure:', eventDetails);
       throw new Error('Invalid event details structure');
     }
-
-    console.log('Successfully processed event details:', eventDetails);
 
     return new Response(JSON.stringify(eventDetails), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
