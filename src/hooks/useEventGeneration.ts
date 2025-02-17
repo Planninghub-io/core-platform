@@ -66,6 +66,7 @@ export const useEventGeneration = () => {
 
       if (error) throw error;
 
+      // Handle missing info response
       if (data.needsInfo && !isResubmitting) {
         const prePopulatedInfo: Record<string, string> = {};
         
@@ -91,12 +92,28 @@ export const useEventGeneration = () => {
         return;
       }
 
-      // Ensure title is present and valid
+      // Validate the response data
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid response from event generation');
+      }
+
+      // Explicitly validate required fields
       if (!data.title || typeof data.title !== 'string' || data.title.trim() === '') {
         throw new Error('Generated event must have a title');
       }
 
-      setGeneratedEvent(data);
+      // Create a validated event object
+      const validatedEvent: GeneratedEvent = {
+        title: data.title.trim(),
+        description: data.description || '',
+        date: data.date || '',
+        location: data.location || '',
+        category: data.category || '',
+        estimatedPrice: data.estimatedPrice || '',
+        imagePrompt: data.imagePrompt || `${data.title} event`,
+      };
+
+      setGeneratedEvent(validatedEvent);
       setMissingInfo(null);
       setShowMissingInfoDialog(false);
       setAdditionalInfo({});
@@ -124,35 +141,10 @@ export const useEventGeneration = () => {
   };
 
   const handleCreateEvent = async () => {
-    console.log('Generated event data:', generatedEvent); // Debug log
-
     if (!generatedEvent) {
       toast({
         title: "Error",
         description: "No event details available. Please generate an event first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Ensure all required fields are present and valid
-    const eventData: EventToCreate = {
-      title: generatedEvent.title?.trim() || '',
-      description: generatedEvent.description || '',
-      date: generatedEvent.date || '',
-      location: generatedEvent.location || '',
-      category: generatedEvent.category || '',
-      estimatedPrice: generatedEvent.estimatedPrice || '',
-      imagePrompt: generatedEvent.imagePrompt || `${generatedEvent.title} event`,
-    };
-
-    console.log('Prepared event data:', eventData); // Debug log
-
-    // Validate title specifically
-    if (!eventData.title) {
-      toast({
-        title: "Error",
-        description: "Event title is required.",
         variant: "destructive",
       });
       return;
@@ -164,7 +156,7 @@ export const useEventGeneration = () => {
       return;
     }
 
-    const { error } = await createEvent(eventData, additionalInfo);
+    const { error } = await createEvent(generatedEvent, additionalInfo);
 
     if (error) {
       console.error('Error creating event:', error);
