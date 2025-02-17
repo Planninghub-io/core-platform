@@ -2,10 +2,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Building, Sparkles, UserPlus } from "lucide-react";
+import { ArrowRight, Building, Sparkles, UserPlus, X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   Card,
   CardContent,
@@ -13,12 +13,21 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [promptCount, setPromptCount] = useState(0);
+  const [showSignUpDialog, setShowSignUpDialog] = useState(false);
 
   const handlePromptSubmit = async () => {
     if (!prompt.trim()) {
@@ -27,6 +36,12 @@ const Index = () => {
         description: "Please enter an event description",
         variant: "destructive",
       });
+      return;
+    }
+
+    // Check if user has already used their free prompt
+    if (promptCount >= 1) {
+      setShowSignUpDialog(true);
       return;
     }
 
@@ -43,6 +58,7 @@ const Index = () => {
         description: "Your event has been generated successfully.",
       });
       console.log('Generated event:', data);
+      setPromptCount(prev => prev + 1);
 
     } catch (error) {
       console.error('Error generating event:', error);
@@ -67,51 +83,6 @@ const Index = () => {
             Create, discover, and experience amazing events. Start your journey with us today.
           </p>
 
-          <div className="grid gap-6 md:grid-cols-2 mb-12">
-            <Card className="animate-fade-up group hover:shadow-lg transition-all duration-300">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-center gap-2">
-                  <UserPlus className="h-6 w-6 text-primary" />
-                  Individual Account
-                </CardTitle>
-                <CardDescription>
-                  Perfect for personal event planning and attending events
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  onClick={() => navigate("/auth")} 
-                  className="w-full gap-2"
-                >
-                  Sign Up as Individual
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="animate-fade-up group hover:shadow-lg transition-all duration-300">
-              <CardHeader>
-                <CardTitle className="flex items-center justify-center gap-2">
-                  <Building className="h-6 w-6 text-primary" />
-                  Business Account
-                </CardTitle>
-                <CardDescription>
-                  For event planners, venues, and service providers
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button 
-                  onClick={() => navigate("/auth", { state: { type: 'business' } })} 
-                  variant="outline"
-                  className="w-full gap-2 bg-blue-300/40 text-black hover:bg-blue-400/70 border-0"
-                >
-                  Register Your Business
-                  <ArrowRight className="h-4 w-4" />
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-
           <div className="animate-fade-up mb-6 space-y-4">
             <div className="relative mx-auto max-w-2xl">
               <Textarea
@@ -130,7 +101,13 @@ const Index = () => {
                 {isGenerating ? 'Generating...' : 'Generate'}
               </Button>
             </div>
+            {promptCount === 1 && (
+              <p className="text-sm text-gray-500">
+                You have used your free prompt. Sign up to generate more events!
+              </p>
+            )}
           </div>
+
           <div className="flex justify-center gap-4">
             <Button
               onClick={() => navigate("/discover")}
@@ -151,6 +128,34 @@ const Index = () => {
           </div>
         </div>
       </div>
+
+      <Dialog open={showSignUpDialog} onOpenChange={setShowSignUpDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Sign Up to Continue</DialogTitle>
+            <DialogDescription>
+              Create an account to generate unlimited AI events and access more features.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Button
+              onClick={() => navigate("/auth")}
+              className="w-full gap-2"
+            >
+              <UserPlus className="h-4 w-4" />
+              Sign Up as Individual
+            </Button>
+            <Button
+              onClick={() => navigate("/auth", { state: { type: 'business' } })}
+              variant="outline"
+              className="w-full gap-2 bg-blue-300/40 text-black hover:bg-blue-400/70 border-0"
+            >
+              <Building className="h-4 w-4" />
+              Register as Business
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
