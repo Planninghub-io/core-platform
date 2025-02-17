@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface GeneratedEvent {
   title: string;
@@ -21,6 +22,7 @@ interface MissingInfo {
 
 export const useEventGeneration = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [promptCount, setPromptCount] = useState(0);
@@ -155,10 +157,21 @@ export const useEventGeneration = () => {
       } else {
         // Parse the specific date
         const startDate = new Date(generatedEvent.date);
-        const endDate = new Date(startDate);
-        endDate.setHours(endDate.getHours() + 2); // Default 2-hour duration
-        formattedStartDate = startDate.toISOString();
-        formattedEndDate = endDate.toISOString();
+        if (isNaN(startDate.getTime())) {
+          // If the date is invalid, use the date from additionalInfo
+          const providedDate = additionalInfo.datetime 
+            ? new Date(additionalInfo.datetime)
+            : new Date();
+          formattedStartDate = providedDate.toISOString();
+          const endDate = new Date(providedDate);
+          endDate.setHours(endDate.getHours() + 2);
+          formattedEndDate = endDate.toISOString();
+        } else {
+          formattedStartDate = startDate.toISOString();
+          const endDate = new Date(startDate);
+          endDate.setHours(endDate.getHours() + 2);
+          formattedEndDate = endDate.toISOString();
+        }
       }
 
       const { data, error } = await supabase.from('events').insert({
@@ -182,6 +195,9 @@ export const useEventGeneration = () => {
       });
       
       setCreatedEventId(data.id);
+      
+      // Navigate to events hub after successful creation
+      navigate("/events-hub");
 
     } catch (error: any) {
       console.error('Error creating event:', error);

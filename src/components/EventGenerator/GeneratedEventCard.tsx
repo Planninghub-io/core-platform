@@ -45,8 +45,16 @@ export const GeneratedEventCard = ({
         return "Flexible Date & Time";
       }
 
-      const date = new Date(dateString);
-      // Check if date is valid
+      // First try to parse the date directly
+      let date = new Date(dateString);
+      
+      // If the date is invalid, check if it's a datetime string
+      if (isNaN(date.getTime()) && dateString.includes('T')) {
+        // Try to parse ISO format
+        date = new Date(dateString);
+      }
+
+      // If we still have an invalid date, return placeholder
       if (isNaN(date.getTime())) {
         return "Date to be determined";
       }
