@@ -1,18 +1,28 @@
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Building, Mail, Phone, User } from "lucide-react";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [companyName, setCompanyName] = useState("");
+  const [businessEmail, setBusinessEmail] = useState("");
+  const [businessPhone, setBusinessPhone] = useState("");
+
+  const isBusiness = location.state?.type === 'business';
 
   useEffect(() => {
     // Check if user is already logged in
@@ -22,7 +32,6 @@ const Auth = () => {
       }
     });
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
         navigate("/");
@@ -42,27 +51,67 @@ const Auth = () => {
       });
       return;
     }
+
+    if (isSignUp && isBusiness && (!companyName || !businessEmail || !businessPhone)) {
+      toast({
+        title: "Error",
+        description: "Please fill in all business details",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
         options: {
+          data: {
+            first_name: firstName,
+            last_name: lastName,
+          },
           emailRedirectTo: window.location.origin
         }
       });
-      if (error) {
-        if (error.message === "User already registered") {
+
+      if (authError) {
+        if (authError.message === "User already registered") {
           toast({
             title: "Account Exists",
             description: "An account with this email already exists. Please sign in instead.",
             variant: "destructive",
           });
         } else {
-          throw error;
+          throw authError;
         }
         return;
       }
+
+      if (isBusiness && authData.user) {
+        // Create company and link user as owner
+        const { error: companyError } = await supabase
+          .from('companies')
+          .insert([{
+            name: companyName,
+            type: 'vendor', // or 'venue' based on selection
+            business_email: businessEmail,
+            business_phone: businessPhone
+          }])
+          .select()
+          .single();
+
+        if (companyError) throw companyError;
+
+        // Update user profile type
+        const { error: profileError } = await supabase
+          .from('user_profiles')
+          .update({ user_type: 'business' })
+          .eq('id', authData.user.id);
+
+        if (profileError) throw profileError;
+      }
+
       toast({
         title: "Success!",
         description: "Check your email to confirm your account.",
@@ -126,18 +175,106 @@ const Auth = () => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container max-w-md">
         <div className="rounded-xl bg-white p-8 shadow-lg">
-          <h1 className="mb-6 text-2xl font-bold">Sign In or Sign Up</h1>
-          <form className="space-y-4" onSubmit={(e) => e.preventDefault()}>
+          <h1 className="mb-6 text-2xl font-bold">
+            {isSignUp ? `Sign Up${isBusiness ? ' as Business' : ''}` : 'Sign In'}
+          </h1>
+          <form className="space-y-4" onSubmit={isSignUp ? handleSignUp : handleSignIn}>
+            {isSignUp && (
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="firstName"
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}
+                      placeholder="John"
+                      className="pl-9"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <div className="relative">
+                    <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="lastName"
+                      value={lastName}
+                      onChange={(e) => setLastName(e.target.value)}
+                      placeholder="Doe"
+                      className="pl-9"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {isSignUp && isBusiness && (
+              <>
+                <div className="space-y-2">
+                  <Label htmlFor="companyName">Company Name</Label>
+                  <div className="relative">
+                    <Building className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="companyName"
+                      value={companyName}
+                      onChange={(e) => setCompanyName(e.target.value)}
+                      placeholder="Your Company Name"
+                      className="pl-9"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="businessEmail">Business Email</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="businessEmail"
+                      type="email"
+                      value={businessEmail}
+                      onChange={(e) => setBusinessEmail(e.target.value)}
+                      placeholder="contact@company.com"
+                      className="pl-9"
+                      required
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="businessPhone">Business Phone</Label>
+                  <div className="relative">
+                    <Phone className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                    <Input
+                      id="businessPhone"
+                      type="tel"
+                      value={businessPhone}
+                      onChange={(e) => setBusinessPhone(e.target.value)}
+                      placeholder="+1 (555) 000-0000"
+                      className="pl-9"
+                      required
+                    />
+                  </div>
+                </div>
+              </>
+            )}
+
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-              />
+              <div className="relative">
+                <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter your email"
+                  className="pl-9"
+                  required
+                />
+              </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
@@ -151,23 +288,21 @@ const Auth = () => {
                 minLength={6}
               />
             </div>
-            <div className="flex gap-4">
+            <div className="space-y-4">
               <Button
-                type="button"
-                onClick={handleSignIn}
+                type="submit"
                 disabled={isLoading}
-                className="flex-1"
+                className="w-full"
               >
-                Sign In
+                {isLoading ? 'Loading...' : isSignUp ? 'Sign Up' : 'Sign In'}
               </Button>
               <Button
                 type="button"
-                onClick={handleSignUp}
-                disabled={isLoading}
+                onClick={() => setIsSignUp(!isSignUp)}
                 variant="outline"
-                className="flex-1"
+                className="w-full"
               >
-                Sign Up
+                {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
               </Button>
             </div>
           </form>
