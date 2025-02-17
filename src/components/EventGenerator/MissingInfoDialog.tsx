@@ -10,9 +10,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { useState, useEffect } from "react";
@@ -42,15 +40,13 @@ export const MissingInfoDialog = ({
   onSubmit,
 }: MissingInfoDialogProps) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [isFlexible, setIsFlexible] = useState("no");
-  const [time, setTime] = useState("");
+  const [datetime, setDatetime] = useState("");
 
   useEffect(() => {
     if (open) {
       setErrors({});
-      setSelectedDate(undefined);
-      setTime("");
+      setDatetime("");
       setIsFlexible("no");
     }
   }, [open]);
@@ -58,7 +54,7 @@ export const MissingInfoDialog = ({
   const validateFields = () => {
     const newErrors: Record<string, string> = {};
     
-    if (missingInfo?.missingFields.includes("datetime") && isFlexible === "no" && (!selectedDate || !time)) {
+    if (missingInfo?.missingFields.includes("datetime") && isFlexible === "no" && !datetime) {
       newErrors["datetime"] = "Please select both date and time";
     }
     
@@ -72,11 +68,8 @@ export const MissingInfoDialog = ({
 
   const handleSubmit = () => {
     if (validateFields()) {
-      if (selectedDate && time && isFlexible === "no") {
-        const [hours, minutes] = time.split(":");
-        const dateTime = new Date(selectedDate);
-        dateTime.setHours(parseInt(hours), parseInt(minutes));
-        onAdditionalInfoChange("datetime", dateTime.toISOString());
+      if (datetime && isFlexible === "no") {
+        onAdditionalInfoChange("datetime", new Date(datetime).toISOString());
       } else if (isFlexible === "yes") {
         onAdditionalInfoChange("datetime", "flexible");
       }
@@ -109,37 +102,15 @@ export const MissingInfoDialog = ({
                   </div>
                 </RadioGroup>
                 {isFlexible === "no" && (
-                  <div className="space-y-2">
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          className={cn(
-                            "w-full justify-start text-left font-normal",
-                            !selectedDate && "text-muted-foreground"
-                          )}
-                        >
-                          <CalendarIcon className="mr-2 h-4 w-4" />
-                          {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent align="start" className="w-auto p-0">
-                        <Calendar
-                          mode="single"
-                          selected={selectedDate}
-                          onSelect={setSelectedDate}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                        />
-                      </PopoverContent>
-                    </Popover>
+                  <div className="relative">
                     <Input
-                      type="time"
-                      value={time}
-                      onChange={(e) => setTime(e.target.value)}
-                      className={errors["datetime"] ? "border-red-500" : ""}
+                      type="datetime-local"
+                      value={datetime}
+                      onChange={(e) => setDatetime(e.target.value)}
+                      className={cn(errors["datetime"] ? "border-red-500" : "")}
+                      min={new Date().toISOString().slice(0, 16)}
                     />
+                    <Calendar className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   </div>
                 )}
                 {errors["datetime"] && (
