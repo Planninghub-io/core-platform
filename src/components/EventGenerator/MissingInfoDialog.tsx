@@ -49,7 +49,7 @@ export const MissingInfoDialog = ({
   const validateFields = () => {
     const newErrors: Record<string, string> = {};
     
-    if (missingInfo?.missingFields.includes("datetime") && !isFlexible && (!selectedDate || !time)) {
+    if (missingInfo?.missingFields.includes("datetime") && isFlexible === "no" && (!selectedDate || !time)) {
       newErrors["datetime"] = "Please select both date and time";
     }
     
@@ -63,7 +63,7 @@ export const MissingInfoDialog = ({
 
   const handleSubmit = () => {
     if (validateFields()) {
-      if (selectedDate && time && !isFlexible) {
+      if (selectedDate && time && isFlexible === "no") {
         const [hours, minutes] = time.split(":");
         const dateTime = new Date(selectedDate);
         dateTime.setHours(parseInt(hours), parseInt(minutes));
@@ -89,43 +89,48 @@ export const MissingInfoDialog = ({
             <div className="grid gap-2">
               <Label>Date & Time</Label>
               <div className="flex flex-col gap-2">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "justify-start text-left font-normal",
-                        !selectedDate && "text-muted-foreground"
-                      )}
-                      disabled={isFlexible === "yes"}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={setSelectedDate}
-                      disabled={(date) => date < new Date()}
-                      initialFocus
-                    />
-                  </PopoverContent>
-                </Popover>
-                <Input
-                  type="time"
-                  value={time}
-                  onChange={(e) => setTime(e.target.value)}
-                  className={errors["datetime"] ? "border-red-500" : ""}
-                  disabled={isFlexible === "yes"}
-                />
-                <RadioGroup value={isFlexible} onValueChange={setIsFlexible} className="mt-2">
+                <RadioGroup value={isFlexible} onValueChange={setIsFlexible} className="mb-2">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="yes" id="flexible" />
                     <Label htmlFor="flexible">Date & time is flexible</Label>
                   </div>
                 </RadioGroup>
+                {isFlexible === "no" && (
+                  <>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal",
+                            !selectedDate && "text-muted-foreground"
+                          )}
+                        >
+                          <CalendarIcon className="mr-2 h-4 w-4" />
+                          {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={selectedDate}
+                          onSelect={(date) => {
+                            console.log("Selected date:", date);
+                            setSelectedDate(date || undefined);
+                          }}
+                          disabled={(date) => date < new Date()}
+                          initialFocus
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <Input
+                      type="time"
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                      className={errors["datetime"] ? "border-red-500" : ""}
+                    />
+                  </>
+                )}
                 {errors["datetime"] && (
                   <span className="text-sm text-red-500">{errors["datetime"]}</span>
                 )}

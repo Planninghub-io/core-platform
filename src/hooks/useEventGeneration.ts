@@ -31,6 +31,7 @@ export const useEventGeneration = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
   const [createdEventId, setCreatedEventId] = useState<string | null>(null);
+  const [isResubmitting, setIsResubmitting] = useState(false);
 
   const handlePromptSubmit = async () => {
     if (!prompt.trim()) {
@@ -42,7 +43,7 @@ export const useEventGeneration = () => {
       return;
     }
 
-    if (promptCount >= 1) {
+    if (promptCount >= 1 && !isResubmitting) {
       setShowSignUpDialog(true);
       return;
     }
@@ -85,6 +86,7 @@ export const useEventGeneration = () => {
         setAdditionalInfo(prePopulatedInfo);
         setMissingInfo(data);
         setShowMissingInfoDialog(true);
+        setIsResubmitting(true);
         return;
       }
 
@@ -92,12 +94,16 @@ export const useEventGeneration = () => {
       setMissingInfo(null);
       setShowMissingInfoDialog(false);
       setAdditionalInfo({});
+      setIsResubmitting(false);
       
       toast({
         title: "Event Generated!",
         description: "Review the suggested event details below.",
       });
-      setPromptCount(prev => prev + 1);
+      
+      if (!isResubmitting) {
+        setPromptCount(prev => prev + 1);
+      }
 
     } catch (error) {
       console.error('Error generating event:', error);
