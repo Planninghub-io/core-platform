@@ -29,33 +29,34 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
-            content: `You are an event planning assistant. Generate detailed event information based on the user's description.
-            Always return a complete JSON response that's either:
-            
-            1. A complete event:
-            {
-              "title": "Event title",
-              "description": "Detailed description",
-              "date": "Event date and time",
-              "location": "Event location",
-              "category": "Event category",
-              "estimatedPrice": "Price estimate",
-              "imagePrompt": "Description for image generation"
-            }
+            content: `You are an event planning assistant. Analyze the user's input and respond with ONE of these two JSON formats:
 
-            2. OR a request for more information:
-            {
-              "needsInfo": true,
-              "missingFields": ["date", "location"],
-              "message": "Please provide the following information to help plan your event"
-            }
-            
-            If any critical information (like date or location) is missing from the user's prompt,
-            use the second format to request more details. Don't try to generate partial events.`
+1. If you have enough information to generate a complete event (must include at minimum a clear title and basic description), return:
+{
+  "title": "Clear and descriptive event title",
+  "description": "Detailed event description",
+  "date": "Event date and time",
+  "location": "Event location",
+  "category": "Event category",
+  "estimatedPrice": "Price estimate",
+  "imagePrompt": "Description for image generation"
+}
+
+2. If ANY critical information is missing (including title, date, or location), return:
+{
+  "needsInfo": true,
+  "missingFields": ["list", "of", "missing", "fields"],
+  "message": "Please provide: [list missing information]"
+}
+
+IMPORTANT:
+- NEVER return a mixed or partial response
+- NEVER return an event without a title
+- If in doubt about having enough information, use format #2 to request more details`
           },
           { role: 'user', content: prompt }
         ],
@@ -85,9 +86,20 @@ serve(async (req) => {
     try {
       eventDetails = JSON.parse(aiResponse);
       console.log('Parsed event details:', eventDetails);
+
+      // Additional validation to ensure we have either a valid event or a proper needsInfo response
+      if (eventDetails.needsInfo === true) {
+        if (!Array.isArray(eventDetails.missingFields) || !eventDetails.message) {
+          throw new Error('Invalid needsInfo response format');
+        }
+      } else {
+        if (!eventDetails.title || typeof eventDetails.title !== 'string' || eventDetails.title.trim() === '') {
+          throw new Error('Generated event must have a title');
+        }
+      }
     } catch (parseError) {
-      console.error('Failed to parse AI response as JSON:', aiResponse);
-      throw new Error('Failed to parse event details from AI response');
+      console.error('Failed to parse or validate AI response:', aiResponse);
+      throw new Error('Invalid response format from AI');
     }
 
     console.log('Final event details being returned:', eventDetails);
