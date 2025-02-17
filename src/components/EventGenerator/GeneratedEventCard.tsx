@@ -1,5 +1,6 @@
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Calendar, MapPin, Tag, Pencil } from "lucide-react";
 import {
   Card,
@@ -10,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { Label } from "@/components/ui/label";
 
 interface GeneratedEvent {
   title: string;
@@ -27,6 +29,8 @@ interface GeneratedEventCardProps {
   eventId?: string;
   imageUrl?: string;
   onCreateEvent: () => void;
+  eventTitle: string;
+  onTitleChange: (title: string) => void;
 }
 
 export const GeneratedEventCard = ({
@@ -35,20 +39,19 @@ export const GeneratedEventCard = ({
   eventId,
   imageUrl,
   onCreateEvent,
+  eventTitle,
+  onTitleChange,
 }: GeneratedEventCardProps) => {
   const navigate = useNavigate();
 
   const formatDate = (dateString: string) => {
     try {
-      // Handle "flexible" date case
       if (dateString.toLowerCase() === "flexible") {
         return "Flexible Date & Time";
       }
 
-      // Try to parse the date
       const date = new Date(dateString);
       
-      // Check if the date is valid
       if (!isNaN(date.getTime())) {
         return date.toLocaleDateString('en-US', {
           weekday: 'long',
@@ -60,7 +63,6 @@ export const GeneratedEventCard = ({
         });
       }
 
-      // If we can't parse it, return the original string or a placeholder
       return dateString || "Date to be determined";
     } catch (error) {
       console.error('Error formatting date:', error);
@@ -76,7 +78,7 @@ export const GeneratedEventCard = ({
             <div className="relative overflow-hidden rounded-lg">
               <img 
                 src={imageUrl}
-                alt={event.title}
+                alt={eventTitle || "Event"}
                 className="w-full h-[200px] object-cover animate-fade-in rounded-lg transition-transform duration-300 hover:scale-105"
               />
             </div>
@@ -84,8 +86,17 @@ export const GeneratedEventCard = ({
         )}
         <div className={`flex-1 ${imageUrl ? 'md:w-2/3' : 'w-full'}`}>
           <CardHeader>
-            <CardTitle>{event.title || 'Untitled Event'}</CardTitle>
-            <CardDescription className="flex items-center gap-2">
+            <div className="space-y-2">
+              <Label htmlFor="title">Event Title</Label>
+              <Input
+                id="title"
+                value={eventTitle}
+                onChange={(e) => onTitleChange(e.target.value)}
+                placeholder="Enter event title"
+                className="text-lg font-semibold"
+              />
+            </div>
+            <CardDescription className="flex items-center gap-2 mt-2">
               <Calendar className="h-4 w-4" />
               {formatDate(event.date)}
             </CardDescription>

@@ -25,6 +25,8 @@ export const EventGeneratorSection = () => {
     additionalInfo,
     setAdditionalInfo,
     createdEventId,
+    eventTitle,
+    setEventTitle,
     handlePromptSubmit,
     handleCreateEvent,
   } = useEventGeneration();
@@ -55,6 +57,8 @@ export const EventGeneratorSection = () => {
               eventId={createdEventId || undefined}
               imageUrl={createdEventId ? `/api/events/${createdEventId}/image` : undefined}
               onCreateEvent={handleCreateEvent}
+              eventTitle={eventTitle}
+              onTitleChange={setEventTitle}
             />
           )}
         </div>

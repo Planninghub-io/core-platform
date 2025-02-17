@@ -34,6 +34,7 @@ export const useEventGeneration = () => {
   const [generatedEvent, setGeneratedEvent] = useState<GeneratedEvent | null>(null);
   const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
   const [isResubmitting, setIsResubmitting] = useState(false);
+  const [eventTitle, setEventTitle] = useState("");
 
   const handlePromptSubmit = async () => {
     if (!prompt.trim()) {
@@ -73,11 +74,8 @@ export const useEventGeneration = () => {
 
       console.log('Received response from generate-event:', data);
 
-      // First, check if we received a needsInfo response
+      // Handle missing info response
       if (data && data.needsInfo === true) {
-        console.log('Missing information detected:', data.missingFields);
-        
-        // Only handle missing info if we're not already resubmitting
         if (!isResubmitting) {
           const prePopulatedInfo: Record<string, string> = {};
           
@@ -105,31 +103,24 @@ export const useEventGeneration = () => {
         }
       }
 
-      // Now handle the event data
       if (!data || typeof data !== 'object') {
         console.error('Invalid response format:', data);
         throw new Error('Invalid response from event generation');
       }
 
-      // Ensure we have a valid title
-      if (!data.title || typeof data.title !== 'string' || data.title.trim() === '') {
-        console.error('Missing or invalid title in response:', data);
-        throw new Error('Generated event must have a title');
-      }
-
-      // Create a validated event object
+      // Create event object, allowing for missing title
       const validatedEvent: GeneratedEvent = {
-        title: data.title.trim(),
+        title: data.title?.trim() || '',
         description: data.description || '',
         date: data.date || '',
         location: data.location || '',
         category: data.category || '',
         estimatedPrice: data.estimatedPrice || '',
-        imagePrompt: data.imagePrompt || `${data.title} event`,
+        imagePrompt: data.imagePrompt || 'event',
       };
 
       console.log('Created validated event:', validatedEvent);
-
+      setEventTitle(validatedEvent.title); // Set initial title if provided
       setGeneratedEvent(validatedEvent);
       setMissingInfo(null);
       setShowMissingInfoDialog(false);
@@ -167,13 +158,29 @@ export const useEventGeneration = () => {
       return;
     }
 
+    // Check if we have a title
+    if (!eventTitle.trim()) {
+      toast({
+        title: "Error",
+        description: "Please provide a title for your event.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData.user) {
       setShowSignUpDialog(true);
       return;
     }
 
-    const { error } = await createEvent(generatedEvent, additionalInfo);
+    // Use the user-provided or AI-generated title
+    const eventWithTitle = {
+      ...generatedEvent,
+      title: eventTitle.trim(),
+    };
+
+    const { error } = await createEvent(eventWithTitle, additionalInfo);
 
     if (error) {
       console.error('Error creating event:', error);
@@ -208,6 +215,8 @@ export const useEventGeneration = () => {
     additionalInfo,
     setAdditionalInfo,
     createdEventId,
+    eventTitle,
+    setEventTitle,
     handlePromptSubmit,
     handleCreateEvent,
   };
