@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      companies: {
+        Row: {
+          address: string | null
+          business_email: string | null
+          business_phone: string | null
+          created_at: string
+          description: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          type: Database["public"]["Enums"]["company_type"]
+          updated_at: string
+          verification_status: string | null
+          website_url: string | null
+        }
+        Insert: {
+          address?: string | null
+          business_email?: string | null
+          business_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          type: Database["public"]["Enums"]["company_type"]
+          updated_at?: string
+          verification_status?: string | null
+          website_url?: string | null
+        }
+        Update: {
+          address?: string | null
+          business_email?: string | null
+          business_phone?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          type?: Database["public"]["Enums"]["company_type"]
+          updated_at?: string
+          verification_status?: string | null
+          website_url?: string | null
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           category: string | null
@@ -141,6 +186,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"
+      company_type: "event_planner" | "venue" | "vendor"
     }
     CompositeTypes: {
       [_ in never]: never
