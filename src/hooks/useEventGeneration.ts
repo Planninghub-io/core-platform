@@ -3,6 +3,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useEventCreation } from "./useEventCreation";
 
 interface GeneratedEvent {
   title: string;
@@ -23,6 +24,7 @@ interface MissingInfo {
 export const useEventGeneration = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { createEvent, isCreating, createdEventId } = useEventCreation();
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [promptCount, setPromptCount] = useState(0);
@@ -30,9 +32,7 @@ export const useEventGeneration = () => {
   const [showMissingInfoDialog, setShowMissingInfoDialog] = useState(false);
   const [missingInfo, setMissingInfo] = useState<MissingInfo | null>(null);
   const [generatedEvent, setGeneratedEvent] = useState<GeneratedEvent | null>(null);
-  const [isCreating, setIsCreating] = useState(false);
   const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
-  const [createdEventId, setCreatedEventId] = useState<string | null>(null);
   const [isResubmitting, setIsResubmitting] = useState(false);
 
   const handlePromptSubmit = async () => {
@@ -81,7 +81,7 @@ export const useEventGeneration = () => {
         
         if (locationMatch && (data.missingFields.includes('location') || data.missingFields.includes('city'))) {
           const locationField = data.missingFields.includes('location') ? 'location' : 'city';
-          prePopulatedInfo.location = locationMatch[1];
+          prePopulatedInfo[locationField] = locationMatch[1];
         }
 
         setAdditionalInfo(prePopulatedInfo);
@@ -106,7 +106,7 @@ export const useEventGeneration = () => {
         description: "Review the suggested event details below.",
       });
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating event:', error);
       toast({
         title: "Error",
@@ -127,95 +127,24 @@ export const useEventGeneration = () => {
       return;
     }
 
-    setIsCreating(true);
-    try {
-      // First, try to generate the image
-      const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-event-image', {
-        body: { prompt: generatedEvent.imagePrompt },
-      });
+    const { error } = await createEvent(generatedEvent, additionalInfo);
 
-      if (imageError) {
-        console.error('Error generating image:', imageError);
-      }
-
-      // Parse price string to get numeric value with safe fallback
-      let price = 0;
-      try {
-        if (generatedEvent.estimatedPrice) {
-          const priceString = generatedEvent.estimatedPrice.replace(/[^0-9.]/g, '');
-          price = parseFloat(priceString) || 0;
-        }
-      } catch (error) {
-        console.error('Error parsing price:', error);
-      }
-
-      // Format the date properly
-      let formattedStartDate: string;
-      let formattedEndDate: string;
-
-      if (generatedEvent.date === 'flexible') {
-        // If date is flexible, use a future date range
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() + 7); // Start a week from now
-        const endDate = new Date(startDate);
-        endDate.setHours(endDate.getHours() + 2); // Default 2-hour duration
-        formattedStartDate = startDate.toISOString();
-        formattedEndDate = endDate.toISOString();
-      } else {
-        // Parse the specific date
-        const startDate = new Date(generatedEvent.date);
-        if (isNaN(startDate.getTime())) {
-          // If the date is invalid, use the date from additionalInfo
-          const providedDate = additionalInfo.datetime 
-            ? new Date(additionalInfo.datetime)
-            : new Date();
-          formattedStartDate = providedDate.toISOString();
-          const endDate = new Date(providedDate);
-          endDate.setHours(endDate.getHours() + 2);
-          formattedEndDate = endDate.toISOString();
-        } else {
-          formattedStartDate = startDate.toISOString();
-          const endDate = new Date(startDate);
-          endDate.setHours(endDate.getHours() + 2);
-          formattedEndDate = endDate.toISOString();
-        }
-      }
-
-      const { data, error } = await supabase.from('events').insert({
-        title: generatedEvent.title,
-        description: generatedEvent.description,
-        date: formattedStartDate,
-        end_date: formattedEndDate,
-        location: generatedEvent.location,
-        category: generatedEvent.category,
-        price: price,
-        user_id: userData.user.id,
-        status: 'upcoming',
-        image_url: imageData?.image_url || null
-      }).select().single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Success!",
-        description: "Event created successfully.",
-      });
-      
-      setCreatedEventId(data.id);
-      
-      // Navigate to events hub after successful creation
-      navigate("/events-hub");
-
-    } catch (error: any) {
+    if (error) {
       console.error('Error creating event:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to create event. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setIsCreating(false);
+      return;
     }
+
+    toast({
+      title: "Success!",
+      description: "Event created successfully.",
+    });
+
+    navigate("/events-hub");
   };
 
   return {
