@@ -20,6 +20,8 @@ serve(async (req) => {
       throw new Error('OpenAI API key is not configured');
     }
 
+    console.log('Sending request to OpenAI with prompt:', prompt);
+
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -27,7 +29,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
@@ -61,20 +63,30 @@ serve(async (req) => {
       }),
     });
 
+    console.log('OpenAI response status:', response.status);
+
+    const responseData = await response.text();
+    console.log('Raw OpenAI response:', responseData);
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || 'OpenAI API request failed');
+      throw new Error(`OpenAI API error: ${responseData}`);
     }
 
-    const data = await response.json();
-    let eventDetails;
+    const data = JSON.parse(responseData);
     
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error('Invalid response format from OpenAI');
+    }
+
+    let eventDetails;
     try {
       eventDetails = JSON.parse(data.choices[0].message.content);
     } catch (parseError) {
       console.error('Failed to parse OpenAI response:', data.choices[0].message.content);
       throw new Error('Failed to parse event details from AI response');
     }
+
+    console.log('Successfully generated event details:', eventDetails);
 
     return new Response(JSON.stringify(eventDetails), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
