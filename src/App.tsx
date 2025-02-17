@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -50,10 +51,7 @@ const App = () => {
               {isAuthenticated && <SideNav />}
               <main className="flex-1">
                 <Routes>
-                  <Route 
-                    path="/" 
-                    element={isAuthenticated ? <Index /> : <Navigate to="/auth" replace />} 
-                  />
+                  <Route path="/" element={<Index />} />
                   <Route 
                     path="/create-event" 
                     element={isAuthenticated ? <CreateEvent /> : <Navigate to="/auth" replace />} 
