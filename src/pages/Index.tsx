@@ -72,6 +72,24 @@ const Index = () => {
       if (error) throw error;
 
       if (data.needsInfo) {
+        const prePopulatedInfo: Record<string, string> = {};
+        
+        const dateTimeRegex = /(?:on|at)\s+((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}(?:\s+at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?)/i;
+        const dateTimeMatch = prompt.match(dateTimeRegex);
+        
+        const locationRegex = /(?:in|at)\s+([^,.]+(?:,[^,.]+)?)/i;
+        const locationMatch = prompt.match(locationRegex);
+
+        if (dateTimeMatch && data.missingFields.includes('date')) {
+          prePopulatedInfo.date = dateTimeMatch[1];
+        }
+        
+        if (locationMatch && (data.missingFields.includes('location') || data.missingFields.includes('city'))) {
+          const locationField = data.missingFields.includes('location') ? 'location' : 'city';
+          prePopulatedInfo.location = locationMatch[1];
+        }
+
+        setAdditionalInfo(prePopulatedInfo);
         setMissingInfo(data);
         setShowMissingInfoDialog(true);
         return;
