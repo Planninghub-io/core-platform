@@ -29,30 +29,27 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4',
         messages: [
           {
             role: 'system',
-            content: `You are an event planning assistant. Generate JSON response based on the user's event description.
-            The only required fields are date/time and location.
-            
-            Response format when critical information is missing:
+            content: `You are an event planning assistant. Generate detailed event information based on the user's description.
+            Always return a complete JSON response with all required fields:
+            {
+              "title": "Event title (required, non-empty string)",
+              "description": "Detailed description",
+              "date": "Event date and time",
+              "location": "Event location",
+              "category": "Event category",
+              "estimatedPrice": "Price estimate",
+              "imagePrompt": "Description for image generation"
+            }
+
+            If critical information (date or location) is missing, respond with:
             {
               "needsInfo": true,
-              "missingFields": ["datetime", "location"],
-              "message": "Please provide the following details to help plan your event"
-            }
-            
-            Response format when all information is present:
-            {
-              "needsInfo": false,
-              "title": "Event title",
-              "description": "Detailed description",
-              "date": "2024-03-20T18:00:00Z",
-              "location": "Venue name and address",
-              "category": "Event category",
-              "estimatedPrice": "$XX.XX",
-              "imagePrompt": "Detailed image generation prompt"
+              "missingFields": ["date", "location"],
+              "message": "Please provide the following information to help plan your event"
             }`
           },
           { role: 'user', content: prompt }
@@ -69,6 +66,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
+    console.log('OpenAI response:', data);
     
     if (!data.choices?.[0]?.message?.content) {
       console.error('Invalid OpenAI response structure:', data);
@@ -76,19 +74,37 @@ serve(async (req) => {
     }
 
     const aiResponse = data.choices[0].message.content;
+    console.log('AI response content:', aiResponse);
+    
     let eventDetails;
     try {
       eventDetails = JSON.parse(aiResponse);
+      console.log('Parsed event details:', eventDetails);
     } catch (parseError) {
       console.error('Failed to parse AI response as JSON:', aiResponse);
       throw new Error('Failed to parse event details from AI response');
     }
 
-    if (typeof eventDetails.needsInfo !== 'boolean') {
-      console.error('Invalid event details structure:', eventDetails);
-      throw new Error('Invalid event details structure');
+    // Validate and ensure required fields
+    if (!eventDetails.needsInfo) {
+      if (!eventDetails.title || typeof eventDetails.title !== 'string' || eventDetails.title.trim() === '') {
+        console.error('Missing or invalid title in event details:', eventDetails);
+        throw new Error('Generated event must have a valid title');
+      }
+
+      // Ensure all required fields exist with default values if missing
+      eventDetails = {
+        title: eventDetails.title.trim(),
+        description: eventDetails.description || '',
+        date: eventDetails.date || '',
+        location: eventDetails.location || '',
+        category: eventDetails.category || '',
+        estimatedPrice: eventDetails.estimatedPrice || '',
+        imagePrompt: eventDetails.imagePrompt || `${eventDetails.title} event`,
+      };
     }
 
+    console.log('Final event details being returned:', eventDetails);
     return new Response(JSON.stringify(eventDetails), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
