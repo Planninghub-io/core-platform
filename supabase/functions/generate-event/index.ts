@@ -27,19 +27,34 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini',
         messages: [
           {
             role: 'system',
-            content: `You are an event planning assistant. Generate structured event details based on user prompts. 
-            Return the response in JSON format with the following fields:
-            - title: string (event title)
-            - description: string (detailed description)
-            - date: string (suggested date)
-            - location: string (venue/location)
-            - category: string (event category)
-            - estimatedPrice: string (suggested ticket price)
-            - imagePrompt: string (a prompt to generate an image for this event)`
+            content: `You are an event planning assistant. Analyze the user's event description and identify if it's missing critical information like date/time or location. 
+            If information is missing, return a JSON response with 'needsInfo: true' and specify what information is needed.
+            If all required information is present, generate structured event details.
+            
+            Response format when information is missing:
+            {
+              "needsInfo": true,
+              "missingFields": ["date", "time", "city", "region"],
+              "message": "Please provide: [list what's needed]"
+            }
+            
+            Response format when all information is present:
+            {
+              "needsInfo": false,
+              "title": "string",
+              "description": "string",
+              "date": "string (ISO format)",
+              "location": "string",
+              "category": "string",
+              "estimatedPrice": "string",
+              "imagePrompt": "string"
+            }
+            
+            Always ensure dates are in the future and properly formatted.`
           },
           { role: 'user', content: prompt }
         ],

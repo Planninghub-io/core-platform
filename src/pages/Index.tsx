@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -20,7 +19,10 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface GeneratedEvent {
   title: string;
@@ -32,6 +34,12 @@ interface GeneratedEvent {
   imagePrompt: string;
 }
 
+interface MissingInfo {
+  needsInfo: true;
+  missingFields: string[];
+  message: string;
+}
+
 const Index = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -39,8 +47,11 @@ const Index = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [promptCount, setPromptCount] = useState(0);
   const [showSignUpDialog, setShowSignUpDialog] = useState(false);
+  const [showMissingInfoDialog, setShowMissingInfoDialog] = useState(false);
+  const [missingInfo, setMissingInfo] = useState<MissingInfo | null>(null);
   const [generatedEvent, setGeneratedEvent] = useState<GeneratedEvent | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
 
   const handlePromptSubmit = async () => {
     if (!prompt.trim()) {
@@ -52,7 +63,6 @@ const Index = () => {
       return;
     }
 
-    // Check if user has already used their free prompt
     if (promptCount >= 1) {
       setShowSignUpDialog(true);
       return;
@@ -61,13 +71,31 @@ const Index = () => {
     setIsGenerating(true);
     setGeneratedEvent(null);
     try {
+      let fullPrompt = prompt;
+      if (Object.keys(additionalInfo).length > 0) {
+        const additionalDetails = Object.entries(additionalInfo)
+          .map(([key, value]) => `${key}: ${value}`)
+          .join(", ");
+        fullPrompt = `${prompt}. Additional details: ${additionalDetails}`;
+      }
+
       const { data, error } = await supabase.functions.invoke('generate-event', {
-        body: { prompt },
+        body: { prompt: fullPrompt },
       });
 
       if (error) throw error;
 
+      if (data.needsInfo) {
+        setMissingInfo(data);
+        setShowMissingInfoDialog(true);
+        return;
+      }
+
       setGeneratedEvent(data);
+      setMissingInfo(null);
+      setShowMissingInfoDialog(false);
+      setAdditionalInfo({});
+      
       toast({
         title: "Event Generated!",
         description: "Review the suggested event details below.",
@@ -84,6 +112,11 @@ const Index = () => {
     } finally {
       setIsGenerating(false);
     }
+  };
+
+  const handleMissingInfoSubmit = () => {
+    setShowMissingInfoDialog(false);
+    handlePromptSubmit();
   };
 
   const handleCreateEvent = async () => {
@@ -257,6 +290,38 @@ const Index = () => {
               Register as Business
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showMissingInfoDialog} onOpenChange={setShowMissingInfoDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Additional Information Needed</DialogTitle>
+            <DialogDescription>
+              {missingInfo?.message}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {missingInfo?.missingFields.map((field) => (
+              <div key={field} className="grid gap-2">
+                <Label htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}</Label>
+                <Input
+                  id={field}
+                  value={additionalInfo[field] || ""}
+                  onChange={(e) => setAdditionalInfo(prev => ({
+                    ...prev,
+                    [field]: e.target.value
+                  }))}
+                  placeholder={`Enter ${field}`}
+                />
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button onClick={handleMissingInfoSubmit} className="w-full">
+              Generate Event
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
