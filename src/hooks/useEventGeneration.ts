@@ -3,9 +3,9 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import { useEventCreation } from "./useEventCreation";
+import { useEventCreation, type EventToCreate } from "./useEventCreation";
 
-interface GeneratedEvent {
+interface GeneratedEvent extends EventToCreate {
   title: string;
   description: string;
   date: string;

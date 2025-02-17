@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { parseEventPrice } from "@/utils/priceUtils";
 import { formatEventDate } from "@/utils/dateUtils";
 
-interface EventToCreate {
+export interface EventToCreate {
   title: string;
   description: string;
   date: string;
