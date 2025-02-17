@@ -101,7 +101,7 @@ const Index = () => {
       const priceString = generatedEvent.estimatedPrice.replace(/[^0-9.]/g, '');
       const price = parseFloat(priceString) || 0;
 
-      const { error } = await supabase.from('events').insert({
+      const { data, error } = await supabase.from('events').insert({
         title: generatedEvent.title,
         description: generatedEvent.description,
         date: new Date(generatedEvent.date).toISOString(),
@@ -109,20 +109,25 @@ const Index = () => {
         location: generatedEvent.location,
         category: generatedEvent.category,
         price: price,
-        user_id: userData.user.id
-      });
+        user_id: userData.user.id,
+        status: 'upcoming'
+      }).select().single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating event:', error);
+        throw error;
+      }
 
       toast({
         title: "Success!",
         description: "Event created successfully.",
       });
-      navigate("/create-event");
+      navigate(`/create-event`);
     } catch (error: any) {
+      console.error('Detailed error:', error);
       toast({
         title: "Error",
-        description: "Failed to create event. Please try again.",
+        description: error.message || "Failed to create event. Please try again.",
         variant: "destructive",
       });
     } finally {
