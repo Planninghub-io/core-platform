@@ -26,6 +26,10 @@ export const useEventCreation = () => {
     event: EventToCreate,
     additionalInfo: Record<string, string>
   ) => {
+    if (!event.title || event.title.trim() === '') {
+      return { error: new Error("Event title is required") };
+    }
+
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData.user) {
       return { error: new Error("User not authenticated") };
@@ -45,7 +49,7 @@ export const useEventCreation = () => {
       const { startDate, endDate } = formatEventDate(event.date, additionalInfo);
 
       const { data, error } = await supabase.from('events').insert({
-        title: event.title,
+        title: event.title.trim(),
         description: event.description,
         date: startDate,
         end_date: endDate,

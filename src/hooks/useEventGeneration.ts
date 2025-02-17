@@ -91,6 +91,11 @@ export const useEventGeneration = () => {
         return;
       }
 
+      // Ensure title is present and valid
+      if (!data.title || typeof data.title !== 'string' || data.title.trim() === '') {
+        throw new Error('Generated event must have a title');
+      }
+
       setGeneratedEvent(data);
       setMissingInfo(null);
       setShowMissingInfoDialog(false);
@@ -110,7 +115,7 @@ export const useEventGeneration = () => {
       console.error('Error generating event:', error);
       toast({
         title: "Error",
-        description: "Failed to generate event. Please try again.",
+        description: error.message || "Failed to generate event. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -119,7 +124,23 @@ export const useEventGeneration = () => {
   };
 
   const handleCreateEvent = async () => {
-    if (!generatedEvent) return;
+    if (!generatedEvent) {
+      toast({
+        title: "Error",
+        description: "No event details available. Please generate an event first.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!generatedEvent.title || generatedEvent.title.trim() === '') {
+      toast({
+        title: "Error",
+        description: "Event title is required.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData.user) {
