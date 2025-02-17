@@ -111,6 +111,12 @@ const Index = () => {
 
     setIsCreating(true);
     try {
+      const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-event-image', {
+        body: { prompt: generatedEvent.imagePrompt },
+      });
+
+      if (imageError) throw imageError;
+
       const priceString = generatedEvent.estimatedPrice.replace(/[^0-9.]/g, '');
       const price = parseFloat(priceString) || 0;
 
@@ -123,7 +129,8 @@ const Index = () => {
         category: generatedEvent.category,
         price: price,
         user_id: userData.user.id,
-        status: 'upcoming'
+        status: 'upcoming',
+        image_url: imageData?.image_url
       }).select().single();
 
       if (error) throw error;
@@ -172,6 +179,7 @@ const Index = () => {
                 event={generatedEvent}
                 isCreating={isCreating}
                 eventId={createdEventId || undefined}
+                imageUrl={createdEventId ? `/api/events/${createdEventId}/image` : undefined}
                 onCreateEvent={handleCreateEvent}
               />
             )}

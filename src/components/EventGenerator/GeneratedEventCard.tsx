@@ -25,6 +25,7 @@ interface GeneratedEventCardProps {
   event: GeneratedEvent;
   isCreating: boolean;
   eventId?: string;
+  imageUrl?: string;
   onCreateEvent: () => void;
 }
 
@@ -32,58 +33,74 @@ export const GeneratedEventCard = ({
   event,
   isCreating,
   eventId,
+  imageUrl,
   onCreateEvent,
 }: GeneratedEventCardProps) => {
   const navigate = useNavigate();
 
   return (
     <Card className="mt-6 text-left">
-      <CardHeader>
-        <CardTitle>{event.title}</CardTitle>
-        <CardDescription className="flex items-center gap-2">
-          <Calendar className="h-4 w-4" />
-          {new Date(event.date).toLocaleDateString('en-US', {
-            weekday: 'long',
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-          })}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p>{event.description}</p>
-        <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-          <span className="flex items-center gap-1">
-            <MapPin className="h-4 w-4" />
-            {event.location}
-          </span>
-          <span className="flex items-center gap-1">
-            <Tag className="h-4 w-4" />
-            {event.category}
-          </span>
-          <span>Starting from {event.estimatedPrice}</span>
-        </div>
-      </CardContent>
-      <CardFooter className="flex gap-2">
-        {eventId ? (
-          <Button 
-            onClick={() => navigate(`/event/${eventId}/edit`)}
-            className="flex-1 gap-2"
-            variant="outline"
-          >
-            <Pencil className="h-4 w-4" />
-            Edit Event
-          </Button>
-        ) : (
-          <Button 
-            onClick={onCreateEvent}
-            disabled={isCreating}
-            className="flex-1"
-          >
-            {isCreating ? 'Creating Event...' : 'Create This Event'}
-          </Button>
+      <div className="flex flex-col md:flex-row">
+        {imageUrl && (
+          <div className="w-full md:w-1/3 p-4">
+            <div className="relative overflow-hidden rounded-lg">
+              <img 
+                src={imageUrl}
+                alt={event.title}
+                className="w-full h-[200px] object-cover animate-fade-in rounded-lg transition-transform duration-300 hover:scale-105"
+              />
+            </div>
+          </div>
         )}
-      </CardFooter>
+        <div className={`flex-1 ${imageUrl ? 'md:w-2/3' : 'w-full'}`}>
+          <CardHeader>
+            <CardTitle>{event.title}</CardTitle>
+            <CardDescription className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              {new Date(event.date).toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p>{event.description}</p>
+            <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+              <span className="flex items-center gap-1">
+                <MapPin className="h-4 w-4" />
+                {event.location}
+              </span>
+              <span className="flex items-center gap-1">
+                <Tag className="h-4 w-4" />
+                {event.category}
+              </span>
+              <span>Starting from {event.estimatedPrice}</span>
+            </div>
+          </CardContent>
+          <CardFooter className="flex gap-2">
+            {eventId ? (
+              <Button 
+                onClick={() => navigate(`/event/${eventId}/edit`)}
+                className="flex-1 gap-2"
+                variant="outline"
+              >
+                <Pencil className="h-4 w-4" />
+                Edit Event
+              </Button>
+            ) : (
+              <Button 
+                onClick={onCreateEvent}
+                disabled={isCreating}
+                className="flex-1"
+              >
+                {isCreating ? 'Creating Event...' : 'Create This Event'}
+              </Button>
+            )}
+          </CardFooter>
+        </div>
+      </div>
     </Card>
   );
 };
