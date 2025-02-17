@@ -1,28 +1,14 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Building, Calendar, MapPin, Sparkles, Tag, UserPlus } from "lucide-react";
-import { Textarea } from "@/components/ui/textarea";
+import { ArrowRight } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { EventGeneratorForm } from "@/components/EventGenerator/EventGeneratorForm";
+import { GeneratedEventCard } from "@/components/EventGenerator/GeneratedEventCard";
+import { MissingInfoDialog } from "@/components/EventGenerator/MissingInfoDialog";
+import { SignUpDialog } from "@/components/EventGenerator/SignUpDialog";
 
 interface GeneratedEvent {
   title: string;
@@ -114,11 +100,6 @@ const Index = () => {
     }
   };
 
-  const handleMissingInfoSubmit = () => {
-    setShowMissingInfoDialog(false);
-    handlePromptSubmit();
-  };
-
   const handleCreateEvent = async () => {
     if (!generatedEvent) return;
 
@@ -130,7 +111,6 @@ const Index = () => {
 
     setIsCreating(true);
     try {
-      // Convert estimated price to number
       const priceString = generatedEvent.estimatedPrice.replace(/[^0-9.]/g, '');
       const price = parseFloat(priceString) || 0;
 
@@ -138,7 +118,7 @@ const Index = () => {
         title: generatedEvent.title,
         description: generatedEvent.description,
         date: new Date(generatedEvent.date).toISOString(),
-        end_date: new Date(new Date(generatedEvent.date).getTime() + (2 * 60 * 60 * 1000)).toISOString(), // Default 2-hour duration
+        end_date: new Date(new Date(generatedEvent.date).getTime() + (2 * 60 * 60 * 1000)).toISOString(),
         location: generatedEvent.location,
         category: generatedEvent.category,
         price: price,
@@ -146,10 +126,7 @@ const Index = () => {
         status: 'upcoming'
       }).select().single();
 
-      if (error) {
-        console.error('Error creating event:', error);
-        throw error;
-      }
+      if (error) throw error;
 
       toast({
         title: "Success!",
@@ -180,67 +157,20 @@ const Index = () => {
           </p>
 
           <div className="animate-fade-up mb-6 space-y-4">
-            <div className="relative mx-auto max-w-2xl">
-              <Textarea
-                placeholder="Describe your event idea... (e.g., 'Create a summer music festival in Central Park with local bands and food trucks')"
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                className="min-h-[200px] resize-none rounded-xl border-gray-200 p-4 text-base shadow-sm focus:border-primary focus:ring-primary"
-              />
-              <Button
-                onClick={handlePromptSubmit}
-                size="sm"
-                className="absolute bottom-4 right-4 gap-2 bg-primary/80 hover:bg-primary/90"
-                disabled={isGenerating}
-              >
-                <Sparkles className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
-                {isGenerating ? 'Generating...' : 'Generate'}
-              </Button>
-            </div>
-            {promptCount === 1 && (
-              <p className="text-sm text-gray-500">
-                You have used your free prompt. Sign up to generate more events!
-              </p>
-            )}
+            <EventGeneratorForm
+              prompt={prompt}
+              isGenerating={isGenerating}
+              promptCount={promptCount}
+              onPromptChange={setPrompt}
+              onSubmit={handlePromptSubmit}
+            />
 
             {generatedEvent && (
-              <Card className="mt-6 text-left">
-                <CardHeader>
-                  <CardTitle>{generatedEvent.title}</CardTitle>
-                  <CardDescription className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    {new Date(generatedEvent.date).toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                    })}
-                  </CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <p>{generatedEvent.description}</p>
-                  <div className="flex flex-wrap gap-4 text-sm text-gray-500">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {generatedEvent.location}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Tag className="h-4 w-4" />
-                      {generatedEvent.category}
-                    </span>
-                    <span>Starting from {generatedEvent.estimatedPrice}</span>
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    onClick={handleCreateEvent}
-                    disabled={isCreating}
-                    className="w-full"
-                  >
-                    {isCreating ? 'Creating Event...' : 'Create This Event'}
-                  </Button>
-                </CardFooter>
-              </Card>
+              <GeneratedEventCard
+                event={generatedEvent}
+                isCreating={isCreating}
+                onCreateEvent={handleCreateEvent}
+              />
             )}
           </div>
 
@@ -265,65 +195,26 @@ const Index = () => {
         </div>
       </div>
 
-      <Dialog open={showSignUpDialog} onOpenChange={setShowSignUpDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Sign Up to Continue</DialogTitle>
-            <DialogDescription>
-              Create an account to generate unlimited AI events and access more features.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <Button
-              onClick={() => navigate("/auth")}
-              className="w-full gap-2"
-            >
-              <UserPlus className="h-4 w-4" />
-              Sign Up as Individual
-            </Button>
-            <Button
-              onClick={() => navigate("/auth", { state: { type: 'business' } })}
-              variant="outline"
-              className="w-full gap-2 bg-blue-300/40 text-black hover:bg-blue-400/70 border-0"
-            >
-              <Building className="h-4 w-4" />
-              Register as Business
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <SignUpDialog
+        open={showSignUpDialog}
+        onOpenChange={setShowSignUpDialog}
+        onSignUpIndividual={() => navigate("/auth")}
+        onSignUpBusiness={() => navigate("/auth", { state: { type: 'business' } })}
+      />
 
-      <Dialog open={showMissingInfoDialog} onOpenChange={setShowMissingInfoDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Additional Information Needed</DialogTitle>
-            <DialogDescription>
-              {missingInfo?.message}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            {missingInfo?.missingFields.map((field) => (
-              <div key={field} className="grid gap-2">
-                <Label htmlFor={field}>{field.charAt(0).toUpperCase() + field.slice(1)}</Label>
-                <Input
-                  id={field}
-                  value={additionalInfo[field] || ""}
-                  onChange={(e) => setAdditionalInfo(prev => ({
-                    ...prev,
-                    [field]: e.target.value
-                  }))}
-                  placeholder={`Enter ${field}`}
-                />
-              </div>
-            ))}
-          </div>
-          <DialogFooter>
-            <Button onClick={handleMissingInfoSubmit} className="w-full">
-              Generate Event
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <MissingInfoDialog
+        open={showMissingInfoDialog}
+        onOpenChange={setShowMissingInfoDialog}
+        missingInfo={missingInfo}
+        additionalInfo={additionalInfo}
+        onAdditionalInfoChange={(field, value) => 
+          setAdditionalInfo(prev => ({ ...prev, [field]: value }))
+        }
+        onSubmit={() => {
+          setShowMissingInfoDialog(false);
+          handlePromptSubmit();
+        }}
+      />
     </div>
   );
 };
