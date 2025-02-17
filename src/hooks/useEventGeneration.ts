@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -49,7 +48,6 @@ export const useEventGeneration = () => {
     }
 
     setIsGenerating(true);
-    setGeneratedEvent(null);
     try {
       let fullPrompt = prompt;
       if (Object.keys(additionalInfo).length > 0) {
@@ -65,7 +63,7 @@ export const useEventGeneration = () => {
 
       if (error) throw error;
 
-      if (data.needsInfo) {
+      if (data.needsInfo && !isResubmitting) {
         const prePopulatedInfo: Record<string, string> = {};
         
         const dateTimeRegex = /(?:on|at)\s+((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}(?:\s+at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?)/i;
@@ -86,27 +84,24 @@ export const useEventGeneration = () => {
         setAdditionalInfo(prePopulatedInfo);
         setMissingInfo(data);
         setShowMissingInfoDialog(true);
-        if (!isResubmitting) {
-          setIsResubmitting(true);
-        }
+        setIsResubmitting(true);
         return;
       }
 
-      // Clear resubmission state and missing info when successful
       setGeneratedEvent(data);
       setMissingInfo(null);
       setShowMissingInfoDialog(false);
       setAdditionalInfo({});
       setIsResubmitting(false);
       
+      if (!isResubmitting) {
+        setPromptCount(prev => prev + 1);
+      }
+      
       toast({
         title: "Event Generated!",
         description: "Review the suggested event details below.",
       });
-      
-      if (!isResubmitting) {
-        setPromptCount(prev => prev + 1);
-      }
 
     } catch (error) {
       console.error('Error generating event:', error);

@@ -15,7 +15,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface MissingInfo {
@@ -42,9 +42,18 @@ export const MissingInfoDialog = ({
   onSubmit,
 }: MissingInfoDialogProps) => {
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [selectedDate, setSelectedDate] = useState<Date>();
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>();
   const [isFlexible, setIsFlexible] = useState("no");
   const [time, setTime] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setErrors({});
+      setSelectedDate(undefined);
+      setTime("");
+      setIsFlexible("no");
+    }
+  }, [open]);
 
   const validateFields = () => {
     const newErrors: Record<string, string> = {};
@@ -94,12 +103,17 @@ export const MissingInfoDialog = ({
                     <RadioGroupItem value="yes" id="flexible" />
                     <Label htmlFor="flexible">Date & time is flexible</Label>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="no" id="specific" />
+                    <Label htmlFor="specific">Specific date & time</Label>
+                  </div>
                 </RadioGroup>
                 {isFlexible === "no" && (
-                  <>
+                  <div className="space-y-2">
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
+                          type="button"
                           variant="outline"
                           className={cn(
                             "w-full justify-start text-left font-normal",
@@ -110,14 +124,11 @@ export const MissingInfoDialog = ({
                           {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
+                      <PopoverContent align="start" className="w-auto p-0">
                         <Calendar
                           mode="single"
                           selected={selectedDate}
-                          onSelect={(date) => {
-                            console.log("Selected date:", date);
-                            setSelectedDate(date || undefined);
-                          }}
+                          onSelect={setSelectedDate}
                           disabled={(date) => date < new Date()}
                           initialFocus
                         />
@@ -129,7 +140,7 @@ export const MissingInfoDialog = ({
                       onChange={(e) => setTime(e.target.value)}
                       className={errors["datetime"] ? "border-red-500" : ""}
                     />
-                  </>
+                  </div>
                 )}
                 {errors["datetime"] && (
                   <span className="text-sm text-red-500">{errors["datetime"]}</span>
