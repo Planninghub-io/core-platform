@@ -73,18 +73,18 @@ export const GeneratedEventCard = ({
   return (
     <Card className="mt-6 text-left">
       <div className="flex flex-col md:flex-row">
-        {imageUrl && (
+        {event.imagePrompt && (
           <div className="w-full md:w-1/3 p-4">
             <div className="relative overflow-hidden rounded-lg">
               <img 
-                src={imageUrl}
+                src={imageUrl || "/placeholder.svg"}
                 alt={eventTitle || "Event"}
                 className="w-full h-[200px] object-cover animate-fade-in rounded-lg transition-transform duration-300 hover:scale-105"
               />
             </div>
           </div>
         )}
-        <div className={`flex-1 ${imageUrl ? 'md:w-2/3' : 'w-full'}`}>
+        <div className={`flex-1 ${event.imagePrompt ? 'md:w-2/3' : 'w-full'}`}>
           <CardHeader>
             <div className="space-y-2">
               <Label htmlFor="title">Event Title</Label>
