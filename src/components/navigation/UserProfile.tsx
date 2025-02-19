@@ -26,9 +26,17 @@ export const UserProfile = ({ userProfile }: UserProfileProps) => {
           <span className="text-sm font-medium truncate">
             {getDisplayName(userProfile)}
           </span>
-          <span className="text-xs text-muted-foreground truncate">
-            {userProfile.email}
-          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="w-full justify-start gap-2 mt-1 h-8"
+            asChild
+          >
+            <Link to="/settings">
+              <Settings className="h-4 w-4" />
+              <span>Settings</span>
+            </Link>
+          </Button>
         </div>
       </div>
     </div>
