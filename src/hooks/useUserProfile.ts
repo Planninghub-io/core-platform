@@ -13,14 +13,25 @@ export function useUserProfile() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        // First get the auth user email
+        const authEmail = user.email;
+
+        // Then fetch the profile data
         const { data: profileData, error } = await supabase
           .from('user_profiles')
-          .select('first_name, last_name, avatar_url, email, contact_number, dob')
+          .select('*')  // Select all fields from user_profiles
           .eq('id', user.id)
           .single();
 
         if (error) throw error;
-        setUserProfile(profileData);
+
+        // Combine auth email with profile data
+        const completeProfile = {
+          ...profileData,
+          email: authEmail // Ensure email is always included from auth
+        };
+
+        setUserProfile(completeProfile);
 
         const { data: companyMembers, error: companyError } = await supabase
           .from('company_members')
