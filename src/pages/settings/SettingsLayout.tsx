@@ -7,7 +7,8 @@ const SettingsLayout = () => {
 
   const tabs = [
     { title: "User Profile", path: "/settings/profile" },
-    { title: "Company Settings", path: "/settings/company" }
+    { title: "Company Settings", path: "/settings/company" },
+    { title: "Billing", path: "/settings/billing" }
   ];
 
   return (
