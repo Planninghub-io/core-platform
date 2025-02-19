@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, MapPin, User, Users } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, User, Users, Pencil, LayoutDashboard, Robot } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const EventDetails = () => {
@@ -54,14 +54,39 @@ const EventDetails = () => {
 
   return (
     <div className="container py-8">
-      <Button 
-        variant="ghost" 
-        className="mb-6"
-        onClick={() => navigate('/events-hub')}
-      >
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Events
-      </Button>
+      <div className="flex items-center justify-between mb-6">
+        <Button 
+          variant="ghost"
+          onClick={() => navigate('/events-hub')}
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Events
+        </Button>
+        
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => navigate(`/event/${id}?edit=true`)}
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => navigate(`/event/${id}/dashboard`)}
+          >
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            Dashboard
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => navigate(`/event/${id}/ai-planner`)}
+          >
+            <Robot className="mr-2 h-4 w-4" />
+            AI Planner
+          </Button>
+        </div>
+      </div>
 
       <div className="grid gap-8 md:grid-cols-2">
         <div className="aspect-[16/9] overflow-hidden rounded-xl">
