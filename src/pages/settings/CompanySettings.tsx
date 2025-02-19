@@ -1,5 +1,4 @@
-
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +19,33 @@ const CompanySettings = () => {
     website_url: selectedCompany?.logo_url || "",
   });
   const [logo, setLogo] = useState<File | null>(null);
+
+  useEffect(() => {
+    if (selectedCompany) {
+      const fetchCompanyDetails = async () => {
+        const { data: companyData, error } = await supabase
+          .from('companies')
+          .select('*')
+          .eq('id', selectedCompany.id)
+          .single();
+
+        if (error) {
+          console.error('Error fetching company details:', error);
+          return;
+        }
+
+        setFormData({
+          name: companyData.name || "",
+          dba: companyData.business_email || "",
+          business_email: companyData.business_email || "",
+          business_phone: companyData.business_phone || "",
+          website_url: companyData.website_url || "",
+        });
+      };
+
+      fetchCompanyDetails();
+    }
+  }, [selectedCompany]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
