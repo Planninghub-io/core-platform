@@ -49,12 +49,12 @@ const BillingSettings = () => {
           <RadioGroup
             defaultValue={selectedPlan}
             onValueChange={setSelectedPlan}
-            className="space-y-4"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
           >
             {subscriptionPlans.map((plan) => (
               <Label
                 key={plan.id}
-                className={`flex flex-col p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                className={`flex flex-col justify-between p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 h-full ${
                   selectedPlan === plan.id
                     ? "border-purple-500 bg-white shadow-md"
                     : "border-transparent bg-white/50 hover:bg-white hover:shadow-sm"
