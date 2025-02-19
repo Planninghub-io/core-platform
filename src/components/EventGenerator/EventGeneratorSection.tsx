@@ -66,7 +66,7 @@ export const EventGeneratorSection = () => {
         <div className="flex justify-center gap-4">
           <Button
             onClick={() => navigate("/discover")}
-            className="animate-fade-up gap-2 bg-[#B9EBFF] hover:bg-[#33C3F0]/90"
+            className="animate-fade-up gap-2 bg-[#B9EBFF] hover:bg-[#B9EBFF]/90"
             size="lg"
           >
             Explore Events
