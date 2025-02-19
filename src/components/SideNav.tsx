@@ -4,11 +4,14 @@ import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import { useUserProfile } from "@/hooks/useUserProfile";
 import { NavMenu } from "@/components/navigation/NavMenu";
 import { CompanySwitcher } from "@/components/navigation/CompanySwitcher";
 import { UserProfile } from "@/components/navigation/UserProfile";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
 
 const SideNav = () => {
   const { userProfile, companies, selectedCompany, setSelectedCompany } = useUserProfile();
@@ -28,6 +31,18 @@ const SideNav = () => {
         <NavMenu />
       </SidebarContent>
       <SidebarFooter className="space-y-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 text-purple-700"
+          asChild
+        >
+          <Link to="/settings">
+            <Settings className="h-4 w-4" />
+            <span>Settings</span>
+          </Link>
+        </Button>
+        <SidebarSeparator />
         <CompanySwitcher
           companies={companies}
           selectedCompany={selectedCompany}
