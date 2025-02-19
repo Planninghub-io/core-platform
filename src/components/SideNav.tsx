@@ -34,7 +34,7 @@ const SideNav = () => {
         <Button
           variant="ghost"
           size="sm"
-          className="w-full justify-start gap-2 text-purple-700"
+          className="w-full justify-start gap-2 text-foreground/60 hover:text-foreground/80 hover:bg-accent"
           asChild
         >
           <Link to="/settings">
