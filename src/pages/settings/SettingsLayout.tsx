@@ -16,7 +16,7 @@ const SettingsLayout = () => {
     <div className="container py-8 max-w-5xl">
       <h1 className="text-3xl font-bold mb-6">Settings</h1>
       <div className="space-y-6">
-        <nav className="flex gap-4 p-1 bg-gradient-to-r from-purple-50 to-fuchsia-50 rounded-lg">
+        <nav className="flex gap-4 p-1 bg-gradient-to-r from-purple-50/80 to-fuchsia-50/80 rounded-lg">
           {tabs.map((tab) => (
             <Link
               key={tab.path}
@@ -24,8 +24,8 @@ const SettingsLayout = () => {
               className={cn(
                 "px-6 py-3 rounded-md text-sm font-medium transition-all duration-200",
                 location.pathname === tab.path
-                  ? "bg-purple-600 text-white shadow-md"
-                  : "text-purple-700 hover:bg-purple-100"
+                  ? "bg-[#8b73f4] text-white shadow-sm"
+                  : "text-[#6E59A5] hover:bg-[#8b73f4]/10"
               )}
             >
               {tab.title}
