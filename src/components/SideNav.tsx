@@ -92,9 +92,14 @@ const SideNav = () => {
 
           if (companyError) throw companyError;
 
+          // Update type predicate to match Company interface
           const userCompanies = companyMembers
             ?.map(member => member.company)
-            .filter((company): company is Company => company !== null);
+            .filter((company): company is Company => 
+              company !== null && 
+              typeof company.id === 'string' && 
+              typeof company.name === 'string'
+            );
 
           setCompanies(userCompanies);
           if (userCompanies.length > 0) {
