@@ -9,7 +9,7 @@ import { useUserProfile } from "@/hooks/useUserProfile";
 
 const UserProfileSettings = () => {
   const { toast } = useToast();
-  const { userProfile } = useUserProfile();
+  const { userProfile, refreshUserProfile } = useUserProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     first_name: "",
@@ -60,6 +60,8 @@ const UserProfileSettings = () => {
         description: "Profile updated successfully",
       });
       setIsEditing(false);
+      // Refresh the user profile data after successful update
+      await refreshUserProfile();
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
