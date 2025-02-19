@@ -34,7 +34,7 @@ export const EventGeneratorForm = ({
           disabled={isGenerating}
         >
           <Sparkles className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
-          {isGenerating ? 'Generating...' : 'Generate'}
+          {isGenerating ? 'Generating...' : 'Create Event'}
         </Button>
       </div>
       {promptCount === 1 && (

@@ -72,14 +72,6 @@ export const EventGeneratorSection = () => {
             Explore Events
             <ArrowRight className="h-4 w-4" />
           </Button>
-          <Button
-            onClick={() => navigate("/create-event")}
-            variant="outline"
-            className="animate-fade-up bg-[#8b73f4]/10 text-[#333333] hover:bg-[#8b73f4]/20 hover:text-[#333333] border border-[#8b73f4]/20"
-            size="lg"
-          >
-            Create Event
-          </Button>
         </div>
 
         <SignUpDialog
