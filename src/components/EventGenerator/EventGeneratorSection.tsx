@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EventGeneratorForm } from "./EventGeneratorForm";
 import { GeneratedEventCard } from "./GeneratedEventCard";
@@ -35,7 +35,7 @@ export const EventGeneratorSection = () => {
     <div className="container py-16">
       <div className="mx-auto max-w-3xl text-center">
         <h1 className="animate-fade-down mb-6 text-4xl font-bold text-gray-900 md:text-5xl lg:text-6xl">
-          Welcome to Your AI Event Planner
+          Welcome, what can I help you plan today
         </h1>
         <p className="animate-fade-up mb-12 text-lg text-gray-600">
           Create, discover, and experience amazing events. Start your journey with us today.
