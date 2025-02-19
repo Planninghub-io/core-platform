@@ -54,7 +54,7 @@ export function useUserProfile() {
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
-  }, [selectedCompany]);
+  }, []); // Remove selectedCompany from dependencies
 
   useEffect(() => {
     fetchUserProfile();
