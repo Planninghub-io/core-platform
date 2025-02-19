@@ -150,6 +150,7 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          avatar_url: string | null
           contact_number: string | null
           created_at: string
           dob: string | null
@@ -162,6 +163,7 @@ export type Database = {
           user_type: string | null
         }
         Insert: {
+          avatar_url?: string | null
           contact_number?: string | null
           created_at?: string
           dob?: string | null
@@ -174,6 +176,7 @@ export type Database = {
           user_type?: string | null
         }
         Update: {
+          avatar_url?: string | null
           contact_number?: string | null
           created_at?: string
           dob?: string | null
