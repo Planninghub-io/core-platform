@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -12,11 +13,11 @@ const CompanySettings = () => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: selectedCompany?.name || "",
+    name: "",
     dba: "",
     business_email: "",
     business_phone: "",
-    website_url: selectedCompany?.logo_url || "",
+    website_url: "",
   });
   const [logo, setLogo] = useState<File | null>(null);
 
@@ -36,7 +37,7 @@ const CompanySettings = () => {
 
         setFormData({
           name: companyData.name || "",
-          dba: companyData.business_email || "",
+          dba: companyData.dba || "",
           business_email: companyData.business_email || "",
           business_phone: companyData.business_phone || "",
           website_url: companyData.website_url || "",
@@ -91,6 +92,7 @@ const CompanySettings = () => {
         .from('companies')
         .update({
           name: formData.name,
+          dba: formData.dba,
           business_email: formData.business_email,
           business_phone: formData.business_phone,
           website_url: formData.website_url,

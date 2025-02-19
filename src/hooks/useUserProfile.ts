@@ -15,7 +15,7 @@ export function useUserProfile() {
         if (user) {
           const { data: profileData, error } = await supabase
             .from('user_profiles')
-            .select('first_name, last_name, avatar_url, email')
+            .select('first_name, last_name, avatar_url, email, contact_number, dob')
             .eq('id', user.id)
             .single();
 
@@ -28,7 +28,11 @@ export function useUserProfile() {
               company:companies (
                 id,
                 name,
-                logo_url
+                logo_url,
+                business_email,
+                business_phone,
+                website_url,
+                dba
               )
             `)
             .eq('user_id', user.id)

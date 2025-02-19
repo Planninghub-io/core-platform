@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
@@ -11,21 +12,22 @@ const UserProfileSettings = () => {
   const { userProfile } = useUserProfile();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    first_name: userProfile?.first_name || "",
-    last_name: userProfile?.last_name || "",
-    email: userProfile?.email || "",
+    first_name: "",
+    last_name: "",
+    email: "",
     contact_number: "",
     dob: ""
   });
 
   useEffect(() => {
     if (userProfile) {
-      setFormData(prev => ({
-        ...prev,
+      setFormData({
         first_name: userProfile.first_name || "",
         last_name: userProfile.last_name || "",
         email: userProfile.email || "",
-      }));
+        contact_number: userProfile.contact_number || "",
+        dob: userProfile.dob || ""
+      });
     }
   }, [userProfile]);
 
