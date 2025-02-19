@@ -31,8 +31,7 @@ export function useUserProfile() {
                 logo_url,
                 business_email,
                 business_phone,
-                website_url,
-                dba
+                website_url
               )
             `)
             .eq('user_id', user.id)

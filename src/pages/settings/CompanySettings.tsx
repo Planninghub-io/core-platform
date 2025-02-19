@@ -14,7 +14,6 @@ const CompanySettings = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    dba: "",
     business_email: "",
     business_phone: "",
     website_url: "",
@@ -37,7 +36,6 @@ const CompanySettings = () => {
 
         setFormData({
           name: companyData.name || "",
-          dba: companyData.dba || "",
           business_email: companyData.business_email || "",
           business_phone: companyData.business_phone || "",
           website_url: companyData.website_url || "",
@@ -92,7 +90,6 @@ const CompanySettings = () => {
         .from('companies')
         .update({
           name: formData.name,
-          dba: formData.dba,
           business_email: formData.business_email,
           business_phone: formData.business_phone,
           website_url: formData.website_url,
@@ -152,15 +149,6 @@ const CompanySettings = () => {
             id="name"
             name="name"
             value={formData.name}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="dba">Company DBA (Optional)</Label>
-          <Input
-            id="dba"
-            name="dba"
-            value={formData.dba}
             onChange={handleChange}
           />
         </div>
