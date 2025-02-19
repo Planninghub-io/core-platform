@@ -91,14 +91,17 @@ const EventsHub = () => {
     return events.filter(event => event.status === status);
   };
 
-  const renderEventSection = (title: string, status: string) => {
+  const renderEventSection = (title: string, status: string, showFilters: boolean = false) => {
     const filteredEvents = getEventsByStatus(status);
     
     if (filteredEvents.length === 0) return null;
 
     return (
       <div className="space-y-4">
-        <h2 className="text-2xl font-semibold">{title}</h2>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-2xl font-semibold">{title}</h2>
+          {showFilters && <EventFilters onDateRangeChange={setDateRange} />}
+        </div>
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {filteredEvents.map((event) => (
             <EventCard
@@ -125,15 +128,12 @@ const EventsHub = () => {
         <h1 className="text-3xl font-bold">Events Hub</h1>
         <Button onClick={() => navigate("/create-event")} variant="default" className="gap-2">
           <Plus className="h-4 w-4" />
-          Create Event
+          New Event
         </Button>
       </div>
 
-      <div className="mb-8 space-y-6">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <SearchBar onSearch={handleSearch} />
-          <EventFilters onDateRangeChange={setDateRange} />
-        </div>
+      <div className="mb-8">
+        <SearchBar onSearch={handleSearch} />
       </div>
 
       <div className="space-y-12">
@@ -143,7 +143,7 @@ const EventsHub = () => {
           <>
             {renderEventSection("In Progress", "in_progress")}
             {renderEventSection("Upcoming", "upcoming")}
-            {renderEventSection("Completed", "completed")}
+            {renderEventSection("Completed", "completed", true)}
           </>
         ) : (
           <div className="text-center text-gray-500">No events found</div>
