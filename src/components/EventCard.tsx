@@ -37,7 +37,7 @@ const EventCard = ({
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent triggering the card click
-    navigate(`/event/${id}/edit`);
+    navigate(`/event/${id}?edit=true`);
   };
 
   return (
