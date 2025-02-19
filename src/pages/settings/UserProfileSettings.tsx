@@ -82,64 +82,64 @@ const UserProfileSettings = () => {
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="first_name" className="text-purple-900">First Name</Label>
+                <Label htmlFor="first_name" className="text-[#333333] font-medium">First Name</Label>
                 <Input
                   id="first_name"
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleChange}
-                  className="border-purple-100 focus-visible:ring-purple-200"
+                  className="border-purple-100 focus-visible:ring-[#8b73f4]/20"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="last_name" className="text-purple-900">Last Name</Label>
+                <Label htmlFor="last_name" className="text-[#333333] font-medium">Last Name</Label>
                 <Input
                   id="last_name"
                   name="last_name"
                   value={formData.last_name}
                   onChange={handleChange}
-                  className="border-purple-100 focus-visible:ring-purple-200"
+                  className="border-purple-100 focus-visible:ring-[#8b73f4]/20"
                 />
               </div>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-purple-900">Email</Label>
+              <Label htmlFor="email" className="text-[#333333] font-medium">Email</Label>
               <Input
                 id="email"
                 name="email"
                 type="email"
                 value={formData.email}
                 disabled
-                className="border-purple-100 bg-purple-50/50"
+                className="border-purple-100 bg-purple-50/50 text-gray-500"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="contact_number" className="text-purple-900">Phone Number</Label>
+              <Label htmlFor="contact_number" className="text-[#333333] font-medium">Phone Number</Label>
               <Input
                 id="contact_number"
                 name="contact_number"
                 type="tel"
                 value={formData.contact_number}
                 onChange={handleChange}
-                className="border-purple-100 focus-visible:ring-purple-200"
+                className="border-purple-100 focus-visible:ring-[#8b73f4]/20"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="dob" className="text-purple-900">Date of Birth</Label>
+              <Label htmlFor="dob" className="text-[#333333] font-medium">Date of Birth</Label>
               <Input
                 id="dob"
                 name="dob"
                 type="date"
                 value={formData.dob}
                 onChange={handleChange}
-                className="border-purple-100 focus-visible:ring-purple-200"
+                className="border-purple-100 focus-visible:ring-[#8b73f4]/20"
               />
             </div>
           </div>
           <Button 
             type="submit" 
             disabled={!isEditing}
-            className="bg-purple-600 hover:bg-purple-700 text-white"
+            className="bg-[#8b73f4] hover:bg-[#8b73f4]/90 text-white"
           >
             Update Profile
           </Button>

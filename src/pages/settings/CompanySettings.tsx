@@ -115,78 +115,91 @@ const CompanySettings = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-4">
-        <div className="space-y-2">
-          <Label>Company Logo</Label>
-          <div className="flex items-center gap-4">
-            {selectedCompany?.logo_url && (
-              <img
-                src={selectedCompany.logo_url}
-                alt="Company logo"
-                className="h-16 w-16 object-contain"
+    <div className="space-y-6">
+      <div className="p-6 rounded-lg bg-gradient-to-r from-violet-50/80 to-fuchsia-50/80 border border-purple-100">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-[#333333] font-medium">Company Logo</Label>
+              <div className="flex items-center gap-4">
+                {selectedCompany?.logo_url && (
+                  <img
+                    src={selectedCompany.logo_url}
+                    alt="Company logo"
+                    className="h-16 w-16 object-contain rounded-lg border border-purple-100"
+                  />
+                )}
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-purple-100 hover:bg-[#8b73f4]/10 text-[#333333]"
+                >
+                  Upload New Logo
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleLogoChange}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-[#333333] font-medium">Company Legal Name</Label>
+              <Input
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                className="border-purple-100 focus-visible:ring-[#8b73f4]/20"
               />
-            )}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              Upload New Logo
-            </Button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleLogoChange}
-            />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="business_email" className="text-[#333333] font-medium">Company Email</Label>
+              <Input
+                id="business_email"
+                name="business_email"
+                type="email"
+                value={formData.business_email}
+                onChange={handleChange}
+                className="border-purple-100 focus-visible:ring-[#8b73f4]/20"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="business_phone" className="text-[#333333] font-medium">Company Phone</Label>
+              <Input
+                id="business_phone"
+                name="business_phone"
+                type="tel"
+                value={formData.business_phone}
+                onChange={handleChange}
+                className="border-purple-100 focus-visible:ring-[#8b73f4]/20"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="website_url" className="text-[#333333] font-medium">Website URL</Label>
+              <Input
+                id="website_url"
+                name="website_url"
+                type="url"
+                value={formData.website_url}
+                onChange={handleChange}
+                className="border-purple-100 focus-visible:ring-[#8b73f4]/20"
+              />
+            </div>
           </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="name">Company Legal Name</Label>
-          <Input
-            id="name"
-            name="name"
-            value={formData.name}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="business_email">Company Email</Label>
-          <Input
-            id="business_email"
-            name="business_email"
-            type="email"
-            value={formData.business_email}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="business_phone">Company Phone</Label>
-          <Input
-            id="business_phone"
-            name="business_phone"
-            type="tel"
-            value={formData.business_phone}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="website_url">Website URL</Label>
-          <Input
-            id="website_url"
-            name="website_url"
-            type="url"
-            value={formData.website_url}
-            onChange={handleChange}
-          />
-        </div>
+          <Button 
+            type="submit" 
+            disabled={!isEditing}
+            className="bg-[#8b73f4] hover:bg-[#8b73f4]/90 text-white"
+          >
+            Update Company Settings
+          </Button>
+        </form>
       </div>
-      <Button type="submit" disabled={!isEditing}>
-        Update Company Settings
-      </Button>
-    </form>
+    </div>
   );
 };
 

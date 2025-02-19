@@ -43,7 +43,7 @@ const BillingSettings = () => {
     <div className="space-y-6">
       <Card className="bg-gradient-to-r from-violet-50/80 to-fuchsia-50/80 border-purple-100">
         <CardHeader>
-          <CardTitle className="text-purple-900">Current Subscription</CardTitle>
+          <CardTitle className="text-[#333333]">Current Subscription</CardTitle>
         </CardHeader>
         <CardContent>
           <RadioGroup
@@ -56,7 +56,7 @@ const BillingSettings = () => {
                 key={plan.id}
                 className={`flex flex-col justify-between p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 h-full ${
                   selectedPlan === plan.id
-                    ? "border-purple-500 bg-white shadow-md"
+                    ? "border-[#8b73f4] bg-white shadow-md"
                     : "border-transparent bg-white/50 hover:bg-white hover:shadow-sm"
                 }`}
               >
@@ -64,21 +64,21 @@ const BillingSettings = () => {
                   <RadioGroupItem value={plan.id} id={plan.id} />
                   <div className="flex-1">
                     <div className="flex justify-between items-center">
-                      <span className="font-semibold text-purple-900">
+                      <span className="font-semibold text-[#333333]">
                         {plan.name}
                       </span>
-                      <span className="font-bold text-purple-700">{plan.price}</span>
+                      <span className="font-bold text-[#8b73f4]">{plan.price}</span>
                     </div>
-                    <p className="text-sm text-purple-600 mt-1">
+                    <p className="text-sm text-gray-600 mt-1">
                       {plan.description}
                     </p>
                     <ul className="mt-3 space-y-2">
                       {plan.features.map((feature, index) => (
                         <li
                           key={index}
-                          className="text-sm text-purple-700 flex items-center gap-2"
+                          className="text-sm text-gray-600 flex items-center gap-2"
                         >
-                          <span className="h-1 w-1 rounded-full bg-purple-400" />
+                          <span className="h-1 w-1 rounded-full bg-[#8b73f4]" />
                           {feature}
                         </li>
                       ))}
@@ -90,7 +90,7 @@ const BillingSettings = () => {
           </RadioGroup>
           <div className="mt-6">
             <Button 
-              className="w-full md:w-auto bg-purple-600 hover:bg-purple-700 text-white"
+              className="w-full md:w-auto bg-[#8b73f4] hover:bg-[#8b73f4]/90 text-white"
             >
               Update Subscription
             </Button>
