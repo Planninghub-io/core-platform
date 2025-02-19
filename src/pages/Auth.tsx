@@ -89,8 +89,8 @@ const Auth = () => {
       }
 
       if (isBusiness && authData.user) {
-        // Create company and link user as owner
-        const { error: companyError } = await supabase
+        // Create company
+        const { data: companyData, error: companyError } = await supabase
           .from('companies')
           .insert([{
             name: companyName,
@@ -102,6 +102,20 @@ const Auth = () => {
           .single();
 
         if (companyError) throw companyError;
+
+        if (companyData) {
+          // Create company membership for the owner
+          const { error: membershipError } = await supabase
+            .from('company_members')
+            .insert([{
+              user_id: authData.user.id,
+              company_id: companyData.id,
+              role: 'owner',
+              status: 'active'
+            }]);
+
+          if (membershipError) throw membershipError;
+        }
 
         // Update user profile type
         const { error: profileError } = await supabase
