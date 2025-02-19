@@ -1,5 +1,5 @@
 
-import { Home, Calendar, Compass, Store, UserRound } from "lucide-react";
+import { Home, Calendar, Compass, Settings, Store, UserRound, Building2, ChevronDown } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   Sidebar,
@@ -12,6 +12,12 @@ import {
   SidebarFooter,
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -20,6 +26,12 @@ interface UserProfile {
   last_name?: string;
   avatar_url?: string;
   email?: string;
+}
+
+interface Company {
+  id: string;
+  name: string;
+  logo_url?: string;
 }
 
 const menuItems = [
@@ -48,6 +60,8 @@ const menuItems = [
 const SideNav = () => {
   const location = useLocation();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -62,6 +76,30 @@ const SideNav = () => {
 
           if (error) throw error;
           setUserProfile(profileData);
+
+          // Fetch user's companies
+          const { data: companyMembers, error: companyError } = await supabase
+            .from('company_members')
+            .select(`
+              company:companies (
+                id,
+                name,
+                logo_url
+              )
+            `)
+            .eq('user_id', user.id)
+            .eq('status', 'active');
+
+          if (companyError) throw companyError;
+
+          const userCompanies = companyMembers
+            ?.map(member => member.company)
+            .filter((company): company is Company => company !== null);
+
+          setCompanies(userCompanies);
+          if (userCompanies.length > 0) {
+            setSelectedCompany(userCompanies[0]);
+          }
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
@@ -116,24 +154,73 @@ const SideNav = () => {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        {userProfile && (
-          <div className="p-4 border-t flex items-center gap-3">
-            <Avatar>
-              <AvatarImage src={userProfile.avatar_url} />
-              <AvatarFallback className="bg-primary/10">
-                {getInitials(userProfile)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col">
-              <span className="text-sm font-medium">
-                {getDisplayName(userProfile)}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {userProfile.email}
-              </span>
-            </div>
+      <SidebarFooter className="space-y-2">
+        {companies.length > 0 && (
+          <div className="px-4">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-between"
+                >
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4" />
+                    <span className="truncate">{selectedCompany?.name}</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 p-0">
+                <div className="space-y-1 p-1">
+                  {companies.map((company) => (
+                    <Button
+                      key={company.id}
+                      variant="ghost"
+                      className="w-full justify-start gap-2"
+                      onClick={() => setSelectedCompany(company)}
+                    >
+                      <Building2 className="h-4 w-4" />
+                      <span className="truncate">{company.name}</span>
+                    </Button>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
+        )}
+        {userProfile && (
+          <>
+            <div className="px-4">
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-2"
+                asChild
+              >
+                <Link to="/settings">
+                  <Settings className="h-4 w-4" />
+                  <span>Settings</span>
+                </Link>
+              </Button>
+            </div>
+            <div className="p-4 border-t">
+              <Link to="/settings/profile" className="flex items-center gap-3 hover:bg-accent/10 p-2 rounded-md transition-colors">
+                <Avatar>
+                  <AvatarImage src={userProfile.avatar_url} />
+                  <AvatarFallback className="bg-primary/10">
+                    {getInitials(userProfile)}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-medium truncate">
+                    {getDisplayName(userProfile)}
+                  </span>
+                  <span className="text-xs text-muted-foreground truncate">
+                    {userProfile.email}
+                  </span>
+                </div>
+              </Link>
+            </div>
+          </>
         )}
       </SidebarFooter>
     </Sidebar>
