@@ -34,6 +34,14 @@ interface Company {
   logo_url?: string;
 }
 
+type CompanyResponse = {
+  company: {
+    id: string;
+    name: string;
+    logo_url?: string | null;
+  } | null;
+}
+
 const menuItems = [
   {
     title: "Home",
@@ -92,9 +100,8 @@ const SideNav = () => {
 
           if (companyError) throw companyError;
 
-          // Update type predicate to match Company interface
-          const userCompanies = companyMembers
-            ?.map(member => member.company)
+          const userCompanies = (companyMembers as CompanyResponse[] ?? [])
+            .map(member => member.company)
             .filter((company): company is Company => 
               company !== null && 
               typeof company.id === 'string' && 
