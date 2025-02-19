@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, MapPin, User, Users, Pencil, LayoutDashboard, Robot } from "lucide-react";
+import { ArrowLeft, Calendar, MapPin, User, Users, Pencil, LayoutDashboard, Bot } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 const EventDetails = () => {
@@ -82,7 +82,7 @@ const EventDetails = () => {
             variant="outline"
             onClick={() => navigate(`/event/${id}/ai-planner`)}
           >
-            <Robot className="mr-2 h-4 w-4" />
+            <Bot className="mr-2 h-4 w-4" />
             AI Planner
           </Button>
         </div>
