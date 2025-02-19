@@ -28,6 +28,7 @@ const UserProfileSettings = () => {
         contact_number: userProfile.contact_number || "",
         dob: userProfile.dob || ""
       });
+      setIsEditing(false); // Reset editing state when profile data is loaded
     }
   }, [userProfile]);
 
@@ -43,6 +44,9 @@ const UserProfileSettings = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No user found');
+
       const { error } = await supabase
         .from('user_profiles')
         .update({
@@ -51,7 +55,7 @@ const UserProfileSettings = () => {
           contact_number: formData.contact_number,
           dob: formData.dob || null
         })
-        .eq('id', (await supabase.auth.getUser()).data.user?.id);
+        .eq('id', user.id);
 
       if (error) throw error;
 
@@ -60,7 +64,6 @@ const UserProfileSettings = () => {
         description: "Profile updated successfully",
       });
       setIsEditing(false);
-      // Refresh the user profile data after successful update
       await refreshUserProfile();
     } catch (error) {
       console.error('Error updating profile:', error);
