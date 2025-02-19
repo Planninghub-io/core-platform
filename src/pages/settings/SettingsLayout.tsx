@@ -1,14 +1,21 @@
 
-import { Link, Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation, Navigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useUserProfile } from "@/hooks/useUserProfile";
 
 const SettingsLayout = () => {
   const location = useLocation();
+  const { isBusinessUser } = useUserProfile();
+
+  // Redirect non-business users trying to access company settings
+  if (location.pathname === "/settings/company" && !isBusinessUser) {
+    return <Navigate to="/settings/profile" replace />;
+  }
 
   const tabs = [
     { title: "Settings", path: "/settings" },
     { title: "User Profile", path: "/settings/profile" },
-    { title: "Company Settings", path: "/settings/company" },
+    ...(isBusinessUser ? [{ title: "Company Settings", path: "/settings/company" }] : []),
     { title: "Billing", path: "/settings/billing" }
   ];
 

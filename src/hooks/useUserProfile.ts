@@ -7,6 +7,7 @@ export function useUserProfile() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
+  const [isBusinessUser, setIsBusinessUser] = useState(false);
 
   const fetchUserProfile = useCallback(async () => {
     try {
@@ -47,6 +48,8 @@ export function useUserProfile() {
           );
 
         setCompanies(userCompanies);
+        setIsBusinessUser(userCompanies.length > 0);
+        
         if (userCompanies.length > 0 && !selectedCompany) {
           setSelectedCompany(userCompanies[0]);
         }
@@ -54,11 +57,18 @@ export function useUserProfile() {
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
-  }, []); // Remove selectedCompany from dependencies
+  }, []);
 
   useEffect(() => {
     fetchUserProfile();
   }, [fetchUserProfile]);
 
-  return { userProfile, companies, selectedCompany, setSelectedCompany, refreshUserProfile: fetchUserProfile };
+  return { 
+    userProfile, 
+    companies, 
+    selectedCompany, 
+    setSelectedCompany, 
+    refreshUserProfile: fetchUserProfile,
+    isBusinessUser 
+  };
 }

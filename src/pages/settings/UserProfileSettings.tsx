@@ -75,6 +75,14 @@ const UserProfileSettings = () => {
     }
   };
 
+  if (!userProfile) {
+    return (
+      <div className="p-6 rounded-lg bg-gradient-to-r from-violet-50/80 to-fuchsia-50/80 border border-purple-100">
+        Loading profile...
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="p-6 rounded-lg bg-gradient-to-r from-violet-50/80 to-fuchsia-50/80 border border-purple-100">
@@ -88,6 +96,7 @@ const UserProfileSettings = () => {
                   name="first_name"
                   value={formData.first_name}
                   onChange={handleChange}
+                  placeholder="Enter your first name"
                   className="border-purple-100 focus-visible:ring-[#8b73f4]/20"
                 />
               </div>
@@ -98,6 +107,7 @@ const UserProfileSettings = () => {
                   name="last_name"
                   value={formData.last_name}
                   onChange={handleChange}
+                  placeholder="Enter your last name"
                   className="border-purple-100 focus-visible:ring-[#8b73f4]/20"
                 />
               </div>
@@ -121,6 +131,7 @@ const UserProfileSettings = () => {
                 type="tel"
                 value={formData.contact_number}
                 onChange={handleChange}
+                placeholder="Enter your phone number"
                 className="border-purple-100 focus-visible:ring-[#8b73f4]/20"
               />
             </div>
