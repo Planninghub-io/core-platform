@@ -15,6 +15,9 @@ import SideNav from "./components/SideNav";
 import Discover from "./pages/Discover";
 import EventsHub from "./pages/EventsHub";
 import EventDetails from "./pages/EventDetails";
+import SettingsLayout from "./pages/settings/SettingsLayout";
+import UserProfileSettings from "./pages/settings/UserProfileSettings";
+import CompanySettings from "./pages/settings/CompanySettings";
 
 const queryClient = new QueryClient();
 
@@ -41,7 +44,6 @@ const App = () => {
     checkAuth();
   }, []);
 
-  // Show loading state while checking authentication
   if (isAuthenticated === null) {
     return <div>Loading...</div>;
   }
@@ -72,6 +74,14 @@ const App = () => {
                     path="/event/:id" 
                     element={isAuthenticated ? <EventDetails /> : <Navigate to="/auth" replace />} 
                   />
+                  <Route 
+                    path="/settings" 
+                    element={isAuthenticated ? <SettingsLayout /> : <Navigate to="/auth" replace />}
+                  >
+                    <Route index element={<Navigate to="profile" replace />} />
+                    <Route path="profile" element={<UserProfileSettings />} />
+                    <Route path="company" element={<CompanySettings />} />
+                  </Route>
                   <Route 
                     path="/auth" 
                     element={!isAuthenticated ? <Auth /> : <Navigate to="/" replace />} 

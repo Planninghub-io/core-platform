@@ -15,28 +15,30 @@ export const UserProfile = ({ userProfile }: UserProfileProps) => {
 
   return (
     <div className="p-4 border-t">
-      <div className="flex items-center gap-3 p-2 rounded-md">
-        <Avatar>
-          <AvatarImage src={userProfile.avatar_url} />
-          <AvatarFallback className="bg-primary/10">
-            {getInitials(userProfile)}
-          </AvatarFallback>
-        </Avatar>
-        <div className="flex flex-col min-w-0">
-          <span className="text-sm font-medium truncate">
-            {getDisplayName(userProfile)}
-          </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="w-full justify-start gap-2 mt-1 h-8"
-            asChild
-          >
-            <Link to="/settings">
-              <Settings className="h-4 w-4" />
-              <span>Settings</span>
-            </Link>
-          </Button>
+      <div className="space-y-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2"
+          asChild
+        >
+          <Link to="/settings/profile">
+            <Settings className="h-4 w-4" />
+            <span>Settings</span>
+          </Link>
+        </Button>
+        <div className="flex items-center gap-3 p-2 rounded-md">
+          <Avatar>
+            <AvatarImage src={userProfile.avatar_url} />
+            <AvatarFallback className="bg-primary/10">
+              {getInitials(userProfile)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col min-w-0">
+            <span className="text-sm font-medium truncate">
+              {getDisplayName(userProfile)}
+            </span>
+          </div>
         </div>
       </div>
     </div>
