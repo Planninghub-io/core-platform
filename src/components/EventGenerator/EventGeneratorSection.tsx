@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EventGeneratorForm } from "./EventGeneratorForm";
 import { GeneratedEventCard } from "./GeneratedEventCard";
@@ -66,7 +66,7 @@ export const EventGeneratorSection = () => {
         <div className="flex justify-center gap-4">
           <Button
             onClick={() => navigate("/discover")}
-            className="animate-fade-up gap-2 bg-[#9b87f5] hover:bg-[#8a73f4]"
+            className="animate-fade-up gap-2 bg-[#9b87f5] hover:bg-[#8b73f4]"
             size="lg"
           >
             Explore Events
