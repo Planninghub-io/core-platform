@@ -1,5 +1,5 @@
 
-import { Calendar, MapPin, User, Users } from "lucide-react";
+import { Calendar, MapPin, User, Users, Pencil } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
@@ -35,11 +35,24 @@ const EventCard = ({
     return format(date, "MMM d, yyyy h:mm a");
   };
 
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the card click
+    navigate(`/event/${id}/edit`);
+  };
+
   return (
     <div 
       className="group relative overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 hover:shadow-xl cursor-pointer"
       onClick={() => navigate(`/event/${id}`)}
     >
+      <div className="absolute top-4 right-4 z-10">
+        <button
+          onClick={handleEdit}
+          className="p-2 bg-white/80 backdrop-blur rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white"
+        >
+          <Pencil className="h-4 w-4 text-gray-600" />
+        </button>
+      </div>
       <div className="aspect-[16/9] overflow-hidden">
         <img
           src={imageUrl}
@@ -85,11 +98,6 @@ const EventCard = ({
               <span>{expectedAttendees} expected</span>
             </div>
           )}
-        </div>
-        <div className="mt-4 flex items-center justify-end">
-          <button className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-primary/90">
-            View
-          </button>
         </div>
       </div>
     </div>
