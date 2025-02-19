@@ -6,6 +6,7 @@ const SettingsLayout = () => {
   const location = useLocation();
 
   const tabs = [
+    { title: "Settings", path: "/settings" },
     { title: "User Profile", path: "/settings/profile" },
     { title: "Company Settings", path: "/settings/company" },
     { title: "Billing", path: "/settings/billing" }
