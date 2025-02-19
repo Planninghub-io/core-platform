@@ -57,6 +57,16 @@ export default {
       fontFamily: {
         sans: ["var(--font-sans)", ...fontFamily.sans],
       },
+      fontSize: {
+        // Ensuring minimum font sizes for accessibility
+        xs: ['0.875rem', { lineHeight: '1.25rem' }],  // 14px
+        sm: ['1rem', { lineHeight: '1.5rem' }],       // 16px
+        base: ['1rem', { lineHeight: '1.5rem' }],     // 16px
+        lg: ['1.125rem', { lineHeight: '1.75rem' }],  // 18px
+        xl: ['1.25rem', { lineHeight: '1.75rem' }],   // 20px
+        '2xl': ['1.5rem', { lineHeight: '2rem' }],    // 24px
+        '3xl': ['1.875rem', { lineHeight: '2.25rem' }], // 30px
+      },
       keyframes: {
         "accordion-down": {
           from: { height: "0" },

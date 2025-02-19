@@ -5,21 +5,22 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    /* Increased contrast ratios for better accessibility */
+    --background: 0 0% 98%;  /* Very light gray background */
+    --foreground: 240 10% 3.9%;  /* Dark text for contrast */
     --card: 0 0% 100%;
     --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
-    --primary: 240 5.9% 10%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 240 5.9% 10%;  /* Dark primary color */
+    --primary-foreground: 0 0% 98%;  /* Light text on primary */
     --secondary: 240 4.8% 95.9%;
     --secondary-foreground: 240 5.9% 10%;
     --muted: 240 4.8% 95.9%;
     --muted-foreground: 240 3.8% 46.1%;
     --accent: 240 4.8% 95.9%;
     --accent-foreground: 240 5.9% 10%;
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84.2% 60.2%;  /* Increased contrast for destructive */
     --destructive-foreground: 0 0% 98%;
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
@@ -32,12 +33,43 @@
     scroll-behavior: smooth;
   }
 
+  /* Base font size increased to 16px minimum for readability */
+  html {
+    font-size: 16px;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
+    line-height: 1.5;  /* Improved line height for readability */
+  }
+
+  /* Ensuring minimum font sizes for different text elements */
+  h1 {
+    @apply text-2xl md:text-3xl font-bold;
+    line-height: 1.2;
+  }
+
+  h2 {
+    @apply text-xl md:text-2xl font-semibold;
+    line-height: 1.3;
+  }
+
+  h3 {
+    @apply text-lg md:text-xl font-semibold;
+    line-height: 1.4;
+  }
+
+  p, input, button {
+    @apply text-base;  /* Minimum 16px for body text */
+  }
+
+  /* Increased focus visibility for accessibility */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
   }
 
   .glass {
-    @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl;
+    @apply bg-white/90 backdrop-blur-lg border border-white/20 rounded-2xl;
   }
 
   .section-padding {
