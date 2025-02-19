@@ -27,7 +27,7 @@ export const CompanySwitcher = ({
         <PopoverTrigger asChild>
           <Button
             variant="outline"
-            className="w-full justify-between"
+            className="w-full justify-between bg-gradient-to-r from-violet-50 to-fuchsia-50 border-purple-100 hover:border-purple-200 hover:from-violet-100 hover:to-fuchsia-100 text-purple-700"
           >
             <div className="flex items-center gap-2">
               <Building2 className="h-4 w-4" />
@@ -36,13 +36,13 @@ export const CompanySwitcher = ({
             <ChevronDown className="h-4 w-4 opacity-50" />
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-56 p-0">
-          <div className="space-y-1 p-1">
+        <PopoverContent className="w-56 p-1 bg-gradient-to-r from-violet-50 to-fuchsia-50 border-purple-100">
+          <div className="space-y-1">
             {companies.map((company) => (
               <Button
                 key={company.id}
                 variant="ghost"
-                className="w-full justify-start gap-2"
+                className="w-full justify-start gap-2 hover:bg-white/50 text-purple-700"
                 onClick={() => onCompanySelect(company)}
               >
                 <Building2 className="h-4 w-4" />
