@@ -30,7 +30,7 @@ export const EventGeneratorForm = ({
         <Button
           onClick={onSubmit}
           size="sm"
-          className="absolute bottom-4 right-4 gap-2 bg-[#9b87f5] hover:bg-[#8b73f4]"
+          className="absolute bottom-4 right-4 gap-2 bg-[#8b73f4] hover:bg-[#8b73f4]/90"
           disabled={isGenerating}
         >
           <Sparkles className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
