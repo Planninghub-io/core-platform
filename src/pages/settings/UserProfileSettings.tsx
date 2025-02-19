@@ -28,7 +28,7 @@ const UserProfileSettings = () => {
         contact_number: userProfile.contact_number || "",
         dob: userProfile.dob || ""
       });
-      setIsEditing(false); // Reset editing state when profile data is loaded
+      setIsEditing(false);
     }
   }, [userProfile]);
 
@@ -76,63 +76,76 @@ const UserProfileSettings = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="first_name">First Name</Label>
-            <Input
-              id="first_name"
-              name="first_name"
-              value={formData.first_name}
-              onChange={handleChange}
-            />
+    <div className="space-y-6">
+      <div className="p-6 rounded-lg bg-gradient-to-r from-violet-50/80 to-fuchsia-50/80 border border-purple-100">
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="first_name" className="text-purple-900">First Name</Label>
+                <Input
+                  id="first_name"
+                  name="first_name"
+                  value={formData.first_name}
+                  onChange={handleChange}
+                  className="border-purple-100 focus-visible:ring-purple-200"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="last_name" className="text-purple-900">Last Name</Label>
+                <Input
+                  id="last_name"
+                  name="last_name"
+                  value={formData.last_name}
+                  onChange={handleChange}
+                  className="border-purple-100 focus-visible:ring-purple-200"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email" className="text-purple-900">Email</Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                value={formData.email}
+                disabled
+                className="border-purple-100 bg-purple-50/50"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="contact_number" className="text-purple-900">Phone Number</Label>
+              <Input
+                id="contact_number"
+                name="contact_number"
+                type="tel"
+                value={formData.contact_number}
+                onChange={handleChange}
+                className="border-purple-100 focus-visible:ring-purple-200"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="dob" className="text-purple-900">Date of Birth</Label>
+              <Input
+                id="dob"
+                name="dob"
+                type="date"
+                value={formData.dob}
+                onChange={handleChange}
+                className="border-purple-100 focus-visible:ring-purple-200"
+              />
+            </div>
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="last_name">Last Name</Label>
-            <Input
-              id="last_name"
-              name="last_name"
-              value={formData.last_name}
-              onChange={handleChange}
-            />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            disabled
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="contact_number">Phone Number</Label>
-          <Input
-            id="contact_number"
-            name="contact_number"
-            type="tel"
-            value={formData.contact_number}
-            onChange={handleChange}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="dob">Date of Birth</Label>
-          <Input
-            id="dob"
-            name="dob"
-            type="date"
-            value={formData.dob}
-            onChange={handleChange}
-          />
-        </div>
+          <Button 
+            type="submit" 
+            disabled={!isEditing}
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            Update Profile
+          </Button>
+        </form>
       </div>
-      <Button type="submit" disabled={!isEditing}>
-        Update Profile
-      </Button>
-    </form>
+    </div>
   );
 };
 

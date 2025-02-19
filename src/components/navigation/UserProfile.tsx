@@ -15,19 +15,8 @@ export const UserProfile = ({ userProfile }: UserProfileProps) => {
 
   return (
     <div className="p-4 border-t">
-      <div className="space-y-2">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full justify-start gap-2"
-          asChild
-        >
-          <Link to="/settings/profile">
-            <Settings className="h-4 w-4" />
-            <span>Settings</span>
-          </Link>
-        </Button>
-        <div className="flex items-center gap-3 p-2 rounded-md">
+      <div className="space-y-4">
+        <div className="flex items-center gap-3 p-2 rounded-md bg-gradient-to-r from-violet-50 to-fuchsia-50">
           <Avatar>
             <AvatarImage src={userProfile.avatar_url} />
             <AvatarFallback className="bg-primary/10">
@@ -35,11 +24,22 @@ export const UserProfile = ({ userProfile }: UserProfileProps) => {
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col min-w-0">
-            <span className="text-sm font-medium truncate">
+            <span className="text-sm font-medium truncate text-purple-900">
               {getDisplayName(userProfile)}
             </span>
           </div>
         </div>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="w-full justify-start gap-2 hover:bg-purple-50 hover:text-purple-700"
+          asChild
+        >
+          <Link to="/settings/profile">
+            <Settings className="h-4 w-4" />
+            <span>Settings</span>
+          </Link>
+        </Button>
       </div>
     </div>
   );
