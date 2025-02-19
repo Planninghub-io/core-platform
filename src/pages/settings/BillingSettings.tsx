@@ -49,7 +49,7 @@ const BillingSettings = () => {
           <RadioGroup
             defaultValue={selectedPlan}
             onValueChange={setSelectedPlan}
-            className="grid grid-cols-1 md:grid-cols-2 gap-4"
+            className="space-y-4"
           >
             {subscriptionPlans.map((plan) => (
               <Label
