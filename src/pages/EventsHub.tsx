@@ -36,8 +36,10 @@ const EventsHub = () => {
   }, []);
 
   useEffect(() => {
-    fetchEvents();
-  }, [searchQuery, dateRange]);
+    if (user) {
+      fetchEvents();
+    }
+  }, [searchQuery, dateRange, user]);
 
   const fetchEvents = async () => {
     try {
@@ -68,7 +70,10 @@ const EventsHub = () => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw new Error("Failed to fetch events. Please try again.");
+      }
 
       setEvents(data || []);
     } catch (error) {
@@ -78,10 +83,18 @@ const EventsHub = () => {
         description: "Failed to fetch events. Please try again.",
         variant: "destructive",
       });
+      setEvents([]);
     } finally {
       setLoading(false);
     }
   };
+
+  // If no user is logged in, redirect to auth page
+  useEffect(() => {
+    if (!user && !loading) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -121,6 +134,10 @@ const EventsHub = () => {
       </div>
     );
   };
+
+  if (!user) {
+    return null; // Will redirect due to useEffect
+  }
 
   return (
     <div className="container py-8">

@@ -38,8 +38,10 @@ const Discover = () => {
   }, []);
 
   useEffect(() => {
-    fetchEvents();
-  }, [searchQuery, dateRange]);
+    if (user) {
+      fetchEvents();
+    }
+  }, [searchQuery, dateRange, user]);
 
   const fetchEvents = async () => {
     try {
@@ -69,13 +71,17 @@ const Discover = () => {
 
       const { data, error } = await query;
 
-      if (error) throw error;
+      if (error) {
+        console.error('Database error:', error);
+        throw new Error("Failed to fetch events. Please try again.");
+      }
 
       // Set the first event as featured if available
       if (data && data.length > 0) {
         setFeaturedEvent(data[0]);
         setEvents(data.slice(1));
       } else {
+        setFeaturedEvent(null);
         setEvents([]);
       }
     } catch (error) {
@@ -85,14 +91,27 @@ const Discover = () => {
         description: "Failed to fetch events. Please try again.",
         variant: "destructive",
       });
+      setFeaturedEvent(null);
+      setEvents([]);
     } finally {
       setLoading(false);
     }
   };
 
+  // If no user is logged in, redirect to auth page
+  useEffect(() => {
+    if (!user && !loading) {
+      navigate('/auth');
+    }
+  }, [user, loading, navigate]);
+
   const handleSearch = (query: string) => {
     setSearchQuery(query);
   };
+
+  if (!user) {
+    return null; // Will redirect due to useEffect
+  }
 
   return (
     <div className="container py-8">
