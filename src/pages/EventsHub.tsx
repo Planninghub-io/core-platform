@@ -43,6 +43,9 @@ const EventsHub = () => {
 
   const fetchEvents = async () => {
     try {
+      // Update event statuses before fetching
+      await supabase.rpc('update_event_status');
+      
       let query = supabase
         .from('events')
         .select(`
@@ -168,3 +171,4 @@ const EventsHub = () => {
 };
 
 export default EventsHub;
+
