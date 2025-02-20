@@ -10,11 +10,26 @@ import { Plus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import type { User } from "@supabase/supabase-js";
 
+interface EventWithProfile {
+  id: string;
+  title: string;
+  date: string;
+  end_date: string;
+  location: string | null;
+  image_url: string | null;
+  category: string | null;
+  expected_attendees: number | null;
+  status: string | null;
+  user_profiles: {
+    email: string | null;
+  } | null;
+}
+
 const EventsHub = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
-  const [events, setEvents] = useState<any[]>([]);
+  const [events, setEvents] = useState<EventWithProfile[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState<{ from?: Date; to?: Date }>({});
   const [loading, setLoading] = useState(true);
@@ -50,7 +65,7 @@ const EventsHub = () => {
         .from('events')
         .select(`
           *,
-          profiles:user_id (
+          user_profiles (
             email
           )
         `)
@@ -126,7 +141,7 @@ const EventsHub = () => {
               location={event.location}
               imageUrl={event.image_url}
               category={event.category}
-              createdBy={event.profiles?.email || 'Unknown'}
+              createdBy={event.user_profiles?.email || 'Unknown'}
               expectedAttendees={event.expected_attendees}
             />
           ))}
@@ -171,4 +186,3 @@ const EventsHub = () => {
 };
 
 export default EventsHub;
-
