@@ -9,13 +9,28 @@ import { ArrowLeft, Calendar, MapPin, User, Users, Pencil, LayoutDashboard, Bot 
 import { useToast } from "@/components/ui/use-toast";
 import debounce from "lodash/debounce";
 
+interface EventWithProfile {
+  id: string;
+  title: string;
+  date: string;
+  end_date: string;
+  description: string | null;
+  location: string | null;
+  image_url: string | null;
+  category: string | null;
+  expected_attendees: number | null;
+  user_profiles: {
+    email: string | null;
+  } | null;
+}
+
 const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isEditing = searchParams.get('edit') === 'true';
   const { toast } = useToast();
-  const [event, setEvent] = useState<any>(null);
+  const [event, setEvent] = useState<EventWithProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -28,7 +43,7 @@ const EventDetails = () => {
         .from('events')
         .select(`
           *,
-          profiles:user_id (
+          user_profiles (
             email
           )
         `)
@@ -49,7 +64,7 @@ const EventDetails = () => {
     }
   };
 
-  const saveChanges = debounce(async (updates: Partial<typeof event>) => {
+  const saveChanges = debounce(async (updates: Partial<EventWithProfile>) => {
     try {
       const { error } = await supabase
         .from('events')
@@ -72,7 +87,7 @@ const EventDetails = () => {
   }, 1000);
 
   const handleInputChange = (field: string, value: string | number) => {
-    setEvent(prev => ({ ...prev, [field]: value }));
+    setEvent(prev => prev ? ({ ...prev, [field]: value }) : null);
     saveChanges({ [field]: value });
   };
 
@@ -153,7 +168,7 @@ const EventDetails = () => {
             )}
             <div className="flex items-center gap-2 text-muted-foreground">
               <User className="h-4 w-4" />
-              <span>Created by {event.profiles?.email}</span>
+              <span>Created by {event.user_profiles?.email}</span>
             </div>
           </div>
 
