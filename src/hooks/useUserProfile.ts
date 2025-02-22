@@ -19,7 +19,7 @@ export function useUserProfile() {
         // Then fetch the profile data
         const { data: profileData, error } = await supabase
           .from('user_profiles')
-          .select('*')  // Select all fields from user_profiles
+          .select('*')
           .eq('id', user.id)
           .single();
 
@@ -33,42 +33,42 @@ export function useUserProfile() {
 
         setUserProfile(completeProfile);
 
-        const { data: companyMembers, error: companyError } = await supabase
+        // Fetch company memberships separately to avoid recursion
+        const { data: memberships, error: membershipError } = await supabase
           .from('company_members')
-          .select(`
-            company:companies (
-              id,
-              name,
-              logo_url,
-              business_email,
-              business_phone,
-              website_url
-            )
-          `)
+          .select('company_id, role, status')
           .eq('user_id', user.id)
           .eq('status', 'active');
 
-        if (companyError) throw companyError;
+        if (membershipError) throw membershipError;
 
-        const userCompanies = (companyMembers as CompanyResponse[] ?? [])
-          .map(member => member.company)
-          .filter((company): company is Company => 
+        if (memberships && memberships.length > 0) {
+          // Then fetch the company details for all memberships
+          const { data: companyData, error: companyError } = await supabase
+            .from('companies')
+            .select('id, name, logo_url, business_email, business_phone, website_url')
+            .in('id', memberships.map(m => m.company_id));
+
+          if (companyError) throw companyError;
+
+          const userCompanies = (companyData ?? []).filter((company): company is Company => 
             company !== null && 
             typeof company.id === 'string' && 
             typeof company.name === 'string'
           );
 
-        setCompanies(userCompanies);
-        setIsBusinessUser(userCompanies.length > 0);
-        
-        if (userCompanies.length > 0 && !selectedCompany) {
-          setSelectedCompany(userCompanies[0]);
+          setCompanies(userCompanies);
+          setIsBusinessUser(userCompanies.length > 0);
+          
+          if (userCompanies.length > 0 && !selectedCompany) {
+            setSelectedCompany(userCompanies[0]);
+          }
         }
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
-  }, []);
+  }, [selectedCompany]);
 
   useEffect(() => {
     fetchUserProfile();
