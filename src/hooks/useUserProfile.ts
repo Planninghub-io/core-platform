@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { UserProfile, Company, CompanyResponse } from "@/types/user";
+import { UserProfile, Company } from "@/types/user";
 
 export function useUserProfile() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
