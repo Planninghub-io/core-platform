@@ -51,10 +51,15 @@ export function useUserProfile() {
 
           if (companyError) throw companyError;
 
+          // Updated type predicate to match the Company interface
           const userCompanies = (companyData ?? []).filter((company): company is Company => 
             company !== null && 
             typeof company.id === 'string' && 
-            typeof company.name === 'string'
+            typeof company.name === 'string' &&
+            (company.logo_url === undefined || typeof company.logo_url === 'string') &&
+            (company.business_email === undefined || typeof company.business_email === 'string') &&
+            (company.business_phone === undefined || typeof company.business_phone === 'string') &&
+            (company.website_url === undefined || typeof company.website_url === 'string')
           );
 
           setCompanies(userCompanies);
