@@ -11,8 +11,12 @@ export function useUserProfile() {
 
   const fetchUserProfile = useCallback(async () => {
     try {
+      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log('No user found');
+        return;
+      }
 
       // Fetch profile data
       const { data: profileData, error: profileError } = await supabase
@@ -21,58 +25,68 @@ export function useUserProfile() {
         .eq('id', user.id)
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error('Profile fetch error:', profileError);
+        throw profileError;
+      }
 
-      // Set user profile with auth email
+      // Set user profile
       setUserProfile({
         ...profileData,
         email: user.email
       });
 
-      // Fetch active company memberships for the user
+      // Get user's company memberships - with the new RLS, this will only return their own memberships
       const { data: memberships, error: membershipError } = await supabase
         .from('company_members')
-        .select('company_id')
+        .select(`
+          company_id,
+          companies (
+            id,
+            name,
+            logo_url,
+            business_email,
+            business_phone,
+            website_url
+          )
+        `)
         .eq('user_id', user.id)
         .eq('status', 'active');
 
-      if (membershipError) throw membershipError;
+      if (membershipError) {
+        console.error('Membership fetch error:', membershipError);
+        throw membershipError;
+      }
 
       if (memberships && memberships.length > 0) {
-        // Fetch company details
-        const { data: companyData, error: companyError } = await supabase
-          .from('companies')
-          .select('*')
-          .in('id', memberships.map(m => m.company_id));
-
-        if (companyError) throw companyError;
-
-        if (companyData) {
-          const userCompanies: Company[] = companyData.map(company => ({
-            id: company.id,
-            name: company.name,
-            logo_url: company.logo_url || undefined,
-            business_email: company.business_email || undefined,
-            business_phone: company.business_phone || undefined,
-            website_url: company.website_url || undefined
+        // Transform the data to match our Company type
+        const userCompanies: Company[] = memberships
+          .filter(m => m.companies) // Filter out any null companies
+          .map(m => ({
+            id: m.companies.id,
+            name: m.companies.name,
+            logo_url: m.companies.logo_url || undefined,
+            business_email: m.companies.business_email || undefined,
+            business_phone: m.companies.business_phone || undefined,
+            website_url: m.companies.website_url || undefined
           }));
 
-          setCompanies(userCompanies);
-          setIsBusinessUser(true);
+        setCompanies(userCompanies);
+        setIsBusinessUser(userCompanies.length > 0);
 
-          // Set first company as selected if none is selected
-          if (!selectedCompany && userCompanies.length > 0) {
-            setSelectedCompany(userCompanies[0]);
-          }
+        // Set first company as selected if none is selected
+        if (!selectedCompany && userCompanies.length > 0) {
+          setSelectedCompany(userCompanies[0]);
         }
       } else {
+        // Reset company-related state if no memberships found
         setCompanies([]);
         setIsBusinessUser(false);
         setSelectedCompany(null);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
-      // Reset states on error
+      // Reset all states on error
       setUserProfile(null);
       setCompanies([]);
       setIsBusinessUser(false);
