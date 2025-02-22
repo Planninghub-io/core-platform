@@ -36,20 +36,10 @@ export function useUserProfile() {
         email: user.email
       });
 
-      // Get user's company memberships - with the new RLS, this will only return their own memberships
+      // First, get the user's company memberships
       const { data: memberships, error: membershipError } = await supabase
         .from('company_members')
-        .select(`
-          company_id,
-          companies (
-            id,
-            name,
-            logo_url,
-            business_email,
-            business_phone,
-            website_url
-          )
-        `)
+        .select('company_id')
         .eq('user_id', user.id)
         .eq('status', 'active');
 
@@ -59,24 +49,35 @@ export function useUserProfile() {
       }
 
       if (memberships && memberships.length > 0) {
-        // Transform the data to match our Company type
-        const userCompanies: Company[] = memberships
-          .filter(m => m.companies) // Filter out any null companies
-          .map(m => ({
-            id: m.companies.id,
-            name: m.companies.name,
-            logo_url: m.companies.logo_url || undefined,
-            business_email: m.companies.business_email || undefined,
-            business_phone: m.companies.business_phone || undefined,
-            website_url: m.companies.website_url || undefined
+        // Then, fetch the companies data separately
+        const companyIds = memberships.map(m => m.company_id);
+        const { data: companiesData, error: companiesError } = await supabase
+          .from('companies')
+          .select('*')
+          .in('id', companyIds);
+
+        if (companiesError) {
+          console.error('Companies fetch error:', companiesError);
+          throw companiesError;
+        }
+
+        if (companiesData) {
+          const userCompanies: Company[] = companiesData.map(company => ({
+            id: company.id,
+            name: company.name,
+            logo_url: company.logo_url || undefined,
+            business_email: company.business_email || undefined,
+            business_phone: company.business_phone || undefined,
+            website_url: company.website_url || undefined
           }));
 
-        setCompanies(userCompanies);
-        setIsBusinessUser(userCompanies.length > 0);
+          setCompanies(userCompanies);
+          setIsBusinessUser(userCompanies.length > 0);
 
-        // Set first company as selected if none is selected
-        if (!selectedCompany && userCompanies.length > 0) {
-          setSelectedCompany(userCompanies[0]);
+          // Set first company as selected if none is selected
+          if (!selectedCompany && userCompanies.length > 0) {
+            setSelectedCompany(userCompanies[0]);
+          }
         }
       } else {
         // Reset company-related state if no memberships found
