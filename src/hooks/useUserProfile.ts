@@ -74,7 +74,7 @@ export function useUserProfile() {
           setCompanies(userCompanies);
           setIsBusinessUser(userCompanies.length > 0);
 
-          // Set first company as selected if none is selected
+          // Only set selected company if there isn't one already selected
           if (!selectedCompany && userCompanies.length > 0) {
             setSelectedCompany(userCompanies[0]);
           }
@@ -93,8 +93,9 @@ export function useUserProfile() {
       setIsBusinessUser(false);
       setSelectedCompany(null);
     }
-  }, [selectedCompany]);
+  }, []); // Remove selectedCompany from dependency array
 
+  // Use effect with empty dependency array to run only once on mount
   useEffect(() => {
     fetchUserProfile();
   }, [fetchUserProfile]);
