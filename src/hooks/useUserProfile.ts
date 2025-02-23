@@ -23,20 +23,21 @@ export function useUserProfile() {
         .from('user_profiles')
         .select('*')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (profileError) {
         console.error('Profile fetch error:', profileError);
         throw profileError;
       }
 
-      // Set user profile
-      setUserProfile({
-        ...profileData,
-        email: user.email
-      });
+      if (profileData) {
+        setUserProfile({
+          ...profileData,
+          email: user.email
+        });
+      }
 
-      // First, get the user's company memberships
+      // Fetch the user's company memberships
       const { data: memberships, error: membershipError } = await supabase
         .from('company_members')
         .select('company_id')
@@ -49,7 +50,7 @@ export function useUserProfile() {
       }
 
       if (memberships && memberships.length > 0) {
-        // Then, fetch the companies data separately
+        // Then, fetch the companies data
         const companyIds = memberships.map(m => m.company_id);
         const { data: companiesData, error: companiesError } = await supabase
           .from('companies')
@@ -74,7 +75,7 @@ export function useUserProfile() {
           setCompanies(userCompanies);
           setIsBusinessUser(userCompanies.length > 0);
 
-          // Only set selected company if there isn't one already selected
+          // Set initial selected company only if none is selected
           if (!selectedCompany && userCompanies.length > 0) {
             setSelectedCompany(userCompanies[0]);
           }
@@ -93,9 +94,8 @@ export function useUserProfile() {
       setIsBusinessUser(false);
       setSelectedCompany(null);
     }
-  }, []); // Remove selectedCompany from dependency array
+  }, [selectedCompany]); // Include selectedCompany in dependencies since we use it in the function
 
-  // Use effect with empty dependency array to run only once on mount
   useEffect(() => {
     fetchUserProfile();
   }, [fetchUserProfile]);
