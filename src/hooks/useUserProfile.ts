@@ -36,46 +36,55 @@ export function useUserProfile() {
         });
       }
 
-      // Direct companies query using a join
-      const { data: companiesData, error: companiesError } = await supabase
-        .from('companies')
-        .select(`
-          id,
-          name,
-          logo_url,
-          business_email,
-          business_phone,
-          website_url
-        `)
-        .in('id', 
-          await supabase
-            .from('company_members')
-            .select('company_id')
-            .eq('user_id', user.id)
-            .eq('status', 'active')
-            .then(({ data }) => (data || []).map(m => m.company_id))
-        );
+      // First get the company IDs
+      const { data: memberships, error: membershipError } = await supabase
+        .from('company_members')
+        .select('company_id')
+        .eq('user_id', user.id)
+        .eq('status', 'active');
 
-      if (companiesError) {
-        console.error('Companies fetch error:', companiesError);
+      if (membershipError) {
+        console.error('Memberships fetch error:', membershipError);
         return;
       }
 
-      if (companiesData) {
-        const userCompanies: Company[] = companiesData.map(company => ({
-          id: company.id,
-          name: company.name,
-          logo_url: company.logo_url || undefined,
-          business_email: company.business_email || undefined,
-          business_phone: company.business_phone || undefined,
-          website_url: company.website_url || undefined
-        }));
+      if (memberships && memberships.length > 0) {
+        const companyIds = memberships.map(m => m.company_id);
 
-        setCompanies(userCompanies);
-        setIsBusinessUser(userCompanies.length > 0);
+        // Then fetch the companies
+        const { data: companiesData, error: companiesError } = await supabase
+          .from('companies')
+          .select(`
+            id,
+            name,
+            logo_url,
+            business_email,
+            business_phone,
+            website_url
+          `)
+          .in('id', companyIds);
 
-        if (!selectedCompany && userCompanies.length > 0) {
-          setSelectedCompany(userCompanies[0]);
+        if (companiesError) {
+          console.error('Companies fetch error:', companiesError);
+          return;
+        }
+
+        if (companiesData) {
+          const userCompanies: Company[] = companiesData.map(company => ({
+            id: company.id,
+            name: company.name,
+            logo_url: company.logo_url || undefined,
+            business_email: company.business_email || undefined,
+            business_phone: company.business_phone || undefined,
+            website_url: company.website_url || undefined
+          }));
+
+          setCompanies(userCompanies);
+          setIsBusinessUser(userCompanies.length > 0);
+
+          if (!selectedCompany && userCompanies.length > 0) {
+            setSelectedCompany(userCompanies[0]);
+          }
         }
       } else {
         setCompanies([]);
