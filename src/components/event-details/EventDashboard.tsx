@@ -1,7 +1,14 @@
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare, DollarSign } from "lucide-react";
+import { MessageSquare, DollarSign, ChevronRight } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useState } from "react";
 
 interface ExpenseCategory {
   name: string;
@@ -24,6 +31,8 @@ interface EventDashboardProps {
 }
 
 export const EventDashboard = ({ event }: EventDashboardProps) => {
+  const [selectedQuote, setSelectedQuote] = useState<VendorQuote | null>(null);
+  
   // Sample data - in a real app, this would come from your backend
   const plannedBudget = event.budget || 10000;
   const expenses: ExpenseCategory[] = [
@@ -135,30 +144,58 @@ export const EventDashboard = ({ event }: EventDashboardProps) => {
           <CardTitle>Vendor Quotes</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
             {vendorQuotes.map((quote, index) => (
-              <Card key={index}>
-                <CardContent className="pt-6">
-                  <div className="flex justify-between items-start mb-4">
+              <div
+                key={index}
+                className="p-4 rounded-lg border transition-colors hover:bg-accent cursor-pointer"
+                style={{
+                  borderLeft: `4px solid ${expenses[index].color}`,
+                }}
+                onClick={() => setSelectedQuote(quote)}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
                     <div>
-                      <h3 className="font-semibold text-lg">{quote.vendorName}</h3>
+                      <h3 className="font-semibold">{quote.vendorName}</h3>
                       <p className="text-sm text-muted-foreground">{quote.service}</p>
                     </div>
-                    <div className="flex items-center text-lg font-semibold">
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <div className="flex items-center font-semibold">
                       <DollarSign className="h-4 w-4 mr-1" />
                       {quote.amount.toLocaleString()}
                     </div>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
                   </div>
-                  <div className="flex items-start gap-2">
-                    <MessageSquare className="h-4 w-4 mt-1 text-muted-foreground" />
-                    <p className="text-sm">{quote.message}</p>
-                  </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={!!selectedQuote} onOpenChange={() => setSelectedQuote(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selectedQuote?.vendorName}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Service</p>
+              <p className="font-medium">{selectedQuote?.service}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Amount</p>
+              <p className="font-medium">${selectedQuote?.amount.toLocaleString()}</p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Details</p>
+              <p className="font-medium">{selectedQuote?.message}</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
