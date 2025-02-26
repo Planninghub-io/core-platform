@@ -8,10 +8,8 @@ import {
   CardDescription,
   CardFooter,
   CardHeader,
-  CardTitle,
 } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
-import { Label } from "@/components/ui/label";
 
 interface GeneratedEvent {
   title: string;
@@ -70,6 +68,11 @@ export const GeneratedEventCard = ({
     }
   };
 
+  const truncateDescription = (description: string, maxLength: number = 200) => {
+    if (description.length <= maxLength) return description;
+    return `${description.substring(0, maxLength)}...`;
+  };
+
   return (
     <Card className="mt-6 text-left">
       <div className="flex flex-col md:flex-row">
@@ -85,24 +88,20 @@ export const GeneratedEventCard = ({
           </div>
         )}
         <div className={`flex-1 ${event.imagePrompt ? 'md:w-2/3' : 'w-full'}`}>
-          <CardHeader>
-            <div className="space-y-2">
-              <Label htmlFor="title">Event Title</Label>
-              <Input
-                id="title"
-                value={eventTitle}
-                onChange={(e) => onTitleChange(e.target.value)}
-                placeholder="Enter event title"
-                className="text-lg font-semibold"
-              />
-            </div>
-            <CardDescription className="flex items-center gap-2 mt-2">
+          <CardHeader className="space-y-2">
+            <Input
+              value={eventTitle}
+              onChange={(e) => onTitleChange(e.target.value)}
+              placeholder="Enter event title"
+              className="text-xl font-semibold border-none px-0 focus-visible:ring-0"
+            />
+            <CardDescription className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               {formatDate(event.date)}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p>{event.description || 'No description available'}</p>
+            <p className="text-sm text-gray-600">{truncateDescription(event.description)}</p>
             <div className="flex flex-wrap gap-4 text-sm text-gray-500">
               {event.location && (
                 <span className="flex items-center gap-1">
