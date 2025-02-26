@@ -68,11 +68,6 @@ export const GeneratedEventCard = ({
     }
   };
 
-  const truncateDescription = (description: string, maxLength: number = 200) => {
-    if (description.length <= maxLength) return description;
-    return `${description.substring(0, maxLength)}...`;
-  };
-
   return (
     <Card className="mt-6 text-left">
       <div className="flex flex-col md:flex-row">
@@ -101,7 +96,6 @@ export const GeneratedEventCard = ({
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-sm text-gray-600">{truncateDescription(event.description)}</p>
             <div className="flex flex-wrap gap-4 text-sm text-gray-500">
               {event.location && (
                 <span className="flex items-center gap-1">
@@ -118,6 +112,10 @@ export const GeneratedEventCard = ({
               {event.estimatedPrice && (
                 <span>Starting from {event.estimatedPrice}</span>
               )}
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold text-sm text-gray-700">Description</h3>
+              <p className="text-sm text-gray-600">{event.description}</p>
             </div>
           </CardContent>
           <CardFooter className="flex gap-2">
