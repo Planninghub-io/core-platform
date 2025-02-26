@@ -38,7 +38,6 @@ const EventDetails = () => {
         onEditToggle={() => navigate(isEditing ? `/event/${id}` : `/event/${id}?edit=true`)}
         onDashboard={() => setViewMode(viewMode === 'dashboard' ? 'details' : 'dashboard')}
         onAiAssistant={() => setViewMode(viewMode === 'ai' ? 'details' : 'ai')}
-        onDelete={handleDeleteAndNavigate}
         status={event.status}
         event={event}
         activeView={viewMode}
