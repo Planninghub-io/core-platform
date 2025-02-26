@@ -11,19 +11,37 @@ import { supabase } from "@/integrations/supabase/client";
 
 interface Contact {
   id: string;
+  user_id: string;
   name: string;
   email?: string;
   phone?: string;
-  user_id: string;
   created_at: string;
 }
 
-interface Template {
+interface InvitationTemplate {
   id: string;
   name: string;
-  description: string;
+  description?: string;
   event_type: string;
   template_html: string;
+  created_at: string;
+}
+
+interface Invitation {
+  id: string;
+  event_id: string;
+  template_id: string;
+  status: string;
+  created_at: string;
+}
+
+interface InvitationRecipient {
+  id: string;
+  invitation_id: string;
+  contact_id: string;
+  status: string;
+  sent_at?: string;
+  delivery_method: 'email' | 'sms';
   created_at: string;
 }
 
@@ -40,7 +58,7 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [deliveryMethod, setDeliveryMethod] = useState<"email" | "sms">("email");
   const [contacts, setContacts] = useState<Contact[]>([]);
-  const [templates, setTemplates] = useState<Template[]>([]);
+  const [templates, setTemplates] = useState<InvitationTemplate[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -52,10 +70,9 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
 
   const fetchData = async () => {
     try {
-      // Fetch contacts
       const { data: contactsData, error: contactsError } = await supabase
-        .from('contacts')
-        .select<'contacts', Contact>('*');
+        .from<'contacts', Contact>('contacts')
+        .select();
       
       if (contactsError) throw contactsError;
       
@@ -63,10 +80,9 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
         setContacts(contactsData);
       }
 
-      // Fetch templates
       const { data: templatesData, error: templatesError } = await supabase
-        .from('invitation_templates')
-        .select<'invitation_templates', Template>('*')
+        .from<'invitation_templates', InvitationTemplate>('invitation_templates')
+        .select()
         .eq('event_type', eventType);
       
       if (templatesError) throw templatesError;
@@ -96,21 +112,19 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
 
     setIsLoading(true);
     try {
-      // Create invitation
       const { data: invitation, error: invitationError } = await supabase
-        .from('invitations')
+        .from<'invitations', Invitation>('invitations')
         .insert({
           event_id: eventId,
           template_id: selectedTemplate,
           status: "pending"
-        })
+        } as Invitation)
         .select()
         .single();
 
       if (invitationError) throw invitationError;
 
-      // Create invitation recipients
-      const recipients = selectedContacts.map(contactId => ({
+      const recipients: Partial<InvitationRecipient>[] = selectedContacts.map(contactId => ({
         invitation_id: invitation.id,
         contact_id: contactId,
         delivery_method: deliveryMethod,
@@ -118,7 +132,7 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
       }));
 
       const { error: recipientsError } = await supabase
-        .from('invitation_recipients')
+        .from<'invitation_recipients', InvitationRecipient>('invitation_recipients')
         .insert(recipients);
 
       if (recipientsError) throw recipientsError;
