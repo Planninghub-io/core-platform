@@ -12,6 +12,7 @@ import { CompanySwitcher } from "@/components/navigation/CompanySwitcher";
 import { UserProfile } from "@/components/navigation/UserProfile";
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const SideNav = () => {
   const { userProfile, companies, selectedCompany, setSelectedCompany } = useUserProfile();
@@ -32,11 +33,6 @@ const SideNav = () => {
       </SidebarContent>
       <SidebarFooter className="mt-auto space-y-1">
         <SidebarSeparator />
-        <CompanySwitcher
-          companies={companies}
-          selectedCompany={selectedCompany}
-          onCompanySelect={setSelectedCompany}
-        />
         <Button
           variant="ghost"
           size="sm"
@@ -48,7 +44,24 @@ const SideNav = () => {
             <span className="text-sm ml-3">Settings</span>
           </Link>
         </Button>
-        <UserProfile userProfile={userProfile} />
+        {companies.length > 1 ? (
+          <Popover>
+            <PopoverTrigger asChild>
+              <div>
+                <UserProfile userProfile={userProfile} />
+              </div>
+            </PopoverTrigger>
+            <PopoverContent className="w-56 p-0">
+              <CompanySwitcher
+                companies={companies}
+                selectedCompany={selectedCompany}
+                onCompanySelect={setSelectedCompany}
+              />
+            </PopoverContent>
+          </Popover>
+        ) : (
+          <UserProfile userProfile={userProfile} />
+        )}
       </SidebarFooter>
     </Sidebar>
   );

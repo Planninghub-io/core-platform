@@ -11,20 +11,18 @@ export const UserProfile = ({ userProfile }: UserProfileProps) => {
   if (!userProfile) return null;
 
   return (
-    <div className="p-4 border-t">
-      <div className="space-y-4">
-        <div className="flex items-center gap-3 p-3 rounded-md bg-gradient-to-r from-violet-100 to-fuchsia-100 shadow-sm hover:shadow-md transition-shadow duration-200">
-          <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
-            <AvatarImage src={userProfile.avatar_url} />
-            <AvatarFallback className="bg-gradient-to-br from-purple-400 to-fuchsia-500 text-white">
-              {getInitials(userProfile)}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col min-w-0">
-            <span className="text-sm font-medium truncate text-purple-900">
-              {getDisplayName(userProfile)}
-            </span>
-          </div>
+    <div className="p-4 cursor-pointer hover:bg-accent/10 transition-colors">
+      <div className="flex items-center gap-3">
+        <Avatar className="h-10 w-10 border-2 border-white shadow-sm">
+          <AvatarImage src={userProfile.avatar_url} />
+          <AvatarFallback className="bg-gradient-to-br from-purple-400 to-fuchsia-500 text-white">
+            {getInitials(userProfile)}
+          </AvatarFallback>
+        </Avatar>
+        <div className="flex flex-col min-w-0">
+          <span className="text-sm font-medium truncate text-purple-900">
+            {getDisplayName(userProfile)}
+          </span>
         </div>
       </div>
     </div>
