@@ -117,15 +117,23 @@ export const EventContent = ({
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
-      <div className="space-y-8">
+      <div>
         {renderLeftPanel()}
-        <div className="flex gap-4 mt-auto pt-[440px]">
+      </div>
+      <div className="space-y-6">
+        <EventInfo
+          event={event}
+          isEditing={isEditing}
+          onFieldChange={onFieldChange}
+          onDelete={handleDelete}
+        />
+        <div className="flex gap-4">
           <Button 
             variant="outline"
             onClick={() => navigate(`/event/${event.id}/invitations`)}
             className="flex-1"
           >
-            {hasInvites ? 'Invites' : 'Add Invite'}
+            {hasInvites ? 'Invites' : 'Add Invites'}
           </Button>
           <Button 
             variant="outline"
@@ -136,12 +144,6 @@ export const EventContent = ({
           </Button>
         </div>
       </div>
-      <EventInfo
-        event={event}
-        isEditing={isEditing}
-        onFieldChange={onFieldChange}
-        onDelete={handleDelete}
-      />
     </div>
   );
 };

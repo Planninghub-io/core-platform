@@ -35,12 +35,12 @@ export const EventHeader = ({
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
           <Button 
-            variant="outline" 
+            variant="ghost" 
             onClick={onBack} 
-            className="border-purple-200 text-purple-600 hover:bg-purple-50 hover:text-purple-700"
+            className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 p-2"
+            size="icon"
           >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
+            <ArrowLeft className="h-5 w-5" />
           </Button>
           <Button 
             variant={activeView === 'dashboard' ? "default" : "outline"} 
