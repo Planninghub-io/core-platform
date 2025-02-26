@@ -1,13 +1,10 @@
 
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
-import { Mail, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { TemplateSelector } from "./components/TemplateSelector";
+import { ContactSelector } from "./components/ContactSelector";
 
 interface Contact {
   id: string;
@@ -24,24 +21,6 @@ interface InvitationTemplate {
   description?: string;
   event_type: string;
   template_html: string;
-  created_at: string;
-}
-
-interface Invitation {
-  id: string;
-  event_id: string;
-  template_id: string;
-  status: string;
-  created_at: string;
-}
-
-interface InvitationRecipient {
-  id: string;
-  invitation_id: string;
-  contact_id: string;
-  status: string;
-  sent_at?: string;
-  delivery_method: 'email' | 'sms';
   created_at: string;
 }
 
@@ -122,8 +101,7 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
           status: "pending"
         })
         .select()
-        .single()
-        .returns<Invitation>();
+        .single();
 
       if (invitationError) throw invitationError;
 
@@ -140,7 +118,6 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
 
       if (recipientsError) throw recipientsError;
 
-      // Send invitations using edge function
       const { error: sendError } = await supabase.functions.invoke("send-invitations", {
         body: { invitationId: invitation.id }
       });
@@ -175,102 +152,23 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
         </DialogHeader>
 
         {step === 1 ? (
-          <div className="space-y-4">
-            <div className="space-y-4">
-              {templates.map((template) => (
-                <div
-                  key={template.id}
-                  className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                    selectedTemplate === template.id
-                      ? "border-primary bg-primary/5"
-                      : "hover:bg-accent"
-                  }`}
-                  onClick={() => setSelectedTemplate(template.id)}
-                >
-                  <h3 className="font-semibold">{template.name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {template.description}
-                  </p>
-                </div>
-              ))}
-            </div>
-            <Button
-              className="w-full"
-              onClick={() => setStep(2)}
-              disabled={!selectedTemplate}
-            >
-              Continue
-            </Button>
-          </div>
+          <TemplateSelector
+            templates={templates}
+            selectedTemplate={selectedTemplate}
+            onTemplateSelect={setSelectedTemplate}
+            onContinue={() => setStep(2)}
+          />
         ) : (
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label>Delivery Method</Label>
-              <RadioGroup
-                value={deliveryMethod}
-                onValueChange={(value: "email" | "sms") => setDeliveryMethod(value)}
-                className="flex space-x-4"
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="email" id="email" />
-                  <Label htmlFor="email" className="flex items-center gap-2">
-                    <Mail className="h-4 w-4" />
-                    Email
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="sms" id="sms" />
-                  <Label htmlFor="sms" className="flex items-center gap-2">
-                    <MessageSquare className="h-4 w-4" />
-                    SMS
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Select Contacts</Label>
-              <div className="max-h-[200px] overflow-y-auto space-y-2">
-                {contacts.map((contact) => (
-                  <div
-                    key={contact.id}
-                    className="flex items-center space-x-2"
-                  >
-                    <input
-                      type="checkbox"
-                      id={contact.id}
-                      checked={selectedContacts.includes(contact.id)}
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          setSelectedContacts([...selectedContacts, contact.id]);
-                        } else {
-                          setSelectedContacts(
-                            selectedContacts.filter((id) => id !== contact.id)
-                          );
-                        }
-                      }}
-                    />
-                    <Label htmlFor={contact.id}>
-                      {contact.name} ({deliveryMethod === "email" ? contact.email : contact.phone})
-                    </Label>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex space-x-2">
-              <Button variant="outline" onClick={() => setStep(1)}>
-                Back
-              </Button>
-              <Button
-                className="flex-1"
-                onClick={handleSendInvitations}
-                disabled={isLoading || selectedContacts.length === 0}
-              >
-                {isLoading ? "Sending..." : "Send Invitations"}
-              </Button>
-            </div>
-          </div>
+          <ContactSelector
+            contacts={contacts}
+            selectedContacts={selectedContacts}
+            deliveryMethod={deliveryMethod}
+            onDeliveryMethodChange={setDeliveryMethod}
+            onContactSelect={setSelectedContacts}
+            onBack={() => setStep(1)}
+            onSend={handleSendInvitations}
+            isLoading={isLoading}
+          />
         )}
       </DialogContent>
     </Dialog>
