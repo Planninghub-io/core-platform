@@ -1,4 +1,3 @@
-
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, DollarSign, ChevronRight } from "lucide-react";
@@ -33,7 +32,6 @@ interface EventDashboardProps {
 export const EventDashboard = ({ event }: EventDashboardProps) => {
   const [selectedQuote, setSelectedQuote] = useState<VendorQuote | null>(null);
   
-  // Sample data - in a real app, this would come from your backend
   const plannedBudget = event.budget || 10000;
   const expenses: ExpenseCategory[] = [
     { name: 'Catering', amount: 3000, color: '#8B5CF6' },
@@ -42,7 +40,6 @@ export const EventDashboard = ({ event }: EventDashboardProps) => {
     { name: 'A/V Equipment', amount: 1800, color: '#0EA5E9' },
   ];
 
-  // Sample vendor quotes - in a real app, this would come from your backend
   const vendorQuotes: VendorQuote[] = [
     {
       vendorName: "Elite Catering Co.",
@@ -80,54 +77,45 @@ export const EventDashboard = ({ event }: EventDashboardProps) => {
 
   return (
     <div className="space-y-8">
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Budget Overview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-between items-center">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Budget</p>
-                <p className="text-2xl font-bold">${plannedBudget.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Remaining</p>
-                <p className="text-2xl font-bold text-emerald-600">
-                  ${remaining.toLocaleString()}
-                </p>
-              </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Budget Overview & Breakdown</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex justify-between items-center p-4 bg-muted/50 rounded-lg">
+            <div>
+              <p className="text-sm text-muted-foreground">Total Budget</p>
+              <p className="text-2xl font-bold">${plannedBudget.toLocaleString()}</p>
             </div>
-          </CardContent>
-        </Card>
+            <div>
+              <p className="text-sm text-muted-foreground">Remaining</p>
+              <p className="text-2xl font-bold text-emerald-600">
+                ${remaining.toLocaleString()}
+              </p>
+            </div>
+          </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Expense Breakdown</CardTitle>
-          </CardHeader>
-          <CardContent className="h-[300px]">
+          <div className="h-[400px]">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={allData}
-                layout="vertical"
                 margin={{
                   top: 5,
                   right: 30,
-                  left: 100,
+                  left: 30,
                   bottom: 5,
                 }}
               >
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis type="number" unit="$" />
-                <YAxis dataKey="name" type="category" width={100} />
+                <XAxis dataKey="name" />
+                <YAxis unit="$" />
                 <Tooltip 
                   formatter={(value) => [`$${value}`, 'Amount']}
                   contentStyle={{ background: 'white', border: '1px solid #ccc' }}
                 />
                 <Bar 
                   dataKey="amount" 
-                  fill="#8B5CF6"
-                  radius={[0, 4, 4, 0]}
+                  radius={[4, 4, 0, 0]}
                 >
                   {allData.map((entry, index) => (
                     <Cell key={index} fill={entry.color} />
@@ -135,9 +123,9 @@ export const EventDashboard = ({ event }: EventDashboardProps) => {
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>
