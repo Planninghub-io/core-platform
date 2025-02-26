@@ -48,7 +48,7 @@ export const EventInfo = ({
       
       setHasInvites(invitations && invitations.length > 0);
 
-      // Check for ticketing (assuming we'll add this table later)
+      // Check for ticketing
       const { data: ticketing } = await supabase
         .from('event_ticketing')
         .select('id')

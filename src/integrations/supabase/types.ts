@@ -81,6 +81,47 @@ export type Database = {
         }
         Relationships: []
       }
+      event_ticketing: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_id: string
+          id: string
+          price: number | null
+          quantity: number | null
+          status: string | null
+          ticket_name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_id: string
+          id?: string
+          price?: number | null
+          quantity?: number | null
+          status?: string | null
+          ticket_name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_id?: string
+          id?: string
+          price?: number | null
+          quantity?: number | null
+          status?: string | null
+          ticket_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_ticketing_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       events: {
         Row: {
           category: string | null
@@ -254,6 +295,47 @@ export type Database = {
             columns: ["template_id"]
             isOneToOne: false
             referencedRelation: "invitation_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_purchases: {
+        Row: {
+          created_at: string
+          id: string
+          purchaser_email: string
+          purchaser_name: string
+          quantity: number
+          status: string | null
+          ticket_id: string
+          total_amount: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          purchaser_email: string
+          purchaser_name: string
+          quantity: number
+          status?: string | null
+          ticket_id: string
+          total_amount: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          purchaser_email?: string
+          purchaser_name?: string
+          quantity?: number
+          status?: string | null
+          ticket_id?: string
+          total_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_purchases_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "event_ticketing"
             referencedColumns: ["id"]
           },
         ]
