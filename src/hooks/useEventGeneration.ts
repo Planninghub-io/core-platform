@@ -35,6 +35,7 @@ export const useEventGeneration = () => {
   const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
   const [isResubmitting, setIsResubmitting] = useState(false);
   const [eventTitle, setEventTitle] = useState("");
+  const [selectedDate, setSelectedDate] = useState<string>("");
 
   const handlePromptSubmit = async () => {
     if (!prompt.trim()) {
@@ -112,7 +113,7 @@ export const useEventGeneration = () => {
       const validatedEvent: GeneratedEvent = {
         title: data.title?.trim() || '',
         description: data.description || '',
-        date: data.date || '',
+        date: selectedDate || data.date || '',
         location: data.location || '',
         category: data.category || '',
         estimatedPrice: data.estimatedPrice || '',
@@ -178,6 +179,7 @@ export const useEventGeneration = () => {
     const eventWithTitle = {
       ...generatedEvent,
       title: eventTitle.trim(),
+      date: selectedDate || generatedEvent.date,
     };
 
     const { error } = await createEvent(eventWithTitle, additionalInfo);
@@ -217,6 +219,8 @@ export const useEventGeneration = () => {
     createdEventId,
     eventTitle,
     setEventTitle,
+    selectedDate,
+    setSelectedDate,
     handlePromptSubmit,
     handleCreateEvent,
   };

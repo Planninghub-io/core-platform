@@ -29,10 +29,13 @@ export const EventGeneratorSection = () => {
     setEventTitle,
     handlePromptSubmit,
     handleCreateEvent,
+    selectedDate,
+    setSelectedDate,
   } = useEventGeneration();
 
   const handleSubmitWithDate = (dateTime?: string) => {
     if (dateTime) {
+      setSelectedDate(dateTime);
       // Format the date nicely for the prompt
       const date = new Date(dateTime);
       const formattedDate = date.toLocaleString('en-US', {
@@ -70,7 +73,10 @@ export const EventGeneratorSection = () => {
 
           {generatedEvent && (
             <GeneratedEventCard
-              event={generatedEvent}
+              event={{
+                ...generatedEvent,
+                date: selectedDate || generatedEvent.date
+              }}
               isCreating={isCreating}
               eventId={createdEventId || undefined}
               imageUrl={createdEventId ? `/api/events/${createdEventId}/image` : undefined}
