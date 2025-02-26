@@ -7,6 +7,7 @@ import { EventHeader } from "@/components/event-details/EventHeader";
 import { EventImage } from "@/components/event-details/EventImage";
 import { EventInfo } from "@/components/event-details/EventInfo";
 import { EventAIDialog } from "@/components/event-details/EventAIDialog";
+import { EventDashboard } from "@/components/event-details/EventDashboard";
 
 interface EventWithProfile {
   id: string;
@@ -135,8 +136,7 @@ const EventDetails = () => {
       case 'dashboard':
         return (
           <div className="bg-card rounded-xl p-6 h-full">
-            <h2 className="text-2xl font-bold mb-4">Dashboard</h2>
-            <p>Dashboard content will be displayed here</p>
+            <EventDashboard event={event} />
           </div>
         );
       default:
