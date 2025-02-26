@@ -18,7 +18,7 @@ interface EventGeneratorFormProps {
   isGenerating: boolean;
   promptCount: number;
   onPromptChange: (value: string) => void;
-  onSubmit: () => void;
+  onSubmit: (dateTime?: string) => void;
 }
 
 export const EventGeneratorForm = ({
@@ -32,7 +32,6 @@ export const EventGeneratorForm = ({
   const [dateTime, setDateTime] = useState("");
 
   const checkForDateTime = (text: string) => {
-    // Regular expression to match common date and time patterns
     const dateTimePattern = /(?:on|at|date|time|when)?[:\s]?\s*\d{1,2}[-/]\d{1,2}[-/]\d{2,4}|(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(?:st|nd|rd|th)?(?:\s*,?\s*\d{4})?(?:\s*(?:at|@)?\s*\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)?)?|\d{1,2}(?::\d{2})?\s*(?:am|pm|AM|PM)/i;
     return dateTimePattern.test(text);
   };
@@ -47,11 +46,8 @@ export const EventGeneratorForm = ({
 
   const handleDateTimeSubmit = () => {
     if (dateTime) {
-      // Append the date/time information to the existing prompt
-      const updatedPrompt = `${prompt} on ${dateTime}`;
-      onPromptChange(updatedPrompt);
       setShowDateDialog(false);
-      onSubmit();
+      onSubmit(dateTime);
     }
   };
 

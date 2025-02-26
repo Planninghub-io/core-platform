@@ -31,6 +31,24 @@ export const EventGeneratorSection = () => {
     handleCreateEvent,
   } = useEventGeneration();
 
+  const handleSubmitWithDate = (dateTime?: string) => {
+    if (dateTime) {
+      // Format the date nicely for the prompt
+      const date = new Date(dateTime);
+      const formattedDate = date.toLocaleString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+      });
+      const updatedPrompt = `${prompt} on ${formattedDate}`;
+      setPrompt(updatedPrompt);
+    }
+    handlePromptSubmit();
+  };
+
   return (
     <div className="container py-16">
       <div className="mx-auto max-w-3xl text-center">
@@ -47,7 +65,7 @@ export const EventGeneratorSection = () => {
             isGenerating={isGenerating}
             promptCount={promptCount}
             onPromptChange={setPrompt}
-            onSubmit={handlePromptSubmit}
+            onSubmit={handleSubmitWithDate}
           />
 
           {generatedEvent && (
