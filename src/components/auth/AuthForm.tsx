@@ -5,7 +5,9 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import SignUpForm from "./SignUpForm";
 import SignInForm from "./SignInForm";
-import BusinessDetailsForm from "./BusinessDetailsForm";
+import { Database } from "@/integrations/supabase/types";
+
+type CompanyType = Database["public"]["Enums"]["company_type"];
 
 interface AuthFormProps {
   type?: 'business' | 'user';
@@ -79,7 +81,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
           .from('companies')
           .insert([{
             name: companyName,
-            type: 'vendor',
+            type: 'vendor' as CompanyType,
             business_email: businessEmail,
             business_phone: businessPhone
           }])
@@ -89,17 +91,16 @@ const AuthForm = ({ type }: AuthFormProps) => {
         if (companyError) throw companyError;
 
         if (companyData) {
-          // Create company membership for the owner
-          const { error: membershipError } = await supabase
-            .from('company_members')
+          // Create user role for the company
+          const { error: roleError } = await supabase
+            .from('user_roles')
             .insert([{
               user_id: authData.user.id,
               company_id: companyData.id,
-              role: 'owner',
-              status: 'active'
+              role: 'admin'
             }]);
 
-          if (membershipError) throw membershipError;
+          if (roleError) throw roleError;
         }
 
         // Update user profile type

@@ -36,41 +36,32 @@ export function useUserProfile() {
         });
       }
 
-      // First get the company IDs
-      const { data: memberships, error: membershipError } = await supabase
-        .from('company_members')
-        .select('company_id')
-        .eq('user_id', user.id)
-        .eq('status', 'active');
-
-      if (membershipError) {
-        console.error('Memberships fetch error:', membershipError);
-        return;
-      }
-
-      if (memberships && memberships.length > 0) {
-        const companyIds = memberships.map(m => m.company_id);
-
-        // Then fetch the companies
-        const { data: companiesData, error: companiesError } = await supabase
-          .from('companies')
-          .select(`
+      // Fetch user's companies through user_roles
+      const { data: userRoles, error: rolesError } = await supabase
+        .from('user_roles')
+        .select(`
+          company_id,
+          companies (
             id,
             name,
             logo_url,
             business_email,
             business_phone,
             website_url
-          `)
-          .in('id', companyIds);
+          )
+        `)
+        .eq('user_id', user.id);
 
-        if (companiesError) {
-          console.error('Companies fetch error:', companiesError);
-          return;
-        }
+      if (rolesError) {
+        console.error('User roles fetch error:', rolesError);
+        return;
+      }
 
-        if (companiesData) {
-          const userCompanies: Company[] = companiesData.map(company => ({
+      if (userRoles && userRoles.length > 0) {
+        const userCompanies: Company[] = userRoles
+          .map(role => role.companies)
+          .filter(company => company !== null)
+          .map(company => ({
             id: company.id,
             name: company.name,
             logo_url: company.logo_url || undefined,
@@ -79,12 +70,11 @@ export function useUserProfile() {
             website_url: company.website_url || undefined
           }));
 
-          setCompanies(userCompanies);
-          setIsBusinessUser(userCompanies.length > 0);
+        setCompanies(userCompanies);
+        setIsBusinessUser(userCompanies.length > 0);
 
-          if (!selectedCompany && userCompanies.length > 0) {
-            setSelectedCompany(userCompanies[0]);
-          }
+        if (!selectedCompany && userCompanies.length > 0) {
+          setSelectedCompany(userCompanies[0]);
         }
       } else {
         setCompanies([]);
