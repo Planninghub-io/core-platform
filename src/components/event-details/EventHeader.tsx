@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil, LayoutDashboard, Bot, Trash2 } from "lucide-react";
+import { EventAIDialog } from "./EventAIDialog";
 
 interface EventHeaderProps {
   isEditing: boolean;
@@ -11,6 +12,15 @@ interface EventHeaderProps {
   onAiPlanner: () => void;
   onDelete?: () => void;
   status?: string;
+  event: {
+    title: string;
+    date: string;
+    end_date: string;
+    description: string | null;
+    location: string | null;
+    category: string | null;
+    expected_attendees: number | null;
+  };
 }
 
 export const EventHeader = ({
@@ -21,7 +31,8 @@ export const EventHeader = ({
   onDashboard,
   onAiPlanner,
   onDelete,
-  status
+  status,
+  event
 }: EventHeaderProps) => {
   const showDeleteOption = isEditing && onDelete && status !== 'completed';
 
@@ -37,10 +48,7 @@ export const EventHeader = ({
             <LayoutDashboard className="mr-2 h-4 w-4" />
             Dashboard
           </Button>
-          <Button variant="outline" onClick={onAiPlanner}>
-            <Bot className="mr-2 h-4 w-4" />
-            AI Planner
-          </Button>
+          <EventAIDialog event={event} />
         </div>
 
         <div className="flex gap-2">

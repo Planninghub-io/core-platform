@@ -137,6 +137,15 @@ const EventDetails = () => {
         onAiPlanner={() => navigate(`/event/${id}/ai-planner`)}
         onDelete={handleDelete}
         status={event.status}
+        event={{
+          title: event.title,
+          date: event.date,
+          end_date: event.end_date,
+          description: event.description,
+          location: event.location,
+          category: event.category,
+          expected_attendees: event.expected_attendees,
+        }}
       />
 
       <div className="grid gap-8 md:grid-cols-2">
