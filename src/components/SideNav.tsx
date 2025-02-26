@@ -34,12 +34,12 @@ const SideNav = () => {
         <Button
           variant="ghost"
           size="sm"
-          className="w-full flex flex-col items-center gap-1.5 py-2 text-foreground/80 hover:text-foreground hover:bg-accent"
+          className="w-full flex items-center justify-center gap-2 px-2 py-2 text-foreground/80 hover:text-foreground hover:bg-accent"
           asChild
         >
           <Link to="/settings">
-            <Settings className="h-5 w-5" />
-            <span className="text-sm font-medium">Settings</span>
+            <Settings className="h-6 w-6" />
+            <span className="text-sm">Settings</span>
           </Link>
         </Button>
         <SidebarSeparator />
