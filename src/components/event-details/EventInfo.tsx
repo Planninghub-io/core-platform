@@ -48,7 +48,7 @@ export const EventInfo = ({
 
   const renderField = (value: string | null, placeholder: string = "") => {
     return (
-      <div className="p-2 bg-gray-50 rounded-md">
+      <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
         {value || placeholder}
       </div>
     );
@@ -80,7 +80,7 @@ export const EventInfo = ({
               required
             />
           ) : (
-            <div className="p-2 bg-gray-50 rounded-md">
+            <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
               {formatDateTime(event.date)}
             </div>
           )}
@@ -96,7 +96,7 @@ export const EventInfo = ({
               required
             />
           ) : (
-            <div className="p-2 bg-gray-50 rounded-md">
+            <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
               {formatDateTime(event.end_date)}
             </div>
           )}
@@ -115,27 +115,29 @@ export const EventInfo = ({
         ) : renderField(event.location, "No location specified")}
       </div>
 
-      <div>
-        <Label htmlFor="category">Category</Label>
-        {isEditing ? (
-          <Input
-            id="category"
-            value={event.category || ''}
-            onChange={(e) => onFieldChange('category', e.target.value)}
-          />
-        ) : renderField(event.category, "No category specified")}
-      </div>
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <Label htmlFor="category">Category</Label>
+          {isEditing ? (
+            <Input
+              id="category"
+              value={event.category || ''}
+              onChange={(e) => onFieldChange('category', e.target.value)}
+            />
+          ) : renderField(event.category, "No category specified")}
+        </div>
 
-      <div>
-        <Label htmlFor="expected_attendees">Expected Attendees</Label>
-        {isEditing ? (
-          <Input
-            id="expected_attendees"
-            type="number"
-            value={event.expected_attendees || ''}
-            onChange={(e) => onFieldChange('expected_attendees', parseInt(e.target.value))}
-          />
-        ) : renderField(event.expected_attendees?.toString(), "No attendees specified")}
+        <div>
+          <Label htmlFor="expected_attendees">Expected Attendees</Label>
+          {isEditing ? (
+            <Input
+              id="expected_attendees"
+              type="number"
+              value={event.expected_attendees || ''}
+              onChange={(e) => onFieldChange('expected_attendees', parseInt(e.target.value))}
+            />
+          ) : renderField(event.expected_attendees?.toString(), "No attendees specified")}
+        </div>
       </div>
 
       <div>
@@ -148,7 +150,7 @@ export const EventInfo = ({
             onChange={(e) => onFieldChange('description', e.target.value)}
           />
         ) : (
-          <div className="p-2 bg-gray-50 rounded-md min-h-[100px] whitespace-pre-wrap">
+          <div className="w-full min-h-[100px] rounded-md border border-input bg-gray-50 px-3 py-2 whitespace-pre-wrap">
             {event.description || "No description provided"}
           </div>
         )}
