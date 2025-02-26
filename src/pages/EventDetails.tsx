@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -158,6 +159,28 @@ const EventDetails = () => {
     return <div className="container py-8">Event not found</div>;
   }
 
+  const renderContent = () => {
+    if (viewMode === 'dashboard') {
+      return (
+        <div className="space-y-6">
+          <h1 className="text-3xl font-bold">{event.title}</h1>
+          <EventDashboard event={event} />
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid gap-8 md:grid-cols-2">
+        {renderLeftPanel()}
+        <EventInfo
+          event={event}
+          isEditing={isEditing}
+          onFieldChange={handleInputChange}
+        />
+      </div>
+    );
+  };
+
   return (
     <div className="container py-8">
       <EventHeader
@@ -172,15 +195,7 @@ const EventDetails = () => {
         event={event}
         activeView={viewMode}
       />
-
-      <div className="grid gap-8 md:grid-cols-2">
-        {renderLeftPanel()}
-        <EventInfo
-          event={event}
-          isEditing={isEditing}
-          onFieldChange={handleInputChange}
-        />
-      </div>
+      {renderContent()}
     </div>
   );
 };
