@@ -1,5 +1,5 @@
 
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +15,7 @@ import { Settings } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 const SideNav = () => {
+  const navigate = useNavigate();
   const { userProfile, companies, selectedCompany, setSelectedCompany } = useUserProfile();
 
   return (
@@ -31,37 +32,36 @@ const SideNav = () => {
         </div>
         <NavMenu />
       </SidebarContent>
-      <SidebarFooter className="mt-auto space-y-1">
+      <SidebarFooter className="mt-auto">
         <SidebarSeparator />
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full flex items-center px-4 py-2 text-foreground/80 hover:text-foreground hover:bg-accent"
-          asChild
-        >
-          <Link to="/settings">
-            <Settings className="h-6 w-6" />
-            <span className="text-sm ml-3">Settings</span>
-          </Link>
-        </Button>
-        {companies.length > 1 ? (
-          <Popover>
-            <PopoverTrigger asChild>
-              <div>
-                <UserProfile userProfile={userProfile} />
-              </div>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-0">
-              <CompanySwitcher
-                companies={companies}
-                selectedCompany={selectedCompany}
-                onCompanySelect={setSelectedCompany}
-              />
-            </PopoverContent>
-          </Popover>
-        ) : (
-          <UserProfile userProfile={userProfile} />
-        )}
+        <Popover>
+          <PopoverTrigger asChild>
+            <div>
+              <UserProfile userProfile={userProfile} />
+            </div>
+          </PopoverTrigger>
+          <PopoverContent className="w-56 p-2 space-y-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2"
+              onClick={() => navigate('/settings')}
+            >
+              <Settings className="h-4 w-4" />
+              <span className="text-sm">Settings</span>
+            </Button>
+            {companies.length > 1 && (
+              <>
+                <SidebarSeparator />
+                <CompanySwitcher
+                  companies={companies}
+                  selectedCompany={selectedCompany}
+                  onCompanySelect={setSelectedCompany}
+                />
+              </>
+            )}
+          </PopoverContent>
+        </Popover>
       </SidebarFooter>
     </Sidebar>
   );
