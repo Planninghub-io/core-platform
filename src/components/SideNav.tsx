@@ -30,7 +30,13 @@ const SideNav = () => {
         </div>
         <NavMenu />
       </SidebarContent>
-      <SidebarFooter className="space-y-2">
+      <SidebarFooter className="mt-auto space-y-1">
+        <SidebarSeparator />
+        <CompanySwitcher
+          companies={companies}
+          selectedCompany={selectedCompany}
+          onCompanySelect={setSelectedCompany}
+        />
         <Button
           variant="ghost"
           size="sm"
@@ -42,12 +48,6 @@ const SideNav = () => {
             <span className="text-sm ml-3">Settings</span>
           </Link>
         </Button>
-        <SidebarSeparator />
-        <CompanySwitcher
-          companies={companies}
-          selectedCompany={selectedCompany}
-          onCompanySelect={setSelectedCompany}
-        />
         <UserProfile userProfile={userProfile} />
       </SidebarFooter>
     </Sidebar>
