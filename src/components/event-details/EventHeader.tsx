@@ -1,7 +1,6 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Pencil, LayoutDashboard, Bot, Trash2 } from "lucide-react";
-import { EventAIDialog } from "./EventAIDialog";
 
 interface EventHeaderProps {
   isEditing: boolean;
@@ -9,7 +8,7 @@ interface EventHeaderProps {
   onBack: () => void;
   onEditToggle: () => void;
   onDashboard: () => void;
-  onAiPlanner: () => void;
+  onAiAssistant: () => void;
   onDelete?: () => void;
   status?: string;
   event: {
@@ -21,6 +20,7 @@ interface EventHeaderProps {
     category: string | null;
     expected_attendees: number | null;
   };
+  activeView: 'details' | 'ai' | 'dashboard';
 }
 
 export const EventHeader = ({
@@ -29,10 +29,11 @@ export const EventHeader = ({
   onBack,
   onEditToggle,
   onDashboard,
-  onAiPlanner,
+  onAiAssistant,
   onDelete,
   status,
-  event
+  event,
+  activeView
 }: EventHeaderProps) => {
   const showDeleteOption = isEditing && onDelete && status !== 'completed';
 
@@ -44,11 +45,20 @@ export const EventHeader = ({
       
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
-          <Button variant="outline" onClick={onDashboard}>
+          <Button 
+            variant={activeView === 'dashboard' ? "default" : "outline"} 
+            onClick={onDashboard}
+          >
             <LayoutDashboard className="mr-2 h-4 w-4" />
             Dashboard
           </Button>
-          <EventAIDialog event={event} />
+          <Button 
+            variant={activeView === 'ai' ? "default" : "outline"} 
+            onClick={onAiAssistant}
+          >
+            <Bot className="mr-2 h-4 w-4" />
+            AI Assistant
+          </Button>
         </div>
 
         <div className="flex gap-2">

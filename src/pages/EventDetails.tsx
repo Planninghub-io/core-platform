@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +6,7 @@ import debounce from "lodash/debounce";
 import { EventHeader } from "@/components/event-details/EventHeader";
 import { EventImage } from "@/components/event-details/EventImage";
 import { EventInfo } from "@/components/event-details/EventInfo";
+import { EventAIDialog } from "@/components/event-details/EventAIDialog";
 
 interface EventWithProfile {
   id: string;
@@ -24,6 +24,8 @@ interface EventWithProfile {
   } | null;
 }
 
+type ViewMode = 'details' | 'ai' | 'dashboard';
+
 const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -32,6 +34,7 @@ const EventDetails = () => {
   const { toast } = useToast();
   const [event, setEvent] = useState<EventWithProfile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<ViewMode>('details');
 
   useEffect(() => {
     fetchEventDetails();
@@ -118,6 +121,35 @@ const EventDetails = () => {
     }
   };
 
+  const renderLeftPanel = () => {
+    switch (viewMode) {
+      case 'ai':
+        return (
+          <div className="bg-card rounded-xl p-6 h-full">
+            <EventAIDialog 
+              event={event} 
+              embedded={true} 
+            />
+          </div>
+        );
+      case 'dashboard':
+        return (
+          <div className="bg-card rounded-xl p-6 h-full">
+            <h2 className="text-2xl font-bold mb-4">Dashboard</h2>
+            <p>Dashboard content will be displayed here</p>
+          </div>
+        );
+      default:
+        return (
+          <EventImage
+            imageUrl={event.image_url}
+            isEditing={isEditing}
+            onImageChange={(value) => handleInputChange('image_url', value)}
+          />
+        );
+    }
+  };
+
   if (loading) {
     return <div className="container py-8">Loading...</div>;
   }
@@ -133,27 +165,16 @@ const EventDetails = () => {
         id={event.id}
         onBack={() => navigate('/events-hub')}
         onEditToggle={() => navigate(isEditing ? `/event/${id}` : `/event/${id}?edit=true`)}
-        onDashboard={() => navigate(`/event/${id}/dashboard`)}
-        onAiPlanner={() => navigate(`/event/${id}/ai-planner`)}
+        onDashboard={() => setViewMode(viewMode === 'dashboard' ? 'details' : 'dashboard')}
+        onAiAssistant={() => setViewMode(viewMode === 'ai' ? 'details' : 'ai')}
         onDelete={handleDelete}
         status={event.status}
-        event={{
-          title: event.title,
-          date: event.date,
-          end_date: event.end_date,
-          description: event.description,
-          location: event.location,
-          category: event.category,
-          expected_attendees: event.expected_attendees,
-        }}
+        event={event}
+        activeView={viewMode}
       />
 
       <div className="grid gap-8 md:grid-cols-2">
-        <EventImage
-          imageUrl={event.image_url}
-          isEditing={isEditing}
-          onImageChange={(value) => handleInputChange('image_url', value)}
-        />
+        {renderLeftPanel()}
         <EventInfo
           event={event}
           isEditing={isEditing}

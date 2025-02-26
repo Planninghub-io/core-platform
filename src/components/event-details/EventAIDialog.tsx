@@ -1,16 +1,8 @@
 
 import React, { useState } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Bot, Send } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Send } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -24,10 +16,10 @@ interface EventAIDialogProps {
     category: string | null;
     expected_attendees: number | null;
   };
+  embedded?: boolean;
 }
 
-export const EventAIDialog = ({ event }: EventAIDialogProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+export const EventAIDialog = ({ event, embedded = false }: EventAIDialogProps) => {
   const [userQuestion, setUserQuestion] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
@@ -74,45 +66,36 @@ export const EventAIDialog = ({ event }: EventAIDialogProps) => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <Bot className="mr-2 h-4 w-4" />
-          AI Assistant
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Ask about {event.title}</DialogTitle>
-          <DialogDescription>
-            Ask any questions about this event and I'll help you find the answers.
-          </DialogDescription>
-        </DialogHeader>
-        <div className="space-y-4 mt-4">
-          <div className="space-y-2">
-            <Textarea
-              placeholder="What would you like to know about this event?"
-              value={userQuestion}
-              onChange={(e) => setUserQuestion(e.target.value)}
-              className="min-h-[100px]"
-            />
-            <Button 
-              onClick={handleSubmit} 
-              className="w-full"
-              disabled={loading}
-            >
-              <Send className="mr-2 h-4 w-4" />
-              {loading ? 'Getting answer...' : 'Ask Question'}
-            </Button>
-          </div>
-          
-          {response && (
-            <div className="bg-muted p-4 rounded-lg">
-              <p className="whitespace-pre-wrap">{response}</p>
-            </div>
-          )}
+    <div className="h-full flex flex-col">
+      <h2 className="text-2xl font-bold mb-2">Ask about {event.title}</h2>
+      <p className="text-muted-foreground mb-4">
+        Ask any questions about this event and I'll help you find the answers.
+      </p>
+      
+      <div className="space-y-4 flex-grow">
+        <div className="space-y-2">
+          <Textarea
+            placeholder="What would you like to know about this event?"
+            value={userQuestion}
+            onChange={(e) => setUserQuestion(e.target.value)}
+            className="min-h-[100px]"
+          />
+          <Button 
+            onClick={handleSubmit} 
+            className="w-full"
+            disabled={loading}
+          >
+            <Send className="mr-2 h-4 w-4" />
+            {loading ? 'Getting answer...' : 'Ask Question'}
+          </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+        
+        {response && (
+          <div className="bg-muted p-4 rounded-lg">
+            <p className="whitespace-pre-wrap">{response}</p>
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
