@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Pencil, LayoutDashboard, Bot, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, LayoutDashboard, Bot, Trash2, Mail } from "lucide-react";
 
 interface EventHeaderProps {
   isEditing: boolean;
@@ -62,6 +62,15 @@ export const EventHeader = ({
         </div>
 
         <div className="flex gap-2">
+          {isEditing && (
+            <Button
+              variant="outline"
+              onClick={() => window.location.href = `/event/${id}/invitations`}
+            >
+              <Mail className="mr-2 h-4 w-4" />
+              Invitations
+            </Button>
+          )}
           <Button 
             variant={isEditing ? "default" : "outline"}
             onClick={onEditToggle}

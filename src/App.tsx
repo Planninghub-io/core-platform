@@ -1,3 +1,4 @@
+
 import { Toaster } from "./components/ui/toaster";
 import { Toaster as Sonner } from "./components/ui/sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
@@ -14,6 +15,7 @@ import SideNav from "./components/SideNav";
 import Discover from "./pages/Discover";
 import EventsHub from "./pages/EventsHub";
 import EventDetails from "./pages/EventDetails";
+import EventInvitations from "./pages/EventInvitations";
 import SettingsLayout from "./pages/settings/SettingsLayout";
 import UserProfileSettings from "./pages/settings/UserProfileSettings";
 import CompanySettings from "./pages/settings/CompanySettings";
@@ -73,6 +75,10 @@ const App = () => {
                   <Route 
                     path="/event/:id" 
                     element={isAuthenticated ? <EventDetails /> : <Navigate to="/auth" replace />} 
+                  />
+                  <Route 
+                    path="/event/:id/invitations" 
+                    element={isAuthenticated ? <EventInvitations /> : <Navigate to="/auth" replace />} 
                   />
                   <Route 
                     path="/settings" 
