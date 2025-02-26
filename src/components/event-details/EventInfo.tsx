@@ -46,17 +46,26 @@ export const EventInfo = ({
     return format(date, "EEEE, MMMM d, yyyy 'at' h:mm a");
   };
 
+  const renderField = (value: string | null, placeholder: string = "") => {
+    return (
+      <div className="p-2 bg-gray-50 rounded-md">
+        {value || placeholder}
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       <div>
         <Label htmlFor="title">Event Title</Label>
-        <Input
-          id="title"
-          value={event.title}
-          onChange={(e) => onFieldChange('title', e.target.value)}
-          readOnly={!isEditing}
-          required
-        />
+        {isEditing ? (
+          <Input
+            id="title"
+            value={event.title}
+            onChange={(e) => onFieldChange('title', e.target.value)}
+            required
+          />
+        ) : renderField(event.title, "No title")}
       </div>
 
       <div className="grid gap-4">
@@ -96,45 +105,53 @@ export const EventInfo = ({
 
       <div>
         <Label htmlFor="location">Location</Label>
-        <Input
-          id="location"
-          value={event.location || ''}
-          onChange={(e) => onFieldChange('location', e.target.value)}
-          readOnly={!isEditing}
-          required
-        />
+        {isEditing ? (
+          <Input
+            id="location"
+            value={event.location || ''}
+            onChange={(e) => onFieldChange('location', e.target.value)}
+            required
+          />
+        ) : renderField(event.location, "No location specified")}
       </div>
 
       <div>
         <Label htmlFor="category">Category</Label>
-        <Input
-          id="category"
-          value={event.category || ''}
-          onChange={(e) => onFieldChange('category', e.target.value)}
-          readOnly={!isEditing}
-        />
+        {isEditing ? (
+          <Input
+            id="category"
+            value={event.category || ''}
+            onChange={(e) => onFieldChange('category', e.target.value)}
+          />
+        ) : renderField(event.category, "No category specified")}
       </div>
 
       <div>
         <Label htmlFor="expected_attendees">Expected Attendees</Label>
-        <Input
-          id="expected_attendees"
-          type="number"
-          value={event.expected_attendees || ''}
-          onChange={(e) => onFieldChange('expected_attendees', parseInt(e.target.value))}
-          readOnly={!isEditing}
-        />
+        {isEditing ? (
+          <Input
+            id="expected_attendees"
+            type="number"
+            value={event.expected_attendees || ''}
+            onChange={(e) => onFieldChange('expected_attendees', parseInt(e.target.value))}
+          />
+        ) : renderField(event.expected_attendees?.toString(), "No attendees specified")}
       </div>
 
       <div>
         <Label htmlFor="description">Description</Label>
-        <textarea
-          id="description"
-          className="w-full min-h-[100px] p-2 border rounded-md"
-          value={event.description || ''}
-          onChange={(e) => onFieldChange('description', e.target.value)}
-          readOnly={!isEditing}
-        />
+        {isEditing ? (
+          <textarea
+            id="description"
+            className="w-full min-h-[100px] p-2 border rounded-md"
+            value={event.description || ''}
+            onChange={(e) => onFieldChange('description', e.target.value)}
+          />
+        ) : (
+          <div className="p-2 bg-gray-50 rounded-md min-h-[100px] whitespace-pre-wrap">
+            {event.description || "No description provided"}
+          </div>
+        )}
       </div>
 
       {isEditing && onDelete && event.status !== 'completed' && (
