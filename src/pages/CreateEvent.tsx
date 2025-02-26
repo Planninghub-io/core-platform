@@ -7,13 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-
-declare global {
-  interface Window {
-    google: any;
-    initializeAutocomplete: () => void;
-  }
-}
+import { format } from "date-fns";
 
 const CreateEvent = () => {
   const navigate = useNavigate();
@@ -30,30 +24,17 @@ const CreateEvent = () => {
   });
 
   useEffect(() => {
-    // Load Google Places API
-    const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY}&libraries=places&callback=initializeAutocomplete`;
-    script.async = true;
-    
-    window.initializeAutocomplete = () => {
-      const input = document.getElementById("location") as HTMLInputElement;
-      const autocomplete = new window.google.maps.places.Autocomplete(input);
-      autocomplete.addListener("place_changed", () => {
-        const place = autocomplete.getPlace();
-        setFormData(prev => ({
-          ...prev,
-          location: place.formatted_address
-        }));
-      });
-    };
-
-    document.head.appendChild(script);
-
-    return () => {
-      document.head.removeChild(script);
-      delete window.initializeAutocomplete;
-    };
-  }, []);
+    // Set default end date 2 hours after start date when start date changes
+    if (formData.date) {
+      const startDate = new Date(formData.date);
+      const endDate = new Date(startDate);
+      endDate.setHours(endDate.getHours() + 2);
+      setFormData(prev => ({
+        ...prev,
+        endDate: endDate.toISOString().slice(0, 16)
+      }));
+    }
+  }, [formData.date]);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -67,6 +48,20 @@ const CreateEvent = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate required fields
+    const requiredFields = ['title', 'date', 'endDate', 'location'];
+    const missingFields = requiredFields.filter(field => !formData[field as keyof typeof formData]);
+
+    if (missingFields.length > 0) {
+      toast({
+        title: "Required Fields Missing",
+        description: `Please fill in the following fields: ${missingFields.join(', ')}`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       const { data: userData, error: userError } = await supabase.auth.getUser();
       
@@ -88,7 +83,7 @@ const CreateEvent = () => {
             date: new Date(formData.date).toISOString(),
             end_date: new Date(formData.endDate).toISOString(),
             location: formData.location,
-            price: parseFloat(formData.price),
+            price: parseFloat(formData.price) || null,
             image_url: formData.imageUrl,
             category: formData.category,
             user_id: userData.user.id,
@@ -103,7 +98,7 @@ const CreateEvent = () => {
         description: "Event created successfully!",
       });
       
-      navigate("/");
+      navigate("/events-hub");
     } catch (error) {
       console.error('Error creating event:', error);
       toast({
@@ -120,7 +115,7 @@ const CreateEvent = () => {
         <h1 className="mb-8 text-3xl font-bold text-gray-900">Create New Event</h1>
         <form onSubmit={handleSubmit} className="space-y-6 rounded-xl bg-white p-8 shadow-lg">
           <div className="space-y-2">
-            <Label htmlFor="title">Event Title</Label>
+            <Label htmlFor="title">Event Title *</Label>
             <Input
               id="title"
               name="title"
@@ -139,13 +134,12 @@ const CreateEvent = () => {
               value={formData.description}
               onChange={handleChange}
               placeholder="Describe your event"
-              required
             />
           </div>
 
           <div className="grid gap-6 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="date">Start Date & Time</Label>
+              <Label htmlFor="date">Start Date & Time *</Label>
               <div className="relative">
                 <Input
                   id="date"
@@ -154,13 +148,14 @@ const CreateEvent = () => {
                   value={formData.date}
                   onChange={handleChange}
                   required
+                  min={new Date().toISOString().slice(0, 16)}
                 />
                 <Calendar className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="endDate">End Date & Time</Label>
+              <Label htmlFor="endDate">End Date & Time *</Label>
               <div className="relative">
                 <Input
                   id="endDate"
@@ -169,6 +164,7 @@ const CreateEvent = () => {
                   value={formData.endDate}
                   onChange={handleChange}
                   required
+                  min={formData.date}
                 />
                 <Calendar className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
               </div>
@@ -176,7 +172,7 @@ const CreateEvent = () => {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="location">Location</Label>
+            <Label htmlFor="location">Location *</Label>
             <Input
               id="location"
               name="location"
@@ -198,7 +194,6 @@ const CreateEvent = () => {
                 value={formData.price}
                 onChange={handleChange}
                 placeholder="0.00"
-                required
               />
             </div>
 
@@ -210,7 +205,6 @@ const CreateEvent = () => {
                 value={formData.category}
                 onChange={handleChange}
                 placeholder="e.g., Music, Sports, Arts"
-                required
               />
             </div>
           </div>
@@ -224,7 +218,6 @@ const CreateEvent = () => {
               value={formData.imageUrl}
               onChange={handleChange}
               placeholder="https://example.com/image.jpg"
-              required
             />
           </div>
 

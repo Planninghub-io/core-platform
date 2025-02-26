@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Trash2 } from "lucide-react";
+import { format } from "date-fns";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -40,6 +41,11 @@ export const EventInfo = ({
   onFieldChange,
   onDelete,
 }: EventInfoProps) => {
+  const formatDateTime = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, "EEEE, MMMM d, yyyy 'at' h:mm a");
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -49,29 +55,42 @@ export const EventInfo = ({
           value={event.title}
           onChange={(e) => onFieldChange('title', e.target.value)}
           readOnly={!isEditing}
+          required
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid gap-4">
         <div>
-          <Label htmlFor="date">Start Date</Label>
-          <Input
-            id="date"
-            type="datetime-local"
-            value={event.date}
-            onChange={(e) => onFieldChange('date', e.target.value)}
-            readOnly={!isEditing}
-          />
+          <Label htmlFor="date">Start Date & Time</Label>
+          {isEditing ? (
+            <Input
+              id="date"
+              type="datetime-local"
+              value={event.date.slice(0, 16)}
+              onChange={(e) => onFieldChange('date', e.target.value)}
+              required
+            />
+          ) : (
+            <div className="p-2 bg-gray-50 rounded-md">
+              {formatDateTime(event.date)}
+            </div>
+          )}
         </div>
         <div>
-          <Label htmlFor="end_date">End Date</Label>
-          <Input
-            id="end_date"
-            type="datetime-local"
-            value={event.end_date}
-            onChange={(e) => onFieldChange('end_date', e.target.value)}
-            readOnly={!isEditing}
-          />
+          <Label htmlFor="end_date">End Date & Time</Label>
+          {isEditing ? (
+            <Input
+              id="end_date"
+              type="datetime-local"
+              value={event.end_date.slice(0, 16)}
+              onChange={(e) => onFieldChange('end_date', e.target.value)}
+              required
+            />
+          ) : (
+            <div className="p-2 bg-gray-50 rounded-md">
+              {formatDateTime(event.end_date)}
+            </div>
+          )}
         </div>
       </div>
 
@@ -82,6 +101,7 @@ export const EventInfo = ({
           value={event.location || ''}
           onChange={(e) => onFieldChange('location', e.target.value)}
           readOnly={!isEditing}
+          required
         />
       </div>
 
