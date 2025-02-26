@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Pencil, LayoutDashboard, Bot, Trash2 } from "lucide-react";
+import { ArrowLeft, Pencil, LayoutDashboard, Bot } from "lucide-react";
 
 interface EventHeaderProps {
   isEditing: boolean;
@@ -9,7 +9,6 @@ interface EventHeaderProps {
   onEditToggle: () => void;
   onDashboard: () => void;
   onAiAssistant: () => void;
-  onDelete?: () => void;
   status?: string;
   event: {
     title: string;
@@ -29,17 +28,20 @@ export const EventHeader = ({
   onEditToggle,
   onDashboard,
   onAiAssistant,
-  status,
   activeView
 }: EventHeaderProps) => {
   return (
     <div className="space-y-4 mb-6">
-      <Button variant="ghost" onClick={onBack} className="px-3">
-        <ArrowLeft className="h-4 w-4" />
-      </Button>
-      
       <div className="flex items-center justify-between">
         <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            onClick={onBack} 
+            className="border-purple-200 text-purple-600 hover:bg-purple-50 hover:text-purple-700"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Button>
           <Button 
             variant={activeView === 'dashboard' ? "default" : "outline"} 
             onClick={onDashboard}
