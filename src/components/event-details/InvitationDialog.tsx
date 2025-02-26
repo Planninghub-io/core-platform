@@ -1,12 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/components/ui/use-toast";
-import { mail, messageSquare } from "lucide-react";
+import { Mail, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Contact {
@@ -14,6 +14,8 @@ interface Contact {
   name: string;
   email?: string;
   phone?: string;
+  user_id: string;
+  created_at: string;
 }
 
 interface Template {
@@ -21,6 +23,8 @@ interface Template {
   name: string;
   description: string;
   event_type: string;
+  template_html: string;
+  created_at: string;
 }
 
 interface InvitationDialogProps {
@@ -40,23 +44,33 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (isOpen) {
+      fetchData();
+    }
+  }, [isOpen]);
+
   const fetchData = async () => {
     try {
       // Fetch contacts
-      const { data: contactsData } = await supabase
-        .from("contacts")
-        .select("*");
+      const { data: contactsData, error: contactsError } = await supabase
+        .from('contacts')
+        .select<'contacts', Contact>('*');
+      
+      if (contactsError) throw contactsError;
       
       if (contactsData) {
         setContacts(contactsData);
       }
 
       // Fetch templates
-      const { data: templatesData } = await supabase
-        .from("invitation_templates")
-        .select("*")
-        .eq("event_type", eventType);
+      const { data: templatesData, error: templatesError } = await supabase
+        .from('invitation_templates')
+        .select<'invitation_templates', Template>('*')
+        .eq('event_type', eventType);
       
+      if (templatesError) throw templatesError;
+
       if (templatesData) {
         setTemplates(templatesData);
       }
@@ -84,7 +98,7 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
     try {
       // Create invitation
       const { data: invitation, error: invitationError } = await supabase
-        .from("invitations")
+        .from('invitations')
         .insert({
           event_id: eventId,
           template_id: selectedTemplate,
@@ -99,11 +113,12 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
       const recipients = selectedContacts.map(contactId => ({
         invitation_id: invitation.id,
         contact_id: contactId,
-        delivery_method: deliveryMethod
+        delivery_method: deliveryMethod,
+        status: 'pending'
       }));
 
       const { error: recipientsError } = await supabase
-        .from("invitation_recipients")
+        .from('invitation_recipients')
         .insert(recipients);
 
       if (recipientsError) throw recipientsError;
@@ -182,14 +197,14 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="email" id="email" />
                   <Label htmlFor="email" className="flex items-center gap-2">
-                    <mail className="h-4 w-4" />
+                    <Mail className="h-4 w-4" />
                     Email
                   </Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="sms" id="sms" />
                   <Label htmlFor="sms" className="flex items-center gap-2">
-                    <messageSquare className="h-4 w-4" />
+                    <MessageSquare className="h-4 w-4" />
                     SMS
                   </Label>
                 </div>
