@@ -7,13 +7,17 @@ const SettingsLayout = () => {
   const location = useLocation();
   const { isBusinessUser } = useUserProfile();
 
+  // Redirect to profile if on /settings
+  if (location.pathname === "/settings") {
+    return <Navigate to="/settings/profile" replace />;
+  }
+
   // Redirect non-business users trying to access company settings
   if (location.pathname === "/settings/company" && !isBusinessUser) {
     return <Navigate to="/settings/profile" replace />;
   }
 
   const tabs = [
-    { title: "Settings", path: "/settings" },
     { title: "User Profile", path: "/settings/profile" },
     ...(isBusinessUser ? [{ title: "Company Settings", path: "/settings/company" }] : []),
     { title: "Billing", path: "/settings/billing" }
