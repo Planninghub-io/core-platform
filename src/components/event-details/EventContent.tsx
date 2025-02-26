@@ -88,30 +88,12 @@ export const EventContent = ({
         );
       default:
         return (
-          <div className="space-y-4">
+          <div>
             <EventImage
               imageUrl={event.image_url}
               isEditing={isEditing}
               onImageChange={(value) => onFieldChange('image_url', value)}
             />
-            {isEditing && (
-              <div className="flex gap-4">
-                <Button 
-                  variant="outline"
-                  onClick={() => navigate(`/event/${event.id}/invitations`)}
-                  className="flex-1"
-                >
-                  {hasInvites ? 'Invites' : 'Add Invite'}
-                </Button>
-                <Button 
-                  variant="outline"
-                  onClick={() => navigate(`/event/${event.id}/ticketing`)}
-                  className="flex-1"
-                >
-                  {hasTicketing ? 'Ticketing' : 'Add Ticketing'}
-                </Button>
-              </div>
-            )}
           </div>
         );
     }
@@ -119,7 +101,25 @@ export const EventContent = ({
 
   return (
     <div className="grid gap-8 md:grid-cols-2">
-      {renderLeftPanel()}
+      <div className="space-y-8">
+        {renderLeftPanel()}
+        <div className="flex gap-4 mt-auto pt-[440px]">
+          <Button 
+            variant="outline"
+            onClick={() => navigate(`/event/${event.id}/invitations`)}
+            className="flex-1"
+          >
+            {hasInvites ? 'Invites' : 'Add Invite'}
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => navigate(`/event/${event.id}/ticketing`)}
+            className="flex-1"
+          >
+            {hasTicketing ? 'Ticketing' : 'Add Ticketing'}
+          </Button>
+        </div>
+      </div>
       <EventInfo
         event={event}
         isEditing={isEditing}
