@@ -1,3 +1,4 @@
+
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageSquare, DollarSign, ChevronRight } from "lucide-react";
@@ -20,6 +21,7 @@ interface VendorQuote {
   service: string;
   amount: number;
   message: string;
+  status: 'approved' | 'new';
 }
 
 interface EventDashboardProps {
@@ -45,25 +47,29 @@ export const EventDashboard = ({ event }: EventDashboardProps) => {
       vendorName: "Elite Catering Co.",
       service: "Catering",
       amount: 3000,
-      message: "Full-service catering including setup, service, and cleanup. Menu includes appetizers, main course, and desserts."
+      message: "Full-service catering including setup, service, and cleanup. Menu includes appetizers, main course, and desserts.",
+      status: 'approved'
     },
     {
       vendorName: "Premier Transport",
       service: "Transportation",
       amount: 1500,
-      message: "Luxury shuttle service for all guests, including dedicated event coordinator."
+      message: "Luxury shuttle service for all guests, including dedicated event coordinator.",
+      status: 'new'
     },
     {
       vendorName: "Creative Decor",
       service: "Decoration",
       amount: 2000,
-      message: "Complete venue decoration including floral arrangements, lighting, and table settings."
+      message: "Complete venue decoration including floral arrangements, lighting, and table settings.",
+      status: 'approved'
     },
     {
       vendorName: "Sound & Vision Pro",
       service: "A/V Equipment",
       amount: 1800,
-      message: "Professional audio/visual setup including speakers, microphones, and projection system."
+      message: "Professional audio/visual setup including speakers, microphones, and projection system.",
+      status: 'new'
     }
   ];
 
@@ -145,7 +151,16 @@ export const EventDashboard = ({ event }: EventDashboardProps) => {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
                     <div>
-                      <h3 className="font-semibold">{quote.vendorName}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{quote.vendorName}</h3>
+                        <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                          quote.status === 'approved' 
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : 'bg-blue-100 text-blue-700'
+                        }`}>
+                          {quote.status === 'approved' ? 'Approved' : 'New'}
+                        </span>
+                      </div>
                       <p className="text-sm text-muted-foreground">{quote.service}</p>
                     </div>
                   </div>
@@ -166,7 +181,18 @@ export const EventDashboard = ({ event }: EventDashboardProps) => {
       <Dialog open={!!selectedQuote} onOpenChange={() => setSelectedQuote(null)}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{selectedQuote?.vendorName}</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedQuote?.vendorName}
+              {selectedQuote && (
+                <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
+                  selectedQuote.status === 'approved' 
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-blue-100 text-blue-700'
+                }`}>
+                  {selectedQuote.status === 'approved' ? 'Approved' : 'New'}
+                </span>
+              )}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
