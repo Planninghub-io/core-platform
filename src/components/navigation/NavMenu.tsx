@@ -45,9 +45,9 @@ export const NavMenu = () => {
                 asChild
                 className={location.pathname === item.path ? "bg-accent/10" : ""}
               >
-                <Link to={item.path} className="flex items-center justify-center gap-2 px-2 py-2 text-foreground/80 hover:text-foreground">
+                <Link to={item.path} className="flex items-center px-4 py-2 text-foreground/80 hover:text-foreground">
                   <item.icon className="h-6 w-6" />
-                  <span className="text-sm">{item.title}</span>
+                  <span className="text-sm ml-3">{item.title}</span>
                 </Link>
               </SidebarMenuButton>
             </SidebarMenuItem>
