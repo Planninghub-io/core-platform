@@ -34,10 +34,10 @@ export const EventDashboard = ({ event }: EventDashboardProps) => {
   
   const plannedBudget = event.budget || 10000;
   const expenses: ExpenseCategory[] = [
-    { name: 'Catering', amount: 3000, color: '#8B5CF6' },
-    { name: 'Transportation', amount: 1500, color: '#D946EF' },
-    { name: 'Decoration', amount: 2000, color: '#F97316' },
-    { name: 'A/V Equipment', amount: 1800, color: '#0EA5E9' },
+    { name: 'Catering', amount: 3000, color: '#E5DEFF' },
+    { name: 'Transportation', amount: 1500, color: '#FFDEE2' },
+    { name: 'Decoration', amount: 2000, color: '#FDE1D3' },
+    { name: 'A/V Equipment', amount: 1800, color: '#D3E4FD' },
   ];
 
   const vendorQuotes: VendorQuote[] = [
@@ -72,7 +72,7 @@ export const EventDashboard = ({ event }: EventDashboardProps) => {
   
   const allData = [
     ...expenses,
-    { name: 'Remaining', amount: remaining > 0 ? remaining : 0, color: '#22C55E' }
+    { name: 'Remaining', amount: remaining > 0 ? remaining : 0, color: '#F2FCE2' }
   ];
 
   return (
@@ -106,19 +106,19 @@ export const EventDashboard = ({ event }: EventDashboardProps) => {
                   bottom: 5,
                 }}
               >
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="name" />
-                <YAxis unit="$" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+                <XAxis dataKey="name" stroke="#6B7280" />
+                <YAxis unit="$" stroke="#6B7280" />
                 <Tooltip 
                   formatter={(value) => [`$${value}`, 'Amount']}
-                  contentStyle={{ background: 'white', border: '1px solid #ccc' }}
+                  contentStyle={{ background: 'white', border: '1px solid #E5E7EB' }}
                 />
                 <Bar 
                   dataKey="amount" 
                   radius={[4, 4, 0, 0]}
                 >
                   {allData.map((entry, index) => (
-                    <Cell key={index} fill={entry.color} />
+                    <Cell key={index} fill={entry.color} stroke="#E5E7EB" />
                   ))}
                 </Bar>
               </BarChart>
