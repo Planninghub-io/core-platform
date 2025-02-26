@@ -1,7 +1,8 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Trash2 } from "lucide-react";
 
 interface Event {
   id: string;
@@ -19,12 +20,14 @@ interface EventInfoProps {
   event: Event;
   isEditing: boolean;
   onFieldChange: (field: string, value: string | number) => void;
+  onDelete?: () => void;
 }
 
 export const EventInfo = ({
   event,
   isEditing,
   onFieldChange,
+  onDelete,
 }: EventInfoProps) => {
   return (
     <div className="space-y-6">
@@ -102,6 +105,17 @@ export const EventInfo = ({
           readOnly={!isEditing}
         />
       </div>
+
+      {isEditing && onDelete && event.status !== 'completed' && (
+        <Button 
+          variant="outline"
+          onClick={onDelete}
+          className="w-full text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Delete Event
+        </Button>
+      )}
     </div>
   );
 };

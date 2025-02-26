@@ -99,6 +99,22 @@ export const EventContent = ({
     }
   };
 
+  const handleDelete = async () => {
+    if (window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+      try {
+        const { error } = await supabase
+          .from('events')
+          .delete()
+          .eq('id', event.id);
+
+        if (error) throw error;
+        navigate('/events-hub');
+      } catch (error) {
+        console.error('Error deleting event:', error);
+      }
+    }
+  };
+
   return (
     <div className="grid gap-8 md:grid-cols-2">
       <div className="space-y-8">
@@ -124,6 +140,7 @@ export const EventContent = ({
         event={event}
         isEditing={isEditing}
         onFieldChange={onFieldChange}
+        onDelete={handleDelete}
       />
     </div>
   );

@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Pencil, LayoutDashboard, Bot, Trash2, Mail } from "lucide-react";
+import { ArrowLeft, Pencil, LayoutDashboard, Bot, Trash2 } from "lucide-react";
 
 interface EventHeaderProps {
   isEditing: boolean;
@@ -25,18 +25,13 @@ interface EventHeaderProps {
 
 export const EventHeader = ({
   isEditing,
-  id,
   onBack,
   onEditToggle,
   onDashboard,
   onAiAssistant,
-  onDelete,
   status,
-  event,
   activeView
 }: EventHeaderProps) => {
-  const showDeleteOption = isEditing && onDelete && status !== 'completed';
-
   return (
     <div className="space-y-4 mb-6">
       <Button variant="ghost" onClick={onBack} className="px-3">
@@ -62,15 +57,6 @@ export const EventHeader = ({
         </div>
 
         <div className="flex gap-2">
-          {isEditing && (
-            <Button
-              variant="outline"
-              onClick={() => window.location.href = `/event/${id}/invitations`}
-            >
-              <Mail className="mr-2 h-4 w-4" />
-              Invitations
-            </Button>
-          )}
           <Button 
             variant={isEditing ? "default" : "outline"}
             onClick={onEditToggle}
@@ -78,15 +64,6 @@ export const EventHeader = ({
             <Pencil className="mr-2 h-4 w-4" />
             {isEditing ? "Done" : "Edit"}
           </Button>
-          {showDeleteOption && (
-            <Button 
-              variant="destructive" 
-              onClick={onDelete}
-            >
-              <Trash2 className="mr-2 h-4 w-4" />
-              Delete
-            </Button>
-          )}
         </div>
       </div>
     </div>
