@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -17,6 +18,7 @@ interface EventWithProfile {
   image_url: string | null;
   category: string | null;
   expected_attendees: number | null;
+  status?: string;
   user_profiles: {
     email: string | null;
   } | null;
@@ -134,6 +136,7 @@ const EventDetails = () => {
         onDashboard={() => navigate(`/event/${id}/dashboard`)}
         onAiPlanner={() => navigate(`/event/${id}/ai-planner`)}
         onDelete={handleDelete}
+        status={event.status}
       />
 
       <div className="grid gap-8 md:grid-cols-2">

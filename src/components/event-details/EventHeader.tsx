@@ -10,6 +10,7 @@ interface EventHeaderProps {
   onDashboard: () => void;
   onAiPlanner: () => void;
   onDelete?: () => void;
+  status?: string;
 }
 
 export const EventHeader = ({
@@ -19,13 +20,15 @@ export const EventHeader = ({
   onEditToggle,
   onDashboard,
   onAiPlanner,
-  onDelete
+  onDelete,
+  status
 }: EventHeaderProps) => {
+  const showDeleteOption = isEditing && onDelete && status !== 'completed';
+
   return (
     <div className="space-y-4 mb-6">
-      <Button variant="ghost" onClick={onBack}>
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Events
+      <Button variant="ghost" onClick={onBack} className="px-3">
+        <ArrowLeft className="h-4 w-4" />
       </Button>
       
       <div className="flex items-center justify-between">
@@ -48,7 +51,7 @@ export const EventHeader = ({
             <Pencil className="mr-2 h-4 w-4" />
             {isEditing ? "Done" : "Edit"}
           </Button>
-          {isEditing && onDelete && (
+          {showDeleteOption && (
             <Button 
               variant="destructive" 
               onClick={onDelete}
