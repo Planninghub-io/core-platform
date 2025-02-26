@@ -3,6 +3,10 @@ import { EventImage } from "./EventImage";
 import { EventInfo } from "./EventInfo";
 import { EventAIDialog } from "./EventAIDialog";
 import { EventDashboard } from "./EventDashboard";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Event {
   id: string;
@@ -30,6 +34,38 @@ export const EventContent = ({
   viewMode,
   onFieldChange
 }: EventContentProps) => {
+  const navigate = useNavigate();
+  const [hasInvites, setHasInvites] = useState(false);
+  const [hasTicketing, setHasTicketing] = useState(false);
+
+  useEffect(() => {
+    checkInvitesAndTicketing();
+  }, [event.id]);
+
+  const checkInvitesAndTicketing = async () => {
+    try {
+      // Check for invites
+      const { data: invitations } = await supabase
+        .from('invitations')
+        .select('id')
+        .eq('event_id', event.id)
+        .limit(1);
+      
+      setHasInvites(invitations && invitations.length > 0);
+
+      // Check for ticketing
+      const { data: ticketing } = await supabase
+        .from('event_ticketing')
+        .select('id')
+        .eq('event_id', event.id)
+        .limit(1);
+      
+      setHasTicketing(ticketing && ticketing.length > 0);
+    } catch (error) {
+      console.error('Error checking invites and ticketing:', error);
+    }
+  };
+
   if (viewMode === 'dashboard') {
     return (
       <div className="space-y-6">
@@ -52,11 +88,31 @@ export const EventContent = ({
         );
       default:
         return (
-          <EventImage
-            imageUrl={event.image_url}
-            isEditing={isEditing}
-            onImageChange={(value) => onFieldChange('image_url', value)}
-          />
+          <div className="space-y-4">
+            <EventImage
+              imageUrl={event.image_url}
+              isEditing={isEditing}
+              onImageChange={(value) => onFieldChange('image_url', value)}
+            />
+            {isEditing && (
+              <div className="flex gap-4">
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate(`/event/${event.id}/invitations`)}
+                  className="flex-1"
+                >
+                  {hasInvites ? 'Invites' : 'Add Invite'}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate(`/event/${event.id}/ticketing`)}
+                  className="flex-1"
+                >
+                  {hasTicketing ? 'Ticketing' : 'Add Ticketing'}
+                </Button>
+              </div>
+            )}
+          </div>
         );
     }
   };

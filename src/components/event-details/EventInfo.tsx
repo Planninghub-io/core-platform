@@ -1,10 +1,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 
 interface Event {
   id: string;
@@ -29,38 +26,6 @@ export const EventInfo = ({
   isEditing,
   onFieldChange,
 }: EventInfoProps) => {
-  const navigate = useNavigate();
-  const [hasInvites, setHasInvites] = useState(false);
-  const [hasTicketing, setHasTicketing] = useState(false);
-
-  useEffect(() => {
-    checkInvitesAndTicketing();
-  }, [event.id]);
-
-  const checkInvitesAndTicketing = async () => {
-    try {
-      // Check for invites
-      const { data: invitations } = await supabase
-        .from('invitations')
-        .select('id')
-        .eq('event_id', event.id)
-        .limit(1);
-      
-      setHasInvites(invitations && invitations.length > 0);
-
-      // Check for ticketing
-      const { data: ticketing } = await supabase
-        .from('event_ticketing')
-        .select('id')
-        .eq('event_id', event.id)
-        .limit(1);
-      
-      setHasTicketing(ticketing && ticketing.length > 0);
-    } catch (error) {
-      console.error('Error checking invites and ticketing:', error);
-    }
-  };
-
   return (
     <div className="space-y-6">
       <div>
@@ -115,25 +80,6 @@ export const EventInfo = ({
           readOnly={!isEditing}
         />
       </div>
-
-      {isEditing && (
-        <div className="flex gap-4">
-          <Button 
-            variant="outline"
-            onClick={() => navigate(`/event/${event.id}/invitations`)}
-            className="flex-1"
-          >
-            {hasInvites ? 'Invites' : 'Add Invite'}
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={() => navigate(`/event/${event.id}/ticketing`)}
-            className="flex-1"
-          >
-            {hasTicketing ? 'Ticketing' : 'Add Ticketing'}
-          </Button>
-        </div>
-      )}
 
       <div>
         <Label htmlFor="expected_attendees">Expected Attendees</Label>
