@@ -33,11 +33,11 @@ export const EventHeader = ({
   return (
     <div className="space-y-4 mb-6">
       <div className="flex items-center justify-between">
-        <div className="flex gap-2">
+        <div className="flex gap-4">
           <Button 
             variant="ghost" 
             onClick={onBack} 
-            className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 p-2"
+            className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 p-2 -ml-2"
             size="icon"
           >
             <ArrowLeft className="h-5 w-5" />
