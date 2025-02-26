@@ -1,7 +1,6 @@
-
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MessageSquare, DollarSign, ChevronRight } from "lucide-react";
+import { MessageSquare, DollarSign, ChevronRight, Mail } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -9,6 +8,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useState } from "react";
+import { InvitationDialog } from "./InvitationDialog";
+import { Button } from "@/components/ui/button";
 
 interface ExpenseCategory {
   name: string;
@@ -26,13 +27,16 @@ interface VendorQuote {
 
 interface EventDashboardProps {
   event: {
+    id: string;
     title: string;
     budget?: number;
+    category?: string;
   };
 }
 
 export const EventDashboard = ({ event }: EventDashboardProps) => {
   const [selectedQuote, setSelectedQuote] = useState<VendorQuote | null>(null);
+  const [isInvitationDialogOpen, setIsInvitationDialogOpen] = useState(false);
   
   const plannedBudget = event.budget || 10000;
   const expenses: ExpenseCategory[] = [
@@ -83,6 +87,17 @@ export const EventDashboard = ({ event }: EventDashboardProps) => {
 
   return (
     <div className="space-y-8">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Event Dashboard</h2>
+        <Button
+          onClick={() => setIsInvitationDialogOpen(true)}
+          className="flex items-center gap-2"
+        >
+          <Mail className="h-4 w-4" />
+          Send Invitations
+        </Button>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Budget Overview & Breakdown</CardTitle>
@@ -210,6 +225,13 @@ export const EventDashboard = ({ event }: EventDashboardProps) => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <InvitationDialog
+        isOpen={isInvitationDialogOpen}
+        onClose={() => setIsInvitationDialogOpen(false)}
+        eventId={event.id}
+        eventType={event.category || "social"}
+      />
     </div>
   );
 };
