@@ -34,10 +34,10 @@ export const EventDashboard = ({ event }: EventDashboardProps) => {
   
   const plannedBudget = event.budget || 10000;
   const expenses: ExpenseCategory[] = [
-    { name: 'Catering', amount: 3000, color: '#E5DEFF' },
-    { name: 'Transportation', amount: 1500, color: '#FFDEE2' },
-    { name: 'Decoration', amount: 2000, color: '#FDE1D3' },
-    { name: 'A/V Equipment', amount: 1800, color: '#D3E4FD' },
+    { name: 'Catering', amount: 3000, color: '#C4B5FD' },
+    { name: 'Transportation', amount: 1500, color: '#FDA4AF' },
+    { name: 'Decoration', amount: 2000, color: '#FDBA74' },
+    { name: 'A/V Equipment', amount: 1800, color: '#93C5FD' },
   ];
 
   const vendorQuotes: VendorQuote[] = [
@@ -72,7 +72,7 @@ export const EventDashboard = ({ event }: EventDashboardProps) => {
   
   const allData = [
     ...expenses,
-    { name: 'Remaining', amount: remaining > 0 ? remaining : 0, color: '#F2FCE2' }
+    { name: 'Remaining', amount: remaining > 0 ? remaining : 0, color: '#BBF7D0' }
   ];
 
   return (
