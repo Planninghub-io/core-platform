@@ -22,37 +22,42 @@ export const EventHeader = ({
   onDelete
 }: EventHeaderProps) => {
   return (
-    <div className="flex items-center justify-between mb-6">
+    <div className="space-y-4 mb-6">
       <Button variant="ghost" onClick={onBack}>
         <ArrowLeft className="mr-2 h-4 w-4" />
         Back to Events
       </Button>
       
-      <div className="flex gap-2">
-        <Button variant="outline" onClick={onAiPlanner}>
-          <Bot className="mr-2 h-4 w-4" />
-          AI Planner
-        </Button>
-        <Button 
-          variant={isEditing ? "default" : "outline"}
-          onClick={onEditToggle}
-        >
-          <Pencil className="mr-2 h-4 w-4" />
-          {isEditing ? "Done" : "Edit"}
-        </Button>
-        <Button variant="outline" onClick={onDashboard}>
-          <LayoutDashboard className="mr-2 h-4 w-4" />
-          Dashboard
-        </Button>
-        {isEditing && onDelete && (
-          <Button 
-            variant="destructive" 
-            onClick={onDelete}
-          >
-            <Trash2 className="mr-2 h-4 w-4" />
-            Delete
+      <div className="flex items-center justify-between">
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={onDashboard}>
+            <LayoutDashboard className="mr-2 h-4 w-4" />
+            Dashboard
           </Button>
-        )}
+          <Button variant="outline" onClick={onAiPlanner}>
+            <Bot className="mr-2 h-4 w-4" />
+            AI Planner
+          </Button>
+        </div>
+
+        <div className="flex gap-2">
+          <Button 
+            variant={isEditing ? "default" : "outline"}
+            onClick={onEditToggle}
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            {isEditing ? "Done" : "Edit"}
+          </Button>
+          {isEditing && onDelete && (
+            <Button 
+              variant="destructive" 
+              onClick={onDelete}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete
+            </Button>
+          )}
+        </div>
       </div>
     </div>
   );
