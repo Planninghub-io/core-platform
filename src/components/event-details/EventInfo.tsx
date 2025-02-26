@@ -2,6 +2,8 @@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Calendar, MapPin, User, Users } from "lucide-react";
+import { getDisplayName } from "@/utils/userUtils";
+import type { UserProfile } from "@/types/user";
 
 interface EventInfoProps {
   event: {
@@ -11,9 +13,7 @@ interface EventInfoProps {
     expected_attendees: number | null;
     description: string | null;
     category: string | null;
-    user_profiles?: {
-      email: string | null;
-    } | null;
+    user_profiles?: UserProfile | null;
   };
   isEditing: boolean;
   onFieldChange: (field: string, value: string | number) => void;
@@ -35,7 +35,7 @@ export const EventInfo = ({ event, isEditing, onFieldChange }: EventInfoProps) =
         )}
         <div className="flex items-center gap-2 text-muted-foreground">
           <User className="h-4 w-4" />
-          <span>Created by {event.user_profiles?.email}</span>
+          <span>Created by {event.user_profiles ? getDisplayName(event.user_profiles) : 'Unknown'}</span>
         </div>
       </div>
 
