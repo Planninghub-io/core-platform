@@ -14,6 +14,8 @@ interface TicketType {
   quantity: number | null;
   description: string | null;
   status: string;
+  event_id: string;
+  created_at: string;
 }
 
 const EventTicketing = () => {
@@ -21,11 +23,11 @@ const EventTicketing = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [tickets, setTickets] = useState<TicketType[]>([]);
-  const [newTicket, setNewTicket] = useState<Partial<TicketType>>({
+  const [newTicket, setNewTicket] = useState({
     ticket_name: '',
-    price: null,
-    quantity: null,
-    description: '',
+    price: null as number | null,
+    quantity: null as number | null,
+    description: null as string | null,
   });
 
   useEffect(() => {
@@ -33,6 +35,8 @@ const EventTicketing = () => {
   }, [eventId]);
 
   const fetchTickets = async () => {
+    if (!eventId) return;
+    
     try {
       const { data, error } = await supabase
         .from('event_ticketing')
@@ -53,13 +57,20 @@ const EventTicketing = () => {
   };
 
   const handleAddTicket = async () => {
+    if (!eventId || !newTicket.ticket_name) return;
+
     try {
+      const ticketData = {
+        event_id: eventId,
+        ticket_name: newTicket.ticket_name,
+        price: newTicket.price,
+        quantity: newTicket.quantity,
+        description: newTicket.description,
+      };
+
       const { error } = await supabase
         .from('event_ticketing')
-        .insert({
-          event_id: eventId,
-          ...newTicket,
-        });
+        .insert(ticketData);
 
       if (error) throw error;
 
@@ -71,7 +82,7 @@ const EventTicketing = () => {
         ticket_name: '',
         price: null,
         quantity: null,
-        description: '',
+        description: null,
       });
       
       fetchTickets();
@@ -112,7 +123,7 @@ const EventTicketing = () => {
                 id="price"
                 type="number"
                 value={newTicket.price || ''}
-                onChange={(e) => setNewTicket(prev => ({ ...prev, price: parseFloat(e.target.value) }))}
+                onChange={(e) => setNewTicket(prev => ({ ...prev, price: e.target.value ? parseFloat(e.target.value) : null }))}
               />
             </div>
             <div>
@@ -121,7 +132,7 @@ const EventTicketing = () => {
                 id="quantity"
                 type="number"
                 value={newTicket.quantity || ''}
-                onChange={(e) => setNewTicket(prev => ({ ...prev, quantity: parseInt(e.target.value) }))}
+                onChange={(e) => setNewTicket(prev => ({ ...prev, quantity: e.target.value ? parseInt(e.target.value) : null }))}
               />
             </div>
           </div>
@@ -131,7 +142,7 @@ const EventTicketing = () => {
               id="description"
               className="w-full min-h-[100px] p-2 border rounded-md"
               value={newTicket.description || ''}
-              onChange={(e) => setNewTicket(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) => setNewTicket(prev => ({ ...prev, description: e.target.value || null }))}
             />
           </div>
           <Button onClick={handleAddTicket} disabled={!newTicket.ticket_name}>
