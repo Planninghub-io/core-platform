@@ -71,8 +71,9 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
   const fetchData = async () => {
     try {
       const { data: contactsData, error: contactsError } = await supabase
-        .from<'contacts', Contact>('contacts')
-        .select();
+        .from('contacts')
+        .select('*')
+        .returns<Contact[]>();
       
       if (contactsError) throw contactsError;
       
@@ -81,9 +82,10 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
       }
 
       const { data: templatesData, error: templatesError } = await supabase
-        .from<'invitation_templates', InvitationTemplate>('invitation_templates')
-        .select()
-        .eq('event_type', eventType);
+        .from('invitation_templates')
+        .select('*')
+        .eq('event_type', eventType)
+        .returns<InvitationTemplate[]>();
       
       if (templatesError) throw templatesError;
 
@@ -113,18 +115,19 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
     setIsLoading(true);
     try {
       const { data: invitation, error: invitationError } = await supabase
-        .from<'invitations', Invitation>('invitations')
+        .from('invitations')
         .insert({
           event_id: eventId,
           template_id: selectedTemplate,
           status: "pending"
-        } as Invitation)
+        })
         .select()
-        .single();
+        .single()
+        .returns<Invitation>();
 
       if (invitationError) throw invitationError;
 
-      const recipients: Partial<InvitationRecipient>[] = selectedContacts.map(contactId => ({
+      const recipients = selectedContacts.map(contactId => ({
         invitation_id: invitation.id,
         contact_id: contactId,
         delivery_method: deliveryMethod,
@@ -132,7 +135,7 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
       }));
 
       const { error: recipientsError } = await supabase
-        .from<'invitation_recipients', InvitationRecipient>('invitation_recipients')
+        .from('invitation_recipients')
         .insert(recipients);
 
       if (recipientsError) throw recipientsError;

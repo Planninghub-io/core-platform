@@ -54,6 +54,33 @@ export type Database = {
         }
         Relationships: []
       }
+      contacts: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       events: {
         Row: {
           category: string | null
@@ -116,6 +143,117 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitation_recipients: {
+        Row: {
+          contact_id: string
+          created_at: string
+          delivery_method: string
+          id: string
+          invitation_id: string
+          sent_at: string | null
+          status: string
+        }
+        Insert: {
+          contact_id: string
+          created_at?: string
+          delivery_method: string
+          id?: string
+          invitation_id: string
+          sent_at?: string | null
+          status?: string
+        }
+        Update: {
+          contact_id?: string
+          created_at?: string
+          delivery_method?: string
+          id?: string
+          invitation_id?: string
+          sent_at?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitation_recipients_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitation_recipients_invitation_id_fkey"
+            columns: ["invitation_id"]
+            isOneToOne: false
+            referencedRelation: "invitations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invitation_templates: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_type: string
+          id: string
+          name: string
+          template_html: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_type: string
+          id?: string
+          name: string
+          template_html: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_type?: string
+          id?: string
+          name?: string
+          template_html?: string
+        }
+        Relationships: []
+      }
+      invitations: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          status: string
+          template_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          status?: string
+          template_id: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          status?: string
+          template_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invitations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invitations_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "invitation_templates"
             referencedColumns: ["id"]
           },
         ]
