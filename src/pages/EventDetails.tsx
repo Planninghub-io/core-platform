@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -90,6 +89,33 @@ const EventDetails = () => {
     saveChanges({ [field]: value });
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      toast({
+        description: "Event deleted successfully",
+      });
+      navigate('/events-hub');
+    } catch (error) {
+      console.error('Error deleting event:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete event. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return <div className="container py-8">Loading...</div>;
   }
@@ -107,6 +133,7 @@ const EventDetails = () => {
         onEditToggle={() => navigate(isEditing ? `/event/${id}` : `/event/${id}?edit=true`)}
         onDashboard={() => navigate(`/event/${id}/dashboard`)}
         onAiPlanner={() => navigate(`/event/${id}/ai-planner`)}
+        onDelete={handleDelete}
       />
 
       <div className="grid gap-8 md:grid-cols-2">
