@@ -19,6 +19,7 @@ interface GeneratedEvent {
   category: string;
   estimatedPrice: string;
   imagePrompt: string;
+  imageUrl?: string;
 }
 
 interface GeneratedEventCardProps {
@@ -71,21 +72,19 @@ export const GeneratedEventCard = ({
   return (
     <Card className="mt-6 text-left">
       <div className="flex flex-col md:flex-row">
-        {event.imagePrompt && (
-          <div className="w-full md:w-1/3 p-4">
-            <div className="relative overflow-hidden rounded-lg">
-              <img 
-                src={imageUrl || "/placeholder.svg"}
-                alt={eventTitle || "Event"}
-                className="w-full h-[200px] object-cover animate-fade-in rounded-lg transition-transform duration-300 hover:scale-105"
-              />
-            </div>
+        <div className="w-full md:w-1/3 p-4">
+          <div className="relative overflow-hidden rounded-lg">
+            <img 
+              src={event.imageUrl || imageUrl || "/placeholder.svg"}
+              alt={eventTitle || event.title || "Event"}
+              className="w-full h-[200px] object-cover animate-fade-in rounded-lg transition-transform duration-300 hover:scale-105"
+            />
           </div>
-        )}
-        <div className={`flex-1 ${event.imagePrompt ? 'md:w-2/3' : 'w-full'}`}>
+        </div>
+        <div className="flex-1 md:w-2/3">
           <CardHeader className="space-y-2">
             <Input
-              value={eventTitle}
+              value={eventTitle || event.title}
               onChange={(e) => onTitleChange(e.target.value)}
               placeholder="Enter event title"
               className="text-xl font-semibold border-none px-0 focus-visible:ring-0"
@@ -112,10 +111,6 @@ export const GeneratedEventCard = ({
               {event.estimatedPrice && (
                 <span>Starting from {event.estimatedPrice}</span>
               )}
-            </div>
-            <div className="space-y-2">
-              <h3 className="font-semibold text-sm text-gray-700">Description</h3>
-              <p className="text-sm text-gray-600">{event.description}</p>
             </div>
           </CardContent>
           <CardFooter className="flex gap-2">

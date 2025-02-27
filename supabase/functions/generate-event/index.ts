@@ -1,11 +1,21 @@
 
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { CreateCompletionRequest } from "https://esm.sh/openai@4.20.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+interface GeneratedEvent {
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  category: string;
+  estimatedPrice: string;
+  imagePrompt: string;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -13,107 +23,115 @@ serve(async (req) => {
   }
 
   try {
-    const { prompt } = await req.json();
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
+    const { prompt, additionalInfo } = await req.json();
+    console.log('Received prompt:', prompt, 'Additional info:', additionalInfo);
 
-    if (!openAIApiKey) {
-      throw new Error('OpenAI API key is not configured');
+    // Combine prompt with additional info if provided
+    let fullPrompt = prompt;
+    if (additionalInfo) {
+      const additionalDetails = Object.entries(additionalInfo)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(", ");
+      fullPrompt = `${prompt}. Additional details: ${additionalDetails}`;
     }
 
-    console.log('Starting event generation for prompt:', prompt);
-
+    // Generate event details using OpenAI
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: "gpt-4o-mini",
         messages: [
           {
-            role: 'system',
-            content: `You are an event planning assistant. Analyze the user's input and respond with ONE of these two JSON formats:
-
-1. If you have enough information to generate a complete event (must include at minimum a clear title and basic description), return:
-{
-  "title": "Clear and descriptive event title",
-  "description": "Detailed event description",
-  "date": "Event date and time",
-  "location": "Event location",
-  "category": "Event category",
-  "estimatedPrice": "Price estimate",
-  "imagePrompt": "Description for image generation"
-}
-
-2. If ANY critical information is missing (including title, date, or location), return:
-{
-  "needsInfo": true,
-  "missingFields": ["list", "of", "missing", "fields"],
-  "message": "Please provide: [list missing information]"
-}
-
-IMPORTANT:
-- NEVER return a mixed or partial response
-- NEVER return an event without a title
-- If in doubt about having enough information, use format #2 to request more details`
+            role: "system",
+            content: `You are an event planning assistant. Generate compelling event details from user prompts. 
+            Always create an engaging title that captures the event's essence. 
+            For image prompts, create detailed descriptions focusing on the event's atmosphere and setting.`
           },
-          { role: 'user', content: prompt }
+          {
+            role: "user",
+            content: `Create an event based on this description: ${fullPrompt}. 
+            Include a catchy title, detailed description, location, category, and estimated price range.
+            Also create a detailed image prompt that captures the event's atmosphere.`
+          }
         ],
-        temperature: 0.7,
-        max_tokens: 1000
+        temperature: 0.7
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error response:', errorText);
-      throw new Error(`OpenAI API error: ${errorText}`);
-    }
-
     const data = await response.json();
-    console.log('OpenAI response:', data);
-    
-    if (!data.choices?.[0]?.message?.content) {
-      console.error('Invalid OpenAI response structure:', data);
-      throw new Error('Invalid response format from OpenAI');
-    }
+    const content = data.choices[0].message.content;
 
-    const aiResponse = data.choices[0].message.content;
-    console.log('AI response content:', aiResponse);
-    
-    let eventDetails;
     try {
-      eventDetails = JSON.parse(aiResponse);
-      console.log('Parsed event details:', eventDetails);
+      // Parse the response and extract event details
+      const lines = content.split('\n');
+      let event: Partial<GeneratedEvent> = {};
+      
+      lines.forEach(line => {
+        if (line.toLowerCase().startsWith('title:')) event.title = line.split(':')[1].trim();
+        if (line.toLowerCase().startsWith('description:')) event.description = line.split(':')[1].trim();
+        if (line.toLowerCase().startsWith('location:')) event.location = line.split(':')[1].trim();
+        if (line.toLowerCase().startsWith('category:')) event.category = line.split(':')[1].trim();
+        if (line.toLowerCase().startsWith('estimated price:')) event.estimatedPrice = line.split(':')[1].trim();
+        if (line.toLowerCase().startsWith('image prompt:')) event.imagePrompt = line.split(':')[1].trim();
+      });
 
-      // Additional validation to ensure we have either a valid event or a proper needsInfo response
-      if (eventDetails.needsInfo === true) {
-        if (!Array.isArray(eventDetails.missingFields) || !eventDetails.message) {
-          throw new Error('Invalid needsInfo response format');
-        }
-      } else {
-        if (!eventDetails.title || typeof eventDetails.title !== 'string' || eventDetails.title.trim() === '') {
-          throw new Error('Generated event must have a title');
-        }
+      // Validate required fields
+      const requiredFields = ['title', 'description', 'location', 'category', 'estimatedPrice'] as const;
+      const missingFields = requiredFields.filter(field => !event[field]);
+
+      if (missingFields.length > 0) {
+        return new Response(
+          JSON.stringify({
+            needsInfo: true,
+            missingFields,
+            message: `Please provide: ${missingFields.join(', ')}`
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
       }
-    } catch (parseError) {
-      console.error('Failed to parse or validate AI response:', aiResponse);
-      throw new Error('Invalid response format from AI');
+
+      // Generate image for the event
+      const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: "dall-e-3",
+          prompt: event.imagePrompt,
+          n: 1,
+          size: "1024x1024"
+        })
+      });
+
+      const imageData = await imageResponse.json();
+      const imageUrl = imageData.data?.[0]?.url;
+
+      return new Response(
+        JSON.stringify({
+          ...event,
+          imageUrl
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+
+    } catch (error) {
+      console.error('Error parsing event details:', error);
+      throw new Error('Failed to parse event details');
     }
 
-    console.log('Final event details being returned:', eventDetails);
-    return new Response(JSON.stringify(eventDetails), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
   } catch (error) {
-    console.error('Generate event error:', error);
+    console.error('Error:', error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Failed to generate event. Please try again.' 
-      }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      JSON.stringify({ error: error.message }),
+      { 
+        status: 500, 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
     );
   }
