@@ -74,6 +74,24 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
           ))}
         </div>
       </div>
+
+      <div className="border-t pt-4">
+        <h4 className="font-medium mb-3">RSVP Statistics</h4>
+        <div className="grid grid-cols-3 gap-4">
+          <div className="bg-green-50 rounded-lg p-4 text-center">
+            <p className="text-2xl font-semibold text-green-600">0</p>
+            <p className="text-sm text-green-700">Accepted</p>
+          </div>
+          <div className="bg-red-50 rounded-lg p-4 text-center">
+            <p className="text-2xl font-semibold text-red-600">0</p>
+            <p className="text-sm text-red-700">Declined</p>
+          </div>
+          <div className="bg-yellow-50 rounded-lg p-4 text-center">
+            <p className="text-2xl font-semibold text-yellow-600">0</p>
+            <p className="text-sm text-yellow-700">Maybe</p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
