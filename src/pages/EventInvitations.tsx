@@ -1,8 +1,7 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Send, Plus } from "lucide-react";
+import { ArrowLeft, Send, Edit2, Plus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { InvitationDialog } from "@/components/event-details/InvitationDialog";
@@ -121,7 +120,6 @@ const EventInvitations = () => {
     if (!eventDetails) return;
 
     try {
-      // Generate invitation template
       const { data: generatedTemplate, error: generationError } = await supabase.functions.invoke(
         'generate-invitation',
         {
@@ -134,7 +132,6 @@ const EventInvitations = () => {
 
       if (generationError) throw generationError;
 
-      // Save template to database
       const { data: templateData, error: templateError } = await supabase
         .from('invitation_templates')
         .insert({
@@ -148,7 +145,6 @@ const EventInvitations = () => {
 
       if (templateError) throw templateError;
 
-      // Create invitation with the new template
       const { error: invitationError } = await supabase
         .from('invitations')
         .insert({
@@ -175,6 +171,11 @@ const EventInvitations = () => {
     }
   };
 
+  const handleEditInvitation = (invitation: Invitation) => {
+    setThemeDescription(invitation.invitation_templates.description || "");
+    setIsThemeDialogOpen(true);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'sent':
@@ -197,17 +198,13 @@ const EventInvitations = () => {
           </Button>
           <h1 className="text-3xl font-bold">Event Invitations</h1>
         </div>
-        <div className="flex gap-2">
+        <div>
           {invitations.length > 0 && (
-            <Button onClick={() => setIsInvitationDialogOpen(true)} variant="outline">
+            <Button onClick={() => setIsInvitationDialogOpen(true)} variant="default">
               <Send className="h-4 w-4 mr-2" />
               Send Invitations
             </Button>
           )}
-          <Button onClick={() => setIsThemeDialogOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Invite
-          </Button>
         </div>
       </div>
 
@@ -230,9 +227,21 @@ const EventInvitations = () => {
                     {invitation.invitation_templates.description}
                   </p>
                 </div>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(invitation.status)}`}>
-                  {invitation.status}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(invitation.status)}`}>
+                    {invitation.status}
+                  </span>
+                  {invitation.status === 'draft' && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleEditInvitation(invitation)}
+                      className="ml-2"
+                    >
+                      <Edit2 className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
               </div>
 
               <div className="border rounded-lg overflow-hidden">
