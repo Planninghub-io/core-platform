@@ -39,7 +39,7 @@ export const ThemeDialog = ({
             Cancel
           </Button>
           <Button onClick={() => onSubmit(themeDescription || undefined)}>
-            Generate Invitation
+            {themeDescription ? "Update Invitation" : "Generate Invitation"}
           </Button>
         </DialogFooter>
       </DialogContent>

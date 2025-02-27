@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -20,6 +19,7 @@ const EventInvitations = () => {
   const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
   const [themeDescription, setThemeDescription] = useState("");
   const [eventDetails, setEventDetails] = useState<Event | null>(null);
+  const [editingInvitation, setEditingInvitation] = useState<Invitation | null>(null);
 
   useEffect(() => {
     fetchEventDetails();
@@ -86,6 +86,12 @@ const EventInvitations = () => {
     }
   };
 
+  const handleEditInvitation = (invitation: Invitation) => {
+    setEditingInvitation(invitation);
+    setThemeDescription(invitation.invitation_templates.description || "");
+    setIsThemeDialogOpen(true);
+  };
+
   const handleGenerateInvitation = async (customTheme?: string) => {
     if (!eventDetails) return;
 
@@ -102,40 +108,53 @@ const EventInvitations = () => {
 
       if (generationError) throw generationError;
 
-      const { data: templateData, error: templateError } = await supabase
-        .from('invitation_templates')
-        .insert({
-          name: `${eventDetails.title} Invitation`,
-          description: customTheme || 'Elegant and Professional Theme',
-          event_type: 'custom',
-          template_html: generatedTemplate.template
-        })
-        .select()
-        .single();
+      if (editingInvitation) {
+        const { error: templateError } = await supabase
+          .from('invitation_templates')
+          .update({
+            description: customTheme || 'Elegant and Professional Theme',
+            template_html: generatedTemplate.template
+          })
+          .eq('id', editingInvitation.template_id);
 
-      if (templateError) throw templateError;
+        if (templateError) throw templateError;
+      } else {
+        const { data: templateData, error: templateError } = await supabase
+          .from('invitation_templates')
+          .insert({
+            name: `${eventDetails.title} Invitation`,
+            description: customTheme || 'Elegant and Professional Theme',
+            event_type: 'custom',
+            template_html: generatedTemplate.template
+          })
+          .select()
+          .single();
 
-      const { error: invitationError } = await supabase
-        .from('invitations')
-        .insert({
-          event_id: id,
-          template_id: templateData.id,
-          status: 'draft'
-        });
+        if (templateError) throw templateError;
 
-      if (invitationError) throw invitationError;
+        const { error: invitationError } = await supabase
+          .from('invitations')
+          .insert({
+            event_id: id,
+            template_id: templateData.id,
+            status: 'draft'
+          });
+
+        if (invitationError) throw invitationError;
+      }
 
       await fetchInvitations();
       setIsThemeDialogOpen(false);
       setThemeDescription("");
+      setEditingInvitation(null);
       toast({
-        description: "Invitation created successfully",
+        description: editingInvitation ? "Invitation updated successfully" : "Invitation created successfully",
       });
     } catch (error) {
-      console.error('Error generating invitation:', error);
+      console.error('Error with invitation:', error);
       toast({
         title: "Error",
-        description: "Failed to generate invitation",
+        description: editingInvitation ? "Failed to update invitation" : "Failed to generate invitation",
         variant: "destructive",
       });
     }
@@ -172,10 +191,7 @@ const EventInvitations = () => {
             <InvitationCard
               key={invitation.id}
               invitation={invitation}
-              onEdit={() => {
-                setThemeDescription(invitation.invitation_templates.description || "");
-                setIsThemeDialogOpen(true);
-              }}
+              onEdit={handleEditInvitation}
             />
           ))}
         </div>
@@ -183,7 +199,10 @@ const EventInvitations = () => {
 
       <ThemeDialog
         isOpen={isThemeDialogOpen}
-        onClose={() => setIsThemeDialogOpen(false)}
+        onClose={() => {
+          setIsThemeDialogOpen(false);
+          setEditingInvitation(null);
+        }}
         themeDescription={themeDescription}
         onThemeChange={setThemeDescription}
         onSubmit={handleGenerateInvitation}
