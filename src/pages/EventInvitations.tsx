@@ -2,9 +2,12 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Send, Plus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { InvitationDialog } from "@/components/event-details/InvitationDialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 interface Invitation {
   id: string;
@@ -26,7 +29,16 @@ interface Invitation {
   invitation_templates: {
     name: string;
     description: string | null;
+    template_html: string;
   };
+}
+
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
 }
 
 const EventInvitations = () => {
@@ -35,10 +47,35 @@ const EventInvitations = () => {
   const { toast } = useToast();
   const [invitations, setInvitations] = useState<Invitation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isInvitationDialogOpen, setIsInvitationDialogOpen] = useState(false);
+  const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
+  const [themeDescription, setThemeDescription] = useState("");
+  const [eventDetails, setEventDetails] = useState<Event | null>(null);
 
   useEffect(() => {
+    fetchEventDetails();
     fetchInvitations();
   }, [id]);
+
+  const fetchEventDetails = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('events')
+        .select('id, title, description, date, location')
+        .eq('id', id)
+        .single();
+
+      if (error) throw error;
+      setEventDetails(data);
+    } catch (error) {
+      console.error('Error fetching event details:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch event details",
+        variant: "destructive",
+      });
+    }
+  };
 
   const fetchInvitations = async () => {
     try {
@@ -59,14 +96,14 @@ const EventInvitations = () => {
           ),
           invitation_templates (
             name,
-            description
+            description,
+            template_html
           )
         `)
         .eq('event_id', id)
         .returns<Invitation[]>();
 
       if (error) throw error;
-
       setInvitations(data || []);
     } catch (error) {
       console.error('Error fetching invitations:', error);
@@ -77,6 +114,64 @@ const EventInvitations = () => {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleGenerateInvitation = async (customTheme?: string) => {
+    if (!eventDetails) return;
+
+    try {
+      // Generate invitation template
+      const { data: generatedTemplate, error: generationError } = await supabase.functions.invoke(
+        'generate-invitation',
+        {
+          body: { 
+            eventDetails,
+            theme: customTheme || 'elegant and professional'
+          }
+        }
+      );
+
+      if (generationError) throw generationError;
+
+      // Save template to database
+      const { data: templateData, error: templateError } = await supabase
+        .from('invitation_templates')
+        .insert({
+          name: `${eventDetails.title} Invitation`,
+          description: customTheme || 'Elegant and Professional Theme',
+          event_type: 'custom',
+          template_html: generatedTemplate.template
+        })
+        .select()
+        .single();
+
+      if (templateError) throw templateError;
+
+      // Create invitation with the new template
+      const { error: invitationError } = await supabase
+        .from('invitations')
+        .insert({
+          event_id: id,
+          template_id: templateData.id,
+          status: 'draft'
+        });
+
+      if (invitationError) throw invitationError;
+
+      await fetchInvitations();
+      setIsThemeDialogOpen(false);
+      setThemeDescription("");
+      toast({
+        description: "Invitation created successfully",
+      });
+    } catch (error) {
+      console.error('Error generating invitation:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate invitation",
+        variant: "destructive",
+      });
     }
   };
 
@@ -95,18 +190,32 @@ const EventInvitations = () => {
 
   return (
     <div className="container py-8">
-      <div className="mb-6">
-        <Button variant="ghost" onClick={() => navigate(`/event/${id}?edit=true`)} className="px-3">
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <h1 className="text-3xl font-bold mt-4">Event Invitations</h1>
+      <div className="flex justify-between items-center mb-6">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" onClick={() => navigate(`/event/${id}?edit=true`)} className="px-3">
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-3xl font-bold">Event Invitations</h1>
+        </div>
+        <div className="flex gap-2">
+          {invitations.length > 0 && (
+            <Button onClick={() => setIsInvitationDialogOpen(true)} variant="outline">
+              <Send className="h-4 w-4 mr-2" />
+              Send Invitations
+            </Button>
+          )}
+          <Button onClick={() => setIsThemeDialogOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Invite
+          </Button>
+        </div>
       </div>
 
       {loading ? (
         <div>Loading invitations...</div>
       ) : invitations.length === 0 ? (
         <div className="text-center py-8 text-muted-foreground">
-          No invitations have been sent for this event yet.
+          No invitations have been created for this event yet.
         </div>
       ) : (
         <div className="space-y-6">
@@ -124,6 +233,10 @@ const EventInvitations = () => {
                 <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(invitation.status)}`}>
                   {invitation.status}
                 </span>
+              </div>
+
+              <div className="border rounded-lg overflow-hidden">
+                <div dangerouslySetInnerHTML={{ __html: invitation.invitation_templates.template_html }} />
               </div>
 
               <div className="border-t pt-4">
@@ -150,6 +263,39 @@ const EventInvitations = () => {
           ))}
         </div>
       )}
+
+      <Dialog open={isThemeDialogOpen} onOpenChange={setIsThemeDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Customize Invitation Theme</DialogTitle>
+            <DialogDescription>
+              Describe your desired invitation theme, or leave it blank for a default elegant theme.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input
+              placeholder="e.g., Modern minimalist with soft pastel colors"
+              value={themeDescription}
+              onChange={(e) => setThemeDescription(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsThemeDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => handleGenerateInvitation(themeDescription || undefined)}>
+              Generate Invitation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <InvitationDialog
+        isOpen={isInvitationDialogOpen}
+        onClose={() => setIsInvitationDialogOpen(false)}
+        eventId={id!}
+        eventType="custom"
+      />
     </div>
   );
 };
