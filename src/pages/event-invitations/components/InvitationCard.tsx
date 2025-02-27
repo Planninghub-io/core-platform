@@ -1,7 +1,13 @@
 
 import { Button } from "@/components/ui/button";
-import { Edit2 } from "lucide-react";
+import { Edit2, ChevronDown } from "lucide-react";
 import { type Invitation, type RsvpStats } from "../types";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { useState } from "react";
 
 interface InvitationCardProps {
   invitation: Invitation;
@@ -9,6 +15,8 @@ interface InvitationCardProps {
 }
 
 export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
+  const [isOpen, setIsOpen] = useState(false);
+
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
       case 'sent':
@@ -77,27 +85,6 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
       </div>
 
       <div className="border-t pt-4">
-        <h4 className="font-medium mb-2">Recipients</h4>
-        <div className="grid gap-2">
-          {invitation.invitation_recipients.map((recipient) => (
-            <div key={recipient.id} className="flex justify-between items-center bg-muted p-3 rounded-lg">
-              <div>
-                <p className="font-medium">{recipient.contacts.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {recipient.delivery_method === 'email' 
-                    ? recipient.contacts.email 
-                    : recipient.contacts.phone}
-                </p>
-              </div>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(recipient.status)}`}>
-                {recipient.status}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="border-t pt-4">
         <h4 className="font-medium mb-3">RSVP Statistics</h4>
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-green-50 rounded-lg p-4 text-center">
@@ -113,6 +100,38 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
             <p className="text-sm text-yellow-700">Maybe</p>
           </div>
         </div>
+      </div>
+
+      <div className="border-t pt-4">
+        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium">Recipients</h4>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+          <CollapsibleContent className="mt-2">
+            <div className="grid gap-2">
+              {invitation.invitation_recipients.map((recipient) => (
+                <div key={recipient.id} className="flex justify-between items-center bg-muted p-3 rounded-lg">
+                  <div>
+                    <p className="font-medium">{recipient.contacts.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {recipient.delivery_method === 'email' 
+                        ? recipient.contacts.email 
+                        : recipient.contacts.phone}
+                    </p>
+                  </div>
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(recipient.status)}`}>
+                    {recipient.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
     </div>
   );
