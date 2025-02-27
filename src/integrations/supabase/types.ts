@@ -195,6 +195,7 @@ export type Database = {
           delivery_method: string
           id: string
           invitation_id: string
+          rsvp_status: string | null
           sent_at: string | null
           status: string
         }
@@ -204,6 +205,7 @@ export type Database = {
           delivery_method: string
           id?: string
           invitation_id: string
+          rsvp_status?: string | null
           sent_at?: string | null
           status?: string
         }
@@ -213,6 +215,7 @@ export type Database = {
           delivery_method?: string
           id?: string
           invitation_id?: string
+          rsvp_status?: string | null
           sent_at?: string | null
           status?: string
         }
