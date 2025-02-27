@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile, Company } from "@/types/user";
@@ -29,10 +28,15 @@ export function useUserProfile() {
         return;
       }
 
-      setUserProfile({
+      // Format the date properly before setting it in state
+      const formattedProfile = {
         ...profileData,
-        email: user.email
-      });
+        email: user.email,
+        dob: profileData.dob || null // Ensure dob is properly handled
+      };
+
+      console.log('Fetched profile:', formattedProfile); // Debug log
+      setUserProfile(formattedProfile);
 
       // Fetch user's companies through user_roles
       const { data: userRoles, error: rolesError } = await supabase

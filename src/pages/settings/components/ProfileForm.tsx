@@ -27,6 +27,7 @@ export const ProfileForm = ({ userProfile, refreshUserProfile }: ProfileFormProp
   });
 
   useEffect(() => {
+    console.log('Profile updated:', userProfile); // Debug log
     if (userProfile) {
       setFormData({
         first_name: userProfile.first_name || "",
@@ -38,7 +39,6 @@ export const ProfileForm = ({ userProfile, refreshUserProfile }: ProfileFormProp
         dob: userProfile.dob ? new Date(userProfile.dob).toISOString().split('T')[0] : "",
         avatar_url: userProfile.avatar_url || ""
       });
-      setIsEditing(false);
     }
   }, [userProfile]);
 
@@ -57,17 +57,22 @@ export const ProfileForm = ({ userProfile, refreshUserProfile }: ProfileFormProp
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('No user found');
 
+      // Format the data before sending to Supabase
+      const updateData = {
+        first_name: formData.first_name,
+        middle_name: formData.middle_name,
+        last_name: formData.last_name,
+        name_suffix: formData.name_suffix,
+        contact_number: formData.contact_number,
+        dob: formData.dob || null,
+        avatar_url: formData.avatar_url
+      };
+
+      console.log('Updating profile with:', updateData); // Debug log
+
       const { error } = await supabase
         .from('user_profiles')
-        .update({
-          first_name: formData.first_name,
-          middle_name: formData.middle_name,
-          last_name: formData.last_name,
-          name_suffix: formData.name_suffix,
-          contact_number: formData.contact_number,
-          dob: formData.dob || null,
-          avatar_url: formData.avatar_url
-        })
+        .update(updateData)
         .eq('id', user.id);
 
       if (error) {
@@ -79,8 +84,10 @@ export const ProfileForm = ({ userProfile, refreshUserProfile }: ProfileFormProp
         title: "Success",
         description: "Profile updated successfully",
       });
-      setIsEditing(false);
+      
+      // Wait for the refresh to complete
       await refreshUserProfile();
+      setIsEditing(false);
     } catch (error) {
       console.error('Error updating profile:', error);
       toast({
