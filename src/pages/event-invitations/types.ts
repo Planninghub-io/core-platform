@@ -10,6 +10,7 @@ export interface Invitation {
     status: string;
     delivery_method: string;
     sent_at: string | null;
+    rsvp_status?: 'accepted' | 'declined' | 'maybe' | null;
     contacts: {
       name: string;
       email: string | null;
@@ -29,4 +30,10 @@ export interface Event {
   description: string;
   date: string;
   location: string;
+}
+
+export interface RsvpStats {
+  accepted: number;
+  declined: number;
+  maybe: number;
 }

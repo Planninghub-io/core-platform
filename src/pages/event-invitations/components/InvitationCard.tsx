@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Edit2 } from "lucide-react";
-import { type Invitation } from "../types";
+import { type Invitation, type RsvpStats } from "../types";
 
 interface InvitationCardProps {
   invitation: Invitation;
@@ -21,6 +21,28 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
         return 'text-gray-600 bg-gray-100';
     }
   };
+
+  const calculateRsvpStats = (): RsvpStats => {
+    const stats = {
+      accepted: 0,
+      declined: 0,
+      maybe: 0
+    };
+
+    invitation.invitation_recipients.forEach(recipient => {
+      if (recipient.rsvp_status === 'accepted') {
+        stats.accepted += 1;
+      } else if (recipient.rsvp_status === 'declined') {
+        stats.declined += 1;
+      } else if (recipient.rsvp_status === 'maybe') {
+        stats.maybe += 1;
+      }
+    });
+
+    return stats;
+  };
+
+  const rsvpStats = calculateRsvpStats();
 
   return (
     <div className="border rounded-lg p-6 space-y-4">
@@ -79,15 +101,15 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
         <h4 className="font-medium mb-3">RSVP Statistics</h4>
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-green-50 rounded-lg p-4 text-center">
-            <p className="text-2xl font-semibold text-green-600">0</p>
+            <p className="text-2xl font-semibold text-green-600">{rsvpStats.accepted}</p>
             <p className="text-sm text-green-700">Accepted</p>
           </div>
           <div className="bg-red-50 rounded-lg p-4 text-center">
-            <p className="text-2xl font-semibold text-red-600">0</p>
+            <p className="text-2xl font-semibold text-red-600">{rsvpStats.declined}</p>
             <p className="text-sm text-red-700">Declined</p>
           </div>
           <div className="bg-yellow-50 rounded-lg p-4 text-center">
-            <p className="text-2xl font-semibold text-yellow-600">0</p>
+            <p className="text-2xl font-semibold text-yellow-600">{rsvpStats.maybe}</p>
             <p className="text-sm text-yellow-700">Maybe</p>
           </div>
         </div>

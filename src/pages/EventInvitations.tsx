@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -57,6 +58,7 @@ const EventInvitations = () => {
             status,
             delivery_method,
             sent_at,
+            rsvp_status,
             contacts (
               name,
               email,
