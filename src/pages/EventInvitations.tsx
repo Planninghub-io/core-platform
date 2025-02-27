@@ -1,44 +1,14 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Send, Edit2, Plus } from "lucide-react";
+import { ArrowLeft, Send } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { InvitationDialog } from "@/components/event-details/InvitationDialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-
-interface Invitation {
-  id: string;
-  event_id: string;
-  template_id: string;
-  status: string;
-  created_at: string;
-  invitation_recipients: {
-    id: string;
-    status: string;
-    delivery_method: string;
-    sent_at: string | null;
-    contacts: {
-      name: string;
-      email: string | null;
-      phone: string | null;
-    };
-  }[];
-  invitation_templates: {
-    name: string;
-    description: string | null;
-    template_html: string;
-  };
-}
-
-interface Event {
-  id: string;
-  title: string;
-  description: string;
-  date: string;
-  location: string;
-}
+import { InvitationCard } from "./event-invitations/components/InvitationCard";
+import { ThemeDialog } from "./event-invitations/components/ThemeDialog";
+import { type Invitation, type Event } from "./event-invitations/types";
 
 const EventInvitations = () => {
   const { id } = useParams();
@@ -171,24 +141,6 @@ const EventInvitations = () => {
     }
   };
 
-  const handleEditInvitation = (invitation: Invitation) => {
-    setThemeDescription(invitation.invitation_templates.description || "");
-    setIsThemeDialogOpen(true);
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'sent':
-        return 'text-green-600 bg-green-100';
-      case 'pending':
-        return 'text-yellow-600 bg-yellow-100';
-      case 'failed':
-        return 'text-red-600 bg-red-100';
-      default:
-        return 'text-gray-600 bg-gray-100';
-    }
-  };
-
   return (
     <div className="container py-8">
       <div className="flex justify-between items-center mb-6">
@@ -217,87 +169,25 @@ const EventInvitations = () => {
       ) : (
         <div className="space-y-6">
           {invitations.map((invitation) => (
-            <div key={invitation.id} className="border rounded-lg p-6 space-y-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    {invitation.invitation_templates.name}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    {invitation.invitation_templates.description}
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(invitation.status)}`}>
-                    {invitation.status}
-                  </span>
-                  {invitation.status === 'draft' && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleEditInvitation(invitation)}
-                      className="ml-2"
-                    >
-                      <Edit2 className="h-4 w-4" />
-                    </Button>
-                  )}
-                </div>
-              </div>
-
-              <div className="border rounded-lg overflow-hidden">
-                <div dangerouslySetInnerHTML={{ __html: invitation.invitation_templates.template_html }} />
-              </div>
-
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-2">Recipients</h4>
-                <div className="grid gap-2">
-                  {invitation.invitation_recipients.map((recipient) => (
-                    <div key={recipient.id} className="flex justify-between items-center bg-muted p-3 rounded-lg">
-                      <div>
-                        <p className="font-medium">{recipient.contacts.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {recipient.delivery_method === 'email' 
-                            ? recipient.contacts.email 
-                            : recipient.contacts.phone}
-                        </p>
-                      </div>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(recipient.status)}`}>
-                        {recipient.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
+            <InvitationCard
+              key={invitation.id}
+              invitation={invitation}
+              onEdit={() => {
+                setThemeDescription(invitation.invitation_templates.description || "");
+                setIsThemeDialogOpen(true);
+              }}
+            />
           ))}
         </div>
       )}
 
-      <Dialog open={isThemeDialogOpen} onOpenChange={setIsThemeDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Customize Invitation Theme</DialogTitle>
-            <DialogDescription>
-              Describe your desired invitation theme, or leave it blank for a default elegant theme.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <Input
-              placeholder="e.g., Modern minimalist with soft pastel colors"
-              value={themeDescription}
-              onChange={(e) => setThemeDescription(e.target.value)}
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsThemeDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={() => handleGenerateInvitation(themeDescription || undefined)}>
-              Generate Invitation
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ThemeDialog
+        isOpen={isThemeDialogOpen}
+        onClose={() => setIsThemeDialogOpen(false)}
+        themeDescription={themeDescription}
+        onThemeChange={setThemeDescription}
+        onSubmit={handleGenerateInvitation}
+      />
 
       <InvitationDialog
         isOpen={isInvitationDialogOpen}

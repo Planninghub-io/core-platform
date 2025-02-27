@@ -1,0 +1,79 @@
+
+import { Button } from "@/components/ui/button";
+import { Edit2 } from "lucide-react";
+import { type Invitation } from "../types";
+
+interface InvitationCardProps {
+  invitation: Invitation;
+  onEdit: (invitation: Invitation) => void;
+}
+
+export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
+  const getStatusColor = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'sent':
+        return 'text-green-600 bg-green-100';
+      case 'pending':
+        return 'text-yellow-600 bg-yellow-100';
+      case 'failed':
+        return 'text-red-600 bg-red-100';
+      default:
+        return 'text-gray-600 bg-gray-100';
+    }
+  };
+
+  return (
+    <div className="border rounded-lg p-6 space-y-4">
+      <div className="flex justify-between items-start">
+        <div>
+          <h3 className="text-lg font-semibold">
+            {invitation.invitation_templates.name}
+          </h3>
+          <p className="text-sm text-muted-foreground">
+            {invitation.invitation_templates.description}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(invitation.status)}`}>
+            {invitation.status}
+          </span>
+          {invitation.status === 'draft' && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onEdit(invitation)}
+              className="ml-2"
+            >
+              <Edit2 className="h-4 w-4" />
+            </Button>
+          )}
+        </div>
+      </div>
+
+      <div className="border rounded-lg overflow-hidden">
+        <div dangerouslySetInnerHTML={{ __html: invitation.invitation_templates.template_html }} />
+      </div>
+
+      <div className="border-t pt-4">
+        <h4 className="font-medium mb-2">Recipients</h4>
+        <div className="grid gap-2">
+          {invitation.invitation_recipients.map((recipient) => (
+            <div key={recipient.id} className="flex justify-between items-center bg-muted p-3 rounded-lg">
+              <div>
+                <p className="font-medium">{recipient.contacts.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {recipient.delivery_method === 'email' 
+                    ? recipient.contacts.email 
+                    : recipient.contacts.phone}
+                </p>
+              </div>
+              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(recipient.status)}`}>
+                {recipient.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
