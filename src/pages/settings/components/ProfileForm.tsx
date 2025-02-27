@@ -16,14 +16,14 @@ export const ProfileForm = ({ userProfile, refreshUserProfile }: ProfileFormProp
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    first_name: "",
-    middle_name: "",
-    last_name: "",
-    name_suffix: "",
-    email: "",
-    contact_number: "",
-    dob: "",
-    avatar_url: ""
+    first_name: userProfile.first_name || "",
+    middle_name: userProfile.middle_name || "",
+    last_name: userProfile.last_name || "",
+    name_suffix: userProfile.name_suffix || "",
+    email: userProfile.email || "",
+    contact_number: userProfile.contact_number || "",
+    dob: userProfile.dob ? new Date(userProfile.dob).toISOString().split('T')[0] : "",
+    avatar_url: userProfile.avatar_url || ""
   });
 
   useEffect(() => {
@@ -70,7 +70,10 @@ export const ProfileForm = ({ userProfile, refreshUserProfile }: ProfileFormProp
         })
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Update error:', error);
+        throw error;
+      }
 
       toast({
         title: "Success",

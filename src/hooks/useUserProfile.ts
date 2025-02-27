@@ -22,19 +22,17 @@ export function useUserProfile() {
         .from('user_profiles')
         .select('*')
         .eq('id', user.id)
-        .maybeSingle();
+        .single();
 
       if (profileError) {
         console.error('Profile fetch error:', profileError);
         return;
       }
 
-      if (profileData) {
-        setUserProfile({
-          ...profileData,
-          email: user.email
-        });
-      }
+      setUserProfile({
+        ...profileData,
+        email: user.email
+      });
 
       // Fetch user's companies through user_roles
       const { data: userRoles, error: rolesError } = await supabase
