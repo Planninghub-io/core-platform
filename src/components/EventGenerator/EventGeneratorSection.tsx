@@ -6,7 +6,7 @@ import { EventGeneratorForm } from "./EventGeneratorForm";
 import { GeneratedEventCard } from "./GeneratedEventCard";
 import { MissingInfoDialog } from "./MissingInfoDialog";
 import { SignUpDialog } from "./SignUpDialog";
-import { useEventGeneration } from "@/hooks/useEventGeneration";
+import { useEventGeneration } from "@/hooks/event-generation";
 
 export const EventGeneratorSection = () => {
   const navigate = useNavigate();

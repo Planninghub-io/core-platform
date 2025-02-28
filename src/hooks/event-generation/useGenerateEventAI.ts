@@ -2,56 +2,18 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
-import { useEventCreation, type EventToCreate } from "./useEventCreation";
+import { GeneratedEvent, MissingInfo } from "./types";
 
-interface GeneratedEvent extends EventToCreate {
-  title: string;
-  description: string;
-  date: string;
-  location: string;
-  category: string;
-  estimatedPrice: string;
-  imagePrompt: string;
-}
-
-interface MissingInfo {
-  needsInfo: true;
-  missingFields: string[];
-  message: string;
-}
-
-export const useEventGeneration = () => {
+export const useGenerateEventAI = () => {
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const { createEvent, isCreating, createdEventId } = useEventCreation();
-  const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
   const [promptCount, setPromptCount] = useState(0);
-  const [showSignUpDialog, setShowSignUpDialog] = useState(false);
-  const [showMissingInfoDialog, setShowMissingInfoDialog] = useState(false);
   const [missingInfo, setMissingInfo] = useState<MissingInfo | null>(null);
-  const [generatedEvent, setGeneratedEvent] = useState<GeneratedEvent | null>(null);
   const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
   const [isResubmitting, setIsResubmitting] = useState(false);
-  const [eventTitle, setEventTitle] = useState("");
-  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [generatedEvent, setGeneratedEvent] = useState<GeneratedEvent | null>(null);
 
-  const handlePromptSubmit = async () => {
-    if (!prompt.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter an event description",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (promptCount >= 1 && !isResubmitting) {
-      setShowSignUpDialog(true);
-      return;
-    }
-
+  const generateEvent = async (prompt: string, selectedDate: string) => {
     setIsGenerating(true);
     try {
       let fullPrompt = prompt;
@@ -97,10 +59,8 @@ export const useEventGeneration = () => {
 
           setAdditionalInfo(prePopulatedInfo);
           setMissingInfo(data);
-          setShowMissingInfoDialog(true);
           setIsResubmitting(true);
-          setIsGenerating(false);
-          return;
+          return { needsMoreInfo: true, data };
         }
       }
 
@@ -121,10 +81,8 @@ export const useEventGeneration = () => {
       };
 
       console.log('Created validated event:', validatedEvent);
-      setEventTitle(validatedEvent.title); // Set initial title if provided
       setGeneratedEvent(validatedEvent);
       setMissingInfo(null);
-      setShowMissingInfoDialog(false);
       setAdditionalInfo({});
       setIsResubmitting(false);
       
@@ -132,96 +90,27 @@ export const useEventGeneration = () => {
         setPromptCount(prev => prev + 1);
       }
       
-      toast({
-        title: "Event Generated!",
-        description: "Review the suggested event details below.",
-      });
+      return { validatedEvent, error: null };
 
     } catch (error: any) {
       console.error('Error generating event:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to generate event. Please try again.",
-        variant: "destructive",
-      });
+      return { error };
     } finally {
       setIsGenerating(false);
     }
   };
 
-  const handleCreateEvent = async () => {
-    if (!generatedEvent) {
-      toast({
-        title: "Error",
-        description: "No event details available. Please generate an event first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check if we have a title
-    if (!eventTitle.trim()) {
-      toast({
-        title: "Error",
-        description: "Please provide a title for your event.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData.user) {
-      setShowSignUpDialog(true);
-      return;
-    }
-
-    // Use the user-provided or AI-generated title
-    const eventWithTitle = {
-      ...generatedEvent,
-      title: eventTitle.trim(),
-      date: selectedDate || generatedEvent.date,
-    };
-
-    const { error } = await createEvent(eventWithTitle, additionalInfo);
-
-    if (error) {
-      console.error('Error creating event:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to create event. Please try again.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Success!",
-      description: "Event created successfully.",
-    });
-
-    navigate("/events-hub");
-  };
-
   return {
-    prompt,
-    setPrompt,
     isGenerating,
     promptCount,
-    showSignUpDialog,
-    setShowSignUpDialog,
-    showMissingInfoDialog,
-    setShowMissingInfoDialog,
     missingInfo,
-    generatedEvent,
-    isCreating,
+    setMissingInfo,
     additionalInfo,
     setAdditionalInfo,
-    createdEventId,
-    eventTitle,
-    setEventTitle,
-    selectedDate,
-    setSelectedDate,
-    handlePromptSubmit,
-    handleCreateEvent,
+    isResubmitting,
+    setIsResubmitting,
+    generatedEvent,
+    setGeneratedEvent,
+    generateEvent,
   };
 };
