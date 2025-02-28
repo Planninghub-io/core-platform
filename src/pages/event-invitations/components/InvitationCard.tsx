@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Edit2, ChevronDown } from "lucide-react";
+import { Edit2, ChevronDown, Eye } from "lucide-react";
 import { type Invitation, type RsvpStats } from "../types";
 import {
   Collapsible,
@@ -8,6 +8,8 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 
 interface InvitationCardProps {
   invitation: Invitation;
@@ -16,6 +18,7 @@ interface InvitationCardProps {
 
 export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -67,6 +70,24 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(invitation.status)}`}>
             {invitation.status}
           </span>
+          <Sheet open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <Eye className="h-4 w-4" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="sm:max-w-md w-[90%]">
+              <SheetHeader>
+                <SheetTitle>Invitation Preview</SheetTitle>
+              </SheetHeader>
+              <div className="mt-6 overflow-y-auto max-h-[calc(100vh-10rem)]">
+                <div 
+                  className="border rounded-lg overflow-hidden shadow-sm"
+                  dangerouslySetInnerHTML={{ __html: invitation.invitation_templates.template_html }} 
+                />
+              </div>
+            </SheetContent>
+          </Sheet>
           {invitation.status === 'draft' && (
             <Button
               variant="ghost"
@@ -78,10 +99,6 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
             </Button>
           )}
         </div>
-      </div>
-
-      <div className="border rounded-lg overflow-hidden">
-        <div dangerouslySetInnerHTML={{ __html: invitation.invitation_templates.template_html }} />
       </div>
 
       <div className="border-t pt-4">

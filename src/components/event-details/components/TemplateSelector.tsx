@@ -1,6 +1,9 @@
 
 import { Button } from "@/components/ui/button";
+import { Eye } from "lucide-react";
 import { InvitationTemplate } from "../types/invitation-dialog";
+import { useState } from "react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface TemplateSelectorProps {
   templates: InvitationTemplate[];
@@ -15,6 +18,13 @@ export const TemplateSelector = ({
   onTemplateSelect,
   onContinue,
 }: TemplateSelectorProps) => {
+  const [previewTemplate, setPreviewTemplate] = useState<InvitationTemplate | null>(null);
+
+  const handlePreview = (template: InvitationTemplate, e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent selecting the template when clicking preview
+    setPreviewTemplate(template);
+  };
+
   return (
     <div className="space-y-4">
       <div className="space-y-4 max-h-[300px] overflow-y-auto pr-2">
@@ -33,12 +43,41 @@ export const TemplateSelector = ({
               }`}
               onClick={() => onTemplateSelect(template.id)}
             >
-              <h3 className="font-semibold">{template.name}</h3>
-              {template.description && (
-                <p className="text-sm text-muted-foreground">
-                  {template.description}
-                </p>
-              )}
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-semibold">{template.name}</h3>
+                  {template.description && (
+                    <p className="text-sm text-muted-foreground">
+                      {template.description}
+                    </p>
+                  )}
+                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-8 w-8"
+                      onClick={(e) => handlePreview(template, e)}
+                    >
+                      <Eye className="h-4 w-4" />
+                      <span className="sr-only">Preview template</span>
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent 
+                    className="w-[400px] p-0" 
+                    align="end"
+                    side="left"
+                  >
+                    <div className="p-1 max-h-[500px] overflow-y-auto">
+                      <div 
+                        className="border rounded-md shadow-sm overflow-hidden"
+                        dangerouslySetInnerHTML={{ __html: template.template_html }} 
+                      />
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
             </div>
           ))
         )}
