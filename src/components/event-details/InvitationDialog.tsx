@@ -60,16 +60,34 @@ export const InvitationDialog = ({ isOpen, onClose, eventId, eventType }: Invita
         setContacts(contactsData);
       }
 
-      const { data: templatesData, error: templatesError } = await supabase
+      // First try to find templates specifically for this event
+      let { data: eventTemplates, error: eventTemplatesError } = await supabase
         .from('invitation_templates')
         .select('*')
-        .eq('event_type', eventType)
+        .eq('event_type', 'custom')
+        .in('id', 
+          supabase
+            .from('invitations')
+            .select('template_id')
+            .eq('event_id', eventId)
+        )
         .returns<InvitationTemplate[]>();
       
-      if (templatesError) throw templatesError;
+      if (eventTemplatesError) throw eventTemplatesError;
 
-      if (templatesData) {
-        setTemplates(templatesData);
+      // If no event-specific templates, fall back to generic templates of the given event type
+      if (!eventTemplates || eventTemplates.length === 0) {
+        const { data: genericTemplates, error: templatesError } = await supabase
+          .from('invitation_templates')
+          .select('*')
+          .eq('event_type', eventType)
+          .returns<InvitationTemplate[]>();
+        
+        if (templatesError) throw templatesError;
+        
+        setTemplates(genericTemplates || []);
+      } else {
+        setTemplates(eventTemplates);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
