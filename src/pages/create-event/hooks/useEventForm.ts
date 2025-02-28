@@ -42,6 +42,55 @@ export const useEventForm = () => {
     }));
   };
 
+  const createDefaultInvitation = async (eventId: string) => {
+    try {
+      // First, create a default template
+      const { data: templateData, error: templateError } = await supabase
+        .from('invitation_templates')
+        .insert({
+          name: `${formData.title} Invitation`,
+          description: 'Default template for your event',
+          event_type: 'default',
+          template_html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 5px;">
+              <h1 style="color: #333;">${formData.title}</h1>
+              <p style="color: #666;">${formData.description || 'Join us for this special event!'}</p>
+              <div style="margin: 20px 0;">
+                <p><strong>Date:</strong> ${new Date(formData.date).toLocaleString()}</p>
+                <p><strong>Location:</strong> ${formData.location || 'TBD'}</p>
+                ${formData.price ? `<p><strong>Price:</strong> $${formData.price}</p>` : ''}
+              </div>
+              <div style="margin-top: 30px; text-align: center;">
+                <a href="#" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">RSVP Now</a>
+              </div>
+            </div>
+          `
+        })
+        .select()
+        .single();
+
+      if (templateError) {
+        console.error('Error creating template:', templateError);
+        return;
+      }
+
+      // Then create an invitation with this template
+      const { error: invitationError } = await supabase
+        .from('invitations')
+        .insert({
+          event_id: eventId,
+          template_id: templateData.id,
+          status: 'draft'
+        });
+
+      if (invitationError) {
+        console.error('Error creating invitation:', invitationError);
+      }
+    } catch (error) {
+      console.error('Error in createDefaultInvitation:', error);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -86,6 +135,11 @@ export const useEventForm = () => {
         .select();
 
       if (error) throw error;
+
+      if (data && data.length > 0) {
+        // Create a default invitation for this event
+        await createDefaultInvitation(data[0].id);
+      }
 
       toast({
         title: "Success",
