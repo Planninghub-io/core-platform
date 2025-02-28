@@ -2,16 +2,9 @@
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Button } from "@/components/ui/button";
-import { Mail, MessageSquare } from "lucide-react";
-
-interface Contact {
-  id: string;
-  user_id: string;
-  name: string;
-  email?: string;
-  phone?: string;
-  created_at: string;
-}
+import { Mail, MessageSquare, AlertCircle } from "lucide-react";
+import { Contact } from "../types/invitation-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ContactSelectorProps {
   contacts: Contact[];
@@ -34,13 +27,34 @@ export const ContactSelector = ({
   onSend,
   isLoading,
 }: ContactSelectorProps) => {
+  // Filter contacts based on delivery method to only show those with appropriate contact info
+  const filteredContacts = contacts.filter(contact => 
+    deliveryMethod === "email" ? !!contact.email : !!contact.phone
+  );
+
+  const handleContactToggle = (contactId: string) => {
+    if (selectedContacts.includes(contactId)) {
+      onContactSelect(selectedContacts.filter((id) => id !== contactId));
+    } else {
+      onContactSelect([...selectedContacts, contactId]);
+    }
+  };
+
+  const handleSelectAll = () => {
+    if (selectedContacts.length === filteredContacts.length) {
+      onContactSelect([]);
+    } else {
+      onContactSelect(filteredContacts.map(contact => contact.id));
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>Delivery Method</Label>
         <RadioGroup
           value={deliveryMethod}
-          onValueChange={onDeliveryMethodChange}
+          onValueChange={(value) => onDeliveryMethodChange(value as "email" | "sms")}
           className="flex space-x-4"
         >
           <div className="flex items-center space-x-2">
@@ -61,32 +75,46 @@ export const ContactSelector = ({
       </div>
 
       <div className="space-y-2">
-        <Label>Select Contacts</Label>
-        <div className="max-h-[200px] overflow-y-auto space-y-2">
-          {contacts.map((contact) => (
-            <div
-              key={contact.id}
-              className="flex items-center space-x-2"
+        <div className="flex justify-between items-center">
+          <Label>Select Contacts</Label>
+          {filteredContacts.length > 0 && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleSelectAll} 
+              className="text-xs h-7"
             >
-              <input
-                type="checkbox"
-                id={contact.id}
-                checked={selectedContacts.includes(contact.id)}
-                onChange={(e) => {
-                  if (e.target.checked) {
-                    onContactSelect([...selectedContacts, contact.id]);
-                  } else {
-                    onContactSelect(
-                      selectedContacts.filter((id) => id !== contact.id)
-                    );
-                  }
-                }}
-              />
-              <Label htmlFor={contact.id}>
-                {contact.name} ({deliveryMethod === "email" ? contact.email : contact.phone})
-              </Label>
+              {selectedContacts.length === filteredContacts.length ? "Deselect All" : "Select All"}
+            </Button>
+          )}
+        </div>
+        
+        <div className="max-h-[200px] overflow-y-auto space-y-2 border rounded-md p-2">
+          {filteredContacts.length === 0 ? (
+            <div className="flex items-center justify-center py-4 text-sm text-muted-foreground">
+              <AlertCircle className="h-4 w-4 mr-2" />
+              No contacts with {deliveryMethod === "email" ? "email addresses" : "phone numbers"}
             </div>
-          ))}
+          ) : (
+            filteredContacts.map((contact) => (
+              <div
+                key={contact.id}
+                className="flex items-center space-x-2 py-1 px-2 hover:bg-accent rounded"
+              >
+                <Checkbox
+                  id={contact.id}
+                  checked={selectedContacts.includes(contact.id)}
+                  onCheckedChange={() => handleContactToggle(contact.id)}
+                />
+                <Label htmlFor={contact.id} className="cursor-pointer flex-1">
+                  {contact.name} 
+                  <span className="text-sm text-muted-foreground ml-2">
+                    ({deliveryMethod === "email" ? contact.email : contact.phone})
+                  </span>
+                </Label>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
