@@ -2,12 +2,12 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Palette } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 
 interface ThemeDialogProps {
   isOpen: boolean;
@@ -41,34 +41,49 @@ export const ThemeDialog = ({
 }: ThemeDialogProps) => {
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>(isEditing ? "preview" : "customize");
   const [showThemeSelector, setShowThemeSelector] = useState(false);
+  const [editableTitle, setEditableTitle] = useState<string>("");
+  const [editableDescription, setEditableDescription] = useState<string>("");
+  const [isEditingContent, setIsEditingContent] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  // Set active tab based on editing status when dialog opens
+  // Reset states when dialog opens
   useEffect(() => {
     if (isOpen) {
-      setActiveTab(isEditing ? "preview" : "customize");
       setShowThemeSelector(false);
+      setIsEditingContent(false);
+      
+      if (eventDetails) {
+        setEditableTitle(eventDetails.title || "");
+        setEditableDescription(eventDetails.description || "");
+      }
     }
-  }, [isOpen, isEditing]);
+  }, [isOpen, eventDetails]);
 
   // Generate preview when theme changes or dialog opens
   useEffect(() => {
     if (isOpen && eventDetails && themeDescription !== undefined) {
       generatePreview();
     }
-  }, [isOpen, themeDescription, eventDetails]);
+  }, [isOpen, themeDescription, eventDetails, editableTitle, editableDescription]);
 
   const generatePreview = async () => {
     if (!eventDetails) return;
     
     setIsLoading(true);
     try {
+      // Create a copy of event details with editable content if user is editing
+      const eventDetailsCopy = {
+        ...eventDetails,
+        title: isEditingContent ? editableTitle : eventDetails.title,
+        description: isEditingContent ? editableDescription : eventDetails.description
+      };
+
       const { data, error } = await supabase.functions.invoke(
         'generate-invitation',
         {
           body: { 
-            eventDetails,
+            eventDetails: eventDetailsCopy,
             theme: themeDescription || 'elegant and professional'
           }
         }
@@ -90,7 +105,27 @@ export const ThemeDialog = ({
   };
 
   const handleSubmit = () => {
-    onSubmit(themeDescription || '');
+    // If content was edited, update event details before submitting
+    if (isEditingContent && eventDetails) {
+      const updatedEventDetails = {
+        ...eventDetails,
+        title: editableTitle,
+        description: editableDescription
+      };
+      // Pass the updated content back through the theme
+      onSubmit(themeDescription || '');
+    } else {
+      onSubmit(themeDescription || '');
+    }
+  };
+
+  const toggleContentEditing = () => {
+    if (!isEditingContent) {
+      setIsEditingContent(true);
+    } else {
+      // Apply the edits and regenerate preview
+      generatePreview();
+    }
   };
 
   return (
@@ -103,7 +138,7 @@ export const ThemeDialog = ({
           <DialogDescription>
             {showThemeSelector ? 
               "Select from our predefined themes or enter a custom theme description" : 
-              "Preview your invitation and customize its theme"}
+              "Preview your invitation and customize its appearance"}
           </DialogDescription>
         </DialogHeader>
 
@@ -147,54 +182,74 @@ export const ThemeDialog = ({
             </div>
           </div>
         ) : (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="preview">Preview Invitation</TabsTrigger>
-              <TabsTrigger value="customize">Customize Theme</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="preview" className="py-4">
-              <div className="border rounded-lg overflow-hidden shadow-sm w-full min-h-[400px]">
-                {isLoading ? (
-                  <div className="flex items-center justify-center h-[400px]">
-                    <Skeleton className="w-full h-full" />
-                  </div>
-                ) : previewHtml ? (
-                  <div 
-                    className="overflow-auto max-h-[400px]"
-                    dangerouslySetInnerHTML={{ __html: previewHtml }} 
-                  />
-                ) : (
-                  <div className="flex items-center justify-center h-[400px] text-muted-foreground">
-                    Enter a theme description and generate a preview
-                  </div>
-                )}
-              </div>
-              <div className="mt-4">
+          <div className="space-y-4">
+            {/* Theme change button in top right */}
+            <div className="flex justify-end mb-2">
+              <Button 
+                variant="outline" 
+                onClick={() => setShowThemeSelector(true)}
+                className="flex items-center"
+              >
+                <Palette className="mr-2 h-4 w-4" />
+                Change Theme
+              </Button>
+            </div>
+
+            {/* Content editing toggle button */}
+            {!showThemeSelector && (
+              <div className="flex justify-end mb-2">
                 <Button 
                   variant="outline" 
-                  onClick={() => setShowThemeSelector(true)}
+                  onClick={toggleContentEditing}
                   className="flex items-center"
                 >
-                  <Palette className="mr-2 h-4 w-4" />
-                  Change Theme
+                  {isEditingContent ? "Apply Content Changes" : "Edit Content"}
                 </Button>
               </div>
-            </TabsContent>
-            
-            <TabsContent value="customize" className="py-4">
-              <div className="space-y-4">
-                <Input
-                  placeholder="e.g., Modern minimalist with soft pastel colors"
-                  value={themeDescription}
-                  onChange={(e) => onThemeChange(e.target.value)}
+            )}
+
+            {/* Content editing UI */}
+            {isEditingContent && (
+              <div className="space-y-4 mb-4 border p-4 rounded-md">
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Event Title</h3>
+                  <Input
+                    value={editableTitle}
+                    onChange={(e) => setEditableTitle(e.target.value)}
+                    placeholder="Enter event title"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-sm font-medium mb-2">Event Description</h3>
+                  <Textarea
+                    value={editableDescription}
+                    onChange={(e) => setEditableDescription(e.target.value)}
+                    placeholder="Enter event description"
+                    rows={3}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Preview */}
+            <div className="border rounded-lg overflow-hidden shadow-sm w-full min-h-[400px]">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-[400px]">
+                  <Skeleton className="w-full h-full" />
+                </div>
+              ) : previewHtml ? (
+                <div 
+                  ref={contentRef}
+                  className="overflow-auto max-h-[400px]"
+                  dangerouslySetInnerHTML={{ __html: previewHtml }} 
                 />
-                <Button variant="outline" onClick={generatePreview} className="w-full">
-                  Update Preview
-                </Button>
-              </div>
-            </TabsContent>
-          </Tabs>
+              ) : (
+                <div className="flex items-center justify-center h-[400px] text-muted-foreground">
+                  Enter a theme description and generate a preview
+                </div>
+              )}
+            </div>
+          </div>
         )}
 
         <DialogFooter className="mt-4">
