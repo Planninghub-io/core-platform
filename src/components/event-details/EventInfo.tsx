@@ -5,6 +5,21 @@ import { DeleteEventDialog } from "./components/DeleteEventDialog";
 import { formatDateOnly, formatTimeOnly, combineDateTime } from "./utils/dateUtils";
 import { Event } from "./types/event";
 
+// Define event category options
+const EVENT_CATEGORIES = [
+  { value: "wedding", label: "Wedding" },
+  { value: "social_gathering", label: "Social Gathering" },
+  { value: "corporate", label: "Corporate Event" },
+  { value: "conference", label: "Conference" },
+  { value: "seminar", label: "Seminar" },
+  { value: "workshop", label: "Workshop" },
+  { value: "birthday", label: "Birthday Party" },
+  { value: "fundraiser", label: "Fundraiser" },
+  { value: "concert", label: "Concert" },
+  { value: "exhibition", label: "Exhibition" },
+  { value: "other", label: "Other" }
+];
+
 interface EventInfoProps {
   event: Event;
   isEditing: boolean;
@@ -76,9 +91,11 @@ export const EventInfo = ({
           id="category"
           label="Category"
           value={event.category}
-          placeholder="No category specified"
+          placeholder="Select a category"
           isEditing={isEditing}
           onChange={(value) => onFieldChange('category', value)}
+          type={isEditing ? "select" : "text"}
+          options={EVENT_CATEGORIES}
         />
 
         <FormField
