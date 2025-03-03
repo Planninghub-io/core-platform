@@ -32,8 +32,6 @@ export const InvitationsList = ({
     );
   }
   
-  console.log("Rendering invitations:", invitations);
-  
   return (
     <div className="space-y-6">
       {invitations.map((invitation) => (
