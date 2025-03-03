@@ -140,7 +140,7 @@ export const LeftPanel = ({
             onClick={() => navigate(`/event/${event.id}/invitations`)}
             className="flex-1"
           >
-            Send Invites
+            View Invite
           </Button>
         ) : (
           <Button 
