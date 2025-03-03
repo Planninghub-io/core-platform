@@ -46,6 +46,34 @@ export const EventInfo = ({
     return format(date, "EEEE, MMMM d, yyyy 'at' h:mm a");
   };
 
+  const formatDateOnly = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, "yyyy-MM-dd");
+  };
+
+  const formatTimeOnly = (dateString: string) => {
+    const date = new Date(dateString);
+    return format(date, "HH:mm");
+  };
+
+  // Combine date and time into ISO string
+  const combineDateTime = (dateValue: string, timeValue: string, originalDateTime: string) => {
+    try {
+      const originalDate = new Date(originalDateTime);
+      const [year, month, day] = dateValue.split('-').map(num => parseInt(num, 10));
+      const [hours, minutes] = timeValue.split(':').map(num => parseInt(num, 10));
+      
+      const newDate = new Date(originalDate);
+      newDate.setFullYear(year, month - 1, day);
+      newDate.setHours(hours, minutes);
+      
+      return newDate.toISOString();
+    } catch (error) {
+      console.error("Error combining date and time:", error);
+      return originalDateTime;
+    }
+  };
+
   const renderField = (value: string | null, placeholder: string = "") => {
     return (
       <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
@@ -70,15 +98,44 @@ export const EventInfo = ({
 
       <div className="grid gap-4">
         <div>
-          <Label htmlFor="date">Start Date & Time</Label>
+          <Label>Start Date & Time</Label>
           {isEditing ? (
-            <Input
-              id="date"
-              type="datetime-local"
-              value={event.date.slice(0, 16)}
-              onChange={(e) => onFieldChange('date', e.target.value)}
-              required
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label htmlFor="start-date" className="text-xs text-gray-500">Date</Label>
+                <Input
+                  id="start-date"
+                  type="date"
+                  value={formatDateOnly(event.date)}
+                  onChange={(e) => {
+                    const newDateTime = combineDateTime(
+                      e.target.value,
+                      formatTimeOnly(event.date),
+                      event.date
+                    );
+                    onFieldChange('date', newDateTime);
+                  }}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="start-time" className="text-xs text-gray-500">Time</Label>
+                <Input
+                  id="start-time"
+                  type="time"
+                  value={formatTimeOnly(event.date)}
+                  onChange={(e) => {
+                    const newDateTime = combineDateTime(
+                      formatDateOnly(event.date),
+                      e.target.value,
+                      event.date
+                    );
+                    onFieldChange('date', newDateTime);
+                  }}
+                  required
+                />
+              </div>
+            </div>
           ) : (
             <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
               {formatDateTime(event.date)}
@@ -86,15 +143,44 @@ export const EventInfo = ({
           )}
         </div>
         <div>
-          <Label htmlFor="end_date">End Date & Time</Label>
+          <Label>End Date & Time</Label>
           {isEditing ? (
-            <Input
-              id="end_date"
-              type="datetime-local"
-              value={event.end_date.slice(0, 16)}
-              onChange={(e) => onFieldChange('end_date', e.target.value)}
-              required
-            />
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <Label htmlFor="end-date" className="text-xs text-gray-500">Date</Label>
+                <Input
+                  id="end-date"
+                  type="date"
+                  value={formatDateOnly(event.end_date)}
+                  onChange={(e) => {
+                    const newDateTime = combineDateTime(
+                      e.target.value,
+                      formatTimeOnly(event.end_date),
+                      event.end_date
+                    );
+                    onFieldChange('end_date', newDateTime);
+                  }}
+                  required
+                />
+              </div>
+              <div>
+                <Label htmlFor="end-time" className="text-xs text-gray-500">Time</Label>
+                <Input
+                  id="end-time"
+                  type="time"
+                  value={formatTimeOnly(event.end_date)}
+                  onChange={(e) => {
+                    const newDateTime = combineDateTime(
+                      formatDateOnly(event.end_date),
+                      e.target.value,
+                      event.end_date
+                    );
+                    onFieldChange('end_date', newDateTime);
+                  }}
+                  required
+                />
+              </div>
+            </div>
           ) : (
             <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
               {formatDateTime(event.end_date)}
