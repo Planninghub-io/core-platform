@@ -38,26 +38,28 @@ export const EventInfo = ({
         onChange={(value) => onFieldChange('title', value)}
       />
 
-      <div className="grid gap-4">
-        <DateTimeField
-          id="start"
-          label="Start Date & Time"
-          dateValue={formatDateOnly(event.date)}
-          timeValue={formatTimeOnly(event.date)}
-          isEditing={isEditing}
-          onDateChange={(value) => handleDateTimeChange('date', 'date', value)}
-          onTimeChange={(value) => handleDateTimeChange('date', 'time', value)}
-        />
-        
-        <DateTimeField
-          id="end"
-          label="End Date & Time"
-          dateValue={formatDateOnly(event.end_date)}
-          timeValue={formatTimeOnly(event.end_date)}
-          isEditing={isEditing}
-          onDateChange={(value) => handleDateTimeChange('end_date', 'date', value)}
-          onTimeChange={(value) => handleDateTimeChange('end_date', 'time', value)}
-        />
+      <div className="space-y-2">
+        <div className="grid grid-cols-2 gap-4">
+          <DateTimeField
+            id="start"
+            label="Start Date & Time"
+            dateValue={formatDateOnly(event.date)}
+            timeValue={formatTimeOnly(event.date)}
+            isEditing={isEditing}
+            onDateChange={(value) => handleDateTimeChange('date', 'date', value)}
+            onTimeChange={(value) => handleDateTimeChange('date', 'time', value)}
+          />
+          
+          <DateTimeField
+            id="end"
+            label="End Date & Time"
+            dateValue={formatDateOnly(event.end_date)}
+            timeValue={formatTimeOnly(event.end_date)}
+            isEditing={isEditing}
+            onDateChange={(value) => handleDateTimeChange('end_date', 'date', value)}
+            onTimeChange={(value) => handleDateTimeChange('end_date', 'time', value)}
+          />
+        </div>
       </div>
 
       <FormField
