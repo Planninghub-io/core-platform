@@ -37,7 +37,6 @@ export const DateTimeField = ({
 
   return (
     <div>
-      <Label>{label}</Label>
       {isEditing ? (
         <div className="grid grid-cols-2 gap-2">
           <div>
