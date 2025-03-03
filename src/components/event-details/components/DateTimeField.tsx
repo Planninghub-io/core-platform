@@ -22,9 +22,14 @@ export const DateTimeField = ({
   onTimeChange,
   id
 }: DateTimeFieldProps) => {
-  const formatDateTime = (dateString: string) => {
+  const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return format(date, "EEEE, MMMM d, yyyy 'at' h:mm a");
+    return format(date, "EEEE, MMMM d, yyyy");
+  };
+
+  const formatTime = (timeString: string) => {
+    const time = new Date(`2000-01-01T${timeString}`);
+    return format(time, "h:mm a");
   };
 
   return (
@@ -54,8 +59,13 @@ export const DateTimeField = ({
           </div>
         </div>
       ) : (
-        <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
-          {formatDateTime(dateValue)}
+        <div className="grid grid-cols-2 gap-2">
+          <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
+            {formatDate(dateValue)}
+          </div>
+          <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
+            {formatTime(timeValue)}
+          </div>
         </div>
       )}
     </div>
