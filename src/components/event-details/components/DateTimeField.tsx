@@ -40,7 +40,7 @@ export const DateTimeField = ({
       {isEditing ? (
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label htmlFor={`${id}-date`} className="text-xs text-gray-500">{labelPrefix} Date</Label>
+            <Label htmlFor={`${id}-date`}>{labelPrefix} Date</Label>
             <Input
               id={`${id}-date`}
               type="date"
@@ -50,7 +50,7 @@ export const DateTimeField = ({
             />
           </div>
           <div>
-            <Label htmlFor={`${id}-time`} className="text-xs text-gray-500">{labelPrefix} Time</Label>
+            <Label htmlFor={`${id}-time`}>Time</Label>
             <Input
               id={`${id}-time`}
               type="time"
@@ -63,13 +63,13 @@ export const DateTimeField = ({
       ) : (
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <Label htmlFor={`${id}-date-view`} className="text-xs text-gray-500">{labelPrefix} Date</Label>
+            <Label htmlFor={`${id}-date-view`}>{labelPrefix} Date</Label>
             <div id={`${id}-date-view`} className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
               {formatDate(dateValue)}
             </div>
           </div>
           <div>
-            <Label htmlFor={`${id}-time-view`} className="text-xs text-gray-500">{labelPrefix} Time</Label>
+            <Label htmlFor={`${id}-time-view`}>Time</Label>
             <div id={`${id}-time-view`} className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
               {formatTime(timeValue)}
             </div>
