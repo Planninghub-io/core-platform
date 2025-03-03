@@ -37,26 +37,20 @@ export const DateTimeField = ({
       <Label>{label}</Label>
       {isEditing ? (
         <div className="grid grid-cols-2 gap-2">
-          <div>
-            <Label htmlFor={`${id}-date`} className="text-xs text-gray-500">Date</Label>
-            <Input
-              id={`${id}-date`}
-              type="date"
-              value={dateValue}
-              onChange={(e) => onDateChange(e.target.value)}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor={`${id}-time`} className="text-xs text-gray-500">Time</Label>
-            <Input
-              id={`${id}-time`}
-              type="time"
-              value={timeValue}
-              onChange={(e) => onTimeChange(e.target.value)}
-              required
-            />
-          </div>
+          <Input
+            id={`${id}-date`}
+            type="date"
+            value={dateValue}
+            onChange={(e) => onDateChange(e.target.value)}
+            required
+          />
+          <Input
+            id={`${id}-time`}
+            type="time"
+            value={timeValue}
+            onChange={(e) => onTimeChange(e.target.value)}
+            required
+          />
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-2">
