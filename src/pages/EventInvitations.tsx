@@ -5,6 +5,7 @@ import { ThemeDialog } from "./event-invitations/components/ThemeDialog";
 import { EventInvitationsHeader } from "./event-invitations/components/EventInvitationsHeader";
 import { InvitationsList } from "./event-invitations/components/InvitationsList";
 import { useInvitations } from "./event-invitations/hooks/useInvitations";
+import { useEffect } from "react";
 
 const EventInvitations = () => {
   const { id } = useParams();
@@ -20,8 +21,20 @@ const EventInvitations = () => {
     setIsThemeDialogOpen,
     setThemeDescription,
     handleEditInvitation,
-    handleGenerateInvitation
+    handleGenerateInvitation,
+    fetchInvitations
   } = useInvitations(id!);
+
+  useEffect(() => {
+    // Re-fetch invitations when component mounts or ID changes
+    if (id) {
+      fetchInvitations();
+    }
+  }, [id]);
+
+  console.log("Event ID:", id);
+  console.log("Invitations:", invitations);
+  console.log("Loading state:", loading);
 
   return (
     <div className="container py-8">

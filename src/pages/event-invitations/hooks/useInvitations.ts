@@ -15,12 +15,15 @@ export const useInvitations = (eventId: string) => {
   const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
 
   useEffect(() => {
-    fetchEventDetails();
-    fetchInvitations();
+    if (eventId) {
+      fetchEventDetails();
+      fetchInvitations();
+    }
   }, [eventId]);
 
   const fetchEventDetails = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('events')
         .select('id, title, description, date, location')
@@ -36,11 +39,18 @@ export const useInvitations = (eventId: string) => {
         description: "Failed to fetch event details",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
   const fetchInvitations = async () => {
+    if (!eventId) return;
+    
     try {
+      setLoading(true);
+      console.log('Fetching invitations for event ID:', eventId);
+      
       const { data, error } = await supabase
         .from('invitations')
         .select(`
@@ -63,10 +73,11 @@ export const useInvitations = (eventId: string) => {
             template_html
           )
         `)
-        .eq('event_id', eventId)
-        .returns<Invitation[]>();
+        .eq('event_id', eventId);
 
       if (error) throw error;
+      
+      console.log('Fetched invitations:', data);
       setInvitations(data || []);
     } catch (error) {
       console.error('Error fetching invitations:', error);
@@ -81,6 +92,7 @@ export const useInvitations = (eventId: string) => {
   };
 
   const handleEditInvitation = (invitation: Invitation) => {
+    console.log('Editing invitation:', invitation);
     setEditingInvitation(invitation);
     setThemeDescription(invitation.invitation_templates.description || "");
     setIsThemeDialogOpen(true);
@@ -90,6 +102,7 @@ export const useInvitations = (eventId: string) => {
     if (!eventDetails) return;
 
     try {
+      setLoading(true);
       const { data: generatedTemplate, error: generationError } = await supabase.functions.invoke(
         'generate-invitation',
         {
@@ -151,6 +164,8 @@ export const useInvitations = (eventId: string) => {
         description: editingInvitation ? "Failed to update invitation" : "Failed to generate invitation",
         variant: "destructive",
       });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -166,6 +181,7 @@ export const useInvitations = (eventId: string) => {
     setIsThemeDialogOpen,
     setThemeDescription,
     handleEditInvitation,
-    handleGenerateInvitation
+    handleGenerateInvitation,
+    fetchInvitations
   };
 };

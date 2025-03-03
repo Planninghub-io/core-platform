@@ -1,6 +1,7 @@
 
 import { InvitationCard } from "./InvitationCard";
 import { type Invitation } from "../types";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface InvitationsListProps {
   invitations: Invitation[];
@@ -14,10 +15,16 @@ export const InvitationsList = ({
   onEditInvitation
 }: InvitationsListProps) => {
   if (loading) {
-    return <div>Loading invitations...</div>;
+    return (
+      <div className="space-y-6">
+        {[1, 2].map((i) => (
+          <Skeleton key={i} className="w-full h-60" />
+        ))}
+      </div>
+    );
   }
   
-  if (invitations.length === 0) {
+  if (!invitations || invitations.length === 0) {
     return (
       <div className="text-center py-8 text-muted-foreground">
         No invitations have been created for this event yet.
@@ -25,13 +32,15 @@ export const InvitationsList = ({
     );
   }
   
+  console.log("Rendering invitations:", invitations);
+  
   return (
     <div className="space-y-6">
       {invitations.map((invitation) => (
         <InvitationCard
           key={invitation.id}
           invitation={invitation}
-          onEdit={onEditInvitation}
+          onEdit={() => onEditInvitation(invitation)}
         />
       ))}
     </div>
