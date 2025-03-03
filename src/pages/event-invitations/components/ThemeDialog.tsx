@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 interface ThemeDialogProps {
   isOpen: boolean;
@@ -9,6 +10,7 @@ interface ThemeDialogProps {
   themeDescription: string;
   onThemeChange: (value: string) => void;
   onSubmit: (theme: string) => void;
+  isEditing: boolean;
 }
 
 export const ThemeDialog = ({
@@ -17,12 +19,15 @@ export const ThemeDialog = ({
   themeDescription,
   onThemeChange,
   onSubmit,
+  isEditing = false,
 }: ThemeDialogProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Customize Invitation Theme</DialogTitle>
+          <DialogTitle>
+            {isEditing ? "Update Invitation Theme" : "Customize Invitation Theme"}
+          </DialogTitle>
           <DialogDescription>
             Describe your desired invitation theme, or leave it blank for a default elegant theme.
           </DialogDescription>
@@ -39,7 +44,7 @@ export const ThemeDialog = ({
             Cancel
           </Button>
           <Button onClick={() => onSubmit(themeDescription || undefined)}>
-            {themeDescription ? "Update Invitation" : "Generate Invitation"}
+            {isEditing ? "Update Invitation" : "Generate Invitation"}
           </Button>
         </DialogFooter>
       </DialogContent>

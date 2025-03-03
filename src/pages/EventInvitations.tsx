@@ -12,6 +12,7 @@ const EventInvitations = () => {
   const {
     invitations,
     loading,
+    eventDetails,
     isInvitationDialogOpen,
     isThemeDialogOpen,
     themeDescription,
@@ -47,6 +48,7 @@ const EventInvitations = () => {
         themeDescription={themeDescription}
         onThemeChange={setThemeDescription}
         onSubmit={handleGenerateInvitation}
+        isEditing={!!editingInvitation}
       />
 
       <InvitationDialog

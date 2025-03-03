@@ -7,6 +7,15 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Event } from "../types/event";
+import { 
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle, 
+  DialogDescription,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 interface LeftPanelProps {
   event: Event;
@@ -25,6 +34,8 @@ export const LeftPanel = ({
   const { toast } = useToast();
   const [hasInvites, setHasInvites] = useState(false);
   const [hasTicketing, setHasTicketing] = useState(false);
+  const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
+  const [themeDescription, setThemeDescription] = useState("");
 
   useEffect(() => {
     checkInvitesAndTicketing();
@@ -54,7 +65,11 @@ export const LeftPanel = ({
     }
   };
 
-  const handleCreateInvitation = async () => {
+  const handleCreateInvitation = () => {
+    setIsThemeDialogOpen(true);
+  };
+
+  const generateInvitation = async (theme: string) => {
     try {
       // First, generate the invitation template
       const { data: generatedTemplate, error: generationError } = await supabase.functions.invoke(
@@ -67,7 +82,7 @@ export const LeftPanel = ({
               date: event.date,
               location: event.location
             },
-            theme: 'elegant and professional'
+            theme: theme || 'elegant and professional'
           }
         }
       );
@@ -79,7 +94,7 @@ export const LeftPanel = ({
         .from('invitation_templates')
         .insert({
           name: `${event.title} Invitation`,
-          description: 'Elegant and Professional Theme',
+          description: theme || 'Elegant and Professional Theme',
           event_type: 'custom',
           template_html: generatedTemplate.template
         })
@@ -112,6 +127,8 @@ export const LeftPanel = ({
         description: "Failed to create invitation",
         variant: "destructive",
       });
+    } finally {
+      setIsThemeDialogOpen(false);
     }
   };
 
@@ -159,6 +176,32 @@ export const LeftPanel = ({
           {hasTicketing ? 'Ticketing' : 'Add Ticketing'}
         </Button>
       </div>
+
+      <Dialog open={isThemeDialogOpen} onOpenChange={setIsThemeDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Customize Invitation Theme</DialogTitle>
+            <DialogDescription>
+              Describe your desired invitation theme, or leave it blank for a default elegant theme.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <Input
+              placeholder="e.g., Modern minimalist with soft pastel colors"
+              value={themeDescription}
+              onChange={(e) => setThemeDescription(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsThemeDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => generateInvitation(themeDescription)}>
+              Generate Invitation
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
