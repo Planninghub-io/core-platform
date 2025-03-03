@@ -32,33 +32,48 @@ export const DateTimeField = ({
     return format(time, "h:mm a");
   };
 
+  // Split the label to extract main prefix (Start/End)
+  const labelPrefix = label.split(" ")[0]; // This will get "Start" or "End"
+
   return (
     <div>
       <Label>{label}</Label>
       {isEditing ? (
         <div className="grid grid-cols-2 gap-2">
-          <Input
-            id={`${id}-date`}
-            type="date"
-            value={dateValue}
-            onChange={(e) => onDateChange(e.target.value)}
-            required
-          />
-          <Input
-            id={`${id}-time`}
-            type="time"
-            value={timeValue}
-            onChange={(e) => onTimeChange(e.target.value)}
-            required
-          />
+          <div>
+            <Label htmlFor={`${id}-date`} className="text-xs text-gray-500">{labelPrefix} Date</Label>
+            <Input
+              id={`${id}-date`}
+              type="date"
+              value={dateValue}
+              onChange={(e) => onDateChange(e.target.value)}
+              required
+            />
+          </div>
+          <div>
+            <Label htmlFor={`${id}-time`} className="text-xs text-gray-500">{labelPrefix} Time</Label>
+            <Input
+              id={`${id}-time`}
+              type="time"
+              value={timeValue}
+              onChange={(e) => onTimeChange(e.target.value)}
+              required
+            />
+          </div>
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-2">
-          <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
-            {formatDate(dateValue)}
+          <div>
+            <Label htmlFor={`${id}-date-view`} className="text-xs text-gray-500">{labelPrefix} Date</Label>
+            <div id={`${id}-date-view`} className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
+              {formatDate(dateValue)}
+            </div>
           </div>
-          <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
-            {formatTime(timeValue)}
+          <div>
+            <Label htmlFor={`${id}-time-view`} className="text-xs text-gray-500">{labelPrefix} Time</Label>
+            <div id={`${id}-time-view`} className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
+              {formatTime(timeValue)}
+            </div>
           </div>
         </div>
       )}
