@@ -8,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Palette } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface ThemeDialogProps {
   isOpen: boolean;
@@ -45,6 +46,7 @@ export const ThemeDialog = ({
   const [editableTitle, setEditableTitle] = useState<string>("");
   const [editableDescription, setEditableDescription] = useState<string>("");
   const [isEditingContent, setIsEditingContent] = useState(false);
+  const [useCustomTheme, setUseCustomTheme] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Reset states when dialog opens
@@ -53,12 +55,16 @@ export const ThemeDialog = ({
       setShowThemeSelector(false);
       setIsEditingContent(false);
       
+      // Check if the current theme is custom or predefined
+      const isPredefined = predefinedThemes.some(theme => theme.value === themeDescription);
+      setUseCustomTheme(!isPredefined && themeDescription !== "");
+      
       if (eventDetails) {
         setEditableTitle(eventDetails.title || "");
         setEditableDescription(eventDetails.description || "");
       }
     }
-  }, [isOpen, eventDetails]);
+  }, [isOpen, eventDetails, themeDescription]);
 
   // Generate preview when theme changes or dialog opens
   useEffect(() => {
@@ -101,7 +107,20 @@ export const ThemeDialog = ({
 
   const handleThemeSelect = (theme: string) => {
     onThemeChange(theme);
+    setUseCustomTheme(false);
     setShowThemeSelector(false);
+  };
+
+  const handleCustomThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onThemeChange(e.target.value);
+  };
+
+  const toggleCustomTheme = (checked: boolean) => {
+    setUseCustomTheme(checked);
+    if (!checked) {
+      // Reset to default theme when unchecking custom theme
+      onThemeChange(predefinedThemes[0].value);
+    }
   };
 
   const handleSubmit = () => {
@@ -137,7 +156,7 @@ export const ThemeDialog = ({
           </DialogTitle>
           <DialogDescription>
             {showThemeSelector ? 
-              "Select from our predefined themes or enter a custom theme description" : 
+              "Select from our predefined themes or create a custom theme" : 
               "Preview your invitation and customize its appearance"}
           </DialogDescription>
         </DialogHeader>
@@ -145,7 +164,7 @@ export const ThemeDialog = ({
         {showThemeSelector ? (
           <div className="space-y-4 py-4">
             <Select 
-              value={themeDescription} 
+              value={!useCustomTheme ? themeDescription : ""} 
               onValueChange={handleThemeSelect}
             >
               <SelectTrigger>
@@ -160,23 +179,32 @@ export const ThemeDialog = ({
               </SelectContent>
             </Select>
             
-            <div className="mt-4">
-              <h3 className="mb-2 text-sm font-medium">Or enter a custom theme</h3>
-              <Input
-                placeholder="e.g., Modern minimalist with soft pastel colors"
-                value={themeDescription}
-                onChange={(e) => onThemeChange(e.target.value)}
+            <div className="flex items-center space-x-2 mt-4">
+              <Checkbox 
+                id="custom-theme" 
+                checked={useCustomTheme}
+                onCheckedChange={toggleCustomTheme}
               />
+              <label
+                htmlFor="custom-theme"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Use custom theme
+              </label>
             </div>
             
+            {useCustomTheme && (
+              <div className="mt-2">
+                <Input
+                  placeholder="e.g., Modern minimalist with soft pastel colors"
+                  value={themeDescription}
+                  onChange={handleCustomThemeChange}
+                />
+              </div>
+            )}
+            
             <div className="flex justify-end space-x-2 mt-4">
-              <Button variant="outline" onClick={() => setShowThemeSelector(false)}>
-                Cancel
-              </Button>
-              <Button onClick={() => {
-                generatePreview();
-                setShowThemeSelector(false);
-              }}>
+              <Button onClick={() => setShowThemeSelector(false)}>
                 Apply Theme
               </Button>
             </div>
@@ -253,9 +281,6 @@ export const ThemeDialog = ({
         )}
 
         <DialogFooter className="mt-4">
-          <Button variant="outline" onClick={onClose}>
-            Cancel
-          </Button>
           <Button onClick={handleSubmit}>
             {isEditing ? "Update Invitation" : "Generate Invitation"}
           </Button>
