@@ -49,6 +49,7 @@ const EventInvitations = () => {
         onThemeChange={setThemeDescription}
         onSubmit={handleGenerateInvitation}
         isEditing={!!editingInvitation}
+        eventDetails={eventDetails}
       />
 
       <InvitationDialog

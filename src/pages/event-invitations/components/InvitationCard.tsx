@@ -19,7 +19,6 @@ interface InvitationCardProps {
 export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  const [isPreviewExpanded, setIsPreviewExpanded] = useState(false);
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -55,11 +54,6 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
   };
 
   const rsvpStats = calculateRsvpStats();
-
-  const togglePreviewExpand = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsPreviewExpanded(!isPreviewExpanded);
-  };
 
   return (
     <div className="border rounded-lg p-6 space-y-4">
@@ -107,28 +101,12 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
         </div>
       </div>
 
-      {/* Invitation Preview */}
-      <div className={`border rounded-lg overflow-hidden shadow-sm transition-all ${isPreviewExpanded ? 'h-auto' : 'h-[200px]'}`}>
-        <div className="relative">
-          <div 
-            className={`overflow-hidden ${isPreviewExpanded ? '' : 'max-h-[200px]'}`}
-            dangerouslySetInnerHTML={{ __html: invitation.invitation_templates.template_html }} 
-          />
-          {!isPreviewExpanded && (
-            <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent flex justify-center items-end pb-2">
-              <Button variant="outline" size="sm" onClick={togglePreviewExpand}>
-                Show More
-              </Button>
-            </div>
-          )}
-          {isPreviewExpanded && (
-            <div className="flex justify-center items-center p-2">
-              <Button variant="outline" size="sm" onClick={togglePreviewExpand}>
-                Show Less
-              </Button>
-            </div>
-          )}
-        </div>
+      {/* Invitation Preview - Fixed height, no expand/collapse */}
+      <div className="border rounded-lg overflow-hidden shadow-sm h-[200px]">
+        <div 
+          className="overflow-hidden h-full"
+          dangerouslySetInnerHTML={{ __html: invitation.invitation_templates.template_html }} 
+        />
       </div>
 
       <div className="border-t pt-4">
