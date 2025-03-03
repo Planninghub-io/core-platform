@@ -24,7 +24,7 @@ export const DateTimeField = ({
 }: DateTimeFieldProps) => {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    return format(date, "EEEE, MMMM d, yyyy");
+    return format(date, "MM/dd/yyyy");
   };
 
   const formatTime = (timeString: string) => {
