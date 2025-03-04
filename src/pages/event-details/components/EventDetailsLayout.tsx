@@ -36,12 +36,16 @@ export const EventDetailsLayout: React.FC<EventDetailsLayoutProps> = ({
         event={event}
         activeView={viewMode}
       />
-      <EventContent
-        event={event}
-        isEditing={isEditing}
-        viewMode={viewMode}
-        onFieldChange={onFieldChange}
-      />
+      
+      {/* Added margin-top to create more separation */}
+      <div className="mt-8">
+        <EventContent
+          event={event}
+          isEditing={isEditing}
+          viewMode={viewMode}
+          onFieldChange={onFieldChange}
+        />
+      </div>
     </div>
   );
 };
