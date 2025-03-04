@@ -36,7 +36,7 @@ const EventTicketing: React.FC = () => {
 
         // Fetch tickets
         const { data: ticketsData, error: ticketsError } = await supabase
-          .from("event_ticketing")
+          .from("ticket_types")
           .select("*")
           .eq("event_id", eventId)
           .order("created_at", { ascending: false });
@@ -62,10 +62,10 @@ const EventTicketing: React.FC = () => {
     navigate(`/event/${eventId}`);
   };
 
-  const handleAddTicket = async (newTicket: Omit<Ticket, "id" | "created_at">) => {
+  const handleAddTicket = async (newTicket: Omit<Ticket, "id" | "created_at" | "updated_at">) => {
     try {
       const { data, error } = await supabase
-        .from("event_ticketing")
+        .from("ticket_types")
         .insert({
           ...newTicket,
           event_id: eventId
@@ -96,7 +96,7 @@ const EventTicketing: React.FC = () => {
 
     try {
       const { error } = await supabase
-        .from("event_ticketing")
+        .from("ticket_types")
         .delete()
         .eq("id", ticketId);
 
@@ -120,12 +120,13 @@ const EventTicketing: React.FC = () => {
   const handleUpdateTicket = async (updatedTicket: Ticket) => {
     try {
       const { error } = await supabase
-        .from("event_ticketing")
+        .from("ticket_types")
         .update({
-          ticket_name: updatedTicket.ticket_name,
+          name: updatedTicket.name,
           description: updatedTicket.description,
           price: updatedTicket.price,
           quantity: updatedTicket.quantity,
+          is_unlimited: updatedTicket.is_unlimited,
           status: updatedTicket.status
         })
         .eq("id", updatedTicket.id);

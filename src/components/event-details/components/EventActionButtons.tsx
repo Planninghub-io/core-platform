@@ -1,8 +1,9 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { InvitationThemeDialog } from "./InvitationThemeDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 interface EventActionButtonsProps {
   eventId: string;

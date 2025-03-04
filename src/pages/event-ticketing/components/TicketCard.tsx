@@ -1,6 +1,6 @@
 
 import { Ticket } from "../types";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Pencil, Trash2 } from "lucide-react";
@@ -33,7 +33,7 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, onEdit, onDelete
         <div className="flex items-start justify-between">
           <div className="space-y-2">
             <div className="flex items-center gap-2">
-              <h3 className="text-lg font-semibold">{ticket.ticket_name}</h3>
+              <h3 className="text-lg font-semibold">{ticket.name}</h3>
               <Badge className={getStatusColor(ticket.status)} variant="outline">
                 {ticket.status?.replace("_", " ") || "Active"}
               </Badge>
@@ -51,7 +51,9 @@ export const TicketCard: React.FC<TicketCardProps> = ({ ticket, onEdit, onDelete
               
               <div>
                 <span className="text-sm text-muted-foreground">Quantity: </span>
-                <span className="font-medium">{ticket.quantity === null ? "Unlimited" : ticket.quantity}</span>
+                <span className="font-medium">
+                  {ticket.is_unlimited ? "Unlimited" : (ticket.quantity || 0)}
+                </span>
               </div>
             </div>
           </div>

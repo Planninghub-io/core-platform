@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { Ticket } from "../types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { TicketCard } from "./TicketCard";
 import { AddTicketForm } from "./AddTicketForm";
 
@@ -19,7 +18,7 @@ export const TicketsList: React.FC<TicketsListProps> = ({ tickets, onDelete, onU
     setEditingTicketId(ticketId);
   };
 
-  const handleUpdate = (updatedTicket: Omit<Ticket, "id" | "created_at">) => {
+  const handleUpdate = (updatedTicket: Omit<Ticket, "id" | "created_at" | "updated_at">) => {
     if (!editingTicketId) return;
     
     const ticketToUpdate = tickets.find(t => t.id === editingTicketId);

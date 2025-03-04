@@ -13,9 +13,10 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 
 interface AddTicketFormProps {
-  onSubmit: (ticket: Omit<TicketType, "id" | "created_at">) => void;
+  onSubmit: (ticket: Omit<TicketType, "id" | "created_at" | "updated_at">) => void;
   onCancel: () => void;
   initialData?: Partial<TicketType>;
 }
@@ -25,28 +26,26 @@ export const AddTicketForm: React.FC<AddTicketFormProps> = ({
   onCancel,
   initialData 
 }) => {
-  const [ticket, setTicket] = useState<Omit<TicketType, "id" | "created_at">>({
+  const [ticket, setTicket] = useState<Omit<TicketType, "id" | "created_at" | "updated_at">>({
     event_id: "",
-    ticket_name: initialData?.ticket_name || "",
+    name: initialData?.name || "",
     description: initialData?.description || "",
     price: initialData?.price || null,
     quantity: initialData?.quantity || null,
+    is_unlimited: initialData?.is_unlimited !== undefined ? initialData.is_unlimited : true,
     status: initialData?.status || "active"
   });
-
-  const [limitQuantity, setLimitQuantity] = useState(ticket.quantity !== null);
 
   const handleInputChange = (field: keyof typeof ticket, value: any) => {
     setTicket(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleQuantityChange = (value: string) => {
-    if (value === "unlimited") {
-      setLimitQuantity(false);
-      handleInputChange("quantity", null);
-    } else {
-      setLimitQuantity(true);
-    }
+  const handleUnlimitedToggle = (checked: boolean) => {
+    setTicket(prev => ({ 
+      ...prev, 
+      is_unlimited: checked,
+      quantity: checked ? null : prev.quantity || 100
+    }));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -63,11 +62,11 @@ export const AddTicketForm: React.FC<AddTicketFormProps> = ({
         <CardContent className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="ticket_name">Ticket Name *</Label>
+              <Label htmlFor="name">Ticket Name *</Label>
               <Input
-                id="ticket_name"
-                value={ticket.ticket_name}
-                onChange={(e) => handleInputChange("ticket_name", e.target.value)}
+                id="name"
+                value={ticket.name}
+                onChange={(e) => handleInputChange("name", e.target.value)}
                 placeholder="e.g., General Admission"
                 required
               />
@@ -101,22 +100,20 @@ export const AddTicketForm: React.FC<AddTicketFormProps> = ({
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="quantity_type">Ticket Quantity</Label>
-              <Select 
-                onValueChange={handleQuantityChange}
-                defaultValue={limitQuantity ? "limited" : "unlimited"}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select quantity type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="unlimited">Unlimited</SelectItem>
-                  <SelectItem value="limited">Limited</SelectItem>
-                </SelectContent>
-              </Select>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="is_unlimited">Unlimited Tickets</Label>
+                <Switch 
+                  id="is_unlimited"
+                  checked={ticket.is_unlimited}
+                  onCheckedChange={handleUnlimitedToggle}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Toggle on for unlimited tickets, off to set a specific quantity
+              </p>
             </div>
             
-            {limitQuantity && (
+            {!ticket.is_unlimited && (
               <div className="space-y-2">
                 <Label htmlFor="quantity">Maximum Tickets</Label>
                 <Input
@@ -126,7 +123,7 @@ export const AddTicketForm: React.FC<AddTicketFormProps> = ({
                   value={ticket.quantity || ""}
                   onChange={(e) => handleInputChange("quantity", e.target.value ? parseInt(e.target.value) : null)}
                   placeholder="e.g., 100"
-                  required={limitQuantity}
+                  required={!ticket.is_unlimited}
                 />
               </div>
             )}

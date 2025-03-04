@@ -343,6 +343,100 @@ export type Database = {
           },
         ]
       }
+      ticket_sales: {
+        Row: {
+          id: string
+          notes: string | null
+          payment_reference: string | null
+          purchase_date: string
+          purchaser_email: string
+          purchaser_name: string
+          quantity: number
+          status: string | null
+          ticket_type_id: string
+          total_price: number
+        }
+        Insert: {
+          id?: string
+          notes?: string | null
+          payment_reference?: string | null
+          purchase_date?: string
+          purchaser_email: string
+          purchaser_name: string
+          quantity: number
+          status?: string | null
+          ticket_type_id: string
+          total_price: number
+        }
+        Update: {
+          id?: string
+          notes?: string | null
+          payment_reference?: string | null
+          purchase_date?: string
+          purchaser_email?: string
+          purchaser_name?: string
+          quantity?: number
+          status?: string | null
+          ticket_type_id?: string
+          total_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_sales_ticket_type_id_fkey"
+            columns: ["ticket_type_id"]
+            isOneToOne: false
+            referencedRelation: "ticket_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ticket_types: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_id: string
+          id: string
+          is_unlimited: boolean | null
+          name: string
+          price: number | null
+          quantity: number | null
+          status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_id: string
+          id?: string
+          is_unlimited?: boolean | null
+          name: string
+          price?: number | null
+          quantity?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_id?: string
+          id?: string
+          is_unlimited?: boolean | null
+          name?: string
+          price?: number | null
+          quantity?: number | null
+          status?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ticket_types_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_profiles: {
         Row: {
           avatar_url: string | null
