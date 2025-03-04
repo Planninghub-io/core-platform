@@ -38,7 +38,7 @@ export const EventDetailsLayout: React.FC<EventDetailsLayoutProps> = ({
       />
       
       {/* Added margin-top to create more separation */}
-      <div className="mt-8">
+      <div className="mt-12">
         <EventContent
           event={event}
           isEditing={isEditing}
