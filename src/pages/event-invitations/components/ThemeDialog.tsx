@@ -1,14 +1,12 @@
 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { useState, useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Skeleton } from "@/components/ui/skeleton";
+import { useState, useEffect } from "react";
 import { Palette } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
+import { ThemeSelector, predefinedThemes } from "./ThemeSelector";
+import { InvitationContentEditor } from "./InvitationContentEditor";
+import { InvitationPreview } from "./InvitationPreview";
+import { useInvitationPreview } from "../hooks/useInvitationPreview";
 
 interface ThemeDialogProps {
   isOpen: boolean;
@@ -20,17 +18,6 @@ interface ThemeDialogProps {
   eventDetails?: any;
 }
 
-const predefinedThemes = [
-  { value: "elegant and professional", label: "Elegant & Professional" },
-  { value: "colorful and vibrant", label: "Colorful & Vibrant" },
-  { value: "minimalist modern", label: "Minimalist Modern" },
-  { value: "dark and sophisticated", label: "Dark & Sophisticated" },
-  { value: "pastel colors and soft design", label: "Pastel & Soft" },
-  { value: "natural and earthy tones", label: "Natural & Earthy" },
-  { value: "retro vintage style", label: "Retro Vintage" },
-  { value: "futuristic and bold", label: "Futuristic & Bold" },
-];
-
 export const ThemeDialog = ({
   isOpen,
   onClose,
@@ -40,14 +27,11 @@ export const ThemeDialog = ({
   isEditing = false,
   eventDetails,
 }: ThemeDialogProps) => {
-  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [showThemeSelector, setShowThemeSelector] = useState(false);
   const [editableTitle, setEditableTitle] = useState<string>("");
   const [editableDescription, setEditableDescription] = useState<string>("");
   const [isEditingContent, setIsEditingContent] = useState(false);
   const [useCustomTheme, setUseCustomTheme] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
 
   // Reset states when dialog opens
   useEffect(() => {
@@ -66,62 +50,14 @@ export const ThemeDialog = ({
     }
   }, [isOpen, eventDetails, themeDescription]);
 
-  // Generate preview when theme changes or dialog opens
-  useEffect(() => {
-    if (isOpen && eventDetails && themeDescription !== undefined) {
-      generatePreview();
-    }
-  }, [isOpen, themeDescription, eventDetails, editableTitle, editableDescription]);
-
-  const generatePreview = async () => {
-    if (!eventDetails) return;
-    
-    setIsLoading(true);
-    try {
-      // Create a copy of event details with editable content if user is editing
-      const eventDetailsCopy = {
-        ...eventDetails,
-        title: isEditingContent ? editableTitle : eventDetails.title,
-        description: isEditingContent ? editableDescription : eventDetails.description
-      };
-
-      const { data, error } = await supabase.functions.invoke(
-        'generate-invitation',
-        {
-          body: { 
-            eventDetails: eventDetailsCopy,
-            theme: themeDescription || 'elegant and professional'
-          }
-        }
-      );
-
-      if (error) throw error;
-      setPreviewHtml(data.template);
-      
-    } catch (error) {
-      console.error('Error generating preview:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleThemeSelect = (theme: string) => {
-    onThemeChange(theme);
-    setUseCustomTheme(false);
-    setShowThemeSelector(false);
-  };
-
-  const handleCustomThemeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    onThemeChange(e.target.value);
-  };
-
-  const toggleCustomTheme = (checked: boolean) => {
-    setUseCustomTheme(checked);
-    if (!checked) {
-      // Reset to default theme when unchecking custom theme
-      onThemeChange(predefinedThemes[0].value);
-    }
-  };
+  const { previewHtml, isLoading, generatePreview } = useInvitationPreview(
+    isOpen,
+    themeDescription,
+    eventDetails,
+    editableTitle,
+    editableDescription,
+    isEditingContent
+  );
 
   const handleSubmit = () => {
     // If content was edited, update event details before submitting
@@ -162,53 +98,13 @@ export const ThemeDialog = ({
         </DialogHeader>
 
         {showThemeSelector ? (
-          <div className="space-y-4 py-4">
-            <Select 
-              value={!useCustomTheme ? themeDescription : ""} 
-              onValueChange={handleThemeSelect}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a theme" />
-              </SelectTrigger>
-              <SelectContent>
-                {predefinedThemes.map(theme => (
-                  <SelectItem key={theme.value} value={theme.value}>
-                    {theme.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            
-            <div className="flex items-center space-x-2 mt-4">
-              <Checkbox 
-                id="custom-theme" 
-                checked={useCustomTheme}
-                onCheckedChange={toggleCustomTheme}
-              />
-              <label
-                htmlFor="custom-theme"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Use custom theme
-              </label>
-            </div>
-            
-            {useCustomTheme && (
-              <div className="mt-2">
-                <Input
-                  placeholder="e.g., Modern minimalist with soft pastel colors"
-                  value={themeDescription}
-                  onChange={handleCustomThemeChange}
-                />
-              </div>
-            )}
-            
-            <div className="flex justify-end space-x-2 mt-4">
-              <Button onClick={() => setShowThemeSelector(false)}>
-                Apply Theme
-              </Button>
-            </div>
-          </div>
+          <ThemeSelector
+            themeDescription={themeDescription}
+            onThemeChange={onThemeChange}
+            onClose={() => setShowThemeSelector(false)}
+            useCustomTheme={useCustomTheme}
+            setUseCustomTheme={setUseCustomTheme}
+          />
         ) : (
           <div className="space-y-4">
             {/* Theme change button in top right */}
@@ -238,45 +134,19 @@ export const ThemeDialog = ({
 
             {/* Content editing UI */}
             {isEditingContent && (
-              <div className="space-y-4 mb-4 border p-4 rounded-md">
-                <div>
-                  <h3 className="text-sm font-medium mb-2">Event Title</h3>
-                  <Input
-                    value={editableTitle}
-                    onChange={(e) => setEditableTitle(e.target.value)}
-                    placeholder="Enter event title"
-                  />
-                </div>
-                <div>
-                  <h3 className="text-sm font-medium mb-2">Event Description</h3>
-                  <Textarea
-                    value={editableDescription}
-                    onChange={(e) => setEditableDescription(e.target.value)}
-                    placeholder="Enter event description"
-                    rows={3}
-                  />
-                </div>
-              </div>
+              <InvitationContentEditor
+                editableTitle={editableTitle}
+                editableDescription={editableDescription}
+                setEditableTitle={setEditableTitle}
+                setEditableDescription={setEditableDescription}
+              />
             )}
 
             {/* Preview */}
-            <div className="border rounded-lg overflow-hidden shadow-sm w-full min-h-[400px]">
-              {isLoading ? (
-                <div className="flex items-center justify-center h-[400px]">
-                  <Skeleton className="w-full h-full" />
-                </div>
-              ) : previewHtml ? (
-                <div 
-                  ref={contentRef}
-                  className="overflow-auto max-h-[400px]"
-                  dangerouslySetInnerHTML={{ __html: previewHtml }} 
-                />
-              ) : (
-                <div className="flex items-center justify-center h-[400px] text-muted-foreground">
-                  Enter a theme description and generate a preview
-                </div>
-              )}
-            </div>
+            <InvitationPreview
+              isLoading={isLoading}
+              previewHtml={previewHtml}
+            />
           </div>
         )}
 
