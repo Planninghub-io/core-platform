@@ -20,6 +20,16 @@ export function useInvitationDialog(isOpen: boolean, eventId: string, eventType:
     }
   }, [isOpen, eventId]);
 
+  useEffect(() => {
+    // Reset state when dialog is opened
+    if (isOpen) {
+      setStep(1);
+      setSelectedTemplate("");
+      setSelectedContacts([]);
+      setDeliveryMethod("email");
+    }
+  }, [isOpen]);
+
   const fetchData = async () => {
     try {
       // Fetch contacts
@@ -92,6 +102,11 @@ export function useInvitationDialog(isOpen: boolean, eventId: string, eventType:
 
     setIsLoading(true);
     try {
+      // Separate permanent contacts from temporary ones
+      const permanentContactIds = selectedContacts.filter(id => !id.startsWith("temp-"));
+      const tempContactIds = selectedContacts.filter(id => id.startsWith("temp-"));
+      
+      // Create the invitation
       const { data: invitation, error: invitationError } = await supabase
         .from('invitations')
         .insert({
@@ -104,12 +119,46 @@ export function useInvitationDialog(isOpen: boolean, eventId: string, eventType:
 
       if (invitationError) throw invitationError;
 
-      const recipients = selectedContacts.map(contactId => ({
+      // Prepare recipients array for permanent contacts
+      let recipients = permanentContactIds.map(contactId => ({
         invitation_id: invitation.id,
         contact_id: contactId,
         delivery_method: deliveryMethod,
         status: 'pending'
       }));
+      
+      // Add temporary contacts to the contacts table first
+      if (tempContactIds.length > 0) {
+        const tempContactsToAdd = tempContactIds.map(id => {
+          const contact = contacts.find(c => c.id === id) || 
+                          { id, name: "", email: "", phone: "", user_id: "", created_at: "" };
+          return {
+            name: contact.name,
+            email: contact.email,
+            phone: contact.phone,
+          };
+        });
+        
+        const { data: addedContacts, error: contactsError } = await supabase
+          .from('contacts')
+          .insert(tempContactsToAdd)
+          .select()
+          .returns<Contact[]>();
+        
+        if (contactsError) throw contactsError;
+        
+        // Add new permanent contacts to recipients
+        if (addedContacts) {
+          const newRecipients = addedContacts.map(contact => ({
+            invitation_id: invitation.id,
+            contact_id: contact.id,
+            delivery_method: deliveryMethod,
+            status: 'pending'
+          }));
+          
+          recipients = [...recipients, ...newRecipients];
+        }
+      }
 
       const { error: recipientsError } = await supabase
         .from('invitation_recipients')

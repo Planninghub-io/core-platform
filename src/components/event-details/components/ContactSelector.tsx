@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Mail, MessageSquare, AlertCircle } from "lucide-react";
 import { Contact } from "../types/invitation-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useState } from "react";
+import { EmailAddressInput } from "./EmailAddressInput";
 
 interface ContactSelectorProps {
   contacts: Contact[];
@@ -27,8 +29,11 @@ export const ContactSelector = ({
   onSend,
   isLoading,
 }: ContactSelectorProps) => {
+  const [tempContacts, setTempContacts] = useState<Contact[]>([]);
+  
   // Filter contacts based on delivery method to only show those with appropriate contact info
-  const filteredContacts = contacts.filter(contact => 
+  const allContacts = [...contacts, ...tempContacts];
+  const filteredContacts = allContacts.filter(contact => 
     deliveryMethod === "email" ? !!contact.email : !!contact.phone
   );
 
@@ -46,6 +51,19 @@ export const ContactSelector = ({
     } else {
       onContactSelect(filteredContacts.map(contact => contact.id));
     }
+  };
+
+  const handleAddEmails = (newEmails: { id: string; name: string; email: string }[]) => {
+    const newContacts = newEmails.map(item => ({
+      id: item.id,
+      user_id: "temp",
+      name: item.name,
+      email: item.email,
+      created_at: new Date().toISOString()
+    }));
+    
+    setTempContacts(prev => [...prev, ...newContacts]);
+    onContactSelect([...selectedContacts, ...newContacts.map(c => c.id)]);
   };
 
   return (
@@ -73,6 +91,10 @@ export const ContactSelector = ({
           </div>
         </RadioGroup>
       </div>
+
+      {deliveryMethod === "email" && (
+        <EmailAddressInput onEmailsAdd={handleAddEmails} />
+      )}
 
       <div className="space-y-2">
         <div className="flex justify-between items-center">
