@@ -24,6 +24,10 @@ export const EventActionButtons = ({
     setIsThemeDialogOpen(true);
   };
 
+  const handleTicketingClick = () => {
+    navigate(`/event/${eventId}/ticketing`);
+  };
+
   return (
     <div className="flex gap-4">
       {hasInvites ? (
@@ -45,7 +49,7 @@ export const EventActionButtons = ({
       )}
       <Button 
         variant="outline"
-        onClick={() => navigate(`/event/${eventId}/ticketing`)}
+        onClick={handleTicketingClick}
         className="flex-1"
       >
         {hasTicketing ? 'Manage Tickets' : 'Add Ticketing'}

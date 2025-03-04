@@ -16,6 +16,7 @@ import Discover from "./pages/Discover";
 import EventsHub from "./pages/EventsHub";
 import EventDetails from "./pages/EventDetails";
 import EventInvitations from "./pages/EventInvitations";
+import EventTicketing from "./pages/EventTicketing";
 import SettingsLayout from "./pages/settings/SettingsLayout";
 import UserProfileSettings from "./pages/settings/UserProfileSettings";
 import CompanySettings from "./pages/settings/CompanySettings";
@@ -79,6 +80,10 @@ const App = () => {
                   <Route 
                     path="/event/:id/invitations" 
                     element={isAuthenticated ? <EventInvitations /> : <Navigate to="/auth" replace />} 
+                  />
+                  <Route 
+                    path="/event/:id/ticketing" 
+                    element={isAuthenticated ? <EventTicketing /> : <Navigate to="/auth" replace />} 
                   />
                   <Route 
                     path="/settings" 
