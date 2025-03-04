@@ -14,10 +14,10 @@ export const InvitationDialogHeader = ({
   const isMobile = useIsMobile();
 
   return (
-    <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <p className="text-sm text-muted-foreground">
-        Preview your invitation and customize its appearance
-      </p>
+    <DialogHeader className="flex flex-row items-center justify-between space-y-0 pb-4 border-b mb-4">
+      <h3 className="text-lg md:text-xl font-semibold text-[#9b87f5]">
+        Invitation Preview
+      </h3>
       <Button 
         variant="outline" 
         onClick={onShowThemeSelector}
