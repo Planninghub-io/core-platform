@@ -1,12 +1,12 @@
 
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
-import { Palette } from "lucide-react";
-import { ThemeSelector, predefinedThemes } from "./ThemeSelector";
-import { InvitationPreview } from "./InvitationPreview";
-import { useInvitationPreview } from "../hooks/useInvitationPreview";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { useInvitationPreview } from "../hooks/useInvitationPreview";
+import { InvitationDialogHeader } from "./dialog/InvitationDialogHeader";
+import { InvitationDialogContent } from "./dialog/InvitationDialogContent";
+import { InvitationDialogFooter } from "./dialog/InvitationDialogFooter";
+import { predefinedThemes } from "./ThemeSelector";
 
 interface ThemeDialogProps {
   isOpen: boolean;
@@ -76,58 +76,32 @@ export const ThemeDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className={`${isMobile ? 'max-w-[95vw] p-4' : 'max-w-3xl'}`}>
-        <DialogHeader className="flex flex-row items-center justify-between">
-          <div className="flex-1">
-            <p className="text-sm text-muted-foreground">
-              Preview your invitation and customize its appearance
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button 
-              variant="outline" 
-              onClick={() => setShowThemeSelector(true)}
-              className="flex items-center"
-              size={isMobile ? "sm" : "default"}
-            >
-              <Palette className={`${isMobile ? 'mr-1 h-3 w-3' : 'mr-2 h-4 w-4'}`} />
-              {isMobile ? "Theme" : "Change Theme"}
-            </Button>
-          </div>
-        </DialogHeader>
+        <InvitationDialogHeader 
+          onShowThemeSelector={() => setShowThemeSelector(true)} 
+        />
+        
+        <InvitationDialogContent 
+          showThemeSelector={showThemeSelector}
+          themeDescription={themeDescription}
+          onThemeChange={onThemeChange}
+          onCloseThemeSelector={() => setShowThemeSelector(false)}
+          useCustomTheme={useCustomTheme}
+          setUseCustomTheme={setUseCustomTheme}
+          isLoading={isLoading}
+          previewHtml={previewHtml}
+          editableTitle={editableTitle}
+          editableDescription={editableDescription}
+          editableInviteText={editableInviteText}
+          setEditableTitle={setEditableTitle}
+          setEditableDescription={setEditableDescription}
+          setEditableInviteText={setEditableInviteText}
+          onPreviewBlur={generatePreview}
+        />
 
-        {showThemeSelector ? (
-          <ThemeSelector
-            themeDescription={themeDescription}
-            onThemeChange={onThemeChange}
-            onClose={() => setShowThemeSelector(false)}
-            useCustomTheme={useCustomTheme}
-            setUseCustomTheme={setUseCustomTheme}
-          />
-        ) : (
-          <div className="space-y-4">
-            <InvitationPreview
-              isLoading={isLoading}
-              previewHtml={previewHtml}
-              isEditing={true}
-              editableTitle={editableTitle}
-              editableDescription={editableDescription}
-              editableInviteText={editableInviteText}
-              setEditableTitle={setEditableTitle}
-              setEditableDescription={setEditableDescription}
-              setEditableInviteText={setEditableInviteText}
-              onBlur={generatePreview}
-            />
-          </div>
-        )}
-
-        <DialogFooter className="mt-4">
-          <Button 
-            onClick={handleSubmit}
-            className="w-full sm:w-auto"
-          >
-            {isEditing ? "Update Invitation" : "Generate Invitation"}
-          </Button>
-        </DialogFooter>
+        <InvitationDialogFooter 
+          isEditing={isEditing} 
+          onSubmit={handleSubmit} 
+        />
       </DialogContent>
     </Dialog>
   );
