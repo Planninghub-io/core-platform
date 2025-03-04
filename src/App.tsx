@@ -58,7 +58,7 @@ const App = () => {
           <SidebarProvider>
             <div className="flex min-h-screen w-full">
               {isAuthenticated && <SideNav />}
-              <main className="flex-1">
+              <main className="flex-1 min-h-screen">
                 <Routes>
                   <Route path="/" element={<Index />} />
                   <Route 
