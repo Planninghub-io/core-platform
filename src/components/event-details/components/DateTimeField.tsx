@@ -52,7 +52,7 @@ export const DateTimeField = ({
               className="rounded-r-none"
             />
           ) : (
-            <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
+            <div className="flex h-10 w-full rounded-l-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background border-r-0">
               <span>{formatDate(dateValue)}</span>
             </div>
           )}
@@ -70,7 +70,7 @@ export const DateTimeField = ({
               className="rounded-l-none border-l-0"
             />
           ) : (
-            <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
+            <div className="flex h-10 w-full rounded-r-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
               <span>{formatTime(timeValue)}</span>
             </div>
           )}
