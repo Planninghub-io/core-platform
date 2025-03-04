@@ -15,6 +15,7 @@ interface InvitationPreviewProps {
   setEditableTitle: (value: string) => void;
   setEditableDescription: (value: string) => void;
   setEditableInviteText: (value: string) => void;
+  onBlur?: () => void;
 }
 
 export const InvitationPreview = ({
@@ -27,7 +28,8 @@ export const InvitationPreview = ({
   editableInviteText,
   setEditableTitle,
   setEditableDescription,
-  setEditableInviteText
+  setEditableInviteText,
+  onBlur
 }: InvitationPreviewProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [parsedHtml, setParsedHtml] = useState<{titleHtml: string, inviteTextHtml: string, contentHtml: string, dateTimeHtml: string, locationHtml: string} | null>(null);
@@ -51,6 +53,10 @@ export const InvitationPreview = ({
     }
   }, [previewHtml, isLoading]);
 
+  const handleBlur = () => {
+    if (onBlur) onBlur();
+  };
+
   return (
     <div className="border rounded-lg overflow-hidden shadow-sm w-full min-h-[400px]">
       {isLoading ? (
@@ -58,53 +64,41 @@ export const InvitationPreview = ({
           <Skeleton className="w-full h-full" />
         </div>
       ) : previewHtml && parsedHtml ? (
-        <div className={`p-10 overflow-auto max-h-[400px] ${!isEditing && onContentClick ? "cursor-pointer" : ""}`}>
+        <div className="p-10 overflow-auto max-h-[400px]">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            {/* Editable or display title */}
-            {isEditing ? (
+            {/* Always editable title - styled like static content */}
+            <div className="w-full relative">
               <Input
                 value={editableTitle}
                 onChange={(e) => setEditableTitle(e.target.value)}
-                className="text-3xl font-bold text-center w-full"
+                onBlur={handleBlur}
+                className="text-3xl font-bold text-center w-full border-transparent hover:border-input focus:border-input transition-colors"
+                placeholder="Event Title"
               />
-            ) : (
-              <h1 
-                className="text-3xl font-bold"
-                dangerouslySetInnerHTML={{ __html: parsedHtml.titleHtml }}
-                onClick={onContentClick}
-              />
-            )}
+            </div>
             
-            {/* Editable or display invite text */}
-            {isEditing ? (
+            {/* Always editable invite text - styled like static content */}
+            <div className="w-full relative">
               <Input
                 value={editableInviteText}
                 onChange={(e) => setEditableInviteText(e.target.value)}
-                className="text-lg text-center w-full"
+                onBlur={handleBlur}
+                className="text-lg text-center w-full border-transparent hover:border-input focus:border-input transition-colors"
+                placeholder="Invitation message"
               />
-            ) : (
-              <p 
-                className="text-lg"
-                dangerouslySetInnerHTML={{ __html: parsedHtml.inviteTextHtml }}
-                onClick={onContentClick}
-              />
-            )}
+            </div>
             
-            {/* Editable or display description */}
-            {isEditing ? (
+            {/* Always editable description - styled like static content */}
+            <div className="w-full relative">
               <Textarea
                 value={editableDescription}
                 onChange={(e) => setEditableDescription(e.target.value)}
-                className="text-xl text-center w-full"
+                onBlur={handleBlur}
+                className="text-xl text-center w-full min-h-[80px] border-transparent hover:border-input focus:border-input transition-colors resize-none"
+                placeholder="Event description"
                 rows={3}
               />
-            ) : (
-              <p 
-                className="text-xl"
-                dangerouslySetInnerHTML={{ __html: parsedHtml.contentHtml }}
-                onClick={onContentClick}
-              />
-            )}
+            </div>
             
             {/* Non-editable date and location */}
             <div dangerouslySetInnerHTML={{ __html: parsedHtml.dateTimeHtml }} />

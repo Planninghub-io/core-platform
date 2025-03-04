@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { Palette } from "lucide-react";
 import { ThemeSelector, predefinedThemes } from "./ThemeSelector";
@@ -111,38 +111,24 @@ export const ThemeDialog = ({
           />
         ) : (
           <div className="space-y-4">
-            {/* Click to edit message */}
-            {!isEditingContent && !showThemeSelector && (
-              <div className="text-xs text-muted-foreground text-center">
-                Click on the preview to edit content
-              </div>
-            )}
+            {/* Instruction text */}
+            <div className="text-xs text-muted-foreground text-center">
+              Click on any text in the preview to edit directly
+            </div>
 
-            {/* Preview */}
+            {/* Preview with in-place editing */}
             <InvitationPreview
               isLoading={isLoading}
               previewHtml={previewHtml}
-              onContentClick={() => setIsEditingContent(true)}
-              isEditing={isEditingContent}
+              isEditing={true}
               editableTitle={editableTitle}
               editableDescription={editableDescription}
               editableInviteText={editableInviteText}
               setEditableTitle={setEditableTitle}
               setEditableDescription={setEditableDescription}
               setEditableInviteText={setEditableInviteText}
+              onBlur={generatePreview}
             />
-
-            {/* Done button when editing content */}
-            {isEditingContent && (
-              <div className="flex justify-end">
-                <Button onClick={() => {
-                  setIsEditingContent(false);
-                  generatePreview();
-                }}>
-                  Done Editing
-                </Button>
-              </div>
-            )}
           </div>
         )}
 
