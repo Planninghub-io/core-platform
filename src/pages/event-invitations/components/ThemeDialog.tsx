@@ -56,6 +56,7 @@ export const ThemeDialog = ({
     eventDetails,
     editableTitle,
     editableDescription,
+    editableInviteText,
     isEditingContent
   );
 
@@ -71,22 +72,6 @@ export const ThemeDialog = ({
       onSubmit(themeDescription || '');
     } else {
       onSubmit(themeDescription || '');
-    }
-  };
-
-  const toggleContentEditing = () => {
-    if (!isEditingContent) {
-      setIsEditingContent(true);
-    } else {
-      // Apply the edits and regenerate preview
-      setIsEditingContent(false);
-      generatePreview();
-    }
-  };
-
-  const handlePreviewClick = () => {
-    if (!isEditingContent) {
-      setIsEditingContent(true);
     }
   };
 
