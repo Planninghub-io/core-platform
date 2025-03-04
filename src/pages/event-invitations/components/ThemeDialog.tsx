@@ -1,6 +1,5 @@
-
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { Palette } from "lucide-react";
 import { ThemeSelector, predefinedThemes } from "./ThemeSelector";
@@ -33,13 +32,11 @@ export const ThemeDialog = ({
   const [isEditingContent, setIsEditingContent] = useState(false);
   const [useCustomTheme, setUseCustomTheme] = useState(false);
 
-  // Reset states when dialog opens
   useEffect(() => {
     if (isOpen) {
       setShowThemeSelector(false);
       setIsEditingContent(false);
       
-      // Check if the current theme is custom or predefined
       const isPredefined = predefinedThemes.some(theme => theme.value === themeDescription);
       setUseCustomTheme(!isPredefined && themeDescription !== "");
       
@@ -61,14 +58,12 @@ export const ThemeDialog = ({
   );
 
   const handleSubmit = () => {
-    // If content was edited, update event details before submitting
     if (isEditingContent && eventDetails) {
       const updatedEventDetails = {
         ...eventDetails,
         title: editableTitle,
         description: editableDescription
       };
-      // Pass the updated content back through the theme
       onSubmit(themeDescription || '');
     } else {
       onSubmit(themeDescription || '');
@@ -79,15 +74,10 @@ export const ThemeDialog = ({
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl">
         <DialogHeader className="flex flex-row items-center justify-between">
-          <div>
-            <DialogTitle>
-              {isEditing ? "Update Invitation Theme" : "Customize Invitation Theme"}
-            </DialogTitle>
-            <DialogDescription>
-              {showThemeSelector ? 
-                "Select from our predefined themes or create a custom theme" : 
-                "Preview your invitation and customize its appearance"}
-            </DialogDescription>
+          <div className="flex-1">
+            <p className="text-sm text-muted-foreground">
+              Preview your invitation and customize its appearance
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Button 
@@ -111,12 +101,6 @@ export const ThemeDialog = ({
           />
         ) : (
           <div className="space-y-4">
-            {/* Instruction text */}
-            <div className="text-xs text-muted-foreground text-center">
-              Click on any text in the preview to edit directly
-            </div>
-
-            {/* Preview with in-place editing */}
             <InvitationPreview
               isLoading={isLoading}
               previewHtml={previewHtml}

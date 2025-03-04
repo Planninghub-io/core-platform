@@ -66,34 +66,34 @@ export const InvitationPreview = ({
       ) : previewHtml && parsedHtml ? (
         <div className="p-10 overflow-auto max-h-[400px]">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            {/* Always editable title - styled like static content */}
+            {/* Title input */}
             <div className="w-full relative">
               <Input
                 value={editableTitle}
                 onChange={(e) => setEditableTitle(e.target.value)}
-                onBlur={handleBlur}
+                onBlur={onBlur}
                 className="text-3xl font-bold text-center w-full border-transparent hover:border-input focus:border-input transition-colors"
                 placeholder="Event Title"
               />
             </div>
             
-            {/* Always editable invite text - styled like static content */}
+            {/* Invite text input */}
             <div className="w-full relative">
               <Input
                 value={editableInviteText}
                 onChange={(e) => setEditableInviteText(e.target.value)}
-                onBlur={handleBlur}
+                onBlur={onBlur}
                 className="text-lg text-center w-full border-transparent hover:border-input focus:border-input transition-colors"
                 placeholder="Invitation message"
               />
             </div>
             
-            {/* Always editable description - styled like static content */}
+            {/* Description textarea */}
             <div className="w-full relative">
               <Textarea
                 value={editableDescription}
                 onChange={(e) => setEditableDescription(e.target.value)}
-                onBlur={handleBlur}
+                onBlur={onBlur}
                 className="text-xl text-center w-full min-h-[80px] border-transparent hover:border-input focus:border-input transition-colors resize-none"
                 placeholder="Event description"
                 rows={3}
