@@ -4,7 +4,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { useState, useEffect } from "react";
 import { Palette } from "lucide-react";
 import { ThemeSelector, predefinedThemes } from "./ThemeSelector";
-import { InvitationContentEditor } from "./InvitationContentEditor";
 import { InvitationPreview } from "./InvitationPreview";
 import { useInvitationPreview } from "../hooks/useInvitationPreview";
 
@@ -126,16 +125,6 @@ export const ThemeDialog = ({
               </Button>
             </div>
 
-            {/* Content editing UI */}
-            {isEditingContent && (
-              <InvitationContentEditor
-                editableTitle={editableTitle}
-                editableDescription={editableDescription}
-                setEditableTitle={setEditableTitle}
-                setEditableDescription={setEditableDescription}
-              />
-            )}
-
             {/* Click to edit message when not editing */}
             {!isEditingContent && !showThemeSelector && (
               <div className="text-xs text-muted-foreground text-center">
@@ -148,6 +137,11 @@ export const ThemeDialog = ({
               isLoading={isLoading}
               previewHtml={previewHtml}
               onContentClick={!isEditingContent ? handlePreviewClick : undefined}
+              isEditing={isEditingContent}
+              editableTitle={editableTitle}
+              editableDescription={editableDescription}
+              setEditableTitle={setEditableTitle}
+              setEditableDescription={setEditableDescription}
             />
 
             {/* Done button when editing content */}

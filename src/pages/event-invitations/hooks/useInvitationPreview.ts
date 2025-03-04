@@ -18,7 +18,7 @@ export const useInvitationPreview = (
     if (isOpen && eventDetails && themeDescription !== undefined) {
       generatePreview();
     }
-  }, [isOpen, themeDescription, eventDetails, editableTitle, editableDescription]);
+  }, [isOpen, themeDescription, eventDetails]);
 
   const generatePreview = async () => {
     if (!eventDetails) return;
