@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface InvitationCardProps {
   invitation: Invitation;
@@ -19,6 +20,7 @@ interface InvitationCardProps {
 export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -56,17 +58,17 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
   const rsvpStats = calculateRsvpStats();
 
   return (
-    <div className="border rounded-lg p-6 space-y-4">
-      <div className="flex justify-between items-start">
+    <div className={`border rounded-lg ${isMobile ? 'p-3' : 'p-6'} space-y-4`}>
+      <div className={`flex ${isMobile ? 'flex-col gap-2' : 'justify-between items-start'}`}>
         <div>
-          <h3 className="text-lg font-semibold">
+          <h3 className={`${isMobile ? 'text-base' : 'text-lg'} font-semibold`}>
             {invitation.invitation_templates.name}
           </h3>
           <p className="text-sm text-muted-foreground">
             {invitation.invitation_templates.description}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className={`flex items-center gap-2 ${isMobile ? 'self-end' : ''}`}>
           <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(invitation.status)}`}>
             {invitation.status}
           </span>
@@ -76,11 +78,11 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
                 <Eye className="h-4 w-4" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="sm:max-w-md w-[90%]">
+            <SheetContent side={isMobile ? "bottom" : "right"} className={isMobile ? "h-[80vh]" : "sm:max-w-md w-[90%]"}>
               <SheetHeader>
                 <SheetTitle>Invitation Preview</SheetTitle>
               </SheetHeader>
-              <div className="mt-6 overflow-y-auto max-h-[calc(100vh-10rem)]">
+              <div className={`mt-6 overflow-y-auto ${isMobile ? 'max-h-[60vh]' : 'max-h-[calc(100vh-10rem)]'}`}>
                 <div 
                   className="border rounded-lg overflow-hidden shadow-sm"
                   dangerouslySetInnerHTML={{ __html: invitation.invitation_templates.template_html }} 
@@ -102,7 +104,7 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
       </div>
 
       {/* Invitation Preview - Fixed height, no expand/collapse */}
-      <div className="border rounded-lg overflow-hidden shadow-sm h-[200px]">
+      <div className={`border rounded-lg overflow-hidden shadow-sm ${isMobile ? 'h-[150px]' : 'h-[200px]'}`}>
         <div 
           className="overflow-hidden h-full"
           dangerouslySetInnerHTML={{ __html: invitation.invitation_templates.template_html }} 
@@ -111,17 +113,17 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
 
       <div className="border-t pt-4">
         <h4 className="font-medium mb-3">RSVP Statistics</h4>
-        <div className="grid grid-cols-3 gap-4">
-          <div className="bg-green-50 rounded-lg p-4 text-center">
-            <p className="text-2xl font-semibold text-green-600">{rsvpStats.accepted}</p>
+        <div className="grid grid-cols-3 gap-2 md:gap-4">
+          <div className="bg-green-50 rounded-lg p-2 md:p-4 text-center">
+            <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-semibold text-green-600`}>{rsvpStats.accepted}</p>
             <p className="text-sm text-green-700">Accepted</p>
           </div>
-          <div className="bg-red-50 rounded-lg p-4 text-center">
-            <p className="text-2xl font-semibold text-red-600">{rsvpStats.declined}</p>
+          <div className="bg-red-50 rounded-lg p-2 md:p-4 text-center">
+            <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-semibold text-red-600`}>{rsvpStats.declined}</p>
             <p className="text-sm text-red-700">Declined</p>
           </div>
-          <div className="bg-yellow-50 rounded-lg p-4 text-center">
-            <p className="text-2xl font-semibold text-yellow-600">{rsvpStats.maybe}</p>
+          <div className="bg-yellow-50 rounded-lg p-2 md:p-4 text-center">
+            <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-semibold text-yellow-600`}>{rsvpStats.maybe}</p>
             <p className="text-sm text-yellow-700">Maybe</p>
           </div>
         </div>
@@ -140,10 +142,10 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
           <CollapsibleContent className="mt-2">
             <div className="grid gap-2">
               {invitation.invitation_recipients.map((recipient) => (
-                <div key={recipient.id} className="flex justify-between items-center bg-muted p-3 rounded-lg">
+                <div key={recipient.id} className={`flex justify-between items-center bg-muted ${isMobile ? 'p-2 text-sm' : 'p-3'} rounded-lg`}>
                   <div>
                     <p className="font-medium">{recipient.contacts.name}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className={`${isMobile ? 'text-xs' : 'text-sm'} text-muted-foreground`}>
                       {recipient.delivery_method === 'email' 
                         ? recipient.contacts.email 
                         : recipient.contacts.phone}

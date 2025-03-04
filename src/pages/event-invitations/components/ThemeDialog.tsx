@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogFooter, DialogClose } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
@@ -5,6 +6,7 @@ import { Palette } from "lucide-react";
 import { ThemeSelector, predefinedThemes } from "./ThemeSelector";
 import { InvitationPreview } from "./InvitationPreview";
 import { useInvitationPreview } from "../hooks/useInvitationPreview";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ThemeDialogProps {
   isOpen: boolean;
@@ -31,6 +33,7 @@ export const ThemeDialog = ({
   const [editableInviteText, setEditableInviteText] = useState<string>("You are cordially invited to");
   const [isEditingContent, setIsEditingContent] = useState(false);
   const [useCustomTheme, setUseCustomTheme] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (isOpen) {
@@ -72,7 +75,7 @@ export const ThemeDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl">
+      <DialogContent className={`${isMobile ? 'max-w-[95vw] p-4' : 'max-w-3xl'}`}>
         <DialogHeader className="flex flex-row items-center justify-between">
           <div className="flex-1">
             <p className="text-sm text-muted-foreground">
@@ -84,9 +87,10 @@ export const ThemeDialog = ({
               variant="outline" 
               onClick={() => setShowThemeSelector(true)}
               className="flex items-center"
+              size={isMobile ? "sm" : "default"}
             >
-              <Palette className="mr-2 h-4 w-4" />
-              Change Theme
+              <Palette className={`${isMobile ? 'mr-1 h-3 w-3' : 'mr-2 h-4 w-4'}`} />
+              {isMobile ? "Theme" : "Change Theme"}
             </Button>
           </div>
         </DialogHeader>
@@ -117,7 +121,10 @@ export const ThemeDialog = ({
         )}
 
         <DialogFooter className="mt-4">
-          <Button onClick={handleSubmit}>
+          <Button 
+            onClick={handleSubmit}
+            className="w-full sm:w-auto"
+          >
             {isEditing ? "Update Invitation" : "Generate Invitation"}
           </Button>
         </DialogFooter>

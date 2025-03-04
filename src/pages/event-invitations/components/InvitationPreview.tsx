@@ -3,6 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useRef, useState, useEffect } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface InvitationPreviewProps {
   isLoading: boolean;
@@ -33,6 +34,7 @@ export const InvitationPreview = ({
 }: InvitationPreviewProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
   const [parsedHtml, setParsedHtml] = useState<{titleHtml: string, inviteTextHtml: string, contentHtml: string, dateTimeHtml: string, locationHtml: string} | null>(null);
+  const isMobile = useIsMobile();
   
   // Parse the HTML to separate editable and non-editable parts
   useEffect(() => {
@@ -64,7 +66,7 @@ export const InvitationPreview = ({
           <Skeleton className="w-full h-full" />
         </div>
       ) : previewHtml && parsedHtml ? (
-        <div className="p-10 overflow-auto max-h-[400px]">
+        <div className={`${isMobile ? 'p-4' : 'p-10'} overflow-auto ${isMobile ? 'max-h-[350px]' : 'max-h-[400px]'}`}>
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             {/* Title input */}
             <div className="w-full relative">
@@ -72,7 +74,7 @@ export const InvitationPreview = ({
                 value={editableTitle}
                 onChange={(e) => setEditableTitle(e.target.value)}
                 onBlur={onBlur}
-                className="text-3xl font-bold text-center w-full border-transparent hover:border-input focus:border-input transition-colors"
+                className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold text-center w-full border-transparent hover:border-input focus:border-input transition-colors`}
                 placeholder="Event Title"
               />
             </div>
@@ -94,15 +96,15 @@ export const InvitationPreview = ({
                 value={editableDescription}
                 onChange={(e) => setEditableDescription(e.target.value)}
                 onBlur={onBlur}
-                className="text-xl text-center w-full min-h-[80px] border-transparent hover:border-input focus:border-input transition-colors resize-none"
+                className={`${isMobile ? 'text-base' : 'text-xl'} text-center w-full min-h-[80px] border-transparent hover:border-input focus:border-input transition-colors resize-none`}
                 placeholder="Event description"
-                rows={3}
+                rows={isMobile ? 2 : 3}
               />
             </div>
             
             {/* Non-editable date and location */}
-            <div dangerouslySetInnerHTML={{ __html: parsedHtml.dateTimeHtml }} />
-            <div dangerouslySetInnerHTML={{ __html: parsedHtml.locationHtml }} />
+            <div className={isMobile ? "text-sm" : ""} dangerouslySetInnerHTML={{ __html: parsedHtml.dateTimeHtml }} />
+            <div className={isMobile ? "text-sm" : ""} dangerouslySetInnerHTML={{ __html: parsedHtml.locationHtml }} />
           </div>
         </div>
       ) : (
