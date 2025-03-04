@@ -80,10 +80,6 @@ export const ThemeDialog = ({
           onShowThemeSelector={() => setShowThemeSelector(true)} 
         />
         
-        <p className="text-sm text-muted-foreground mb-4">
-          Preview your invitation and customize its appearance
-        </p>
-        
         <InvitationDialogContent 
           showThemeSelector={showThemeSelector}
           themeDescription={themeDescription}
