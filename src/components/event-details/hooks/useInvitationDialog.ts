@@ -132,10 +132,15 @@ export function useInvitationDialog(isOpen: boolean, eventId: string, eventType:
         const tempContactsToAdd = tempContactIds.map(id => {
           const contact = contacts.find(c => c.id === id) || 
                           { id, name: "", email: "", phone: "", user_id: "", created_at: "" };
+          
+          // Get current user's ID or use a placeholder
+          const { data } = supabase.auth.getSession();
+          
           return {
             name: contact.name,
             email: contact.email,
-            phone: contact.phone,
+            phone: contact.phone || null,
+            user_id: data?.session?.user?.id || 'temp-user'
           };
         });
         
@@ -203,3 +208,4 @@ export function useInvitationDialog(isOpen: boolean, eventId: string, eventType:
     handleSendInvitations
   };
 }
+
