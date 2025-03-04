@@ -10,4 +10,5 @@ export interface Ticket {
   status: string | null;
   created_at: string;
   updated_at: string;
+  booking_fee?: boolean;
 }
