@@ -129,26 +129,26 @@ export function useInvitationDialog(isOpen: boolean, eventId: string, eventType:
       
       // Add temporary contacts to the contacts table first
       if (tempContactIds.length > 0) {
+        // Get current user's ID
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+
         const tempContactsToAdd = tempContactIds.map(id => {
           const contact = contacts.find(c => c.id === id) || 
                           { id, name: "", email: "", phone: "", user_id: "", created_at: "" };
-          
-          // Get current user's ID or use a placeholder
-          const { data } = supabase.auth.getSession();
           
           return {
             name: contact.name,
             email: contact.email,
             phone: contact.phone || null,
-            user_id: data?.session?.user?.id || 'temp-user'
+            user_id: session?.user?.id || 'temp-user'
           };
         });
         
         const { data: addedContacts, error: contactsError } = await supabase
           .from('contacts')
           .insert(tempContactsToAdd)
-          .select()
-          .returns<Contact[]>();
+          .select();
         
         if (contactsError) throw contactsError;
         
