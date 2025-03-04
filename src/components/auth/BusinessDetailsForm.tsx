@@ -1,14 +1,14 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building, Mail, Phone } from "lucide-react";
+import { Building, Phone } from "lucide-react";
 
 interface BusinessDetailsFormProps {
   companyName: string;
-  businessEmail: string;
+  businessEmail: string; // We'll use this for display only now
   businessPhone: string;
   onCompanyNameChange: (value: string) => void;
-  onBusinessEmailChange: (value: string) => void;
+  onBusinessEmailChange: (value: string) => void; // Keep for interface compatibility
   onBusinessPhoneChange: (value: string) => void;
 }
 
@@ -17,7 +17,6 @@ const BusinessDetailsForm = ({
   businessEmail,
   businessPhone,
   onCompanyNameChange,
-  onBusinessEmailChange,
   onBusinessPhoneChange,
 }: BusinessDetailsFormProps) => {
   return (
@@ -31,21 +30,6 @@ const BusinessDetailsForm = ({
             value={companyName}
             onChange={(e) => onCompanyNameChange(e.target.value)}
             placeholder="Your Company Name"
-            className="pl-9"
-            required
-          />
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="businessEmail">Business Email</Label>
-        <div className="relative">
-          <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-          <Input
-            id="businessEmail"
-            type="email"
-            value={businessEmail}
-            onChange={(e) => onBusinessEmailChange(e.target.value)}
-            placeholder="contact@company.com"
             className="pl-9"
             required
           />

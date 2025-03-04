@@ -7,6 +7,7 @@ import { GeneratedEventCard } from "./GeneratedEventCard";
 import { MissingInfoDialog } from "./MissingInfoDialog";
 import { SignUpDialog } from "./SignUpDialog";
 import { useEventGeneration } from "@/hooks/event-generation";
+import { supabase } from "@/integrations/supabase/client";
 
 export const EventGeneratorSection = () => {
   const navigate = useNavigate();
@@ -50,6 +51,30 @@ export const EventGeneratorSection = () => {
       setPrompt(updatedPrompt);
     }
     handlePromptSubmit();
+  };
+
+  // Prepare event data for navigation
+  const prepareEventData = () => {
+    if (!generatedEvent) return null;
+    
+    return {
+      ...generatedEvent,
+      title: eventTitle,
+      date: selectedDate || generatedEvent.date
+    };
+  };
+
+  // Redirect to authentication with event data
+  const handleSignUp = (type: 'business' | 'user') => {
+    setShowSignUpDialog(false);
+    const eventData = prepareEventData();
+    navigate("/auth", { 
+      state: { 
+        type, 
+        eventData,
+        redirectPath: "/create-event" 
+      } 
+    });
   };
 
   return (
@@ -101,8 +126,9 @@ export const EventGeneratorSection = () => {
         <SignUpDialog
           open={showSignUpDialog}
           onOpenChange={setShowSignUpDialog}
-          onSignUpIndividual={() => navigate("/auth")}
-          onSignUpBusiness={() => navigate("/auth", { state: { type: 'business' } })}
+          onSignUpIndividual={() => handleSignUp('user')}
+          onSignUpBusiness={() => handleSignUp('business')}
+          eventData={prepareEventData()}
         />
 
         <MissingInfoDialog

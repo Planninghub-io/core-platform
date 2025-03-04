@@ -21,6 +21,7 @@ export const useEventCreation = () => {
   const navigate = useNavigate();
   const [isCreating, setIsCreating] = useState(false);
   const [createdEventId, setCreatedEventId] = useState<string | null>(null);
+  const [showSignUpDialog, setShowSignUpDialog] = useState(false);
 
   const createDefaultInvitation = async (eventId: string, eventTitle: string, eventDescription: string, eventDate: string, eventLocation: string, eventPrice: number | null) => {
     try {
@@ -88,9 +89,12 @@ export const useEventCreation = () => {
       return { error: new Error("Event title cannot be empty") };
     }
 
+    // Check authentication first
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData.user) {
-      return { error: new Error("User not authenticated") };
+      // Store event to be created after authentication
+      setShowSignUpDialog(true);
+      return { error: new Error("User not authenticated"), requiresAuth: true };
     }
 
     setIsCreating(true);
@@ -159,6 +163,8 @@ export const useEventCreation = () => {
   return {
     createEvent,
     isCreating,
-    createdEventId
+    createdEventId,
+    showSignUpDialog,
+    setShowSignUpDialog
   };
 };

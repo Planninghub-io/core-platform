@@ -14,6 +14,7 @@ interface SignUpDialogProps {
   onOpenChange: (open: boolean) => void;
   onSignUpIndividual: () => void;
   onSignUpBusiness: () => void;
+  eventData?: any; // Add eventData prop
 }
 
 export const SignUpDialog = ({
@@ -21,6 +22,7 @@ export const SignUpDialog = ({
   onOpenChange,
   onSignUpIndividual,
   onSignUpBusiness,
+  eventData,
 }: SignUpDialogProps) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

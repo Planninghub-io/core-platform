@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const useEventGeneration = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { createEvent, isCreating, createdEventId } = useEventCreation();
+  const { createEvent, isCreating, createdEventId, showSignUpDialog, setShowSignUpDialog } = useEventCreation();
   const {
     isGenerating,
     promptCount,
@@ -25,7 +25,6 @@ export const useEventGeneration = () => {
   } = useGenerateEventAI();
 
   const [prompt, setPrompt] = useState("");
-  const [showSignUpDialog, setShowSignUpDialog] = useState(false);
   const [showMissingInfoDialog, setShowMissingInfoDialog] = useState(false);
   const [eventTitle, setEventTitle] = useState("");
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -41,8 +40,12 @@ export const useEventGeneration = () => {
     }
 
     if (promptCount >= 1 && !isResubmitting) {
-      setShowSignUpDialog(true);
-      return;
+      // Check if user is already signed in
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        setShowSignUpDialog(true);
+        return;
+      }
     }
 
     const result = await generateEvent(prompt, selectedDate);
@@ -90,12 +93,6 @@ export const useEventGeneration = () => {
       return;
     }
 
-    const { data: userData, error: userError } = await supabase.auth.getUser();
-    if (userError || !userData.user) {
-      setShowSignUpDialog(true);
-      return;
-    }
-
     // Use the user-provided or AI-generated title
     const eventWithTitle = {
       ...generatedEvent,
@@ -103,7 +100,12 @@ export const useEventGeneration = () => {
       date: selectedDate || generatedEvent.date,
     };
 
-    const { error } = await createEvent(eventWithTitle, additionalInfo);
+    const { error, requiresAuth } = await createEvent(eventWithTitle, additionalInfo);
+
+    // If auth is required, the dialog will be shown by useEventCreation
+    if (requiresAuth) {
+      return;
+    }
 
     if (error) {
       console.error('Error creating event:', error);

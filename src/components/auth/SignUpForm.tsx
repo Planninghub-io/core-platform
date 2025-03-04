@@ -13,7 +13,6 @@ interface SignUpFormProps {
     firstName: string;
     lastName: string;
     companyName?: string;
-    businessEmail?: string;
     businessPhone?: string;
   }) => void;
   isLoading: boolean;
@@ -26,7 +25,6 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [companyName, setCompanyName] = useState("");
-  const [businessEmail, setBusinessEmail] = useState("");
   const [businessPhone, setBusinessPhone] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -37,7 +35,6 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
       firstName,
       lastName,
       companyName,
-      businessEmail,
       businessPhone,
     });
   };
@@ -75,17 +72,6 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
         </div>
       </div>
 
-      {isBusiness && (
-        <BusinessDetailsForm
-          companyName={companyName}
-          businessEmail={businessEmail}
-          businessPhone={businessPhone}
-          onCompanyNameChange={setCompanyName}
-          onBusinessEmailChange={setBusinessEmail}
-          onBusinessPhoneChange={setBusinessPhone}
-        />
-      )}
-
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <div className="relative">
@@ -101,6 +87,18 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
           />
         </div>
       </div>
+
+      {isBusiness && (
+        <BusinessDetailsForm
+          companyName={companyName}
+          businessEmail={email}  
+          businessPhone={businessPhone}
+          onCompanyNameChange={setCompanyName}
+          onBusinessEmailChange={() => {}} // Email is already captured above
+          onBusinessPhoneChange={setBusinessPhone}
+        />
+      )}
+      
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
         <Input

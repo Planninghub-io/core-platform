@@ -1,11 +1,12 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import SignUpForm from "./SignUpForm";
 import SignInForm from "./SignInForm";
 import { Database } from "@/integrations/supabase/types";
+import { useLocation, useNavigate } from "react-router-dom";
 
 type CompanyType = Database["public"]["Enums"]["company_type"];
 
@@ -18,6 +19,12 @@ const AuthForm = ({ type }: AuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(true);
   const isBusiness = type === 'business';
+  const location = useLocation();
+  const navigate = useNavigate();
+  
+  // Extract redirect information from location state
+  const eventData = location.state?.eventData;
+  const redirectPath = location.state?.redirectPath || "/";
 
   const handleSignUp = async (formData: {
     email: string;
@@ -25,10 +32,9 @@ const AuthForm = ({ type }: AuthFormProps) => {
     firstName: string;
     lastName: string;
     companyName?: string;
-    businessEmail?: string;
     businessPhone?: string;
   }) => {
-    const { email, password, firstName, lastName, companyName, businessEmail, businessPhone } = formData;
+    const { email, password, firstName, lastName, companyName, businessPhone } = formData;
 
     if (password.length < 6) {
       toast({
@@ -39,7 +45,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
       return;
     }
 
-    if (isSignUp && isBusiness && (!companyName || !businessEmail || !businessPhone)) {
+    if (isSignUp && isBusiness && (!companyName || !businessPhone)) {
       toast({
         title: "Error",
         description: "Please fill in all business details",
@@ -72,6 +78,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
         } else {
           throw authError;
         }
+        setIsLoading(false);
         return;
       }
 
@@ -82,7 +89,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
           .insert([{
             name: companyName,
             type: 'vendor' as CompanyType,
-            business_email: businessEmail,
+            business_email: email, // Use the same email
             business_phone: businessPhone
           }])
           .select()
@@ -116,6 +123,12 @@ const AuthForm = ({ type }: AuthFormProps) => {
         title: "Success!",
         description: "Check your email to confirm your account.",
       });
+
+      // If we have event data, navigate back to where the user was
+      if (eventData) {
+        navigate(redirectPath, { state: { eventData } });
+      }
+      
     } catch (error: any) {
       toast({
         title: "Sign Up Error",
@@ -159,6 +172,12 @@ const AuthForm = ({ type }: AuthFormProps) => {
         }
         return;
       }
+
+      // After successful login, redirect with preserved state
+      if (eventData) {
+        navigate(redirectPath, { state: { eventData } });
+      }
+      
     } catch (error: any) {
       toast({
         title: "Sign In Error",

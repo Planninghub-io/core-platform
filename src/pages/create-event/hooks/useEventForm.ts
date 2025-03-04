@@ -21,7 +21,7 @@ export const useEventForm = () => {
   });
 
   useEffect(() => {
-    if (formData.date) {
+    if (formData.date && !formData.endDate) {
       const startDate = new Date(formData.date);
       const endDate = new Date(startDate);
       endDate.setHours(endDate.getHours() + 2);
@@ -159,6 +159,7 @@ export const useEventForm = () => {
 
   return {
     formData,
+    setFormData,
     handleChange,
     handleSubmit,
   };
