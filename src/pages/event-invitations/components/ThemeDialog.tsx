@@ -79,7 +79,14 @@ export const ThemeDialog = ({
       setIsEditingContent(true);
     } else {
       // Apply the edits and regenerate preview
+      setIsEditingContent(false);
       generatePreview();
+    }
+  };
+
+  const handlePreviewClick = () => {
+    if (!isEditingContent) {
+      setIsEditingContent(true);
     }
   };
 
@@ -119,19 +126,6 @@ export const ThemeDialog = ({
               </Button>
             </div>
 
-            {/* Content editing toggle button */}
-            {!showThemeSelector && (
-              <div className="flex justify-end mb-2">
-                <Button 
-                  variant="outline" 
-                  onClick={toggleContentEditing}
-                  className="flex items-center"
-                >
-                  {isEditingContent ? "Apply Content Changes" : "Edit Content"}
-                </Button>
-              </div>
-            )}
-
             {/* Content editing UI */}
             {isEditingContent && (
               <InvitationContentEditor
@@ -142,11 +136,28 @@ export const ThemeDialog = ({
               />
             )}
 
+            {/* Click to edit message when not editing */}
+            {!isEditingContent && !showThemeSelector && (
+              <div className="text-xs text-muted-foreground text-center">
+                Click on the preview to edit content
+              </div>
+            )}
+
             {/* Preview */}
             <InvitationPreview
               isLoading={isLoading}
               previewHtml={previewHtml}
+              onContentClick={!isEditingContent ? handlePreviewClick : undefined}
             />
+
+            {/* Done button when editing content */}
+            {isEditingContent && (
+              <div className="flex justify-end">
+                <Button onClick={toggleContentEditing}>
+                  Done Editing
+                </Button>
+              </div>
+            )}
           </div>
         )}
 

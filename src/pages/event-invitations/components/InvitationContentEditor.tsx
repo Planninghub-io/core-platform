@@ -7,6 +7,7 @@ interface InvitationContentEditorProps {
   editableDescription: string;
   setEditableTitle: (value: string) => void;
   setEditableDescription: (value: string) => void;
+  className?: string;
 }
 
 export const InvitationContentEditor = ({
@@ -14,9 +15,10 @@ export const InvitationContentEditor = ({
   editableDescription,
   setEditableTitle,
   setEditableDescription,
+  className = "space-y-4 mb-4 border p-4 rounded-md"
 }: InvitationContentEditorProps) => {
   return (
-    <div className="space-y-4 mb-4 border p-4 rounded-md">
+    <div className={className}>
       <div>
         <h3 className="text-sm font-medium mb-2">Event Title</h3>
         <Input

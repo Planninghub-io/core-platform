@@ -5,11 +5,13 @@ import { useRef } from "react";
 interface InvitationPreviewProps {
   isLoading: boolean;
   previewHtml: string | null;
+  onContentClick?: () => void;
 }
 
 export const InvitationPreview = ({
   isLoading,
   previewHtml,
+  onContentClick
 }: InvitationPreviewProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
 
@@ -22,8 +24,9 @@ export const InvitationPreview = ({
       ) : previewHtml ? (
         <div 
           ref={contentRef}
-          className="overflow-auto max-h-[400px]"
+          className={`overflow-auto max-h-[400px] ${onContentClick ? "cursor-pointer" : ""}`}
           dangerouslySetInnerHTML={{ __html: previewHtml }} 
+          onClick={onContentClick}
         />
       ) : (
         <div className="flex items-center justify-center h-[400px] text-muted-foreground">
