@@ -11,8 +11,10 @@ interface InvitationPreviewProps {
   isEditing: boolean;
   editableTitle: string;
   editableDescription: string;
+  editableInviteText: string;
   setEditableTitle: (value: string) => void;
   setEditableDescription: (value: string) => void;
+  setEditableInviteText: (value: string) => void;
 }
 
 export const InvitationPreview = ({
@@ -22,23 +24,26 @@ export const InvitationPreview = ({
   isEditing,
   editableTitle,
   editableDescription,
+  editableInviteText,
   setEditableTitle,
-  setEditableDescription
+  setEditableDescription,
+  setEditableInviteText
 }: InvitationPreviewProps) => {
   const contentRef = useRef<HTMLDivElement>(null);
-  const [parsedHtml, setParsedHtml] = useState<{titleHtml: string, contentHtml: string, dateTimeHtml: string, locationHtml: string} | null>(null);
+  const [parsedHtml, setParsedHtml] = useState<{titleHtml: string, inviteTextHtml: string, contentHtml: string, dateTimeHtml: string, locationHtml: string} | null>(null);
   
   // Parse the HTML to separate editable and non-editable parts
   useEffect(() => {
     if (previewHtml && !isLoading) {
-      // Use a simple regex approach to extract parts of the template
       const titleMatch = /<h1[^>]*>(.*?)<\/h1>/s.exec(previewHtml);
+      const inviteTextMatch = /<p style="font-size: 18px;">(.*?)<\/p>/s.exec(previewHtml);
       const descMatch = /<p style="font-size: 24px;[^>]*>(.*?)<\/p>/s.exec(previewHtml);
       const dateTimeMatch = /<div style="margin-bottom: 20px;">\s*<p style="font-size: 20px;">Date & Time<\/p>.*?<\/div>/s.exec(previewHtml);
       const locationMatch = /<div style="margin-bottom: 20px;">\s*<p style="font-size: 20px;">Location<\/p>.*?<\/div>/s.exec(previewHtml);
       
       setParsedHtml({
         titleHtml: titleMatch ? titleMatch[1] : '',
+        inviteTextHtml: inviteTextMatch ? inviteTextMatch[1] : '',
         contentHtml: descMatch ? descMatch[1] : '',
         dateTimeHtml: dateTimeMatch ? dateTimeMatch[0] : '',
         locationHtml: locationMatch ? locationMatch[0] : ''
@@ -70,7 +75,20 @@ export const InvitationPreview = ({
               />
             )}
             
-            <p className="text-lg">You are cordially invited to</p>
+            {/* Editable or display invite text */}
+            {isEditing ? (
+              <Input
+                value={editableInviteText}
+                onChange={(e) => setEditableInviteText(e.target.value)}
+                className="text-lg text-center w-full"
+              />
+            ) : (
+              <p 
+                className="text-lg"
+                dangerouslySetInnerHTML={{ __html: parsedHtml.inviteTextHtml }}
+                onClick={onContentClick}
+              />
+            )}
             
             {/* Editable or display description */}
             {isEditing ? (

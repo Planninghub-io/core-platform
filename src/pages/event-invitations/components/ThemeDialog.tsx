@@ -29,6 +29,7 @@ export const ThemeDialog = ({
   const [showThemeSelector, setShowThemeSelector] = useState(false);
   const [editableTitle, setEditableTitle] = useState<string>("");
   const [editableDescription, setEditableDescription] = useState<string>("");
+  const [editableInviteText, setEditableInviteText] = useState<string>("You are cordially invited to");
   const [isEditingContent, setIsEditingContent] = useState(false);
   const [useCustomTheme, setUseCustomTheme] = useState(false);
 
@@ -92,15 +93,27 @@ export const ThemeDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-3xl">
-        <DialogHeader>
-          <DialogTitle>
-            {isEditing ? "Update Invitation Theme" : "Customize Invitation Theme"}
-          </DialogTitle>
-          <DialogDescription>
-            {showThemeSelector ? 
-              "Select from our predefined themes or create a custom theme" : 
-              "Preview your invitation and customize its appearance"}
-          </DialogDescription>
+        <DialogHeader className="flex flex-row items-center justify-between">
+          <div>
+            <DialogTitle>
+              {isEditing ? "Update Invitation Theme" : "Customize Invitation Theme"}
+            </DialogTitle>
+            <DialogDescription>
+              {showThemeSelector ? 
+                "Select from our predefined themes or create a custom theme" : 
+                "Preview your invitation and customize its appearance"}
+            </DialogDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowThemeSelector(true)}
+              className="flex items-center"
+            >
+              <Palette className="mr-2 h-4 w-4" />
+              Change Theme
+            </Button>
+          </div>
         </DialogHeader>
 
         {showThemeSelector ? (
@@ -113,19 +126,7 @@ export const ThemeDialog = ({
           />
         ) : (
           <div className="space-y-4">
-            {/* Theme change button in top right */}
-            <div className="flex justify-end mb-2">
-              <Button 
-                variant="outline" 
-                onClick={() => setShowThemeSelector(true)}
-                className="flex items-center"
-              >
-                <Palette className="mr-2 h-4 w-4" />
-                Change Theme
-              </Button>
-            </div>
-
-            {/* Click to edit message when not editing */}
+            {/* Click to edit message */}
             {!isEditingContent && !showThemeSelector && (
               <div className="text-xs text-muted-foreground text-center">
                 Click on the preview to edit content
@@ -136,18 +137,23 @@ export const ThemeDialog = ({
             <InvitationPreview
               isLoading={isLoading}
               previewHtml={previewHtml}
-              onContentClick={!isEditingContent ? handlePreviewClick : undefined}
+              onContentClick={() => setIsEditingContent(true)}
               isEditing={isEditingContent}
               editableTitle={editableTitle}
               editableDescription={editableDescription}
+              editableInviteText={editableInviteText}
               setEditableTitle={setEditableTitle}
               setEditableDescription={setEditableDescription}
+              setEditableInviteText={setEditableInviteText}
             />
 
             {/* Done button when editing content */}
             {isEditingContent && (
               <div className="flex justify-end">
-                <Button onClick={toggleContentEditing}>
+                <Button onClick={() => {
+                  setIsEditingContent(false);
+                  generatePreview();
+                }}>
                   Done Editing
                 </Button>
               </div>

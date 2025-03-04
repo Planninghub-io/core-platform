@@ -9,6 +9,7 @@ export const useInvitationPreview = (
   eventDetails: Event | null,
   editableTitle: string,
   editableDescription: string,
+  editableInviteText: string,
   isEditingContent: boolean
 ) => {
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
@@ -29,7 +30,8 @@ export const useInvitationPreview = (
       const eventDetailsCopy = {
         ...eventDetails,
         title: isEditingContent ? editableTitle : eventDetails.title,
-        description: isEditingContent ? editableDescription : eventDetails.description
+        description: isEditingContent ? editableDescription : eventDetails.description,
+        inviteText: isEditingContent ? editableInviteText : "You are cordially invited to"
       };
 
       const { data, error } = await supabase.functions.invoke(
