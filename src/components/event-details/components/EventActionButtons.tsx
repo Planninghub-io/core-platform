@@ -48,7 +48,7 @@ export const EventActionButtons = ({
         onClick={() => navigate(`/event/${eventId}/ticketing`)}
         className="flex-1"
       >
-        {hasTicketing ? 'Ticketing' : 'Add Ticketing'}
+        {hasTicketing ? 'Manage Tickets' : 'Add Ticketing'}
       </Button>
 
       <InvitationThemeDialog

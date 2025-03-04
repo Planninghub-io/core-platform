@@ -1,190 +1,201 @@
 
-import { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { EventTicketingHeader } from "./event-ticketing/components/EventTicketingHeader";
+import { AddTicketForm } from "./event-ticketing/components/AddTicketForm";
+import { TicketsList } from "./event-ticketing/components/TicketsList";
+import { NoTicketsView } from "./event-ticketing/components/NoTicketsView";
+import { Ticket } from "./event-ticketing/types";
 
-interface TicketType {
-  id: string;
-  ticket_name: string;
-  price: number | null;
-  quantity: number | null;
-  description: string | null;
-  status: string;
-  event_id: string;
-  created_at: string;
-}
-
-const EventTicketing = () => {
-  const { id: eventId } = useParams();
+const EventTicketing: React.FC = () => {
+  const { id: eventId } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [tickets, setTickets] = useState<TicketType[]>([]);
-  const [newTicket, setNewTicket] = useState({
-    ticket_name: '',
-    price: null as number | null,
-    quantity: null as number | null,
-    description: null as string | null,
-  });
+  const [event, setEvent] = useState<any>(null);
+  const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showAddForm, setShowAddForm] = useState(false);
 
   useEffect(() => {
-    fetchTickets();
-  }, [eventId]);
-
-  const fetchTickets = async () => {
     if (!eventId) return;
     
+    const fetchEventAndTickets = async () => {
+      try {
+        // Fetch event details
+        const { data: eventData, error: eventError } = await supabase
+          .from("events")
+          .select("*")
+          .eq("id", eventId)
+          .single();
+
+        if (eventError) throw eventError;
+        setEvent(eventData);
+
+        // Fetch tickets
+        const { data: ticketsData, error: ticketsError } = await supabase
+          .from("event_ticketing")
+          .select("*")
+          .eq("event_id", eventId)
+          .order("created_at", { ascending: false });
+
+        if (ticketsError) throw ticketsError;
+        setTickets(ticketsData || []);
+      } catch (error) {
+        console.error("Error fetching event and tickets:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load event or tickets information.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEventAndTickets();
+  }, [eventId, toast]);
+
+  const handleBack = () => {
+    navigate(`/event/${eventId}`);
+  };
+
+  const handleAddTicket = async (newTicket: Omit<Ticket, "id" | "created_at">) => {
     try {
       const { data, error } = await supabase
-        .from('event_ticketing')
-        .select('*')
-        .eq('event_id', eventId)
-        .order('created_at', { ascending: true });
+        .from("event_ticketing")
+        .insert({
+          ...newTicket,
+          event_id: eventId
+        })
+        .select()
+        .single();
 
       if (error) throw error;
-      setTickets(data || []);
+
+      setTickets([data, ...tickets]);
+      setShowAddForm(false);
+      
+      toast({
+        description: "Ticket added successfully",
+      });
     } catch (error) {
-      console.error('Error fetching tickets:', error);
+      console.error("Error adding ticket:", error);
       toast({
         title: "Error",
-        description: "Failed to load tickets",
+        description: "Failed to add ticket. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  const handleAddTicket = async () => {
-    if (!eventId || !newTicket.ticket_name) return;
+  const handleDeleteTicket = async (ticketId: string) => {
+    if (!confirm("Are you sure you want to delete this ticket?")) return;
 
     try {
-      const ticketData = {
-        event_id: eventId,
-        ticket_name: newTicket.ticket_name,
-        price: newTicket.price,
-        quantity: newTicket.quantity,
-        description: newTicket.description,
-      };
-
       const { error } = await supabase
-        .from('event_ticketing')
-        .insert(ticketData);
+        .from("event_ticketing")
+        .delete()
+        .eq("id", ticketId);
 
       if (error) throw error;
 
+      setTickets(tickets.filter(ticket => ticket.id !== ticketId));
+      
       toast({
-        description: "Ticket type added successfully",
+        description: "Ticket deleted successfully",
       });
-      
-      setNewTicket({
-        ticket_name: '',
-        price: null,
-        quantity: null,
-        description: null,
-      });
-      
-      fetchTickets();
     } catch (error) {
-      console.error('Error adding ticket:', error);
+      console.error("Error deleting ticket:", error);
       toast({
         title: "Error",
-        description: "Failed to add ticket",
+        description: "Failed to delete ticket. Please try again.",
         variant: "destructive",
       });
     }
   };
 
-  return (
-    <div className="container py-8 space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Event Ticketing</h1>
-        <Button variant="outline" onClick={() => navigate(`/event/${eventId}`)}>
-          Back to Event
-        </Button>
-      </div>
+  const handleUpdateTicket = async (updatedTicket: Ticket) => {
+    try {
+      const { error } = await supabase
+        .from("event_ticketing")
+        .update({
+          ticket_name: updatedTicket.ticket_name,
+          description: updatedTicket.description,
+          price: updatedTicket.price,
+          quantity: updatedTicket.quantity,
+          status: updatedTicket.status
+        })
+        .eq("id", updatedTicket.id);
 
-      <div className="space-y-6 bg-card p-6 rounded-lg">
-        <h2 className="text-xl font-semibold">Add New Ticket Type</h2>
-        <div className="grid gap-4">
-          <div>
-            <Label htmlFor="ticket_name">Ticket Name</Label>
-            <Input
-              id="ticket_name"
-              value={newTicket.ticket_name}
-              onChange={(e) => setNewTicket(prev => ({ ...prev, ticket_name: e.target.value }))}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="price">Price</Label>
-              <Input
-                id="price"
-                type="number"
-                value={newTicket.price || ''}
-                onChange={(e) => setNewTicket(prev => ({ ...prev, price: e.target.value ? parseFloat(e.target.value) : null }))}
-              />
-            </div>
-            <div>
-              <Label htmlFor="quantity">Quantity Available</Label>
-              <Input
-                id="quantity"
-                type="number"
-                value={newTicket.quantity || ''}
-                onChange={(e) => setNewTicket(prev => ({ ...prev, quantity: e.target.value ? parseInt(e.target.value) : null }))}
-              />
-            </div>
-          </div>
-          <div>
-            <Label htmlFor="description">Description</Label>
-            <textarea
-              id="description"
-              className="w-full min-h-[100px] p-2 border rounded-md"
-              value={newTicket.description || ''}
-              onChange={(e) => setNewTicket(prev => ({ ...prev, description: e.target.value || null }))}
-            />
-          </div>
-          <Button onClick={handleAddTicket} disabled={!newTicket.ticket_name}>
-            Add Ticket Type
-          </Button>
+      if (error) throw error;
+
+      setTickets(tickets.map(ticket => 
+        ticket.id === updatedTicket.id ? updatedTicket : ticket
+      ));
+      
+      toast({
+        description: "Ticket updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating ticket:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update ticket. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="container py-12">
+        <div className="flex justify-center">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
         </div>
       </div>
+    );
+  }
 
-      <div className="space-y-4">
-        <h2 className="text-xl font-semibold">Existing Tickets</h2>
-        {tickets.length === 0 ? (
-          <p className="text-muted-foreground">No tickets created yet</p>
-        ) : (
-          <div className="grid gap-4">
-            {tickets.map((ticket) => (
-              <div
-                key={ticket.id}
-                className="p-4 border rounded-lg flex items-center justify-between"
-              >
-                <div>
-                  <h3 className="font-medium">{ticket.ticket_name}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Price: ${ticket.price} | Available: {ticket.quantity}
-                  </p>
-                  {ticket.description && (
-                    <p className="text-sm mt-1">{ticket.description}</p>
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {/* TODO: Add edit functionality */}}
-                  >
-                    Edit
-                  </Button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+  if (!event) {
+    return (
+      <div className="container py-12">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold mb-4">Event Not Found</h1>
+          <p className="mb-6">The event you're looking for doesn't exist or you don't have permission to view it.</p>
+          <Button onClick={() => navigate('/events-hub')}>Back to Events</Button>
+        </div>
       </div>
+    );
+  }
+
+  return (
+    <div className="container py-8">
+      <EventTicketingHeader 
+        eventTitle={event.title} 
+        onBack={handleBack}
+        onAddTicket={() => setShowAddForm(true)}
+        hasTickets={tickets.length > 0}
+      />
+
+      {showAddForm && (
+        <AddTicketForm
+          onSubmit={handleAddTicket}
+          onCancel={() => setShowAddForm(false)}
+        />
+      )}
+
+      {tickets.length > 0 ? (
+        <TicketsList 
+          tickets={tickets} 
+          onDelete={handleDeleteTicket}
+          onUpdate={handleUpdateTicket}
+        />
+      ) : (
+        !showAddForm && <NoTicketsView onAddTicket={() => setShowAddForm(true)} />
+      )}
     </div>
   );
 };

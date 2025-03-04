@@ -1,5 +1,5 @@
 
-import { Home, Calendar, Compass, Store } from "lucide-react";
+import { Home, Calendar, Compass, Store, Ticket } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   SidebarGroup,
