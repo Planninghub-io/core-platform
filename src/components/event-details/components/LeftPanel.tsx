@@ -18,7 +18,7 @@ export const LeftPanel = ({
   viewMode,
   onFieldChange
 }: LeftPanelProps) => {
-  const { hasInvites, hasTicketing, generateInvitation } = useEventFeatures(event);
+  const { hasInvites, hasTicketing, generateInvitation } = useEventFeatures({ eventId: event.id });
 
   if (viewMode === 'ai') {
     return (

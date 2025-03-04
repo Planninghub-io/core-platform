@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface EventFeaturesProps {
   eventId: string;
@@ -10,6 +11,7 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
   const [hasInvites, setHasInvites] = useState(false);
   const [hasTicketing, setHasTicketing] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkEventFeatures = async () => {
@@ -53,9 +55,18 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
     }
   }, [eventId]);
 
+  const generateInvitation = (theme: string) => {
+    // This function is needed by LeftPanel but was missing in the hook
+    toast({
+      description: `Generating invitation with theme: ${theme}`,
+    });
+    // Invitation generation logic would go here
+  };
+
   return {
     hasInvites,
     hasTicketing,
-    loading
+    loading,
+    generateInvitation
   };
 };
