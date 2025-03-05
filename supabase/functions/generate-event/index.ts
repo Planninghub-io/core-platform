@@ -34,9 +34,28 @@ serve(async (req) => {
       fullPrompt = `${prompt}. Additional details: ${additionalDetails}`;
     }
 
-    // Parse title, description, location, etc. from the prompt
-    // This is a simple heuristic approach to extract information
-    const titleMatch = prompt.match(/title:?\s*([^,.]+)/i);
+    // Improved title extraction with common event patterns
+    // Wedding pattern
+    let titleMatch = prompt.match(/(?:plan|create|organize|arrange)\s+(?:an?|the)?\s*([A-Za-z]+(?:'s)?(?:\s+[A-Za-z]+)?)(?:\s+wedding|\s+event)/i);
+    if (!titleMatch) {
+      // Birthday pattern
+      titleMatch = prompt.match(/(?:plan|create|organize|arrange)\s+(?:an?|the)?\s*([A-Za-z]+(?:'s)?(?:\s+[A-Za-z]+)?)(?:\s+birthday)/i);
+    }
+    if (!titleMatch) {
+      // Conference/Meeting pattern
+      titleMatch = prompt.match(/(?:plan|create|organize|arrange)\s+(?:an?|the)?\s*([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?:\s+conference|\s+meeting|\s+workshop)/i);
+    }
+    if (!titleMatch) {
+      // Generic event with name
+      titleMatch = prompt.match(/(?:plan|create|organize|arrange)\s+(?:an?|the)?\s*([A-Za-z]+(?:'s)?(?:\s+[A-Za-z]+){0,2})(?:\s+in\s+|(?:\s+at\s+))/i);
+    }
+    
+    // Fallback title extraction - try to identify a proper noun or capitalized phrase
+    if (!titleMatch) {
+      titleMatch = prompt.match(/\b([A-Z][a-z]+(?:'s)?(?:\s+[A-Z][a-z]+){0,2})\b/);
+    }
+
+    // More generic pattern
     const descriptionMatch = prompt.match(/description:?\s*([^,.]+(?:[^.]+)?)/i);
     const locationMatch = prompt.match(/location:?\s*([^,.]+)/i) || prompt.match(/in\s+([^,.]+)/i) || prompt.match(/at\s+([^,.]+(?:,[^,.]+)?)/i);
     const categoryMatch = prompt.match(/category:?\s*([^,.]+)/i);
@@ -44,27 +63,35 @@ serve(async (req) => {
 
     // Default description if one wasn't provided
     let defaultDescription = prompt;
-    if (titleMatch) {
-      defaultDescription = `Event: ${prompt}`;
-    }
-
+    
     // Use extracted data if possible, otherwise generate with API
+    const extractedTitle = titleMatch ? titleMatch[1].trim() : "";
+    
+    // Format title based on what we found (Wedding, Birthday, etc.)
+    let formattedTitle = extractedTitle;
+    if (extractedTitle && prompt.toLowerCase().includes("wedding")) {
+      formattedTitle = `${extractedTitle}'s Wedding`;
+    } else if (extractedTitle && prompt.toLowerCase().includes("birthday")) {
+      formattedTitle = `${extractedTitle}'s Birthday`;
+    }
+    
     const extractedEvent: Partial<GeneratedEvent> = {
-      title: titleMatch ? titleMatch[1].trim() : "",
+      title: formattedTitle || "",
       description: descriptionMatch ? descriptionMatch[1].trim() : defaultDescription,
       location: locationMatch ? locationMatch[1].trim() : "",
-      category: categoryMatch ? categoryMatch[1].trim() : "Other",
+      category: categoryMatch ? categoryMatch[1].trim() : prompt.toLowerCase().includes("wedding") ? "Wedding" : 
+                                                         prompt.toLowerCase().includes("birthday") ? "Birthday Party" : "Other",
       estimatedPrice: priceMatch ? priceMatch[1].trim() : "Free",
     };
 
     console.log('Extracted event data:', extractedEvent);
 
     // If we have enough extracted information, use it without calling OpenAI
-    const hasMinimumInfo = extractedEvent.title && extractedEvent.location;
+    const hasMinimumInfo = (extractedEvent.title || extractedEvent.location);
     
     if (hasMinimumInfo) {
       // Create a basic image prompt from title and location
-      extractedEvent.imagePrompt = `An event "${extractedEvent.title}" at ${extractedEvent.location}`;
+      extractedEvent.imagePrompt = `An event "${extractedEvent.title || "social gathering"}" at ${extractedEvent.location || "a venue"}`;
 
       // Generate image for the event using the extracted data
       try {

@@ -46,7 +46,7 @@ export const useGenerateEventAI = () => {
       if (data && (data.title || data.description || data.location)) {
         // Create event object, allowing for missing fields
         const validatedEvent: GeneratedEvent = {
-          title: data.title?.trim() || 'New Event',
+          title: data.title?.trim() || 'Enter Event Name',
           description: data.description || '',
           date: selectedDate || data.date || '',
           location: data.location || '',

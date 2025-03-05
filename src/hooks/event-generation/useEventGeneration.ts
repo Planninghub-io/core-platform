@@ -107,7 +107,7 @@ export const useEventGeneration = () => {
     }
 
     // Check if we have a title
-    if (!eventTitle.trim()) {
+    if (!eventTitle.trim() || eventTitle === 'Enter Event Name') {
       toast({
         title: "Error",
         description: "Please provide a title for your event.",

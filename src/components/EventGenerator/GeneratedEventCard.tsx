@@ -10,6 +10,7 @@ import {
   CardHeader,
 } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 
 interface GeneratedEvent {
   title: string;
@@ -42,6 +43,20 @@ export const GeneratedEventCard = ({
   onTitleChange,
 }: GeneratedEventCardProps) => {
   const navigate = useNavigate();
+  const [isTitleFocused, setIsTitleFocused] = useState(false);
+  
+  // Auto-focus the title input if it's empty or a placeholder
+  useEffect(() => {
+    const isPlaceholder = eventTitle === 'Enter Event Name';
+    if (isPlaceholder) {
+      setTimeout(() => {
+        const titleInput = document.querySelector('input[placeholder="Enter event title"]') as HTMLInputElement;
+        if (titleInput) {
+          titleInput.focus();
+        }
+      }, 500);
+    }
+  }, [eventTitle]);
 
   const formatDate = (dateString: string) => {
     try {
@@ -86,8 +101,22 @@ export const GeneratedEventCard = ({
             <Input
               value={eventTitle || event.title}
               onChange={(e) => onTitleChange(e.target.value)}
+              onFocus={() => {
+                setIsTitleFocused(true);
+                if (eventTitle === 'Enter Event Name') {
+                  onTitleChange('');
+                }
+              }}
+              onBlur={() => {
+                setIsTitleFocused(false);
+                if (!eventTitle.trim()) {
+                  onTitleChange('Enter Event Name');
+                }
+              }}
               placeholder="Enter event title"
-              className="text-xl font-semibold border-none px-0 focus-visible:ring-0"
+              className={`text-xl font-semibold border-none px-0 focus-visible:ring-0 ${
+                (eventTitle === 'Enter Event Name' && !isTitleFocused) ? 'text-gray-400 italic' : ''
+              }`}
             />
             <CardDescription className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
@@ -126,7 +155,7 @@ export const GeneratedEventCard = ({
             ) : (
               <Button 
                 onClick={onCreateEvent}
-                disabled={isCreating}
+                disabled={isCreating || eventTitle === 'Enter Event Name' || !eventTitle.trim()}
                 className="flex-1"
               >
                 {isCreating ? 'Creating Event...' : 'Create This Event'}
