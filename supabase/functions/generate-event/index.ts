@@ -16,6 +16,161 @@ interface GeneratedEvent {
   imagePrompt: string;
 }
 
+// Extract title from prompt using various patterns
+function extractTitle(prompt: string): string {
+  // Wedding pattern
+  let titleMatch = prompt.match(/(?:plan|create|organize|arrange)\s+(?:an?|the)?\s*([A-Za-z]+(?:'s)?(?:\s+[A-Za-z]+)?)(?:\s+wedding|\s+event)/i);
+  if (!titleMatch) {
+    // Birthday pattern
+    titleMatch = prompt.match(/(?:plan|create|organize|arrange)\s+(?:an?|the)?\s*([A-Za-z]+(?:'s)?(?:\s+[A-Za-z]+)?)(?:\s+birthday)/i);
+  }
+  if (!titleMatch) {
+    // Conference/Meeting pattern
+    titleMatch = prompt.match(/(?:plan|create|organize|arrange)\s+(?:an?|the)?\s*([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?:\s+conference|\s+meeting|\s+workshop)/i);
+  }
+  if (!titleMatch) {
+    // Generic event with name
+    titleMatch = prompt.match(/(?:plan|create|organize|arrange)\s+(?:an?|the)?\s*([A-Za-z]+(?:'s)?(?:\s+[A-Za-z]+){0,2})(?:\s+in\s+|(?:\s+at\s+))/i);
+  }
+  
+  // Fallback title extraction - try to identify a proper noun or capitalized phrase
+  if (!titleMatch) {
+    titleMatch = prompt.match(/\b([A-Z][a-z]+(?:'s)?(?:\s+[A-Z][a-z]+){0,2})\b/);
+  }
+
+  const extractedTitle = titleMatch ? titleMatch[1].trim() : "";
+  
+  // Format title based on what we found (Wedding, Birthday, etc.)
+  if (extractedTitle && prompt.toLowerCase().includes("wedding")) {
+    return `${extractedTitle}'s Wedding`;
+  } else if (extractedTitle && prompt.toLowerCase().includes("birthday")) {
+    return `${extractedTitle}'s Birthday`;
+  }
+  
+  return extractedTitle;
+}
+
+// Extract other event details from prompt
+function extractEventDetails(prompt: string): Partial<GeneratedEvent> {
+  const descriptionMatch = prompt.match(/description:?\s*([^,.]+(?:[^.]+)?)/i);
+  const locationMatch = prompt.match(/location:?\s*([^,.]+)/i) || prompt.match(/in\s+([^,.]+)/i) || prompt.match(/at\s+([^,.]+(?:,[^,.]+)?)/i);
+  const categoryMatch = prompt.match(/category:?\s*([^,.]+)/i);
+  const priceMatch = prompt.match(/price:?\s*([^,.]+)/i) || prompt.match(/estimatedPrice:?\s*([^,.]+)/i) || prompt.match(/cost:?\s*([^,.]+)/i);
+
+  // Default description if one wasn't provided
+  let defaultDescription = prompt;
+  
+  const formattedTitle = extractTitle(prompt);
+  
+  // Determine category based on event type mentions
+  let category = categoryMatch ? categoryMatch[1].trim() : "";
+  if (!category) {
+    if (prompt.toLowerCase().includes("wedding")) {
+      category = "Wedding";
+    } else if (prompt.toLowerCase().includes("birthday")) {
+      category = "Birthday Party";
+    } else {
+      category = "Other";
+    }
+  }
+  
+  return {
+    title: formattedTitle || "",
+    description: descriptionMatch ? descriptionMatch[1].trim() : defaultDescription,
+    location: locationMatch ? locationMatch[1].trim() : "",
+    category,
+    estimatedPrice: priceMatch ? priceMatch[1].trim() : "Free",
+  };
+}
+
+// Generate image for event using OpenAI
+async function generateEventImage(imagePrompt: string): Promise<string | null> {
+  try {
+    const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: imagePrompt,
+        n: 1,
+        size: "1024x1024"
+      })
+    });
+
+    if (!imageResponse.ok) {
+      console.error('Image generation error:', await imageResponse.text());
+      return null;
+    }
+
+    const imageData = await imageResponse.json();
+    return imageData.data?.[0]?.url || null;
+  } catch (error) {
+    console.error('Error generating image:', error);
+    return null;
+  }
+}
+
+// Generate event details using OpenAI
+async function generateEventWithAI(prompt: string): Promise<Partial<GeneratedEvent>> {
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: `You are an event planning assistant. Generate compelling event details from user prompts. 
+            Always create an engaging title that captures the event's essence. 
+            For image prompts, create detailed descriptions focusing on the event's atmosphere and setting.`
+          },
+          {
+            role: "user",
+            content: `Create an event based on this description: ${prompt}. 
+            Include a catchy title, detailed description, location, category, and estimated price range.
+            Also create a detailed image prompt that captures the event's atmosphere.`
+          }
+        ],
+        temperature: 0.7
+      }),
+    });
+
+    if (!response.ok) {
+      console.error('AI generation error:', await response.text());
+      return {};
+    }
+
+    const data = await response.json();
+    const content = data.choices[0].message.content;
+
+    // Parse the response and extract event details
+    const lines = content.split('\n');
+    let event: Partial<GeneratedEvent> = {};
+    
+    lines.forEach(line => {
+      if (line.toLowerCase().startsWith('title:')) event.title = line.split(':')[1].trim();
+      if (line.toLowerCase().startsWith('description:')) event.description = line.split(':')[1].trim();
+      if (line.toLowerCase().startsWith('location:')) event.location = line.split(':')[1].trim();
+      if (line.toLowerCase().startsWith('category:')) event.category = line.split(':')[1].trim();
+      if (line.toLowerCase().startsWith('estimated price:')) event.estimatedPrice = line.split(':')[1].trim();
+      if (line.toLowerCase().startsWith('image prompt:')) event.imagePrompt = line.split(':')[1].trim();
+    });
+
+    return event;
+  } catch (error) {
+    console.error('Error generating event with AI:', error);
+    return {};
+  }
+}
+
+// Main handler function
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -34,199 +189,54 @@ serve(async (req) => {
       fullPrompt = `${prompt}. Additional details: ${additionalDetails}`;
     }
 
-    // Improved title extraction with common event patterns
-    // Wedding pattern
-    let titleMatch = prompt.match(/(?:plan|create|organize|arrange)\s+(?:an?|the)?\s*([A-Za-z]+(?:'s)?(?:\s+[A-Za-z]+)?)(?:\s+wedding|\s+event)/i);
-    if (!titleMatch) {
-      // Birthday pattern
-      titleMatch = prompt.match(/(?:plan|create|organize|arrange)\s+(?:an?|the)?\s*([A-Za-z]+(?:'s)?(?:\s+[A-Za-z]+)?)(?:\s+birthday)/i);
-    }
-    if (!titleMatch) {
-      // Conference/Meeting pattern
-      titleMatch = prompt.match(/(?:plan|create|organize|arrange)\s+(?:an?|the)?\s*([A-Za-z]+(?:\s+[A-Za-z]+){0,2})(?:\s+conference|\s+meeting|\s+workshop)/i);
-    }
-    if (!titleMatch) {
-      // Generic event with name
-      titleMatch = prompt.match(/(?:plan|create|organize|arrange)\s+(?:an?|the)?\s*([A-Za-z]+(?:'s)?(?:\s+[A-Za-z]+){0,2})(?:\s+in\s+|(?:\s+at\s+))/i);
-    }
-    
-    // Fallback title extraction - try to identify a proper noun or capitalized phrase
-    if (!titleMatch) {
-      titleMatch = prompt.match(/\b([A-Z][a-z]+(?:'s)?(?:\s+[A-Z][a-z]+){0,2})\b/);
-    }
-
-    // More generic pattern
-    const descriptionMatch = prompt.match(/description:?\s*([^,.]+(?:[^.]+)?)/i);
-    const locationMatch = prompt.match(/location:?\s*([^,.]+)/i) || prompt.match(/in\s+([^,.]+)/i) || prompt.match(/at\s+([^,.]+(?:,[^,.]+)?)/i);
-    const categoryMatch = prompt.match(/category:?\s*([^,.]+)/i);
-    const priceMatch = prompt.match(/price:?\s*([^,.]+)/i) || prompt.match(/estimatedPrice:?\s*([^,.]+)/i) || prompt.match(/cost:?\s*([^,.]+)/i);
-
-    // Default description if one wasn't provided
-    let defaultDescription = prompt;
-    
-    // Use extracted data if possible, otherwise generate with API
-    const extractedTitle = titleMatch ? titleMatch[1].trim() : "";
-    
-    // Format title based on what we found (Wedding, Birthday, etc.)
-    let formattedTitle = extractedTitle;
-    if (extractedTitle && prompt.toLowerCase().includes("wedding")) {
-      formattedTitle = `${extractedTitle}'s Wedding`;
-    } else if (extractedTitle && prompt.toLowerCase().includes("birthday")) {
-      formattedTitle = `${extractedTitle}'s Birthday`;
-    }
-    
-    const extractedEvent: Partial<GeneratedEvent> = {
-      title: formattedTitle || "",
-      description: descriptionMatch ? descriptionMatch[1].trim() : defaultDescription,
-      location: locationMatch ? locationMatch[1].trim() : "",
-      category: categoryMatch ? categoryMatch[1].trim() : prompt.toLowerCase().includes("wedding") ? "Wedding" : 
-                                                         prompt.toLowerCase().includes("birthday") ? "Birthday Party" : "Other",
-      estimatedPrice: priceMatch ? priceMatch[1].trim() : "Free",
-    };
-
+    // Extract event details from prompt
+    const extractedEvent = extractEventDetails(fullPrompt);
     console.log('Extracted event data:', extractedEvent);
 
-    // If we have enough extracted information, use it without calling OpenAI
+    // Check if we have enough extracted information
     const hasMinimumInfo = (extractedEvent.title || extractedEvent.location);
     
     if (hasMinimumInfo) {
       // Create a basic image prompt from title and location
       extractedEvent.imagePrompt = `An event "${extractedEvent.title || "social gathering"}" at ${extractedEvent.location || "a venue"}`;
 
-      // Generate image for the event using the extracted data
-      try {
-        const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: "dall-e-3",
-            prompt: extractedEvent.imagePrompt,
-            n: 1,
-            size: "1024x1024"
-          })
-        });
+      // Generate image for the event
+      const imageUrl = await generateEventImage(extractedEvent.imagePrompt);
 
-        const imageData = await imageResponse.json();
-        const imageUrl = imageData.data?.[0]?.url;
-
-        return new Response(
-          JSON.stringify({
-            ...extractedEvent,
-            imageUrl
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      } catch (error) {
-        console.error('Error generating image:', error);
-        // If image generation fails, still return the event data
-        return new Response(
-          JSON.stringify({
-            ...extractedEvent
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
+      return new Response(
+        JSON.stringify({
+          ...extractedEvent,
+          imageUrl
+        }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     // If we don't have enough information, use OpenAI to generate event details
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          {
-            role: "system",
-            content: `You are an event planning assistant. Generate compelling event details from user prompts. 
-            Always create an engaging title that captures the event's essence. 
-            For image prompts, create detailed descriptions focusing on the event's atmosphere and setting.`
-          },
-          {
-            role: "user",
-            content: `Create an event based on this description: ${fullPrompt}. 
-            Include a catchy title, detailed description, location, category, and estimated price range.
-            Also create a detailed image prompt that captures the event's atmosphere.`
-          }
-        ],
-        temperature: 0.7
+    const aiGeneratedEvent = await generateEventWithAI(fullPrompt);
+    
+    // Combine extracted data with AI-generated data
+    const combinedEvent = {
+      ...aiGeneratedEvent,
+      title: aiGeneratedEvent.title || extractedEvent.title || "",
+      description: aiGeneratedEvent.description || extractedEvent.description || "",
+      location: aiGeneratedEvent.location || extractedEvent.location || "",
+      category: aiGeneratedEvent.category || extractedEvent.category || "Other",
+      estimatedPrice: aiGeneratedEvent.estimatedPrice || extractedEvent.estimatedPrice || "Free",
+      imagePrompt: aiGeneratedEvent.imagePrompt || 
+                   `An event "${aiGeneratedEvent.title || extractedEvent.title}" at ${aiGeneratedEvent.location || extractedEvent.location}`,
+    };
+
+    // Generate image for the event
+    const imageUrl = await generateEventImage(combinedEvent.imagePrompt || "An elegant event venue");
+
+    return new Response(
+      JSON.stringify({
+        ...combinedEvent,
+        imageUrl
       }),
-    });
-
-    const data = await response.json();
-    const content = data.choices[0].message.content;
-
-    try {
-      // Parse the response and extract event details
-      const lines = content.split('\n');
-      let event: Partial<GeneratedEvent> = {};
-      
-      lines.forEach(line => {
-        if (line.toLowerCase().startsWith('title:')) event.title = line.split(':')[1].trim();
-        if (line.toLowerCase().startsWith('description:')) event.description = line.split(':')[1].trim();
-        if (line.toLowerCase().startsWith('location:')) event.location = line.split(':')[1].trim();
-        if (line.toLowerCase().startsWith('category:')) event.category = line.split(':')[1].trim();
-        if (line.toLowerCase().startsWith('estimated price:')) event.estimatedPrice = line.split(':')[1].trim();
-        if (line.toLowerCase().startsWith('image prompt:')) event.imagePrompt = line.split(':')[1].trim();
-      });
-
-      // Validate required fields and combine with extracted data
-      event = {
-        ...event,
-        title: event.title || extractedEvent.title || "",
-        description: event.description || extractedEvent.description || "",
-        location: event.location || extractedEvent.location || "",
-        category: event.category || extractedEvent.category || "Other",
-        estimatedPrice: event.estimatedPrice || extractedEvent.estimatedPrice || "Free",
-        imagePrompt: event.imagePrompt || `An event "${event.title || extractedEvent.title}" at ${event.location || extractedEvent.location}`,
-      };
-
-      // Generate image for the event
-      try {
-        const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: "dall-e-3",
-            prompt: event.imagePrompt,
-            n: 1,
-            size: "1024x1024"
-          })
-        });
-
-        const imageData = await imageResponse.json();
-        const imageUrl = imageData.data?.[0]?.url;
-
-        return new Response(
-          JSON.stringify({
-            ...event,
-            imageUrl
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      } catch (error) {
-        console.error('Error generating image:', error);
-        // If image generation fails, still return the event data
-        return new Response(
-          JSON.stringify({
-            ...event
-          }),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
-      }
-
-    } catch (error) {
-      console.error('Error parsing event details:', error);
-      throw new Error('Failed to parse event details');
-    }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
 
   } catch (error) {
     console.error('Error:', error);
