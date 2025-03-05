@@ -21,7 +21,10 @@ export const useEventGeneration = () => {
     setIsResubmitting,
     generatedEvent,
     setGeneratedEvent,
-    generateEvent
+    generateEvent,
+    chatMessages,
+    setChatMessages,
+    missingFields
   } = useGenerateEventAI();
 
   const [prompt, setPrompt] = useState("");
@@ -59,8 +62,9 @@ export const useEventGeneration = () => {
       return;
     }
 
+    // If missing info, we now handle it via chat instead of dialog
     if (result.needsMoreInfo) {
-      setShowMissingInfoDialog(true);
+      // Don't show the dialog anymore - we'll show chat messages instead
       return;
     }
 
@@ -146,5 +150,8 @@ export const useEventGeneration = () => {
     setSelectedDate,
     handlePromptSubmit,
     handleCreateEvent,
+    chatMessages,
+    setChatMessages,
+    missingFields
   };
 };

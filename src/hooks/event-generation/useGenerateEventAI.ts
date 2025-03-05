@@ -12,9 +12,15 @@ export const useGenerateEventAI = () => {
   const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
   const [isResubmitting, setIsResubmitting] = useState(false);
   const [generatedEvent, setGeneratedEvent] = useState<GeneratedEvent | null>(null);
+  const [chatMessages, setChatMessages] = useState<Array<{type: 'user' | 'ai', content: string}>>([]);
+  const [missingFields, setMissingFields] = useState<string[]>([]);
 
   const generateEvent = async (prompt: string, selectedDate: string) => {
     setIsGenerating(true);
+    
+    // Add user message to chat
+    setChatMessages(prev => [...prev, {type: 'user', content: prompt}]);
+    
     try {
       let fullPrompt = prompt;
       if (Object.keys(additionalInfo).length > 0) {
@@ -37,7 +43,36 @@ export const useGenerateEventAI = () => {
 
       console.log('Received response from generate-event:', data);
 
-      // Handle missing info response
+      // Check for missing mandatory fields
+      let mandatoryFieldsMissing = false;
+      const mandatoryFields = ['title', 'location', 'date'];
+      const detectedMissingFields = mandatoryFields.filter(field => {
+        // If a date is selected, we don't need to check for date in the prompt
+        if (field === 'date' && selectedDate) return false;
+        
+        // Check if field is missing
+        return !data[field] || (typeof data[field] === 'string' && !data[field].trim());
+      });
+      
+      if (detectedMissingFields.length > 0) {
+        mandatoryFieldsMissing = true;
+        setMissingFields(detectedMissingFields);
+        
+        // Format missing fields for display
+        const missingFieldsFormatted = detectedMissingFields.map(field => {
+          if (field === 'date') return 'start date and time';
+          if (field === 'location') return 'location or preferred venues';
+          return field;
+        }).join(', ');
+        
+        // Add AI message to chat
+        const aiMessage = `I'd be happy to help plan your event, but I need a few more details: ${missingFieldsFormatted}. Could you please provide these details in your next message?`;
+        setChatMessages(prev => [...prev, {type: 'ai', content: aiMessage}]);
+        
+        return { needsMoreInfo: true, missingFields: detectedMissingFields };
+      }
+
+      // Handle missing info response from the backend
       if (data && data.needsInfo === true) {
         if (!isResubmitting) {
           const prePopulatedInfo: Record<string, string> = {};
@@ -60,6 +95,17 @@ export const useGenerateEventAI = () => {
           setAdditionalInfo(prePopulatedInfo);
           setMissingInfo(data);
           setIsResubmitting(true);
+          
+          // Format missing fields for display
+          const missingFieldsFormatted = data.missingFields.map(field => {
+            if (field === 'date') return 'start date and time';
+            return field;
+          }).join(', ');
+          
+          // Add AI message to chat
+          const aiMessage = `I'd be happy to help plan your event, but I need a few more details: ${missingFieldsFormatted}. Could you please provide these details in your next message?`;
+          setChatMessages(prev => [...prev, {type: 'ai', content: aiMessage}]);
+          
           return { needsMoreInfo: true, data };
         }
       }
@@ -85,15 +131,29 @@ export const useGenerateEventAI = () => {
       setMissingInfo(null);
       setAdditionalInfo({});
       setIsResubmitting(false);
+      setMissingFields([]);
       
       if (!isResubmitting) {
         setPromptCount(prev => prev + 1);
       }
       
+      // Add success message to chat
+      setChatMessages(prev => [...prev, {
+        type: 'ai',
+        content: `Great! I've generated an event based on your request: "${validatedEvent.title}". Check out the details below.`
+      }]);
+      
       return { validatedEvent, error: null };
 
     } catch (error: any) {
       console.error('Error generating event:', error);
+      
+      // Add error message to chat
+      setChatMessages(prev => [...prev, {
+        type: 'ai',
+        content: `I'm sorry, I encountered an error while generating your event. Please try again with a more detailed prompt.`
+      }]);
+      
       return { error };
     } finally {
       setIsGenerating(false);
@@ -112,5 +172,8 @@ export const useGenerateEventAI = () => {
     generatedEvent,
     setGeneratedEvent,
     generateEvent,
+    chatMessages,
+    setChatMessages,
+    missingFields
   };
 };

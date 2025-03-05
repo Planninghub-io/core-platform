@@ -8,6 +8,7 @@ import { MissingInfoDialog } from "./MissingInfoDialog";
 import { SignUpDialog } from "./SignUpDialog";
 import { useEventGeneration } from "@/hooks/event-generation";
 import { supabase } from "@/integrations/supabase/client";
+import { ChatMessage } from "./ChatMessage";
 
 export const EventGeneratorSection = () => {
   const navigate = useNavigate();
@@ -32,6 +33,7 @@ export const EventGeneratorSection = () => {
     handleCreateEvent,
     selectedDate,
     setSelectedDate,
+    chatMessages
   } = useEventGeneration();
 
   const handleSubmitWithDate = (dateTime?: string) => {
@@ -95,6 +97,22 @@ export const EventGeneratorSection = () => {
             onPromptChange={setPrompt}
             onSubmit={handleSubmitWithDate}
           />
+
+          {/* Chat Messages Section */}
+          {chatMessages.length > 0 && (
+            <div className="mt-6 mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+              <div className="space-y-4">
+                {chatMessages.map((message, index) => (
+                  <ChatMessage 
+                    key={index} 
+                    message={message.content} 
+                    type={message.type} 
+                    isLoading={index === chatMessages.length - 1 && message.type === 'ai' && isGenerating}
+                  />
+                ))}
+              </div>
+            </div>
+          )}
 
           {generatedEvent && (
             <GeneratedEventCard

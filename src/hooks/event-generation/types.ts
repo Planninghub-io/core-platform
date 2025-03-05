@@ -15,6 +15,11 @@ export interface MissingInfo {
   message: string;
 }
 
+export interface ChatMessage {
+  type: 'user' | 'ai';
+  content: string;
+}
+
 export interface EventGenerationState {
   prompt: string;
   isGenerating: boolean;
@@ -27,4 +32,6 @@ export interface EventGenerationState {
   isResubmitting: boolean;
   eventTitle: string;
   selectedDate: string;
+  chatMessages: ChatMessage[];
+  missingFields: string[];
 }
