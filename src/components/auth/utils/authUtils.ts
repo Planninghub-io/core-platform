@@ -1,7 +1,6 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
-import { ToastProps } from "@/hooks/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 type CompanyType = Database["public"]["Enums"]["company_type"];
 
@@ -22,7 +21,7 @@ export interface SignInData {
 export const handleUserSignUp = async (
   formData: SignUpData,
   isBusiness: boolean,
-  toast: (props: ToastProps) => void,
+  toast: any,
   redirectCallback: () => void
 ) => {
   const { email, password, firstName, lastName, companyName, businessPhone } = formData;
@@ -127,7 +126,7 @@ export const handleUserSignUp = async (
 
 export const handleUserSignIn = async (
   formData: SignInData,
-  toast: (props: ToastProps) => void,
+  toast: any,
   redirectCallback: () => void
 ) => {
   const { email, password } = formData;
