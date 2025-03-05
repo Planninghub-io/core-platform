@@ -170,16 +170,11 @@ async function generateEventWithAI(prompt: string): Promise<Partial<GeneratedEve
   }
 }
 
-// Main handler function
-serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+// Process the request and generate event details
+async function processRequest(prompt: string, additionalInfo: any): Promise<Response> {
   try {
-    const { prompt, additionalInfo } = await req.json();
-    console.log('Received prompt:', prompt, 'Additional info:', additionalInfo);
-
+    console.log('Processing request with prompt:', prompt, 'Additional info:', additionalInfo);
+    
     // Combine prompt with additional info if provided
     let fullPrompt = prompt;
     if (additionalInfo) {
@@ -197,55 +192,92 @@ serve(async (req) => {
     const hasMinimumInfo = (extractedEvent.title || extractedEvent.location);
     
     if (hasMinimumInfo) {
-      // Create a basic image prompt from title and location
-      extractedEvent.imagePrompt = `An event "${extractedEvent.title || "social gathering"}" at ${extractedEvent.location || "a venue"}`;
-
-      // Generate image for the event
-      const imageUrl = await generateEventImage(extractedEvent.imagePrompt);
-
-      return new Response(
-        JSON.stringify({
-          ...extractedEvent,
-          imageUrl
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+      return await generateResponseWithExtractedInfo(extractedEvent, fullPrompt);
+    } else {
+      return await generateResponseWithAI(fullPrompt, extractedEvent);
     }
-
-    // If we don't have enough information, use OpenAI to generate event details
-    const aiGeneratedEvent = await generateEventWithAI(fullPrompt);
-    
-    // Combine extracted data with AI-generated data
-    const combinedEvent = {
-      ...aiGeneratedEvent,
-      title: aiGeneratedEvent.title || extractedEvent.title || "",
-      description: aiGeneratedEvent.description || extractedEvent.description || "",
-      location: aiGeneratedEvent.location || extractedEvent.location || "",
-      category: aiGeneratedEvent.category || extractedEvent.category || "Other",
-      estimatedPrice: aiGeneratedEvent.estimatedPrice || extractedEvent.estimatedPrice || "Free",
-      imagePrompt: aiGeneratedEvent.imagePrompt || 
-                   `An event "${aiGeneratedEvent.title || extractedEvent.title}" at ${aiGeneratedEvent.location || extractedEvent.location}`,
-    };
-
-    // Generate image for the event
-    const imageUrl = await generateEventImage(combinedEvent.imagePrompt || "An elegant event venue");
-
-    return new Response(
-      JSON.stringify({
-        ...combinedEvent,
-        imageUrl
-      }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
-
   } catch (error) {
-    console.error('Error:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-      }
-    );
+    console.error('Error processing request:', error);
+    return createErrorResponse(error);
   }
+}
+
+// Generate response using extracted information
+async function generateResponseWithExtractedInfo(
+  extractedEvent: Partial<GeneratedEvent>, 
+  fullPrompt: string
+): Promise<Response> {
+  // Create a basic image prompt from title and location
+  extractedEvent.imagePrompt = `An event "${extractedEvent.title || "social gathering"}" at ${extractedEvent.location || "a venue"}`;
+
+  // Generate image for the event
+  const imageUrl = await generateEventImage(extractedEvent.imagePrompt);
+
+  return createSuccessResponse({
+    ...extractedEvent,
+    imageUrl
+  });
+}
+
+// Generate response using AI when extracted information is insufficient
+async function generateResponseWithAI(
+  fullPrompt: string, 
+  extractedEvent: Partial<GeneratedEvent>
+): Promise<Response> {
+  // Use OpenAI to generate event details
+  const aiGeneratedEvent = await generateEventWithAI(fullPrompt);
+  
+  // Combine extracted data with AI-generated data
+  const combinedEvent = {
+    ...aiGeneratedEvent,
+    title: aiGeneratedEvent.title || extractedEvent.title || "",
+    description: aiGeneratedEvent.description || extractedEvent.description || "",
+    location: aiGeneratedEvent.location || extractedEvent.location || "",
+    category: aiGeneratedEvent.category || extractedEvent.category || "Other",
+    estimatedPrice: aiGeneratedEvent.estimatedPrice || extractedEvent.estimatedPrice || "Free",
+    imagePrompt: aiGeneratedEvent.imagePrompt || 
+                 `An event "${aiGeneratedEvent.title || extractedEvent.title}" at ${aiGeneratedEvent.location || extractedEvent.location}`,
+  };
+
+  // Generate image for the event
+  const imageUrl = await generateEventImage(combinedEvent.imagePrompt || "An elegant event venue");
+
+  return createSuccessResponse({
+    ...combinedEvent,
+    imageUrl
+  });
+}
+
+// Create success response
+function createSuccessResponse(data: any): Response {
+  return new Response(
+    JSON.stringify(data),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
+// Create error response
+function createErrorResponse(error: Error): Response {
+  return new Response(
+    JSON.stringify({ error: error.message }),
+    { 
+      status: 500, 
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+    }
+  );
+}
+
+// Handle OPTIONS request for CORS
+function handleOptionsRequest(): Response {
+  return new Response(null, { headers: corsHeaders });
+}
+
+// Main handler function
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return handleOptionsRequest();
+  }
+
+  const { prompt, additionalInfo } = await req.json();
+  return await processRequest(prompt, additionalInfo);
 });
