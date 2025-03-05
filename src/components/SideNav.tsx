@@ -11,12 +11,32 @@ import { NavMenu } from "@/components/navigation/NavMenu";
 import { CompanySwitcher } from "@/components/navigation/CompanySwitcher";
 import { UserProfile } from "@/components/navigation/UserProfile";
 import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const SideNav = () => {
   const navigate = useNavigate();
   const { userProfile, companies, selectedCompany, setSelectedCompany } = useUserProfile();
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      toast({
+        title: "Logged out successfully",
+        description: "You have been logged out of your account",
+      });
+      navigate('/');
+    } catch (error: any) {
+      toast({
+        title: "Logout failed",
+        description: error.message || "An error occurred during logout",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <Sidebar className="border-r w-56">
@@ -49,6 +69,15 @@ const SideNav = () => {
             >
               <Settings className="h-4 w-4" />
               <span className="text-sm">Settings</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start gap-2 text-red-500 hover:text-red-600 hover:bg-red-50"
+              onClick={handleLogout}
+            >
+              <LogOut className="h-4 w-4" />
+              <span className="text-sm">Logout</span>
             </Button>
             {companies.length > 1 && (
               <>
