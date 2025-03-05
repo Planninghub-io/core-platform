@@ -4,10 +4,8 @@ import { ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EventGeneratorForm } from "./EventGeneratorForm";
 import { GeneratedEventCard } from "./GeneratedEventCard";
-import { MissingInfoDialog } from "./MissingInfoDialog";
 import { SignUpDialog } from "./SignUpDialog";
 import { useEventGeneration } from "@/hooks/event-generation";
-import { supabase } from "@/integrations/supabase/client";
 import { ChatMessage } from "./ChatMessage";
 
 export const EventGeneratorSection = () => {
@@ -19,13 +17,8 @@ export const EventGeneratorSection = () => {
     promptCount,
     showSignUpDialog,
     setShowSignUpDialog,
-    showMissingInfoDialog,
-    setShowMissingInfoDialog,
-    missingInfo,
     generatedEvent,
     isCreating,
-    additionalInfo,
-    setAdditionalInfo,
     createdEventId,
     eventTitle,
     setEventTitle,
@@ -35,25 +28,6 @@ export const EventGeneratorSection = () => {
     setSelectedDate,
     chatMessages
   } = useEventGeneration();
-
-  const handleSubmitWithDate = (dateTime?: string) => {
-    if (dateTime) {
-      setSelectedDate(dateTime);
-      // Format the date nicely for the prompt
-      const date = new Date(dateTime);
-      const formattedDate = date.toLocaleString('en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: 'numeric',
-      });
-      const updatedPrompt = `${prompt} on ${formattedDate}`;
-      setPrompt(updatedPrompt);
-    }
-    handlePromptSubmit();
-  };
 
   // Prepare event data for navigation
   const prepareEventData = () => {
@@ -95,7 +69,7 @@ export const EventGeneratorSection = () => {
             isGenerating={isGenerating}
             promptCount={promptCount}
             onPromptChange={setPrompt}
-            onSubmit={handleSubmitWithDate}
+            onSubmit={handlePromptSubmit}
           />
 
           {/* Chat Messages Section */}
@@ -111,6 +85,28 @@ export const EventGeneratorSection = () => {
                   />
                 ))}
               </div>
+              
+              {/* Add a simple form for chat responses when we're waiting for user input */}
+              {chatMessages.length > 0 && chatMessages[chatMessages.length - 1].type === 'ai' && !generatedEvent && (
+                <div className="mt-4 flex items-center gap-2">
+                  <input
+                    type="text"
+                    value={prompt}
+                    onChange={(e) => setPrompt(e.target.value)}
+                    className="flex-1 rounded-md border border-gray-300 p-2"
+                    placeholder="Type your response..."
+                  />
+                  <Button 
+                    onClick={handlePromptSubmit} 
+                    disabled={isGenerating}
+                    size="sm"
+                    className="gap-2 bg-[#8b73f4] hover:bg-[#8b73f4]/90"
+                  >
+                    <Sparkles className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                    {isGenerating ? 'Sending...' : 'Send'}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
 
@@ -147,20 +143,6 @@ export const EventGeneratorSection = () => {
           onSignUpIndividual={() => handleSignUp('user')}
           onSignUpBusiness={() => handleSignUp('business')}
           eventData={prepareEventData()}
-        />
-
-        <MissingInfoDialog
-          open={showMissingInfoDialog}
-          onOpenChange={setShowMissingInfoDialog}
-          missingInfo={missingInfo}
-          additionalInfo={additionalInfo}
-          onAdditionalInfoChange={(field, value) => 
-            setAdditionalInfo(prev => ({ ...prev, [field]: value }))
-          }
-          onSubmit={() => {
-            setShowMissingInfoDialog(false);
-            handlePromptSubmit();
-          }}
         />
       </div>
     </div>

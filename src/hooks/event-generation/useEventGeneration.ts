@@ -28,7 +28,6 @@ export const useEventGeneration = () => {
   } = useGenerateEventAI();
 
   const [prompt, setPrompt] = useState("");
-  const [showMissingInfoDialog, setShowMissingInfoDialog] = useState(false);
   const [eventTitle, setEventTitle] = useState("");
   const [selectedDate, setSelectedDate] = useState<string>("");
 
@@ -51,6 +50,25 @@ export const useEventGeneration = () => {
       }
     }
 
+    // Add the user message to chat
+    setChatMessages(prev => [...prev, { type: 'user', content: prompt }]);
+
+    // Extract date from prompt if present
+    const dateTimeRegex = /(?:on|at)\s+((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}(?:\s+at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?)/i;
+    const dateTimeMatch = prompt.match(dateTimeRegex);
+    
+    if (dateTimeMatch && !selectedDate) {
+      try {
+        const dateStr = dateTimeMatch[1];
+        const date = new Date(dateStr);
+        if (!isNaN(date.getTime())) {
+          setSelectedDate(date.toISOString());
+        }
+      } catch (e) {
+        // Ignore date parsing errors
+      }
+    }
+
     const result = await generateEvent(prompt, selectedDate);
 
     if (result.error) {
@@ -62,18 +80,18 @@ export const useEventGeneration = () => {
       return;
     }
 
-    // If missing info, we now handle it via chat instead of dialog
-    if (result.needsMoreInfo) {
-      // Don't show the dialog anymore - we'll show chat messages instead
-      return;
-    }
-
+    // If there's a validated event, set the title and proceed
     if (result.validatedEvent) {
       setEventTitle(result.validatedEvent.title);
       toast({
         title: "Event Generated!",
         description: "Review the suggested event details below.",
       });
+    }
+    
+    // Reset prompt field after submission unless we're waiting for more info
+    if (!result.needsMoreInfo) {
+      setPrompt("");
     }
   };
 
@@ -136,8 +154,6 @@ export const useEventGeneration = () => {
     promptCount,
     showSignUpDialog,
     setShowSignUpDialog,
-    showMissingInfoDialog,
-    setShowMissingInfoDialog,
     missingInfo,
     generatedEvent,
     isCreating,

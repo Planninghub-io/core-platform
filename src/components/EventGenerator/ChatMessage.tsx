@@ -38,7 +38,7 @@ export const ChatMessage = ({ message, type, isLoading = false }: ChatMessagePro
                 <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400" style={{ animationDelay: '0.4s' }}></div>
               </div>
             ) : (
-              <p>{message}</p>
+              <p className="whitespace-pre-wrap break-words">{message}</p>
             )}
           </div>
         </div>
