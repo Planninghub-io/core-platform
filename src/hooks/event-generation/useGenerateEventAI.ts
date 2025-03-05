@@ -18,8 +18,7 @@ export const useGenerateEventAI = () => {
   const generateEvent = async (prompt: string, selectedDate: string) => {
     setIsGenerating(true);
     
-    // Add user message to chat
-    setChatMessages(prev => [...prev, {type: 'user', content: prompt}]);
+    // We don't add the user message here anymore, as it's already added in useEventGeneration
     
     try {
       let fullPrompt = prompt;

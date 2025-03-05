@@ -50,7 +50,7 @@ export const useEventGeneration = () => {
       }
     }
 
-    // Add the user message to chat
+    // First add the user message to chat
     setChatMessages(prev => [...prev, { type: 'user', content: prompt }]);
 
     // Extract date from prompt if present
@@ -69,7 +69,13 @@ export const useEventGeneration = () => {
       }
     }
 
-    const result = await generateEvent(prompt, selectedDate);
+    // Save the user's input before clearing it
+    const userPrompt = prompt;
+    
+    // Clear the input field immediately after submission
+    setPrompt("");
+
+    const result = await generateEvent(userPrompt, selectedDate);
 
     if (result.error) {
       toast({
@@ -87,11 +93,6 @@ export const useEventGeneration = () => {
         title: "Event Generated!",
         description: "Review the suggested event details below.",
       });
-    }
-    
-    // Reset prompt field after submission unless we're waiting for more info
-    if (!result.needsMoreInfo) {
-      setPrompt("");
     }
   };
 
