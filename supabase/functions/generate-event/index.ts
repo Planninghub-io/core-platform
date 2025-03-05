@@ -1,6 +1,5 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { CreateCompletionRequest } from "https://esm.sh/openai@4.20.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -35,7 +34,77 @@ serve(async (req) => {
       fullPrompt = `${prompt}. Additional details: ${additionalDetails}`;
     }
 
-    // Generate event details using OpenAI
+    // Parse title, description, location, etc. from the prompt
+    // This is a simple heuristic approach to extract information
+    const titleMatch = prompt.match(/title:?\s*([^,.]+)/i);
+    const descriptionMatch = prompt.match(/description:?\s*([^,.]+(?:[^.]+)?)/i);
+    const locationMatch = prompt.match(/location:?\s*([^,.]+)/i) || prompt.match(/in\s+([^,.]+)/i) || prompt.match(/at\s+([^,.]+(?:,[^,.]+)?)/i);
+    const categoryMatch = prompt.match(/category:?\s*([^,.]+)/i);
+    const priceMatch = prompt.match(/price:?\s*([^,.]+)/i) || prompt.match(/estimatedPrice:?\s*([^,.]+)/i) || prompt.match(/cost:?\s*([^,.]+)/i);
+
+    // Default description if one wasn't provided
+    let defaultDescription = prompt;
+    if (titleMatch) {
+      defaultDescription = `Event: ${prompt}`;
+    }
+
+    // Use extracted data if possible, otherwise generate with API
+    const extractedEvent: Partial<GeneratedEvent> = {
+      title: titleMatch ? titleMatch[1].trim() : "",
+      description: descriptionMatch ? descriptionMatch[1].trim() : defaultDescription,
+      location: locationMatch ? locationMatch[1].trim() : "",
+      category: categoryMatch ? categoryMatch[1].trim() : "Other",
+      estimatedPrice: priceMatch ? priceMatch[1].trim() : "Free",
+    };
+
+    console.log('Extracted event data:', extractedEvent);
+
+    // If we have enough extracted information, use it without calling OpenAI
+    const hasMinimumInfo = extractedEvent.title && extractedEvent.location;
+    
+    if (hasMinimumInfo) {
+      // Create a basic image prompt from title and location
+      extractedEvent.imagePrompt = `An event "${extractedEvent.title}" at ${extractedEvent.location}`;
+
+      // Generate image for the event using the extracted data
+      try {
+        const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: "dall-e-3",
+            prompt: extractedEvent.imagePrompt,
+            n: 1,
+            size: "1024x1024"
+          })
+        });
+
+        const imageData = await imageResponse.json();
+        const imageUrl = imageData.data?.[0]?.url;
+
+        return new Response(
+          JSON.stringify({
+            ...extractedEvent,
+            imageUrl
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (error) {
+        console.error('Error generating image:', error);
+        // If image generation fails, still return the event data
+        return new Response(
+          JSON.stringify({
+            ...extractedEvent
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // If we don't have enough information, use OpenAI to generate event details
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
@@ -79,46 +148,53 @@ serve(async (req) => {
         if (line.toLowerCase().startsWith('image prompt:')) event.imagePrompt = line.split(':')[1].trim();
       });
 
-      // Validate required fields
-      const requiredFields = ['title', 'description', 'location', 'category', 'estimatedPrice'] as const;
-      const missingFields = requiredFields.filter(field => !event[field]);
+      // Validate required fields and combine with extracted data
+      event = {
+        ...event,
+        title: event.title || extractedEvent.title || "",
+        description: event.description || extractedEvent.description || "",
+        location: event.location || extractedEvent.location || "",
+        category: event.category || extractedEvent.category || "Other",
+        estimatedPrice: event.estimatedPrice || extractedEvent.estimatedPrice || "Free",
+        imagePrompt: event.imagePrompt || `An event "${event.title || extractedEvent.title}" at ${event.location || extractedEvent.location}`,
+      };
 
-      if (missingFields.length > 0) {
+      // Generate image for the event
+      try {
+        const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: "dall-e-3",
+            prompt: event.imagePrompt,
+            n: 1,
+            size: "1024x1024"
+          })
+        });
+
+        const imageData = await imageResponse.json();
+        const imageUrl = imageData.data?.[0]?.url;
+
         return new Response(
           JSON.stringify({
-            needsInfo: true,
-            missingFields,
-            message: `Please provide: ${missingFields.join(', ')}`
+            ...event,
+            imageUrl
+          }),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (error) {
+        console.error('Error generating image:', error);
+        // If image generation fails, still return the event data
+        return new Response(
+          JSON.stringify({
+            ...event
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-
-      // Generate image for the event
-      const imageResponse = await fetch('https://api.openai.com/v1/images/generations', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: "dall-e-3",
-          prompt: event.imagePrompt,
-          n: 1,
-          size: "1024x1024"
-        })
-      });
-
-      const imageData = await imageResponse.json();
-      const imageUrl = imageData.data?.[0]?.url;
-
-      return new Response(
-        JSON.stringify({
-          ...event,
-          imageUrl
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
 
     } catch (error) {
       console.error('Error parsing event details:', error);

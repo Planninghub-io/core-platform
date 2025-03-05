@@ -42,37 +42,40 @@ export const useGenerateEventAI = () => {
 
       console.log('Received response from generate-event:', data);
 
-      // Check for missing mandatory fields
-      let mandatoryFieldsMissing = false;
-      const mandatoryFields = ['title', 'location', 'date'];
-      const detectedMissingFields = mandatoryFields.filter(field => {
-        // If a date is selected, we don't need to check for date in the prompt
-        if (field === 'date' && selectedDate) return false;
-        
-        // Check if field is missing
-        return !data[field] || (typeof data[field] === 'string' && !data[field].trim());
-      });
-      
-      if (detectedMissingFields.length > 0) {
-        mandatoryFieldsMissing = true;
-        setMissingFields(detectedMissingFields);
-        
-        // Format missing fields for display
-        const missingFieldsFormatted = detectedMissingFields.map(field => {
-          if (field === 'date') return 'start date and time';
-          if (field === 'location') return 'location or preferred venues';
-          return field;
-        }).join(', ');
-        
-        // Add AI message to chat
-        const aiMessage = `I'd be happy to help plan your event, but I need a few more details: ${missingFieldsFormatted}. Could you please provide these details in your next message?`;
-        setChatMessages(prev => [...prev, {type: 'ai', content: aiMessage}]);
-        
-        return { needsMoreInfo: true, missingFields: detectedMissingFields };
-      }
+      // If we received a proper event response
+      if (data && (data.title || data.description || data.location)) {
+        // Create event object, allowing for missing fields
+        const validatedEvent: GeneratedEvent = {
+          title: data.title?.trim() || 'New Event',
+          description: data.description || '',
+          date: selectedDate || data.date || '',
+          location: data.location || '',
+          category: data.category || 'Other',
+          estimatedPrice: data.estimatedPrice || 'Free',
+          imagePrompt: data.imagePrompt || 'event',
+        };
 
-      // Handle missing info response from the backend
-      if (data && data.needsInfo === true) {
+        console.log('Created validated event:', validatedEvent);
+        setGeneratedEvent(validatedEvent);
+        setMissingInfo(null);
+        setAdditionalInfo({});
+        setIsResubmitting(false);
+        setMissingFields([]);
+        
+        if (!isResubmitting) {
+          setPromptCount(prev => prev + 1);
+        }
+        
+        // Add success message to chat
+        setChatMessages(prev => [...prev, {
+          type: 'ai',
+          content: `Great! I've generated an event based on your request: "${validatedEvent.title}". Check out the details below.`
+        }]);
+        
+        return { validatedEvent, error: null };
+      } 
+      // Handle missing info response
+      else if (data && data.needsInfo === true) {
         if (!isResubmitting) {
           const prePopulatedInfo: Record<string, string> = {};
           
@@ -107,42 +110,13 @@ export const useGenerateEventAI = () => {
           
           return { needsMoreInfo: true, data };
         }
-      }
-
-      if (!data || typeof data !== 'object') {
-        console.error('Invalid response format:', data);
+      } else {
+        // No valid data received
         throw new Error('Invalid response from event generation');
       }
 
-      // Create event object, allowing for missing title
-      const validatedEvent: GeneratedEvent = {
-        title: data.title?.trim() || '',
-        description: data.description || '',
-        date: selectedDate || data.date || '',
-        location: data.location || '',
-        category: data.category || '',
-        estimatedPrice: data.estimatedPrice || '',
-        imagePrompt: data.imagePrompt || 'event',
-      };
-
-      console.log('Created validated event:', validatedEvent);
-      setGeneratedEvent(validatedEvent);
-      setMissingInfo(null);
-      setAdditionalInfo({});
-      setIsResubmitting(false);
-      setMissingFields([]);
-      
-      if (!isResubmitting) {
-        setPromptCount(prev => prev + 1);
-      }
-      
-      // Add success message to chat
-      setChatMessages(prev => [...prev, {
-        type: 'ai',
-        content: `Great! I've generated an event based on your request: "${validatedEvent.title}". Check out the details below.`
-      }]);
-      
-      return { validatedEvent, error: null };
+      // If execution reaches here, handle as error
+      throw new Error('Failed to generate event details');
 
     } catch (error: any) {
       console.error('Error generating event:', error);
