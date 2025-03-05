@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, Send } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EventGeneratorForm } from "./EventGeneratorForm";
 import { GeneratedEventCard } from "./GeneratedEventCard";
@@ -64,18 +64,21 @@ export const EventGeneratorSection = () => {
         </p>
 
         <div className="animate-fade-up mb-6 space-y-4">
-          <EventGeneratorForm
-            prompt={prompt}
-            isGenerating={isGenerating}
-            promptCount={promptCount}
-            onPromptChange={setPrompt}
-            onSubmit={handlePromptSubmit}
-          />
+          {chatMessages.length === 0 && (
+            <EventGeneratorForm
+              prompt={prompt}
+              isGenerating={isGenerating}
+              promptCount={promptCount}
+              onPromptChange={setPrompt}
+              onSubmit={handlePromptSubmit}
+            />
+          )}
 
           {/* Chat Messages Section */}
           {chatMessages.length > 0 && (
-            <div className="mt-6 mb-6 rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
-              <div className="space-y-4">
+            <div className="mt-6 mb-6 rounded-lg border border-gray-200 bg-white p-6 shadow-sm text-left">
+              <h3 className="font-medium text-gray-700 mb-4 border-b pb-2">Event Planning Conversation</h3>
+              <div className="space-y-2 max-h-[400px] overflow-y-auto mb-4 pr-2">
                 {chatMessages.map((message, index) => (
                   <ChatMessage 
                     key={index} 
@@ -86,23 +89,33 @@ export const EventGeneratorSection = () => {
                 ))}
               </div>
               
-              {/* Add a simple form for chat responses when we're waiting for user input */}
+              {/* Chat response form */}
               {chatMessages.length > 0 && chatMessages[chatMessages.length - 1].type === 'ai' && !generatedEvent && (
-                <div className="mt-4 flex items-center gap-2">
+                <div className="mt-4 flex items-center gap-2 border-t pt-4">
                   <input
                     type="text"
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey && prompt.trim()) {
+                        e.preventDefault();
+                        handlePromptSubmit();
+                      }
+                    }}
                     className="flex-1 rounded-md border border-gray-300 p-2"
                     placeholder="Type your response..."
                   />
                   <Button 
                     onClick={handlePromptSubmit} 
-                    disabled={isGenerating}
+                    disabled={isGenerating || !prompt.trim()}
                     size="sm"
                     className="gap-2 bg-[#8b73f4] hover:bg-[#8b73f4]/90"
                   >
-                    <Sparkles className={`h-4 w-4 ${isGenerating ? 'animate-spin' : ''}`} />
+                    {isGenerating ? (
+                      <Sparkles className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
                     {isGenerating ? 'Sending...' : 'Send'}
                   </Button>
                 </div>
