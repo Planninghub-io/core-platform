@@ -18,8 +18,6 @@ export const useGenerateEventAI = () => {
   const generateEvent = async (prompt: string, selectedDate: string) => {
     setIsGenerating(true);
     
-    // We don't add the user message here anymore, as it's already added in useEventGeneration
-    
     try {
       let fullPrompt = prompt;
       if (Object.keys(additionalInfo).length > 0) {
@@ -55,21 +53,39 @@ export const useGenerateEventAI = () => {
           imagePrompt: data.imagePrompt || 'event',
         };
 
+        // Check for missing critical fields
+        const missing: string[] = [];
+        if (!validatedEvent.date) missing.push('date');
+        if (!validatedEvent.location) missing.push('location');
+        
+        setMissingFields(missing);
+
         console.log('Created validated event:', validatedEvent);
         setGeneratedEvent(validatedEvent);
         setMissingInfo(null);
         setAdditionalInfo({});
         setIsResubmitting(false);
-        setMissingFields([]);
         
         if (!isResubmitting) {
           setPromptCount(prev => prev + 1);
         }
         
         // Add success message to chat
+        let responseMessage = `Great! I've generated an event based on your request: "${validatedEvent.title}". Check out the details below.`;
+        
+        // Add message about missing information if needed
+        if (missing.length > 0) {
+          const missingFieldsFormatted = missing.map(field => {
+            if (field === 'date') return 'start date and time';
+            return field;
+          }).join(' and ');
+          
+          responseMessage += ` Please provide the missing ${missingFieldsFormatted} below.`;
+        }
+        
         setChatMessages(prev => [...prev, {
           type: 'ai',
-          content: `Great! I've generated an event based on your request: "${validatedEvent.title}". Check out the details below.`
+          content: responseMessage
         }]);
         
         return { validatedEvent, error: null };
@@ -97,6 +113,7 @@ export const useGenerateEventAI = () => {
           setAdditionalInfo(prePopulatedInfo);
           setMissingInfo(data);
           setIsResubmitting(true);
+          setMissingFields(data.missingFields || []);
           
           // Format missing fields for display
           const missingFieldsFormatted = data.missingFields.map(field => {

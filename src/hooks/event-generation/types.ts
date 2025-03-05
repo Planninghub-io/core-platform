@@ -32,6 +32,9 @@ export interface EventGenerationState {
   isResubmitting: boolean;
   eventTitle: string;
   selectedDate: string;
+  location: string;
   chatMessages: ChatMessage[];
   missingFields: string[];
+  hasMissingDate: boolean;
+  hasMissingLocation: boolean;
 }

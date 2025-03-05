@@ -26,6 +26,10 @@ export const EventGeneratorSection = () => {
     handleCreateEvent,
     selectedDate,
     setSelectedDate,
+    location,
+    setLocation,
+    hasMissingDate,
+    hasMissingLocation,
     chatMessages
   } = useEventGeneration();
 
@@ -36,7 +40,8 @@ export const EventGeneratorSection = () => {
     return {
       ...generatedEvent,
       title: eventTitle,
-      date: selectedDate || generatedEvent.date
+      date: selectedDate || generatedEvent.date,
+      location: location || generatedEvent.location
     };
   };
 
@@ -127,7 +132,8 @@ export const EventGeneratorSection = () => {
             <GeneratedEventCard
               event={{
                 ...generatedEvent,
-                date: selectedDate || generatedEvent.date
+                date: selectedDate || generatedEvent.date,
+                location: location || generatedEvent.location
               }}
               isCreating={isCreating}
               eventId={createdEventId || undefined}
@@ -135,6 +141,11 @@ export const EventGeneratorSection = () => {
               onCreateEvent={handleCreateEvent}
               eventTitle={eventTitle}
               onTitleChange={setEventTitle}
+              onDateChange={setSelectedDate}
+              onLocationChange={setLocation}
+              selectedDate={selectedDate}
+              missingDate={hasMissingDate}
+              missingLocation={hasMissingLocation}
             />
           )}
         </div>

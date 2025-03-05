@@ -30,6 +30,10 @@ export const useEventGeneration = () => {
   const [prompt, setPrompt] = useState("");
   const [eventTitle, setEventTitle] = useState("");
   const [selectedDate, setSelectedDate] = useState<string>("");
+  const [location, setLocation] = useState<string>("");
+  // Check if date or location is missing
+  const hasMissingDate = missingFields?.includes('date') || !selectedDate && !generatedEvent?.date;
+  const hasMissingLocation = missingFields?.includes('location') || !location && !generatedEvent?.location;
 
   const handlePromptSubmit = async () => {
     if (!prompt.trim()) {
@@ -69,6 +73,14 @@ export const useEventGeneration = () => {
       }
     }
 
+    // Extract location from prompt if present
+    const locationRegex = /(?:in|at)\s+([^,.]+(?:,[^,.]+)?)/i;
+    const locationMatch = prompt.match(locationRegex);
+    
+    if (locationMatch && !location) {
+      setLocation(locationMatch[1].trim());
+    }
+
     // Save the user's input before clearing it
     const userPrompt = prompt;
     
@@ -89,6 +101,12 @@ export const useEventGeneration = () => {
     // If there's a validated event, set the title and proceed
     if (result.validatedEvent) {
       setEventTitle(result.validatedEvent.title);
+      
+      // If location was found in generated event, update it
+      if (result.validatedEvent.location && !location) {
+        setLocation(result.validatedEvent.location);
+      }
+      
       toast({
         title: "Event Generated!",
         description: "Review the suggested event details below.",
@@ -116,14 +134,35 @@ export const useEventGeneration = () => {
       return;
     }
 
-    // Use the user-provided or AI-generated title
-    const eventWithTitle = {
+    // Check if date is required but missing
+    if (hasMissingDate && !selectedDate) {
+      toast({
+        title: "Error",
+        description: "Please provide a date for your event.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if location is required but missing
+    if (hasMissingLocation && !location) {
+      toast({
+        title: "Error",
+        description: "Please provide a location for your event.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Use the user-provided or AI-generated title, date, and location
+    const eventWithUpdates = {
       ...generatedEvent,
       title: eventTitle.trim(),
       date: selectedDate || generatedEvent.date,
+      location: location || generatedEvent.location,
     };
 
-    const { error, requiresAuth } = await createEvent(eventWithTitle, additionalInfo);
+    const { error, requiresAuth } = await createEvent(eventWithUpdates, additionalInfo);
 
     // If auth is required, the dialog will be shown by useEventCreation
     if (requiresAuth) {
@@ -165,6 +204,10 @@ export const useEventGeneration = () => {
     setEventTitle,
     selectedDate,
     setSelectedDate,
+    location,
+    setLocation,
+    hasMissingDate,
+    hasMissingLocation,
     handlePromptSubmit,
     handleCreateEvent,
     chatMessages,

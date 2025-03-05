@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Calendar, MapPin, Tag, Pencil } from "lucide-react";
+import { MapPin, Tag, Pencil, Calendar } from "lucide-react";
 import {
   Card,
   CardContent,
@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { EditableEventFields } from "./EditableEventFields";
 
 interface GeneratedEvent {
   title: string;
@@ -31,6 +32,11 @@ interface GeneratedEventCardProps {
   onCreateEvent: () => void;
   eventTitle: string;
   onTitleChange: (title: string) => void;
+  onDateChange?: (date: string) => void;
+  onLocationChange?: (location: string) => void;
+  selectedDate?: string;
+  missingDate?: boolean;
+  missingLocation?: boolean;
 }
 
 export const GeneratedEventCard = ({
@@ -41,6 +47,11 @@ export const GeneratedEventCard = ({
   onCreateEvent,
   eventTitle,
   onTitleChange,
+  onDateChange,
+  onLocationChange,
+  selectedDate,
+  missingDate = false,
+  missingLocation = false,
 }: GeneratedEventCardProps) => {
   const navigate = useNavigate();
   const [isTitleFocused, setIsTitleFocused] = useState(false);
@@ -84,6 +95,8 @@ export const GeneratedEventCard = ({
     }
   };
 
+  const displayDate = selectedDate || event.date;
+
   return (
     <Card className="mt-6 text-left">
       <div className="flex flex-col md:flex-row">
@@ -120,7 +133,7 @@ export const GeneratedEventCard = ({
             />
             <CardDescription className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              {formatDate(event.date)}
+              {formatDate(displayDate)}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -141,6 +154,22 @@ export const GeneratedEventCard = ({
                 <span>Starting from {event.estimatedPrice}</span>
               )}
             </div>
+
+            {/* Add editable fields for missing information */}
+            {(missingDate || missingLocation) && (
+              <div className="mt-4 p-4 border border-gray-200 rounded-md bg-gray-50">
+                <EditableEventFields 
+                  eventTitle={eventTitle}
+                  onTitleChange={onTitleChange}
+                  date={selectedDate || event.date}
+                  onDateChange={(date) => onDateChange && onDateChange(date)}
+                  location={event.location}
+                  onLocationChange={(location) => onLocationChange && onLocationChange(location)}
+                  missingDate={missingDate}
+                  missingLocation={missingLocation}
+                />
+              </div>
+            )}
           </CardContent>
           <CardFooter className="flex gap-2">
             {eventId ? (
