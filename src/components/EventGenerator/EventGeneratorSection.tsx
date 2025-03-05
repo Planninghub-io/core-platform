@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EventGeneratorForm } from "./EventGeneratorForm";
 import { GeneratedEventCard } from "./GeneratedEventCard";
