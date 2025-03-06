@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { toast } from "@/hooks/use-toast";
@@ -140,7 +141,8 @@ export const handleUserSignIn = async (
   }
   
   try {
-    const { error } = await supabase.auth.signInWithPassword({
+    // First, try to sign in with password
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
@@ -162,11 +164,215 @@ export const handleUserSignIn = async (
       return false;
     }
 
+    // Check if MFA is required
+    if (data.session === null && data.user) {
+      // MFA is required, handle accordingly
+      toast({
+        title: "Verification Required",
+        description: "A verification code has been sent to your email.",
+      });
+      
+      // Wait for OTP entry or handle differently based on your UI
+      return false;
+    }
+
     redirectCallback();
     return true;
   } catch (error: any) {
     toast({
       title: "Sign In Error",
+      description: "An unexpected error occurred. Please try again.",
+      variant: "destructive",
+    });
+    return false;
+  }
+};
+
+export const handleGoogleSignIn = async (
+  isBusiness: boolean,
+  toast: any,
+  redirectCallback: () => void
+) => {
+  try {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+        redirectTo: `${window.location.origin}/auth/callback`,
+      }
+    });
+    
+    if (error) {
+      toast({
+        title: "Google Sign In Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    // No need for redirect callback here as OAuth will handle the redirect
+    return true;
+  } catch (error: any) {
+    toast({
+      title: "Google Sign In Error",
+      description: "An unexpected error occurred. Please try again.",
+      variant: "destructive",
+    });
+    return false;
+  }
+};
+
+// Handle OTP verification
+export const verifyOTP = async (
+  email: string, 
+  token: string,
+  toast: any,
+  redirectCallback: () => void
+) => {
+  try {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email'
+    });
+
+    if (error) {
+      toast({
+        title: "Verification Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    toast({
+      title: "Success!",
+      description: "Your account has been verified.",
+    });
+    
+    redirectCallback();
+    return true;
+  } catch (error: any) {
+    toast({
+      title: "Verification Error",
+      description: "An unexpected error occurred. Please try again.",
+      variant: "destructive",
+    });
+    return false;
+  }
+};
+
+// Function to set up MFA for a user
+export const setupMFA = async (
+  factorType: 'totp' | 'email', 
+  email?: string,
+  phone?: string,
+  toast: any
+) => {
+  try {
+    const { data, error } = await supabase.auth.mfa.enroll({
+      factorType,
+      ...(email && { email }),
+      ...(phone && { phone })
+    });
+
+    if (error) {
+      toast({
+        title: "MFA Setup Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    toast({
+      title: "MFA Setup",
+      description: "MFA enrollment initiated. Please check your email or phone for verification.",
+    });
+    
+    return data;
+  } catch (error: any) {
+    toast({
+      title: "MFA Setup Error",
+      description: "An unexpected error occurred. Please try again.",
+      variant: "destructive",
+    });
+    return null;
+  }
+};
+
+// Function to verify MFA challenge
+export const verifyMFA = async (
+  factorId: string,
+  challengeId: string,
+  code: string,
+  toast: any,
+  redirectCallback: () => void
+) => {
+  try {
+    const { data, error } = await supabase.auth.mfa.challenge({
+      factorId,
+      code
+    });
+
+    if (error) {
+      toast({
+        title: "MFA Verification Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    toast({
+      title: "Success!",
+      description: "MFA verification complete.",
+    });
+    
+    redirectCallback();
+    return true;
+  } catch (error: any) {
+    toast({
+      title: "MFA Verification Error",
+      description: "An unexpected error occurred. Please try again.",
+      variant: "destructive",
+    });
+    return false;
+  }
+};
+
+// Function to send OTP for password reset
+export const sendPasswordResetOTP = async (
+  email: string,
+  toast: any
+) => {
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
+
+    if (error) {
+      toast({
+        title: "Password Reset Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    toast({
+      title: "Password Reset",
+      description: "Check your email for a password reset link.",
+    });
+    
+    return true;
+  } catch (error: any) {
+    toast({
+      title: "Password Reset Error",
       description: "An unexpected error occurred. Please try again.",
       variant: "destructive",
     });

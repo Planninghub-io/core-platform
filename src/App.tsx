@@ -21,6 +21,8 @@ import SettingsLayout from "./pages/settings/SettingsLayout";
 import UserProfileSettings from "./pages/settings/UserProfileSettings";
 import CompanySettings from "./pages/settings/CompanySettings";
 import BillingSettings from "./pages/settings/BillingSettings";
+import OAuthCallback from "./pages/auth/OAuthCallback";
+import MFASetup from "./pages/auth/MFASetup";
 
 const queryClient = new QueryClient();
 
@@ -93,11 +95,13 @@ const App = () => {
                     <Route path="profile" element={<UserProfileSettings />} />
                     <Route path="company" element={<CompanySettings />} />
                     <Route path="billing" element={<BillingSettings />} />
+                    <Route path="mfa" element={<MFASetup />} />
                   </Route>
                   <Route 
                     path="/auth" 
                     element={!isAuthenticated ? <Auth /> : <Navigate to="/" replace />} 
                   />
+                  <Route path="/auth/callback" element={<OAuthCallback />} />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>

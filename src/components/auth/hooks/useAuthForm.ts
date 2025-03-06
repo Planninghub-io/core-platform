@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation, useNavigate } from "react-router-dom";
-import { handleUserSignUp, handleUserSignIn, SignUpData, SignInData } from "../utils/authUtils";
+import { handleUserSignUp, handleUserSignIn, handleGoogleSignIn, SignUpData, SignInData } from "../utils/authUtils";
 
 interface UseAuthFormProps {
   type?: 'business' | 'user';
@@ -24,6 +24,8 @@ export const useAuthForm = ({ type }: UseAuthFormProps) => {
     // If we have event data, navigate back to where the user was
     if (eventData) {
       navigate(redirectPath, { state: { eventData } });
+    } else {
+      navigate(redirectPath);
     }
   };
 
@@ -45,6 +47,15 @@ export const useAuthForm = ({ type }: UseAuthFormProps) => {
     }
   };
 
+  const signInWithGoogle = async () => {
+    setIsLoading(true);
+    try {
+      await handleGoogleSignIn(isBusiness, toast, handleRedirect);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const toggleAuthMode = () => {
     setIsSignUp(!isSignUp);
   };
@@ -56,6 +67,7 @@ export const useAuthForm = ({ type }: UseAuthFormProps) => {
     eventData,
     signUp,
     signIn,
+    signInWithGoogle,
     toggleAuthMode
   };
 };
