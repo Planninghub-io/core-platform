@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Radio, RadioGroup } from "@/components/ui/radio-group";
+import { RadioGroup, Radio } from "@/components/ui/radio-group";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { setupMFA, verifyMFA } from "@/components/auth/utils/authUtils";
@@ -38,7 +38,7 @@ const MFASetup = () => {
         }
       }
       
-      const result = await setupMFA(factorType, email, undefined, toast);
+      const result = await setupMFA(factorType, toast, email);
       if (result) {
         setEnrollData(result);
         setStep('verify');

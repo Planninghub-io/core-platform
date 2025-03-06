@@ -269,16 +269,33 @@ export const verifyOTP = async (
 // Function to set up MFA for a user
 export const setupMFA = async (
   factorType: 'totp' | 'email', 
+  toast: any,
   email?: string,
-  phone?: string,
-  toast: any
+  phone?: string
 ) => {
   try {
-    const { data, error } = await supabase.auth.mfa.enroll({
-      factorType,
-      ...(email && { email }),
-      ...(phone && { phone })
-    });
+    let params: any = {};
+    
+    // Choose the correct factor type for Supabase MFA
+    if (factorType === 'totp') {
+      params = { factorType: 'totp' };
+    } else if (factorType === 'email' && email) {
+      // Note: Supabase doesn't support email as factorType directly
+      // We're adapting to use phone factor type with the email
+      params = { 
+        factorType: 'phone',
+        phone: email // Using email in place of phone for demonstration
+      };
+    } else {
+      toast({
+        title: "MFA Setup Error",
+        description: "Invalid factor type or missing email",
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    const { data, error } = await supabase.auth.mfa.enroll(params);
 
     if (error) {
       toast({
@@ -316,13 +333,29 @@ export const verifyMFA = async (
   try {
     const { data, error } = await supabase.auth.mfa.challenge({
       factorId,
-      code
+      challengeId
     });
-
+    
     if (error) {
       toast({
         title: "MFA Verification Error",
         description: error.message,
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    // Verify the challenge with the provided code
+    const { data: verifyData, error: verifyError } = await supabase.auth.mfa.verify({
+      factorId,
+      challengeId,
+      code
+    });
+
+    if (verifyError) {
+      toast({
+        title: "MFA Verification Error",
+        description: verifyError.message,
         variant: "destructive",
       });
       return false;
