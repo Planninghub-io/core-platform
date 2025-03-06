@@ -331,9 +331,9 @@ export const verifyMFA = async (
   redirectCallback: () => void
 ) => {
   try {
+    // First, create a challenge with the factor ID
     const { data, error } = await supabase.auth.mfa.challenge({
-      factorId,
-      challengeId
+      factorId
     });
     
     if (error) {
@@ -345,10 +345,11 @@ export const verifyMFA = async (
       return false;
     }
     
-    // Verify the challenge with the provided code
+    // Then verify the challenge with the provided code
+    // Use the challenge ID from the response instead of the parameter
     const { data: verifyData, error: verifyError } = await supabase.auth.mfa.verify({
       factorId,
-      challengeId,
+      challengeId: data.id, // Use the challenge ID from the response
       code
     });
 
