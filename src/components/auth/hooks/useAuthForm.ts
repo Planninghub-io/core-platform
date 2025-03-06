@@ -2,7 +2,13 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation, useNavigate } from "react-router-dom";
-import { handleUserSignUp, handleUserSignIn, handleGoogleSignIn, SignUpData, SignInData } from "../utils/authUtils";
+import { 
+  handleUserSignUp, 
+  handleUserSignIn, 
+  handleGoogleSignIn, 
+  SignUpData, 
+  SignInData 
+} from "../utils/authUtils";
 
 interface UseAuthFormProps {
   type?: 'business' | 'user';
