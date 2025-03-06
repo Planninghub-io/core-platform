@@ -2,7 +2,6 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import SideNav from "@/components/SideNav";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, DollarSign } from "lucide-react";
@@ -47,76 +46,66 @@ const Vendors = () => {
   });
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <SideNav />
-      <main className="flex-1 p-6">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Vendor Marketplace</h1>
-          <p className="mt-2 text-lg text-gray-600">
-            Connect with professional vendors for your event needs
-          </p>
-        </header>
-
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {isLoading && (
-          <div className="flex justify-center items-center h-64">
+          <div className="col-span-3 flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#8b73f4]"></div>
           </div>
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <div className="col-span-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative" role="alert">
             <p>Failed to load vendor services. Please try again later.</p>
           </div>
         )}
 
         {vendorServices && vendorServices.length === 0 && !isLoading && (
-          <div className="text-center py-10">
+          <div className="col-span-3 text-center py-10">
             <h3 className="mt-2 text-lg font-medium text-gray-900">No vendor services found</h3>
             <p className="mt-1 text-gray-500">Check back later for available vendor services.</p>
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {vendorServices?.map((service) => (
-            <Card key={service.id} className="overflow-hidden hover:shadow-lg transition-shadow">
-              <CardHeader>
-                <CardTitle className="text-xl">{service.name}</CardTitle>
-                {service.description && (
-                  <CardDescription className="line-clamp-2">
-                    {service.description}
-                  </CardDescription>
-                )}
-              </CardHeader>
-              <CardContent>
-                {(service.price_range_start !== null || service.price_range_end !== null) && (
-                  <div className="flex items-center text-gray-600 mb-4">
-                    <DollarSign className="h-5 w-5 mr-2 text-[#8b73f4]" />
-                    <span>
-                      {service.price_range_start !== null && service.price_range_end !== null
-                        ? `${formatPrice(service.price_range_start)} - ${formatPrice(service.price_range_end)}`
-                        : service.price_range_start !== null
-                        ? `From ${formatPrice(service.price_range_start)}`
-                        : service.price_range_end !== null
-                        ? `Up to ${formatPrice(service.price_range_end)}`
-                        : "Price upon request"}
-                    </span>
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter className="bg-gray-50 border-t flex justify-between">
-                <div className="text-sm text-gray-500">
-                  Available for booking
+        {vendorServices?.map((service) => (
+          <Card key={service.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+            <CardHeader>
+              <CardTitle className="text-xl">{service.name}</CardTitle>
+              {service.description && (
+                <CardDescription className="line-clamp-2">
+                  {service.description}
+                </CardDescription>
+              )}
+            </CardHeader>
+            <CardContent>
+              {(service.price_range_start !== null || service.price_range_end !== null) && (
+                <div className="flex items-center text-gray-600 mb-4">
+                  <DollarSign className="h-5 w-5 mr-2 text-[#8b73f4]" />
+                  <span>
+                    {service.price_range_start !== null && service.price_range_end !== null
+                      ? `${formatPrice(service.price_range_start)} - ${formatPrice(service.price_range_end)}`
+                      : service.price_range_start !== null
+                      ? `From ${formatPrice(service.price_range_start)}`
+                      : service.price_range_end !== null
+                      ? `Up to ${formatPrice(service.price_range_end)}`
+                      : "Price upon request"}
+                  </span>
                 </div>
-                <Button size="sm" className="bg-[#8b73f4] hover:bg-[#8b73f4]/90">
-                  Contact Vendor
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </CardFooter>
-            </Card>
-          ))}
-        </div>
-      </main>
-    </div>
+              )}
+            </CardContent>
+            <CardFooter className="bg-gray-50 border-t flex justify-between">
+              <div className="text-sm text-gray-500">
+                Available for booking
+              </div>
+              <Button size="sm" className="bg-[#8b73f4] hover:bg-[#8b73f4]/90">
+                Contact Vendor
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </CardFooter>
+          </Card>
+        ))}
+      </div>
+    </>
   );
 };
 

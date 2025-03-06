@@ -1,52 +1,77 @@
 
-import React, { useState, useEffect } from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Routes, Route } from 'react-router-dom';
-import Index from './pages/Index';
-import Discover from './pages/Discover';
-import EventsHub from './pages/EventsHub';
-import EventDetails from './pages/EventDetails';
-import Auth from './pages/Auth';
-import { Toaster } from "@/components/ui/toaster"
-import PasswordReset from './pages/auth/PasswordReset';
-import ResetPassword from './pages/auth/ResetPassword';
-import Venues from './pages/marketplace/Venues';
-import Vendors from './pages/marketplace/Vendors';
+import Index from '@/pages/Index';
+import Discover from '@/pages/Discover';
+import EventsHub from '@/pages/EventsHub';
+import EventDetails from '@/pages/EventDetails';
+import NotFound from '@/pages/NotFound';
+import { Toaster } from '@/components/ui/toaster';
+import EventInvitations from '@/pages/EventInvitations';
+import EventTicketing from '@/pages/EventTicketing';
+import CreateEvent from '@/pages/CreateEvent';
+import Auth from '@/pages/Auth';
+import OAuthCallback from '@/pages/auth/OAuthCallback';
+import PasswordReset from '@/pages/auth/PasswordReset';
+import ResetPassword from '@/pages/auth/ResetPassword';
+import MFASetup from '@/pages/auth/MFASetup';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import SettingsLayout from '@/pages/settings/SettingsLayout';
+import UserProfileSettings from '@/pages/settings/UserProfileSettings';
+import CompanySettings from '@/pages/settings/CompanySettings';
+import BillingSettings from '@/pages/settings/BillingSettings';
+import MarketplaceLayout from '@/pages/marketplace/MarketplaceLayout';
+import Marketplace from '@/pages/marketplace/Marketplace';
+import Venues from '@/pages/marketplace/Venues';
+import Vendors from '@/pages/marketplace/Vendors';
+
+// Create a client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+    },
+  },
+});
 
 function App() {
-  const [queryClient] = useState(() => new QueryClient());
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
-
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
-
   return (
-    <QueryClientProvider client={queryClient}>
-      <div className="App">
+    <>
+      <QueryClientProvider client={queryClient}>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/discover" element={<Discover />} />
           <Route path="/events-hub" element={<EventsHub />} />
-          <Route path="/events/:eventId" element={<EventDetails />} />
-          <Route path="/auth" element={<Auth />} />
-          <Route path="/auth/password-reset" element={<PasswordReset />} />
-          <Route path="/auth/reset-password" element={<ResetPassword />} />
-          <Route path="/marketplace/venues" element={<Venues />} />
-          <Route path="/marketplace/vendors" element={<Vendors />} />
+          <Route path="/event/:id" element={<EventDetails />} />
+          <Route path="/event/:id/invitations" element={<EventInvitations />} />
+          <Route path="/event/:id/tickets" element={<EventTicketing />} />
+          <Route path="/create-event" element={<CreateEvent />} />
+
+          {/* Auth routes */}
+          <Route path="/auth/*" element={<Auth />} />
+          <Route path="/auth/callback" element={<OAuthCallback />} />
+          <Route path="/auth/reset-password" element={<PasswordReset />} />
+          <Route path="/auth/new-password" element={<ResetPassword />} />
+          <Route path="/auth/mfa-setup" element={<MFASetup />} />
+
+          {/* Settings routes */}
+          <Route path="/settings" element={<SettingsLayout />}>
+            <Route index element={<UserProfileSettings />} />
+            <Route path="company" element={<CompanySettings />} />
+            <Route path="billing" element={<BillingSettings />} />
+          </Route>
+
+          {/* Marketplace routes */}
+          <Route path="/marketplace" element={<MarketplaceLayout />}>
+            <Route index element={<Marketplace />} />
+            <Route path="venues" element={<Venues />} />
+            <Route path="vendors" element={<Vendors />} />
+          </Route>
+
+          <Route path="*" element={<NotFound />} />
         </Routes>
         <Toaster />
-      </div>
-    </QueryClientProvider>
+      </QueryClientProvider>
+    </>
   );
 }
 
