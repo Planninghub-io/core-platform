@@ -10,6 +10,8 @@ import Auth from './pages/Auth';
 import { Toaster } from "@/components/ui/toaster"
 import PasswordReset from './pages/auth/PasswordReset';
 import ResetPassword from './pages/auth/ResetPassword';
+import Venues from './pages/marketplace/Venues';
+import Vendors from './pages/marketplace/Vendors';
 
 function App() {
   const [queryClient] = useState(() => new QueryClient());
@@ -39,6 +41,8 @@ function App() {
           <Route path="/auth" element={<Auth />} />
           <Route path="/auth/password-reset" element={<PasswordReset />} />
           <Route path="/auth/reset-password" element={<ResetPassword />} />
+          <Route path="/marketplace/venues" element={<Venues />} />
+          <Route path="/marketplace/vendors" element={<Vendors />} />
         </Routes>
         <Toaster />
       </div>
