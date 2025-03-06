@@ -1,118 +1,53 @@
+import React, { useState, useEffect } from 'react';
+import { QueryClient, QueryClientProvider } from 'react-query';
+import { Routes, Route } from 'react-router-dom';
+import Index from './pages/Index';
+import Discover from './pages/Discover';
+import EventsHub from './pages/EventsHub';
+import EventDetails from './pages/EventDetails';
+import Auth from './pages/Auth';
+import OAuthCallback from './pages/OAuthCallback';
+import MFASetup from './pages/MFASetup';
+import { Toaster } from "@/components/ui/toaster"
+import PasswordReset from './pages/auth/PasswordReset';
+import ResetPassword from './pages/auth/ResetPassword';
 
-import { Toaster } from "./components/ui/toaster";
-import { Toaster as Sonner } from "./components/ui/sonner";
-import { TooltipProvider } from "./components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { supabase } from "./integrations/supabase/client";
-import { SidebarProvider } from "./components/ui/sidebar";
-import Index from "./pages/Index";
-import CreateEvent from "./pages/CreateEvent";
-import NotFound from "./pages/NotFound";
-import Auth from "./pages/Auth";
-import SideNav from "./components/SideNav";
-import Discover from "./pages/Discover";
-import EventsHub from "./pages/EventsHub";
-import EventDetails from "./pages/EventDetails";
-import EventInvitations from "./pages/EventInvitations";
-import EventTicketing from "./pages/EventTicketing";
-import SettingsLayout from "./pages/settings/SettingsLayout";
-import UserProfileSettings from "./pages/settings/UserProfileSettings";
-import CompanySettings from "./pages/settings/CompanySettings";
-import BillingSettings from "./pages/settings/BillingSettings";
-import OAuthCallback from "./pages/auth/OAuthCallback";
-import MFASetup from "./pages/auth/MFASetup";
-
-const queryClient = new QueryClient();
-
-const App = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+function App() {
+  const [queryClient] = useState(() => new QueryClient());
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        setIsAuthenticated(!!session);
-        
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-          setIsAuthenticated(!!session);
-        });
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
 
-        return () => subscription.unsubscribe();
-      } catch (error) {
-        console.error('Auth error:', error);
-        setIsAuthenticated(false);
-      }
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
     };
-
-    checkAuth();
   }, []);
-
-  if (isAuthenticated === null) {
-    return <div>Loading...</div>;
-  }
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <BrowserRouter>
-          <SidebarProvider>
-            <div className="flex min-h-screen w-full">
-              {isAuthenticated && <SideNav />}
-              <main className="flex-1 min-h-screen">
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route 
-                    path="/create-event" 
-                    element={isAuthenticated ? <CreateEvent /> : <Navigate to="/auth" replace />} 
-                  />
-                  <Route 
-                    path="/discover" 
-                    element={isAuthenticated ? <Discover /> : <Navigate to="/auth" replace />} 
-                  />
-                  <Route 
-                    path="/events-hub" 
-                    element={isAuthenticated ? <EventsHub /> : <Navigate to="/auth" replace />} 
-                  />
-                  <Route 
-                    path="/event/:id" 
-                    element={isAuthenticated ? <EventDetails /> : <Navigate to="/auth" replace />} 
-                  />
-                  <Route 
-                    path="/event/:id/invitations" 
-                    element={isAuthenticated ? <EventInvitations /> : <Navigate to="/auth" replace />} 
-                  />
-                  <Route 
-                    path="/event/:id/ticketing" 
-                    element={isAuthenticated ? <EventTicketing /> : <Navigate to="/auth" replace />} 
-                  />
-                  <Route 
-                    path="/settings" 
-                    element={isAuthenticated ? <SettingsLayout /> : <Navigate to="/auth" replace />}
-                  >
-                    <Route index element={<Navigate to="profile" replace />} />
-                    <Route path="profile" element={<UserProfileSettings />} />
-                    <Route path="company" element={<CompanySettings />} />
-                    <Route path="billing" element={<BillingSettings />} />
-                    <Route path="mfa" element={<MFASetup />} />
-                  </Route>
-                  <Route 
-                    path="/auth" 
-                    element={!isAuthenticated ? <Auth /> : <Navigate to="/" replace />} 
-                  />
-                  <Route path="/auth/callback" element={<OAuthCallback />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </main>
-            </div>
-          </SidebarProvider>
-        </BrowserRouter>
+      <div className="App">
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/discover" element={<Discover />} />
+          <Route path="/events-hub" element={<EventsHub />} />
+          <Route path="/events/:eventId" element={<EventDetails />} />
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/callback" element={<OAuthCallback />} />
+          <Route path="/auth/mfa-setup" element={<MFASetup />} />
+          <Route path="/auth/password-reset" element={<PasswordReset />} />
+          <Route path="/auth/reset-password" element={<ResetPassword />} />
+          
+        </Routes>
         <Toaster />
-        <Sonner />
-      </TooltipProvider>
+      </div>
     </QueryClientProvider>
   );
-};
+}
 
 export default App;

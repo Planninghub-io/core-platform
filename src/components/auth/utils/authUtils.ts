@@ -6,9 +6,8 @@ import { setupMFA, verifyMFA } from './mfaUtils';
 import { verifyOTP, sendPasswordResetOTP } from './otpUtils';
 
 // Re-export everything for backward compatibility
+export type { SignUpData, SignInData };
 export {
-  SignUpData,
-  SignInData,
   handleUserSignUp,
   handleUserSignIn,
   handleGoogleSignIn,
