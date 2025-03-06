@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import SideNav from "@/components/SideNav";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, ArrowRight, CalendarIcon } from "lucide-react";
+import { MapPin, Users, ArrowRight } from "lucide-react";
 
 type Venue = {
   id: string;
