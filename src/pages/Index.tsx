@@ -7,10 +7,19 @@ import FeaturedEvent from '@/components/FeaturedEvent';
 import SearchBar from '@/components/SearchBar';
 import EventFilters from '@/components/EventFilters';
 import EventCard from '@/components/EventCard';
-import EventGeneratorSection from '@/components/EventGenerator/EventGeneratorSection';
+import { EventGeneratorSection } from '@/components/EventGenerator/EventGeneratorSection';
 
 const Index = () => {
   const navigate = useNavigate();
+
+  // Mock functions for component props
+  const handleSearch = (query: string) => {
+    console.log('Search query:', query);
+  };
+
+  const handleDateRangeChange = (range: { from: Date | undefined; to: Date | undefined }) => {
+    console.log('Date range changed:', range);
+  };
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -25,11 +34,18 @@ const Index = () => {
           </div>
 
           <div className="mb-8">
-            <SearchBar />
+            <SearchBar onSearch={handleSearch} />
           </div>
 
           <div className="mb-12">
-            <FeaturedEvent />
+            <FeaturedEvent 
+              title="Annual Music Festival 2023"
+              description="Join us for three days of amazing performances from top artists across all genres."
+              date="July 15-17, 2023"
+              location="Central Park, New York"
+              imageUrl="/placeholder.svg"
+              price="$99"
+            />
           </div>
 
           <div className="mb-12">
@@ -39,34 +55,39 @@ const Index = () => {
                 View All
               </Button>
             </div>
-            <EventFilters />
+            <EventFilters onDateRangeChange={handleDateRangeChange} />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
               <EventCard
                 id="1"
                 title="Tech Conference 2023"
-                description="Join us for the biggest tech event of the year."
                 date="2023-05-20T09:00:00"
-                image="/placeholder.svg"
+                endDate="2023-05-22T18:00:00"
                 location="San Francisco, CA"
-                isVirtual={false}
+                imageUrl="/placeholder.svg"
+                category="Technology"
+                createdBy="John Smith"
+                expectedAttendees={500}
               />
               <EventCard
                 id="2"
                 title="Virtual Marketing Workshop"
-                description="Learn from the best marketers in the industry."
                 date="2023-06-15T14:00:00"
-                image="/placeholder.svg"
+                endDate="2023-06-15T17:00:00"
                 location="Online"
-                isVirtual={true}
+                imageUrl="/placeholder.svg"
+                category="Marketing"
+                createdBy="Emma Johnson"
               />
               <EventCard
                 id="3"
                 title="Music Festival"
-                description="Experience three days of amazing performances."
                 date="2023-07-10T18:00:00"
-                image="/placeholder.svg"
+                endDate="2023-07-12T23:00:00"
                 location="Austin, TX"
-                isVirtual={false}
+                imageUrl="/placeholder.svg"
+                category="Entertainment"
+                createdBy="David Wilson"
+                expectedAttendees={2000}
               />
             </div>
           </div>
