@@ -3,7 +3,7 @@
 import { SignUpData, handleUserSignUp } from './signUpUtils';
 import { SignInData, handleUserSignIn, handleGoogleSignIn } from './signInUtils';
 import { setupMFA, verifyMFA } from './mfaUtils';
-import { verifyOTP, sendPasswordResetOTP } from './otpUtils';
+import { verifyOTP, sendPasswordResetOTP, setNewPassword } from './otpUtils';
 
 // Re-export everything for backward compatibility
 export type { SignUpData, SignInData };
@@ -14,5 +14,6 @@ export {
   setupMFA,
   verifyMFA,
   verifyOTP,
-  sendPasswordResetOTP
+  sendPasswordResetOTP,
+  setNewPassword
 };

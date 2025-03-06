@@ -1,13 +1,12 @@
+
 import React, { useState, useEffect } from 'react';
-import { QueryClient, QueryClientProvider } from 'react-query';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Routes, Route } from 'react-router-dom';
 import Index from './pages/Index';
 import Discover from './pages/Discover';
 import EventsHub from './pages/EventsHub';
 import EventDetails from './pages/EventDetails';
 import Auth from './pages/Auth';
-import OAuthCallback from './pages/OAuthCallback';
-import MFASetup from './pages/MFASetup';
 import { Toaster } from "@/components/ui/toaster"
 import PasswordReset from './pages/auth/PasswordReset';
 import ResetPassword from './pages/auth/ResetPassword';
@@ -38,11 +37,8 @@ function App() {
           <Route path="/events-hub" element={<EventsHub />} />
           <Route path="/events/:eventId" element={<EventDetails />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/auth/callback" element={<OAuthCallback />} />
-          <Route path="/auth/mfa-setup" element={<MFASetup />} />
           <Route path="/auth/password-reset" element={<PasswordReset />} />
           <Route path="/auth/reset-password" element={<ResetPassword />} />
-          
         </Routes>
         <Toaster />
       </div>
