@@ -2,8 +2,10 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { EventForm } from "./create-event/components/EventForm";
 import { useEventForm } from "./create-event/hooks/useEventForm";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { EventFormData } from "./create-event/types";
+import { SignUpDialog } from "@/components/EventGenerator/SignUpDialog";
+import { useEventCreation } from "@/hooks/useEventCreation";
 
 const CreateEvent = () => {
   const navigate = useNavigate();
@@ -19,6 +21,12 @@ const CreateEvent = () => {
     handleSubmit 
   } = useEventForm();
   
+  const { 
+    showSignUpDialog, 
+    setShowSignUpDialog, 
+    pendingEventData 
+  } = useEventCreation();
+
   // Check if we have event data from the authentication flow
   useEffect(() => {
     if (location.state?.eventData) {
@@ -43,6 +51,29 @@ const CreateEvent = () => {
     }
   }, [location.state, setFormData]);
 
+  const handleSignUpIndividual = () => {
+    // Navigate to auth page with event data to create after sign up
+    navigate('/auth', { 
+      state: { 
+        eventData: pendingEventData,
+        redirectPath: '/create-event'
+      } 
+    });
+    setShowSignUpDialog(false);
+  };
+
+  const handleSignUpBusiness = () => {
+    // Navigate to business auth page with event data to create after sign up
+    navigate('/auth', { 
+      state: { 
+        eventData: pendingEventData,
+        redirectPath: '/create-event',
+        type: 'business'
+      } 
+    });
+    setShowSignUpDialog(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container max-w-3xl">
@@ -57,6 +88,14 @@ const CreateEvent = () => {
           handleCheckboxChange={handleCheckboxChange}
           handleSubmit={handleSubmit}
           handleCancel={() => navigate("/")}
+        />
+
+        <SignUpDialog
+          open={showSignUpDialog}
+          onOpenChange={setShowSignUpDialog}
+          onSignUpIndividual={handleSignUpIndividual}
+          onSignUpBusiness={handleSignUpBusiness}
+          eventData={pendingEventData}
         />
       </div>
     </div>

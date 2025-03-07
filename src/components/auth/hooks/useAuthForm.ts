@@ -9,6 +9,7 @@ import {
   SignUpData, 
   SignInData 
 } from "../utils/authUtils";
+import { useEventCreation } from "@/hooks/useEventCreation";
 
 interface UseAuthFormProps {
   type?: 'business' | 'user';
@@ -21,13 +22,14 @@ export const useAuthForm = ({ type }: UseAuthFormProps) => {
   const isBusiness = type === 'business';
   const location = useLocation();
   const navigate = useNavigate();
+  const { createEvent } = useEventCreation();
   
   // Extract redirect information from location state
   const eventData = location.state?.eventData;
   const redirectPath = location.state?.redirectPath || "/";
 
-  const handleRedirect = () => {
-    // If we have event data, navigate back to where the user was
+  const handleRedirect = async () => {
+    // If we have event data, navigate back to create event page with the data
     if (eventData) {
       navigate(redirectPath, { state: { eventData } });
     } else {

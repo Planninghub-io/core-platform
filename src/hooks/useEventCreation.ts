@@ -22,6 +22,8 @@ export const useEventCreation = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [createdEventId, setCreatedEventId] = useState<string | null>(null);
   const [showSignUpDialog, setShowSignUpDialog] = useState(false);
+  const [pendingEventData, setPendingEventData] = useState<EventToCreate | null>(null);
+  const [pendingAdditionalInfo, setPendingAdditionalInfo] = useState<Record<string, string> | null>(null);
 
   const createDefaultInvitation = async (eventId: string, eventTitle: string, eventDescription: string, eventDate: string, eventLocation: string, eventBudget: number | null) => {
     try {
@@ -92,9 +94,11 @@ export const useEventCreation = () => {
     // Check authentication first
     const { data: userData, error: userError } = await supabase.auth.getUser();
     if (userError || !userData.user) {
-      // Store event to be created after authentication
+      // Store event data to be created after authentication
+      setPendingEventData(event);
+      setPendingAdditionalInfo(additionalInfo);
       setShowSignUpDialog(true);
-      return { error: new Error("User not authenticated"), requiresAuth: true };
+      return { error: new Error("Please sign in to create an event"), requiresAuth: true };
     }
 
     setIsCreating(true);
@@ -160,11 +164,20 @@ export const useEventCreation = () => {
     }
   };
 
+  const createPendingEventAfterAuth = async () => {
+    if (pendingEventData && pendingAdditionalInfo) {
+      return await createEvent(pendingEventData, pendingAdditionalInfo);
+    }
+    return { error: new Error("No pending event data") };
+  };
+
   return {
     createEvent,
+    createPendingEventAfterAuth,
     isCreating,
     createdEventId,
     showSignUpDialog,
-    setShowSignUpDialog
+    setShowSignUpDialog,
+    pendingEventData
   };
 };
