@@ -23,7 +23,7 @@ export const useEventCreation = () => {
   const [createdEventId, setCreatedEventId] = useState<string | null>(null);
   const [showSignUpDialog, setShowSignUpDialog] = useState(false);
 
-  const createDefaultInvitation = async (eventId: string, eventTitle: string, eventDescription: string, eventDate: string, eventLocation: string, eventPrice: number | null) => {
+  const createDefaultInvitation = async (eventId: string, eventTitle: string, eventDescription: string, eventDate: string, eventLocation: string, eventBudget: number | null) => {
     try {
       // First, create a default template
       const { data: templateData, error: templateError } = await supabase
@@ -39,7 +39,7 @@ export const useEventCreation = () => {
               <div style="margin: 20px 0;">
                 <p><strong>Date:</strong> ${new Date(eventDate).toLocaleString()}</p>
                 <p><strong>Location:</strong> ${eventLocation || 'TBD'}</p>
-                ${eventPrice ? `<p><strong>Price:</strong> $${eventPrice}</p>` : ''}
+                ${eventBudget ? `<p><strong>Budget:</strong> $${eventBudget}</p>` : ''}
               </div>
               <div style="margin-top: 30px; text-align: center;">
                 <a href="#" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">RSVP Now</a>
@@ -118,7 +118,7 @@ export const useEventCreation = () => {
         end_date: endDate,
         location: event.location || '',
         category: event.category || '',
-        price,
+        budget: price,
         user_id: userData.user.id,
         status: 'upcoming',
         image_url: imageData?.image_url || null
@@ -146,7 +146,7 @@ export const useEventCreation = () => {
         data.description, 
         data.date, 
         data.location, 
-        data.price
+        data.budget
       );
       
       setCreatedEventId(data.id);
