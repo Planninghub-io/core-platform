@@ -8,7 +8,11 @@ import { SignUpDialog } from "./SignUpDialog";
 import { useEventGeneration } from "@/hooks/event-generation";
 import { ChatMessage } from "./ChatMessage";
 
-export const EventGeneratorSection = () => {
+interface EventGeneratorSectionProps {
+  onCreateManualEvent?: () => void;
+}
+
+export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSectionProps) => {
   const navigate = useNavigate();
   const {
     prompt,
@@ -152,7 +156,7 @@ export const EventGeneratorSection = () => {
 
         <div className="flex justify-center gap-4">
           <Button
-            onClick={() => navigate("/discover")}
+            onClick={onCreateManualEvent || (() => navigate("/create-event"))}
             className="animate-fade-up gap-2 bg-[#9b87f5] hover:bg-[#9b87f5]/90"
             size="lg"
           >
