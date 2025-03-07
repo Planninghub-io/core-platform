@@ -26,6 +26,14 @@ const EventsHub = () => {
       <div className="flex min-h-screen bg-gray-50">
         <SideNav />
         <main className="flex-1 p-6">
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900">
+              Welcome, {user.user_metadata?.first_name || 'Event Planner'}
+            </h1>
+            <p className="mt-2 text-lg text-gray-600">
+              Manage and track all your events in one place.
+            </p>
+          </div>
           <EventsContent 
             events={events}
             loading={authLoading || eventsLoading}
