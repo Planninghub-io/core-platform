@@ -124,52 +124,73 @@ export type Database = {
       }
       events: {
         Row: {
+          budget: number | null
+          budget_currency: string | null
           category: string | null
           company_id: string | null
           created_at: string
           date: string
           description: string | null
           end_date: string
+          event_type: string | null
           expected_attendees: number | null
           id: string
           image_url: string | null
+          is_flexible_date: boolean | null
+          is_flexible_location: boolean | null
           location: string | null
-          price: number | null
+          preferred_locations: string[] | null
           status: string | null
+          timezone: string | null
           title: string
           user_id: string
+          venue_type: string | null
         }
         Insert: {
+          budget?: number | null
+          budget_currency?: string | null
           category?: string | null
           company_id?: string | null
           created_at?: string
           date: string
           description?: string | null
           end_date: string
+          event_type?: string | null
           expected_attendees?: number | null
           id?: string
           image_url?: string | null
+          is_flexible_date?: boolean | null
+          is_flexible_location?: boolean | null
           location?: string | null
-          price?: number | null
+          preferred_locations?: string[] | null
           status?: string | null
+          timezone?: string | null
           title: string
           user_id: string
+          venue_type?: string | null
         }
         Update: {
+          budget?: number | null
+          budget_currency?: string | null
           category?: string | null
           company_id?: string | null
           created_at?: string
           date?: string
           description?: string | null
           end_date?: string
+          event_type?: string | null
           expected_attendees?: number | null
           id?: string
           image_url?: string | null
+          is_flexible_date?: boolean | null
+          is_flexible_location?: boolean | null
           location?: string | null
-          price?: number | null
+          preferred_locations?: string[] | null
           status?: string | null
+          timezone?: string | null
           title?: string
           user_id?: string
+          venue_type?: string | null
         }
         Relationships: [
           {

@@ -2,10 +2,19 @@
 export interface EventFormData {
   title: string;
   description: string;
-  date: string;
-  endDate: string;
+  date: string | Date;
+  endDate: string | Date;
+  startTime: string;
+  endTime: string;
+  timezone: string;
   location: string;
-  price: string;
+  preferredLocations: string;
+  budget: string;
+  budgetCurrency: string;
+  attendees: string;
+  eventType: string;
+  venueType: string;
   imageUrl: string;
-  category: string;
+  isFlexibleDate: boolean;
+  isFlexibleLocation: boolean;
 }

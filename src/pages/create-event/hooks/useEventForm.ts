@@ -5,6 +5,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { EventFormData } from "../types";
 import { validateRequiredFields } from "../utils/formValidation";
+import { format, set } from "date-fns";
 
 export const useEventForm = () => {
   const navigate = useNavigate();
@@ -14,10 +15,19 @@ export const useEventForm = () => {
     description: "",
     date: "",
     endDate: "",
+    startTime: "09:00",
+    endTime: "17:00",
+    timezone: "UTC",
     location: "",
-    price: "",
+    preferredLocations: "",
+    budget: "",
+    budgetCurrency: "USD",
+    attendees: "",
+    eventType: "",
+    venueType: "",
     imageUrl: "",
-    category: "",
+    isFlexibleDate: false,
+    isFlexibleLocation: false,
   });
 
   useEffect(() => {
@@ -42,6 +52,34 @@ export const useEventForm = () => {
     }));
   };
 
+  const handleSelectChange = (field: string, value: any) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleDateChange = (field: string, value: Date) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleTimeChange = (field: string, value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+
+  const handleCheckboxChange = (field: string, checked: boolean) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: checked,
+    }));
+  };
+
   const createDefaultInvitation = async (eventId: string) => {
     try {
       // First, create a default template
@@ -58,7 +96,7 @@ export const useEventForm = () => {
               <div style="margin: 20px 0;">
                 <p><strong>Date:</strong> ${new Date(formData.date).toLocaleString()}</p>
                 <p><strong>Location:</strong> ${formData.location || 'TBD'}</p>
-                ${formData.price ? `<p><strong>Price:</strong> $${formData.price}</p>` : ''}
+                ${formData.budget ? `<p><strong>Budget:</strong> ${formData.budgetCurrency} ${formData.budget}</p>` : ''}
               </div>
               <div style="margin-top: 30px; text-align: center;">
                 <a href="#" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">RSVP Now</a>
@@ -91,10 +129,29 @@ export const useEventForm = () => {
     }
   };
 
+  const combineDateTime = (dateValue: Date | string, timeValue: string): string => {
+    if (!dateValue) return '';
+    
+    const date = new Date(dateValue);
+    const [hours, minutes] = timeValue.split(':').map(Number);
+    
+    date.setHours(hours, minutes, 0, 0);
+    return date.toISOString();
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const missingFields = validateRequiredFields(formData);
+    const requiredFields = ['title'];
+    if (!formData.isFlexibleDate) {
+      requiredFields.push('date', 'endDate');
+    }
+    if (!formData.isFlexibleLocation) {
+      requiredFields.push('location');
+    }
+    requiredFields.push('budget');
+
+    const missingFields = requiredFields.filter(field => !formData[field as keyof EventFormData]);
 
     if (missingFields.length > 0) {
       toast({
@@ -117,19 +174,39 @@ export const useEventForm = () => {
         return;
       }
 
+      // Combine date and time
+      const startDateTime = combineDateTime(formData.date, formData.startTime);
+      const endDateTime = combineDateTime(formData.endDate, formData.endTime);
+
+      // Parse preferred locations if flexible
+      let preferredLocationsArray = null;
+      if (formData.isFlexibleLocation && formData.preferredLocations) {
+        preferredLocationsArray = formData.preferredLocations
+          .split(',')
+          .map(loc => loc.trim())
+          .filter(loc => loc); // Filter out empty strings
+      }
+
       const { data, error } = await supabase
         .from('events')
         .insert([
           {
             title: formData.title,
             description: formData.description,
-            date: new Date(formData.date).toISOString(),
-            end_date: new Date(formData.endDate).toISOString(),
-            location: formData.location,
-            price: parseFloat(formData.price) || null,
+            date: startDateTime,
+            end_date: endDateTime,
+            location: formData.isFlexibleLocation ? null : formData.location,
+            budget: parseFloat(formData.budget) || null,
+            budget_currency: formData.budgetCurrency,
             image_url: formData.imageUrl,
-            category: formData.category,
+            expected_attendees: formData.attendees ? parseInt(formData.attendees) : null,
             user_id: userData.user.id,
+            is_flexible_date: formData.isFlexibleDate,
+            is_flexible_location: formData.isFlexibleLocation,
+            preferred_locations: preferredLocationsArray,
+            event_type: formData.eventType,
+            venue_type: formData.venueType,
+            timezone: formData.timezone
           }
         ])
         .select();
@@ -161,6 +238,10 @@ export const useEventForm = () => {
     formData,
     setFormData,
     handleChange,
+    handleSelectChange,
+    handleDateChange,
+    handleTimeChange,
+    handleCheckboxChange,
     handleSubmit,
   };
 };

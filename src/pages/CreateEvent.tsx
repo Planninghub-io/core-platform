@@ -8,7 +8,16 @@ import { EventFormData } from "./create-event/types";
 const CreateEvent = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { formData, setFormData, handleChange, handleSubmit } = useEventForm();
+  const { 
+    formData, 
+    setFormData, 
+    handleChange, 
+    handleSelectChange,
+    handleDateChange,
+    handleTimeChange, 
+    handleCheckboxChange,
+    handleSubmit 
+  } = useEventForm();
   
   // Check if we have event data from the authentication flow
   useEffect(() => {
@@ -21,8 +30,8 @@ const CreateEvent = () => {
         description: eventData.description || '',
         date: eventData.date || '',
         location: eventData.location || '',
-        category: eventData.category || '',
-        price: eventData.estimatedPrice || '',
+        eventType: eventData.category || '',
+        budget: eventData.estimatedPrice || '',
         imageUrl: '', // Will be generated
       };
       
@@ -37,10 +46,15 @@ const CreateEvent = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container max-w-3xl">
-        <h1 className="mb-8 text-3xl font-bold text-gray-900">Create New Event</h1>
+        <h1 className="mb-2 text-3xl font-bold text-gray-900">Create New Event</h1>
+        <p className="mb-8 text-gray-600">Please input your event details</p>
         <EventForm
           formData={formData}
           handleChange={handleChange}
+          handleSelectChange={handleSelectChange}
+          handleDateChange={handleDateChange}
+          handleTimeChange={handleTimeChange}
+          handleCheckboxChange={handleCheckboxChange}
           handleSubmit={handleSubmit}
           handleCancel={() => navigate("/")}
         />
