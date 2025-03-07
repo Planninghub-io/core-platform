@@ -5,8 +5,6 @@ import { useNavigate } from 'react-router-dom';
 import SideNav from "@/components/SideNav";
 import FeaturedEvent from '@/components/FeaturedEvent';
 import SearchBar from '@/components/SearchBar';
-import EventFilters from '@/components/EventFilters';
-import EventCard from '@/components/EventCard';
 import { EventGeneratorSection } from '@/components/EventGenerator/EventGeneratorSection';
 import { SidebarProvider } from '@/components/ui/sidebar';
 
@@ -16,10 +14,6 @@ const Index = () => {
   // Mock functions for component props
   const handleSearch = (query: string) => {
     console.log('Search query:', query);
-  };
-
-  const handleDateRangeChange = (range: { from: Date | undefined; to: Date | undefined }) => {
-    console.log('Date range changed:', range);
   };
 
   return (
@@ -57,40 +51,16 @@ const Index = () => {
                   View All
                 </Button>
               </div>
-              <EventFilters onDateRangeChange={handleDateRangeChange} />
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
-                <EventCard
-                  id="1"
-                  title="Tech Conference 2023"
-                  date="2023-05-20T09:00:00"
-                  endDate="2023-05-22T18:00:00"
-                  location="San Francisco, CA"
-                  imageUrl="/placeholder.svg"
-                  category="Technology"
-                  createdBy="John Smith"
-                  expectedAttendees={500}
-                />
-                <EventCard
-                  id="2"
-                  title="Virtual Marketing Workshop"
-                  date="2023-06-15T14:00:00"
-                  endDate="2023-06-15T17:00:00"
-                  location="Online"
-                  imageUrl="/placeholder.svg"
-                  category="Marketing"
-                  createdBy="Emma Johnson"
-                />
-                <EventCard
-                  id="3"
-                  title="Music Festival"
-                  date="2023-07-10T18:00:00"
-                  endDate="2023-07-12T23:00:00"
-                  location="Austin, TX"
-                  imageUrl="/placeholder.svg"
-                  category="Entertainment"
-                  createdBy="David Wilson"
-                  expectedAttendees={2000}
-                />
+              <div className="text-center py-12 bg-gray-100 rounded-lg">
+                <h3 className="text-xl font-medium text-gray-700">Discover upcoming events</h3>
+                <p className="mt-2 text-gray-600">Check out our events hub to see all upcoming events</p>
+                <Button 
+                  variant="default" 
+                  className="mt-4"
+                  onClick={() => navigate('/events-hub')}
+                >
+                  Go to Events Hub
+                </Button>
               </div>
             </div>
 
