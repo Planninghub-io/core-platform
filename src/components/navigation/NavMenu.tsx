@@ -35,6 +35,8 @@ const menuItems = [
 export const NavMenu = () => {
   const location = useLocation();
 
+  console.log("Current location path:", location.pathname);
+
   return (
     <SidebarGroup>
       <SidebarGroupContent>
@@ -45,7 +47,11 @@ export const NavMenu = () => {
                 asChild
                 className={location.pathname === item.path || location.pathname.startsWith(item.path + '/') ? "bg-accent/10" : ""}
               >
-                <Link to={item.path} className="flex items-center px-4 py-2 text-foreground/80 hover:text-foreground">
+                <Link 
+                  to={item.path} 
+                  className="flex items-center px-4 py-2 text-foreground/80 hover:text-foreground"
+                  onClick={() => console.log(`Clicked on: ${item.title}, path: ${item.path}`)}
+                >
                   <item.icon className="h-6 w-6" />
                   <span className="text-sm ml-3">{item.title}</span>
                 </Link>

@@ -9,6 +9,9 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import type { User } from "@supabase/supabase-js";
+import SideNav from "@/components/SideNav";
+import { SidebarProvider } from '@/components/ui/sidebar';
+import { LoadingState } from "@/pages/event-ticketing/components/LoadingState";
 
 interface EventWithProfile {
   id: string;
@@ -26,6 +29,7 @@ interface EventWithProfile {
 }
 
 const EventsHub = () => {
+  console.log("EventsHub component rendering");
   const navigate = useNavigate();
   const { toast } = useToast();
   const [user, setUser] = useState<User | null>(null);
@@ -35,8 +39,10 @@ const EventsHub = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    console.log("EventsHub: Auth effect running");
     // Check current auth status
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("EventsHub: Got session", session?.user ? "user exists" : "no user");
       setUser(session?.user ?? null);
     });
 
@@ -44,6 +50,7 @@ const EventsHub = () => {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
+      console.log("EventsHub: Auth state changed", session?.user ? "user exists" : "no user");
       setUser(session?.user ?? null);
     });
 
@@ -51,12 +58,14 @@ const EventsHub = () => {
   }, []);
 
   useEffect(() => {
+    console.log("EventsHub: Fetch events effect running", { user: !!user, query: searchQuery });
     if (user) {
       fetchEvents();
     }
   }, [searchQuery, dateRange, user]);
 
   const fetchEvents = async () => {
+    console.log("EventsHub: Fetching events");
     try {
       // Update event statuses before fetching
       await supabase.rpc('update_event_status');
@@ -90,6 +99,7 @@ const EventsHub = () => {
         throw new Error("Failed to fetch events. Please try again.");
       }
 
+      console.log("EventsHub: Fetched events", data?.length || 0);
       setEvents(data || []);
     } catch (error) {
       console.error('Error fetching events:', error);
@@ -107,6 +117,7 @@ const EventsHub = () => {
   // If no user is logged in, redirect to auth page
   useEffect(() => {
     if (!user && !loading) {
+      console.log("EventsHub: Redirecting to auth page");
       navigate('/auth');
     }
   }, [user, loading, navigate]);
@@ -155,33 +166,40 @@ const EventsHub = () => {
   }
 
   return (
-    <div className="container py-8">
-      <div className="mb-8 flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Events Hub</h1>
-        <Button onClick={() => navigate("/create-event")} variant="default" className="gap-2">
-          <Plus className="h-4 w-4" />
-          New Event
-        </Button>
-      </div>
+    <SidebarProvider>
+      <div className="flex min-h-screen bg-gray-50">
+        <SideNav />
+        <main className="flex-1 p-6">
+          <div className="container">
+            <div className="mb-8 flex items-center justify-between">
+              <h1 className="text-3xl font-bold">Events Hub</h1>
+              <Button onClick={() => navigate("/create-event")} variant="default" className="gap-2">
+                <Plus className="h-4 w-4" />
+                New Event
+              </Button>
+            </div>
 
-      <div className="mb-8">
-        <SearchBar onSearch={handleSearch} />
-      </div>
+            <div className="mb-8">
+              <SearchBar onSearch={handleSearch} />
+            </div>
 
-      <div className="space-y-12">
-        {loading ? (
-          <div className="text-center text-gray-500">Loading events...</div>
-        ) : events.length > 0 ? (
-          <>
-            {renderEventSection("In Progress", "in_progress")}
-            {renderEventSection("Upcoming", "upcoming")}
-            {renderEventSection("Completed", "completed", true)}
-          </>
-        ) : (
-          <div className="text-center text-gray-500">No events found</div>
-        )}
+            <div className="space-y-12">
+              {loading ? (
+                <LoadingState />
+              ) : events.length > 0 ? (
+                <>
+                  {renderEventSection("In Progress", "in_progress")}
+                  {renderEventSection("Upcoming", "upcoming")}
+                  {renderEventSection("Completed", "completed", true)}
+                </>
+              ) : (
+                <div className="text-center text-gray-500 py-12">No events found</div>
+              )}
+            </div>
+          </div>
+        </main>
       </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
