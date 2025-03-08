@@ -57,20 +57,10 @@ export const DateTimeFields = ({
   return (
     <>
       <div className="space-y-6">
-        {/* "Dates are flexible" checkbox now appears first */}
-        <div className="flex space-x-2 items-center">
-          <Checkbox 
-            id="flexibleDate" 
-            checked={isFlexibleDate}
-            onCheckedChange={(checked) => handleCheckboxChange('isFlexibleDate', checked === true)}
-          />
-          <Label htmlFor="flexibleDate" className="cursor-pointer">Dates are flexible</Label>
-        </div>
-
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="date">Start Date & Time *</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -96,31 +86,12 @@ export const DateTimeFields = ({
                 value={startTime}
                 onChange={(value) => handleTimeChange('startTime', value)}
               />
-
-              {/* Added timezone selector to the same row as start date/time */}
-              <Select
-                value={timezone}
-                onValueChange={(value) => handleSelectChange('timezone', value)}
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="TZ">
-                    {getTimezoneShort(timezone)}
-                  </SelectValue>
-                </SelectTrigger>
-                <SelectContent>
-                  {TIMEZONES.map((tz) => (
-                    <SelectItem key={tz.value} value={tz.value}>
-                      {tz.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="endDate">End Date & Time *</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -153,13 +124,40 @@ export const DateTimeFields = ({
                 value={endTime}
                 onChange={(value) => handleTimeChange('endTime', value)}
               />
-
-              {/* Display timezone info (read-only) in the same row as end date/time */}
-              <div className="flex items-center px-3 border rounded-md bg-gray-50 text-gray-500">
-                <Clock className="h-4 w-4 mr-2 opacity-70" />
-                <span>{getTimezoneShort(timezone)}</span>
-              </div>
             </div>
+          </div>
+        </div>
+        
+        {/* Dates are flexible checkbox and Timezone in the same row */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="flexibleDate" 
+              checked={isFlexibleDate}
+              onCheckedChange={(checked) => handleCheckboxChange('isFlexibleDate', checked === true)}
+            />
+            <Label htmlFor="flexibleDate" className="cursor-pointer">Dates are flexible</Label>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Label htmlFor="timezone" className="whitespace-nowrap">Time Zone:</Label>
+            <Select
+              value={timezone}
+              onValueChange={(value) => handleSelectChange('timezone', value)}
+            >
+              <SelectTrigger className="w-40">
+                <SelectValue placeholder="Select timezone">
+                  {getTimezoneShort(timezone)}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {TIMEZONES.map((tz) => (
+                  <SelectItem key={tz.value} value={tz.value}>
+                    {tz.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
       </div>
