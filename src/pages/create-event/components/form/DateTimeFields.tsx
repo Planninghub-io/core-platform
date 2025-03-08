@@ -57,10 +57,20 @@ export const DateTimeFields = ({
   return (
     <>
       <div className="space-y-6">
+        {/* "Dates are flexible" checkbox now appears first */}
+        <div className="flex space-x-2 items-center">
+          <Checkbox 
+            id="flexibleDate" 
+            checked={isFlexibleDate}
+            onCheckedChange={(checked) => handleCheckboxChange('isFlexibleDate', checked === true)}
+          />
+          <Label htmlFor="flexibleDate" className="cursor-pointer">Dates are flexible</Label>
+        </div>
+
         <div className="grid gap-6 md:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="date">Start Date & Time *</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -86,12 +96,31 @@ export const DateTimeFields = ({
                 value={startTime}
                 onChange={(value) => handleTimeChange('startTime', value)}
               />
+
+              {/* Added timezone selector to the same row as start date/time */}
+              <Select
+                value={timezone}
+                onValueChange={(value) => handleSelectChange('timezone', value)}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="TZ">
+                    {getTimezoneShort(timezone)}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  {TIMEZONES.map((tz) => (
+                    <SelectItem key={tz.value} value={tz.value}>
+                      {tz.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="endDate">End Date & Time *</Label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-3 gap-2">
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
@@ -124,40 +153,14 @@ export const DateTimeFields = ({
                 value={endTime}
                 onChange={(value) => handleTimeChange('endTime', value)}
               />
+
+              {/* Display timezone info (read-only) in the same row as end date/time */}
+              <div className="flex items-center px-3 border rounded-md bg-gray-50 text-gray-500">
+                <Clock className="h-4 w-4 mr-2 opacity-70" />
+                <span>{getTimezoneShort(timezone)}</span>
+              </div>
             </div>
           </div>
-        </div>
-
-        {/* Timezone selector now comes after both date & time sections */}
-        <div className="space-y-2">
-          <Label htmlFor="timezone">Time Zone *</Label>
-          <Select
-            value={timezone}
-            onValueChange={(value) => handleSelectChange('timezone', value)}
-          >
-            <SelectTrigger className="w-full md:w-1/2">
-              <Clock className="h-4 w-4 mr-2 opacity-70" />
-              <SelectValue placeholder="Select time zone">
-                {TIMEZONES.find(tz => tz.value === timezone)?.label || timezone}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              {TIMEZONES.map((timezone) => (
-                <SelectItem key={timezone.value} value={timezone.value}>
-                  {timezone.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="flex space-x-2 items-center">
-          <Checkbox 
-            id="flexibleDate" 
-            checked={isFlexibleDate}
-            onCheckedChange={(checked) => handleCheckboxChange('isFlexibleDate', checked === true)}
-          />
-          <Label htmlFor="flexibleDate" className="cursor-pointer">Dates are flexible</Label>
         </div>
       </div>
     </>
