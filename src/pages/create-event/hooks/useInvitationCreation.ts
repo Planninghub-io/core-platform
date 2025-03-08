@@ -3,15 +3,20 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const useInvitationCreation = () => {
   const createDefaultInvitation = async (
-    eventId: string,
-    eventTitle: string,
-    eventDescription: string,
-    eventDate: string,
-    eventLocation: string,
-    budget: string | number | null,
-    budgetCurrency?: string
+    eventId: string, 
+    eventTitle: string, 
+    eventDescription: string, 
+    eventDate: string, 
+    eventLocation: string, 
+    eventBudget: string,
+    budgetCurrency: string
   ) => {
     try {
+      // Format the budget with currency
+      const budget = eventBudget ? 
+        `${budgetCurrency} ${parseFloat(eventBudget).toFixed(2)}` : 
+        '';
+
       // First, create a default template
       const { data: templateData, error: templateError } = await supabase
         .from('invitation_templates')
@@ -26,7 +31,7 @@ export const useInvitationCreation = () => {
               <div style="margin: 20px 0;">
                 <p><strong>Date:</strong> ${new Date(eventDate).toLocaleString()}</p>
                 <p><strong>Location:</strong> ${eventLocation || 'TBD'}</p>
-                ${budget ? `<p><strong>Budget:</strong> ${budgetCurrency || ''} ${budget}</p>` : ''}
+                ${budget ? `<p><strong>Budget:</strong> ${budget}</p>` : ''}
               </div>
               <div style="margin-top: 30px; text-align: center;">
                 <a href="#" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">RSVP Now</a>
@@ -59,5 +64,7 @@ export const useInvitationCreation = () => {
     }
   };
 
-  return { createDefaultInvitation };
+  return {
+    createDefaultInvitation
+  };
 };

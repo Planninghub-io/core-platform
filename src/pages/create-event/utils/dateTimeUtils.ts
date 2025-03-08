@@ -1,28 +1,45 @@
 
 /**
- * Combines a date value and time value into a single ISO string
+ * Combines a date string/object and a time string into a single Date object
+ * @param date Date string or object
+ * @param time Time string in "HH:MM" format
+ * @returns ISO string of the combined date and time
  */
-export const combineDateTime = (dateValue: Date | string, timeValue: string): string => {
-  if (!dateValue) return '';
+export const combineDateTime = (date: string | Date, time: string): string => {
+  const dateObj = typeof date === 'string' ? new Date(date) : new Date(date);
   
-  const date = new Date(dateValue);
-  const [hours, minutes] = timeValue.split(':').map(Number);
+  if (isNaN(dateObj.getTime())) {
+    // Invalid date, return current date/time
+    return new Date().toISOString();
+  }
   
-  date.setHours(hours, minutes, 0, 0);
-  return date.toISOString();
+  const [hours, minutes] = time.split(':').map(Number);
+  
+  dateObj.setHours(hours || 0);
+  dateObj.setMinutes(minutes || 0);
+  dateObj.setSeconds(0);
+  dateObj.setMilliseconds(0);
+  
+  return dateObj.toISOString();
 };
 
 /**
  * Formats a date as MM/DD/YYYY
+ * @param date Date string or Date object
+ * @returns Formatted date string
  */
-export const formatDateMDY = (date: Date | string): string => {
+export const formatDateMDY = (date: string | Date): string => {
   if (!date) return '';
   
-  const dateObj = new Date(date);
-  const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-  const day = String(dateObj.getDate()).padStart(2, '0');
+  const dateObj = typeof date === 'string' ? new Date(date) : new Date(date);
+  
+  if (isNaN(dateObj.getTime())) {
+    return '';
+  }
+  
+  const month = (dateObj.getMonth() + 1).toString().padStart(2, '0');
+  const day = dateObj.getDate().toString().padStart(2, '0');
   const year = dateObj.getFullYear();
   
   return `${month}/${day}/${year}`;
 };
-
