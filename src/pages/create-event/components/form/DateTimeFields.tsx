@@ -56,107 +56,109 @@ export const DateTimeFields = ({
 
   return (
     <>
-      <div className="grid gap-6 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="date">Start Date & Time *</Label>
-          <div className="grid grid-cols-3 gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={`w-full justify-start text-left font-normal ${!date && "text-muted-foreground"}`}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {date ? formatDateMDY(date) : <span>Select date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={date ? new Date(date) : undefined}
-                  onSelect={(date) => date && handleDateChange('date', date)}
-                  initialFocus
-                  className="p-3 pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-            
-            <TimeSelector 
-              value={startTime}
-              onChange={(value) => handleTimeChange('startTime', value)}
-            />
-
-            <Select
-              value={timezone}
-              onValueChange={(value) => handleSelectChange('timezone', value)}
-            >
-              <SelectTrigger className="w-full">
-                <Clock className="h-4 w-4 mr-1 opacity-70" />
-                <SelectValue placeholder="TZ">
-                  {getTimezoneShort(timezone)}
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {TIMEZONES.map((timezone) => (
-                  <SelectItem key={timezone.value} value={timezone.value}>
-                    {timezone.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      <div className="space-y-6">
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="date">Start Date & Time *</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={`w-full justify-start text-left font-normal ${!date && "text-muted-foreground"}`}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {date ? formatDateMDY(date) : <span>Select date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={date ? new Date(date) : undefined}
+                    onSelect={(date) => date && handleDateChange('date', date)}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              
+              <TimeSelector 
+                value={startTime}
+                onChange={(value) => handleTimeChange('startTime', value)}
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="endDate">End Date & Time *</Label>
-          <div className="grid grid-cols-3 gap-2">
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className={`w-full justify-start text-left font-normal ${!endDate && "text-muted-foreground"}`}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {endDate ? formatDateMDY(endDate) : <span>Select date</span>}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={endDate ? new Date(endDate) : undefined}
-                  onSelect={(date) => date && handleDateChange('endDate', date)}
-                  initialFocus
-                  className="p-3 pointer-events-auto"
-                  disabled={(date) => {
-                    // Disable dates before the start date
-                    if (!date) return false;
-                    const startDate = new Date(date);
-                    startDate.setHours(0, 0, 0, 0);
-                    return date < startDate;
-                  }}
-                />
-              </PopoverContent>
-            </Popover>
-            
-            <TimeSelector 
-              value={endTime}
-              onChange={(value) => handleTimeChange('endTime', value)}
-            />
-
-            <div className="text-center flex items-center justify-center border border-input rounded-md bg-background text-muted-foreground text-sm">
-              {getTimezoneShort(timezone)}
+          <div className="space-y-2">
+            <Label htmlFor="endDate">End Date & Time *</Label>
+            <div className="grid grid-cols-2 gap-2">
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={`w-full justify-start text-left font-normal ${!endDate && "text-muted-foreground"}`}
+                  >
+                    <CalendarIcon className="mr-2 h-4 w-4" />
+                    {endDate ? formatDateMDY(endDate) : <span>Select date</span>}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={endDate ? new Date(endDate) : undefined}
+                    onSelect={(date) => date && handleDateChange('endDate', date)}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                    disabled={(date) => {
+                      // Disable dates before the start date
+                      if (!date) return false;
+                      const startDate = new Date(date);
+                      startDate.setHours(0, 0, 0, 0);
+                      return date < startDate;
+                    }}
+                  />
+                </PopoverContent>
+              </Popover>
+              
+              <TimeSelector 
+                value={endTime}
+                onChange={(value) => handleTimeChange('endTime', value)}
+              />
             </div>
           </div>
         </div>
-      </div>
-      
-      <div className="flex space-x-2 items-center">
-        <Checkbox 
-          id="flexibleDate" 
-          checked={isFlexibleDate}
-          onCheckedChange={(checked) => handleCheckboxChange('isFlexibleDate', checked === true)}
-        />
-        <Label htmlFor="flexibleDate" className="cursor-pointer">Dates are flexible</Label>
+
+        {/* Timezone selector now comes after both date & time sections */}
+        <div className="space-y-2">
+          <Label htmlFor="timezone">Time Zone *</Label>
+          <Select
+            value={timezone}
+            onValueChange={(value) => handleSelectChange('timezone', value)}
+          >
+            <SelectTrigger className="w-full md:w-1/2">
+              <Clock className="h-4 w-4 mr-2 opacity-70" />
+              <SelectValue placeholder="Select time zone">
+                {TIMEZONES.find(tz => tz.value === timezone)?.label || timezone}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent>
+              {TIMEZONES.map((timezone) => (
+                <SelectItem key={timezone.value} value={timezone.value}>
+                  {timezone.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="flex space-x-2 items-center">
+          <Checkbox 
+            id="flexibleDate" 
+            checked={isFlexibleDate}
+            onCheckedChange={(checked) => handleCheckboxChange('isFlexibleDate', checked === true)}
+          />
+          <Label htmlFor="flexibleDate" className="cursor-pointer">Dates are flexible</Label>
+        </div>
       </div>
     </>
   );
