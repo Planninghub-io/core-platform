@@ -1,4 +1,3 @@
-
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +10,7 @@ import { EventFormData } from "../types";
 import { CalendarIcon, Clock, MapPin } from "lucide-react";
 import { useState } from "react";
 import { format } from "date-fns";
+import { formatDateMDY } from "../utils/dateTimeUtils";
 
 interface EventFormProps {
   formData: EventFormData;
@@ -114,10 +114,9 @@ export const EventForm = ({
                 <Button
                   variant="outline"
                   className={`w-full justify-start text-left font-normal ${!formData.date && "text-muted-foreground"}`}
-                  disabled={formData.isFlexibleDate}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.date ? format(new Date(formData.date), "PPP") : <span>Select date</span>}
+                  {formData.date ? formatDateMDY(formData.date) : <span>Select date</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -135,7 +134,6 @@ export const EventForm = ({
               <Select
                 value={formData.startTime}
                 onValueChange={(value) => handleTimeChange('startTime', value)}
-                disabled={formData.isFlexibleDate}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Time" />
@@ -172,10 +170,9 @@ export const EventForm = ({
                 <Button
                   variant="outline"
                   className={`w-full justify-start text-left font-normal ${!formData.endDate && "text-muted-foreground"}`}
-                  disabled={formData.isFlexibleDate}
                 >
                   <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.endDate ? format(new Date(formData.endDate), "PPP") : <span>Select date</span>}
+                  {formData.endDate ? formatDateMDY(formData.endDate) : <span>Select date</span>}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-auto p-0" align="start">
@@ -200,7 +197,6 @@ export const EventForm = ({
               <Select
                 value={formData.endTime}
                 onValueChange={(value) => handleTimeChange('endTime', value)}
-                disabled={formData.isFlexibleDate}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Time" />

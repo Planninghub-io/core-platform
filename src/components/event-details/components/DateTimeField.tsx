@@ -24,13 +24,24 @@ export const DateTimeField = ({
   id
 }: DateTimeFieldProps) => {
   const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return format(date, "MM/dd/yyyy");
+    try {
+      const date = new Date(dateString);
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const year = date.getFullYear();
+      return `${month}/${day}/${year}`;
+    } catch (e) {
+      return dateString || "";
+    }
   };
 
   const formatTime = (timeString: string) => {
-    const time = new Date(`2000-01-01T${timeString}`);
-    return format(time, "h:mm a");
+    try {
+      const time = new Date(`2000-01-01T${timeString}`);
+      return format(time, "h:mm a");
+    } catch (e) {
+      return timeString || "";
+    }
   };
 
   // Split the label to extract main prefix (Start/End)
