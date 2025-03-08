@@ -6,7 +6,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, Clock } from "lucide-react";
 import { formatDateMDY } from "../../utils/dateTimeUtils";
 
 interface DateTimeFieldsProps {
@@ -22,18 +22,18 @@ interface DateTimeFieldsProps {
   handleSelectChange: (field: string, value: any) => void;
 }
 
-// Timezone options
+// Timezone options with added short codes
 const TIMEZONES = [
-  { value: "UTC", label: "UTC" },
-  { value: "America/New_York", label: "Eastern Time (ET)" },
-  { value: "America/Chicago", label: "Central Time (CT)" },
-  { value: "America/Denver", label: "Mountain Time (MT)" },
-  { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
-  { value: "Europe/London", label: "Greenwich Mean Time (GMT)" },
-  { value: "Europe/Paris", label: "Central European Time (CET)" },
-  { value: "Asia/Tokyo", label: "Japan Standard Time (JST)" },
-  { value: "Asia/Shanghai", label: "China Standard Time (CST)" },
-  { value: "Australia/Sydney", label: "Australian Eastern Time (AET)" }
+  { value: "UTC", label: "UTC", short: "UTC" },
+  { value: "America/New_York", label: "Eastern Time (ET)", short: "ET" },
+  { value: "America/Chicago", label: "Central Time (CT)", short: "CT" },
+  { value: "America/Denver", label: "Mountain Time (MT)", short: "MT" },
+  { value: "America/Los_Angeles", label: "Pacific Time (PT)", short: "PT" },
+  { value: "Europe/London", label: "Greenwich Mean Time (GMT)", short: "GMT" },
+  { value: "Europe/Paris", label: "Central European Time (CET)", short: "CET" },
+  { value: "Asia/Tokyo", label: "Japan Standard Time (JST)", short: "JST" },
+  { value: "Asia/Shanghai", label: "China Standard Time (CST)", short: "CST" },
+  { value: "Australia/Sydney", label: "Australian Eastern Time (AET)", short: "AET" }
 ];
 
 export const DateTimeFields = ({
@@ -48,12 +48,18 @@ export const DateTimeFields = ({
   handleCheckboxChange,
   handleSelectChange,
 }: DateTimeFieldsProps) => {
+  // Find the current timezone short code
+  const getTimezoneShort = (value: string) => {
+    const zone = TIMEZONES.find(tz => tz.value === value);
+    return zone?.short || value;
+  };
+
   return (
     <>
       <div className="grid gap-6 md:grid-cols-2">
         <div className="space-y-2">
           <Label htmlFor="date">Start Date & Time *</Label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -79,12 +85,31 @@ export const DateTimeFields = ({
               value={startTime}
               onChange={(value) => handleTimeChange('startTime', value)}
             />
+
+            <Select
+              value={timezone}
+              onValueChange={(value) => handleSelectChange('timezone', value)}
+            >
+              <SelectTrigger className="w-full">
+                <Clock className="h-4 w-4 mr-1 opacity-70" />
+                <SelectValue placeholder="TZ">
+                  {getTimezoneShort(timezone)}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {TIMEZONES.map((timezone) => (
+                  <SelectItem key={timezone.value} value={timezone.value}>
+                    {timezone.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="endDate">End Date & Time *</Label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-3 gap-2">
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -117,6 +142,10 @@ export const DateTimeFields = ({
               value={endTime}
               onChange={(value) => handleTimeChange('endTime', value)}
             />
+
+            <div className="text-center flex items-center justify-center border border-input rounded-md bg-background text-muted-foreground text-sm">
+              {getTimezoneShort(timezone)}
+            </div>
           </div>
         </div>
       </div>
@@ -129,25 +158,6 @@ export const DateTimeFields = ({
         />
         <Label htmlFor="flexibleDate" className="cursor-pointer">Dates are flexible</Label>
       </div>
-
-      <div className="space-y-2">
-        <Label htmlFor="timezone">Timezone</Label>
-        <Select
-          value={timezone}
-          onValueChange={(value) => handleSelectChange('timezone', value)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="Select timezone" />
-          </SelectTrigger>
-          <SelectContent>
-            {TIMEZONES.map((timezone) => (
-              <SelectItem key={timezone.value} value={timezone.value}>
-                {timezone.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
     </>
   );
 };
@@ -159,34 +169,33 @@ interface TimeSelectorProps {
 
 const TimeSelector = ({ value, onChange }: TimeSelectorProps) => {
   return (
-    <div className="flex items-center space-x-2">
-      <Select
-        value={value}
-        onValueChange={onChange}
-      >
-        <SelectTrigger className="w-full">
-          <SelectValue placeholder="Time" />
-        </SelectTrigger>
-        <SelectContent>
-          {Array.from({ length: 24 }).map((_, hour) => (
-            Array.from({ length: 4 }).map((_, minuteIdx) => {
-              const minute = minuteIdx * 15;
-              const hourStr = hour.toString().padStart(2, '0');
-              const minuteStr = minute.toString().padStart(2, '0');
-              const timeValue = `${hourStr}:${minuteStr}`;
-              const ampm = hour < 12 ? 'AM' : 'PM';
-              const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-              const displayTime = `${hour12}:${minuteStr} ${ampm}`;
-              
-              return (
-                <SelectItem key={timeValue} value={timeValue}>
-                  {displayTime}
-                </SelectItem>
-              );
-            })
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <Select
+      value={value}
+      onValueChange={onChange}
+    >
+      <SelectTrigger className="w-full">
+        <Clock className="h-4 w-4 mr-1 opacity-70" />
+        <SelectValue placeholder="Time" />
+      </SelectTrigger>
+      <SelectContent>
+        {Array.from({ length: 24 }).map((_, hour) => (
+          Array.from({ length: 4 }).map((_, minuteIdx) => {
+            const minute = minuteIdx * 15;
+            const hourStr = hour.toString().padStart(2, '0');
+            const minuteStr = minute.toString().padStart(2, '0');
+            const timeValue = `${hourStr}:${minuteStr}`;
+            const ampm = hour < 12 ? 'AM' : 'PM';
+            const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+            const displayTime = `${hour12}:${minuteStr} ${ampm}`;
+            
+            return (
+              <SelectItem key={timeValue} value={timeValue}>
+                {displayTime}
+              </SelectItem>
+            );
+          })
+        ))}
+      </SelectContent>
+    </Select>
   );
 };
