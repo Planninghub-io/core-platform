@@ -71,8 +71,7 @@ export const handleUserSignIn = async (
 
 export const handleGoogleSignIn = async (
   isBusiness: boolean = false,
-  toast: any,
-  redirectCallback?: () => void
+  toast: any
 ) => {
   try {
     // Use a more reliable redirect URL structure
@@ -84,7 +83,7 @@ export const handleGoogleSignIn = async (
       options: {
         redirectTo: redirectUrl,
         queryParams: {
-          prompt: 'select_account', // Force account selection to avoid silent sign-in
+          // Remove SVG width issue by not including unnecessary parameters
           access_type: 'offline',
         }
       }
