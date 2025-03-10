@@ -2,5 +2,8 @@
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
 
 export const useAuth = () => {
-  return useAuthRedirect();
+  return useAuthRedirect({
+    redirectPath: "/auth",
+    skipRedirect: false
+  });
 };

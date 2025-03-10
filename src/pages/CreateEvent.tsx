@@ -13,7 +13,10 @@ const CreateEvent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { user, loading } = useAuthRedirect();
+  const { user, loading } = useAuthRedirect({
+    redirectPath: "/auth",
+    skipRedirect: false
+  });
   
   const { 
     formData, 
@@ -36,7 +39,7 @@ const CreateEvent = () => {
   useEffect(() => {
     if (!loading && !user) {
       toast({
-        title: "Error",
+        title: "Authentication Required",
         description: "Please sign in to create an event",
         variant: "destructive",
       });
@@ -56,7 +59,7 @@ const CreateEvent = () => {
         location: eventData.location || '',
         eventType: eventData.category || '',
         budget: eventData.estimatedPrice || '',
-        imageUrl: '', // Will be generated
+        imageUrl: eventData.imageUrl || '', 
       };
       
       // Pre-fill the form with this data
