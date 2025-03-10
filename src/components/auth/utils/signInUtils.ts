@@ -74,7 +74,7 @@ export const handleGoogleSignIn = async (
   toast: any
 ) => {
   try {
-    // Use a more reliable redirect URL structure
+    // Fix the redirect URL to exactly match what's configured in Google Cloud Console
     const redirectUrl = `${window.location.origin}/auth/callback`;
     console.log("Google sign-in with redirect URL:", redirectUrl);
     
@@ -82,10 +82,8 @@ export const handleGoogleSignIn = async (
       provider: 'google',
       options: {
         redirectTo: redirectUrl,
-        queryParams: {
-          // Remove SVG width issue by not including unnecessary parameters
-          access_type: 'offline',
-        }
+        // Remove any unnecessary parameters that could cause issues
+        queryParams: {}
       }
     });
     
