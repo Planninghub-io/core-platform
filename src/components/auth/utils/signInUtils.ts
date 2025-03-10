@@ -74,7 +74,7 @@ export const handleGoogleSignIn = async (
   toast: any
 ) => {
   try {
-    // Fix the redirect URL to exactly match what's configured in Google Cloud Console
+    // Use exact match for redirect URL - this is critical for Google OAuth
     const redirectUrl = `${window.location.origin}/auth/callback`;
     console.log("Google sign-in with redirect URL:", redirectUrl);
     
@@ -82,8 +82,10 @@ export const handleGoogleSignIn = async (
       provider: 'google',
       options: {
         redirectTo: redirectUrl,
-        // Remove any unnecessary parameters that could cause issues
-        queryParams: {}
+        queryParams: {
+          // Make sure to include the redirect_to parameter here
+          prompt: 'select_account' // Force Google to show account selector
+        }
       }
     });
     
@@ -98,7 +100,6 @@ export const handleGoogleSignIn = async (
     }
 
     console.log("Google sign-in initiated:", data);
-    // Do not call redirectCallback here as the OAuth process will handle the redirect
     return true;
   } catch (error: any) {
     console.error("Google sign-in exception:", error);
