@@ -11,6 +11,63 @@ export {
   handleGoogleSignIn,
 };
 
+// Password reset functions
+export const sendPasswordResetOTP = async (email: string, toast: any) => {
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset-password`,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    toast({
+      title: "Reset link sent",
+      description: "Check your email for a password reset link",
+    });
+    return true;
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: error.message || "Failed to send reset link",
+      variant: "destructive",
+    });
+    return false;
+  }
+};
+
+export const setNewPassword = async (
+  password: string,
+  toast: any,
+  redirectCallback: () => void
+) => {
+  try {
+    const { error } = await supabase.auth.updateUser({
+      password,
+    });
+
+    if (error) {
+      throw error;
+    }
+
+    toast({
+      title: "Password updated",
+      description: "Your password has been successfully updated",
+    });
+    
+    redirectCallback();
+    return true;
+  } catch (error: any) {
+    toast({
+      title: "Error",
+      description: error.message || "Failed to update password",
+      variant: "destructive",
+    });
+    return false;
+  }
+};
+
 // Handle user sign up
 export const handleUserSignUp = async (
   formData: SignUpData,
@@ -18,17 +75,7 @@ export const handleUserSignUp = async (
   toast: any,
   redirectCallback: () => void
 ) => {
-  const { email, password, confirmPassword, firstName, lastName } = formData;
-
-  // Check if the passwords match
-  if (password !== confirmPassword) {
-    toast({
-      title: "Passwords don't match",
-      description: "Please ensure your passwords match",
-      variant: "destructive",
-    });
-    return false;
-  }
+  const { email, password, firstName, lastName } = formData;
 
   try {
     // Sign up the user
@@ -82,4 +129,3 @@ export const handleUserSignUp = async (
     return false;
   }
 };
-
