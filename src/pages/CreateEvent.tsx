@@ -6,10 +6,15 @@ import { useEffect, useState } from "react";
 import { EventFormData } from "./create-event/types";
 import { SignUpDialog } from "@/components/EventGenerator/SignUpDialog";
 import { useEventCreation } from "@/hooks/useEventCreation";
+import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import { useToast } from "@/hooks/use-toast";
 
 const CreateEvent = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
+  const { user, loading } = useAuthRedirect();
+  
   const { 
     formData, 
     setFormData, 
@@ -26,6 +31,17 @@ const CreateEvent = () => {
     setShowSignUpDialog, 
     pendingEventData 
   } = useEventCreation();
+
+  // Display error message if user is not authenticated
+  useEffect(() => {
+    if (!loading && !user) {
+      toast({
+        title: "Error",
+        description: "Please sign in to create an event",
+        variant: "destructive",
+      });
+    }
+  }, [loading, user, toast]);
 
   // Check if we have event data from the authentication flow
   useEffect(() => {
@@ -73,6 +89,18 @@ const CreateEvent = () => {
     });
     setShowSignUpDialog(false);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-pulse text-gray-500">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null; // Don't render anything, we'll be redirected
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
