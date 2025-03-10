@@ -1,52 +1,87 @@
 
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const OAuthCallback = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Get the auth session from URL
+        console.log("OAuth callback triggered, processing authentication");
+        
+        // Get URL parameters that might contain error information
+        const params = new URLSearchParams(location.hash.substring(1));
+        const errorDescription = params.get('error_description');
+        
+        if (errorDescription) {
+          setError(errorDescription);
+          toast({
+            title: "Authentication Error",
+            description: errorDescription,
+            variant: "destructive",
+          });
+          setLoading(false);
+          return;
+        }
+
+        // Get the auth session
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
+          console.error("Error getting session:", error);
           setError(error.message);
           toast({
             title: "Authentication Error",
             description: error.message,
             variant: "destructive",
           });
+          setLoading(false);
           return;
         }
 
+        console.log("Session data:", data.session ? "Session exists" : "No session");
+        
         if (data.session) {
           toast({
             title: "Authentication Successful",
             description: "You have been successfully signed in.",
           });
-          navigate("/");
+          
+          // Check if there's a redirect path stored in localStorage
+          const redirectPath = localStorage.getItem('authRedirectPath') || '/';
+          localStorage.removeItem('authRedirectPath'); // Clean up
+          
+          // Delay the navigation slightly to ensure toast is visible
+          setTimeout(() => {
+            navigate(redirectPath);
+          }, 500);
         } else {
           // If no session, redirect to auth page
+          console.log("No session found, redirecting to auth page");
           navigate("/auth");
         }
       } catch (err: any) {
-        setError(err.message);
+        console.error("Unexpected error during callback:", err);
+        setError(err.message || "An unexpected error occurred");
         toast({
           title: "Authentication Error",
           description: "An unexpected error occurred. Please try again.",
           variant: "destructive",
         });
+      } finally {
+        setLoading(false);
       }
     };
 
     handleCallback();
-  }, [navigate, toast]);
+  }, [navigate, toast, location]);
 
   return (
     <div className="flex min-h-screen items-center justify-center">
@@ -55,7 +90,14 @@ const OAuthCallback = () => {
         
         {error ? (
           <div className="rounded-md bg-red-100 p-4 text-red-700">
-            {error}
+            <p className="font-medium">Error: {error}</p>
+            <p className="mt-2">Please try again or contact support if this issue persists.</p>
+            <button 
+              onClick={() => navigate('/auth')}
+              className="mt-4 rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+            >
+              Return to sign in
+            </button>
           </div>
         ) : (
           <div className="flex flex-col items-center">

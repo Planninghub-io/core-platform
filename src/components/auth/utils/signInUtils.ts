@@ -70,23 +70,28 @@ export const handleUserSignIn = async (
 };
 
 export const handleGoogleSignIn = async (
-  isBusiness: boolean,
+  isBusiness: boolean = false,
   toast: any,
-  redirectCallback: () => void
+  redirectCallback?: () => void
 ) => {
   try {
+    // Use a more reliable redirect URL structure
+    const redirectUrl = `${window.location.origin}/auth/callback`;
+    console.log("Google sign-in with redirect URL:", redirectUrl);
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
+        redirectTo: redirectUrl,
         queryParams: {
+          prompt: 'select_account', // Force account selection to avoid silent sign-in
           access_type: 'offline',
-          prompt: 'consent',
-        },
-        redirectTo: `${window.location.origin}/auth/callback`,
+        }
       }
     });
     
     if (error) {
+      console.error("Google sign-in error:", error);
       toast({
         title: "Google Sign In Error",
         description: error.message,
@@ -95,9 +100,11 @@ export const handleGoogleSignIn = async (
       return false;
     }
 
-    // No need for redirect callback here as OAuth will handle the redirect
+    console.log("Google sign-in initiated:", data);
+    // Do not call redirectCallback here as the OAuth process will handle the redirect
     return true;
   } catch (error: any) {
+    console.error("Google sign-in exception:", error);
     toast({
       title: "Google Sign In Error",
       description: "An unexpected error occurred. Please try again.",

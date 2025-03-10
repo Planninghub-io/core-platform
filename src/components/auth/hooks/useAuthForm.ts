@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { 
@@ -27,6 +27,13 @@ export const useAuthForm = ({ type }: UseAuthFormProps) => {
   // Extract redirect information from location state
   const eventData = location.state?.eventData;
   const redirectPath = location.state?.redirectPath || "/";
+
+  // Store redirect path for OAuth flow
+  useEffect(() => {
+    if (redirectPath && redirectPath !== '/auth') {
+      localStorage.setItem('authRedirectPath', redirectPath);
+    }
+  }, [redirectPath]);
 
   const handleRedirect = async () => {
     // If we have event data, navigate back to create event page with the data
@@ -58,8 +65,12 @@ export const useAuthForm = ({ type }: UseAuthFormProps) => {
   const signInWithGoogle = async () => {
     setIsLoading(true);
     try {
-      await handleGoogleSignIn(isBusiness, toast, handleRedirect);
-    } finally {
+      const success = await handleGoogleSignIn(isBusiness, toast);
+      // We don't call handleRedirect here as the OAuth process will handle the redirect
+      if (!success) {
+        setIsLoading(false);
+      }
+    } catch (error) {
       setIsLoading(false);
     }
   };
