@@ -1,13 +1,14 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, ArrowRight, Building, Sparkles, Search } from "lucide-react";
+import { MapPin, Users, ArrowRight, Building, Sparkles } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VenueRecommendations } from "@/components/venue-recommendations/VenueRecommendations";
 import { useToast } from "@/components/ui/use-toast";
+import VenueFilters, { VenueFilterValues } from "@/components/venue-filters/VenueFilters";
 
 type Venue = {
   id: string;
@@ -20,85 +21,46 @@ type Venue = {
   cancellation_policy: string | null;
 };
 
-const fetchVenues = async (): Promise<Venue[]> => {
-  const { data, error } = await supabase
-    .from("venues")
-    .select("*");
-  
-  if (error) {
-    console.error("Error fetching venues:", error);
-    throw new Error("Failed to fetch venues");
-  }
-  
-  return data || [];
-};
-
 const Venues = () => {
   const { toast } = useToast();
-  const [isScrapingVenues, setIsScrapingVenues] = useState(false);
+  const [filters, setFilters] = useState<VenueFilterValues>({
+    state: "Texas" // Default to Texas to show Austin venues
+  });
+  
+  // Function to fetch venues with filters
+  const fetchVenues = async (): Promise<Venue[]> => {
+    let query = supabase.from("venues").select("*");
+    
+    // Apply filters
+    if (filters.city) {
+      // This is a basic implementation. In a real app, we'd need to extract city from address or have a city column
+      query = query.ilike('name', `%${filters.city}%`);
+    }
+    
+    if (filters.capacity?.min) {
+      query = query.gte('capacity', filters.capacity.min);
+    }
+    
+    // In the future, we could add filtering by state if that data was in the venues table
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error("Error fetching venues:", error);
+      throw new Error("Failed to fetch venues");
+    }
+    
+    return data || [];
+  };
+  
   const { data: venues, isLoading, error, refetch } = useQuery({
-    queryKey: ["venues"],
+    queryKey: ["venues", filters],
     queryFn: fetchVenues,
   });
-
-  const handleScrapeVenues = async () => {
-    setIsScrapingVenues(true);
-    try {
-      // Get the Supabase URL and anon key from the client
-      const { data: authData } = await supabase.auth.getSession();
-      const token = authData?.session?.access_token;
-      
-      if (!token) {
-        toast({
-          title: "Authentication Required",
-          description: "You need to be logged in to perform this action.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Fix: Use the URL from environment variables instead of accessing protected property
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL || 'https://asexlqsjachwhabzvzwk.supabase.co'}/functions/v1/scrape-venues`,
-        {
-          method: "POST",
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      
-      const result = await response.json();
-      
-      if (response.ok) {
-        toast({
-          title: "Success",
-          description: result.message,
-          duration: 5000,
-        });
-        
-        // Refetch venues to update the list
-        refetch();
-      } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to scrape venues",
-          variant: "destructive",
-          duration: 5000,
-        });
-      }
-    } catch (error) {
-      console.error("Error scraping venues:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred while scraping venues",
-        variant: "destructive",
-        duration: 5000,
-      });
-    } finally {
-      setIsScrapingVenues(false);
-    }
+  
+  // Handle filter changes
+  const handleFilterChange = (newFilters: VenueFilterValues) => {
+    setFilters(newFilters);
   };
 
   return (
@@ -115,16 +77,8 @@ const Venues = () => {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="browse" className="pt-4">
-          <div className="flex justify-end mb-4">
-            <Button 
-              onClick={handleScrapeVenues} 
-              disabled={isScrapingVenues}
-              className="flex items-center gap-2"
-            >
-              <Search className="h-4 w-4" />
-              {isScrapingVenues ? "Scraping..." : "Find Austin Venues"}
-            </Button>
-          </div>
+          <VenueFilters onFilterChange={handleFilterChange} />
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {isLoading && (
               <div className="col-span-3 flex justify-center items-center h-64">
@@ -141,7 +95,7 @@ const Venues = () => {
             {venues && venues.length === 0 && !isLoading && (
               <div className="col-span-3 text-center py-10">
                 <h3 className="mt-2 text-lg font-medium text-gray-900">No venues found</h3>
-                <p className="mt-1 text-gray-500">Check back later for available venues or click "Find Austin Venues" to discover venues in Austin, Texas.</p>
+                <p className="mt-1 text-gray-500">Try adjusting your filters to see more results.</p>
               </div>
             )}
 
