@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import EventCardImage from "./event-card/EventCardImage";
 import EventCardOverlay from "./event-card/EventCardOverlay";

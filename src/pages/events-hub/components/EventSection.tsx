@@ -56,7 +56,7 @@ const EventSection: React.FC<EventSectionProps> = ({
             location={event.location}
             imageUrl={event.image_url}
             category={event.category}
-            createdBy={event.user_profiles?.email || 'Unknown'}
+            createdBy="Event Creator" // Replace email with generic text
             expectedAttendees={event.expected_attendees}
           />
         ))}

@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Calendar, MapPin, User, Users } from "lucide-react";
+import { Calendar, MapPin, Users } from "lucide-react";
 import { format } from "date-fns";
 
 interface EventCardDetailsProps {
@@ -19,7 +19,6 @@ const EventCardDetails: React.FC<EventCardDetailsProps> = ({
   endDate,
   location,
   category,
-  createdBy,
   expectedAttendees,
 }) => {
   const formatDateTime = (dateString: string) => {
@@ -47,10 +46,6 @@ const EventCardDetails: React.FC<EventCardDetailsProps> = ({
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <MapPin className="h-4 w-4" />
           <span>{location}</span>
-        </div>
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <User className="h-4 w-4" />
-          <span>{createdBy}</span>
         </div>
         {expectedAttendees && (
           <div className="flex items-center gap-2 text-sm text-gray-600">
