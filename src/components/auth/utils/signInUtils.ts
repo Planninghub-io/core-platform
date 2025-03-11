@@ -74,15 +74,22 @@ export const handleGoogleSignIn = async (
   toast: any
 ) => {
   try {
-    // Simplified OAuth implementation - avoid unnecessary parameters
-    const redirectUrl = `${window.location.origin}/auth/callback`;
+    // Get the current URL and use it for the redirect
+    const origin = window.location.origin;
+    const redirectUrl = `${origin}/auth/callback`;
     console.log("Google sign-in with redirect URL:", redirectUrl);
     
+    // Make sure we store the current path for later redirect after auth
+    const currentPath = localStorage.getItem('authRedirectPath') || '/';
+    if (!currentPath || currentPath === '/auth') {
+      localStorage.setItem('authRedirectPath', '/');
+    }
+    
+    // Initialize the OAuth sign-in with Google provider
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: redirectUrl,
-        // Avoid complex query parameters that could cause issues
         queryParams: {
           // Use access_type=offline to get a refresh token
           access_type: 'offline',
