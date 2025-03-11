@@ -23,7 +23,7 @@ const EventCardDetails: React.FC<EventCardDetailsProps> = ({
 }) => {
   const formatDateTime = (dateString: string) => {
     const date = new Date(dateString);
-    return format(date, "MMM d, yyyy h:mm a");
+    return format(date, "MMM d, yyyy h:mm a"); // Changed format to keep AM/PM in same line
   };
 
   return (
