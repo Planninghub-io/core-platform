@@ -1,11 +1,14 @@
 
 import React from 'react';
-import { Outlet, NavLink } from 'react-router-dom';
+import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import SideNav from '@/components/SideNav';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Store, Building, Compass } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 const MarketplaceLayout: React.FC = () => {
+  const location = useLocation();
+  
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-gray-50">
@@ -14,59 +17,46 @@ const MarketplaceLayout: React.FC = () => {
           <div className="container max-w-7xl mx-auto px-4 py-8">
             <h1 className="text-3xl font-bold mb-6">Marketplace</h1>
             
-            <div className="mb-6 border-b">
-              <nav className="flex space-x-8">
-                <NavLink
-                  to="/marketplace"
-                  end
-                  className={({ isActive }) =>
-                    `pb-4 px-1 font-medium text-sm ${
-                      isActive
-                        ? 'border-b-2 border-[#8b73f4] text-[#8b73f4]'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`
-                  }
-                >
+            <div className="mb-6 flex gap-4">
+              <Button 
+                variant={location.pathname === '/marketplace' && location.pathname.split('/').length === 2 ? "default" : "outline"} 
+                asChild
+              >
+                <NavLink to="/marketplace" end>
+                  <Store className="mr-2 h-4 w-4" />
                   All
                 </NavLink>
-                <NavLink
-                  to="/marketplace/venues"
-                  className={({ isActive }) =>
-                    `pb-4 px-1 font-medium text-sm ${
-                      isActive
-                        ? 'border-b-2 border-[#8b73f4] text-[#8b73f4]'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`
-                  }
-                >
+              </Button>
+
+              <Button 
+                variant={location.pathname === '/marketplace/venues' ? "default" : "outline"} 
+                asChild
+              >
+                <NavLink to="/marketplace/venues">
+                  <Building className="mr-2 h-4 w-4" />
                   Venues
                 </NavLink>
-                <NavLink
-                  to="/marketplace/vendors"
-                  className={({ isActive }) =>
-                    `pb-4 px-1 font-medium text-sm ${
-                      isActive
-                        ? 'border-b-2 border-[#8b73f4] text-[#8b73f4]'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`
-                  }
-                >
+              </Button>
+
+              <Button 
+                variant={location.pathname === '/marketplace/vendors' ? "default" : "outline"} 
+                asChild
+              >
+                <NavLink to="/marketplace/vendors">
+                  <Compass className="mr-2 h-4 w-4" />
                   Vendors
                 </NavLink>
-                <NavLink
-                  to="/marketplace/recommendations"
-                  className={({ isActive }) =>
-                    `pb-4 px-1 font-medium flex items-center text-sm ${
-                      isActive
-                        ? 'border-b-2 border-[#8b73f4] text-[#8b73f4]'
-                        : 'text-gray-600 hover:text-gray-900'
-                    }`
-                  }
-                >
-                  <Sparkles className="h-4 w-4 mr-1" />
+              </Button>
+
+              <Button 
+                variant={location.pathname === '/marketplace/recommendations' ? "default" : "outline"} 
+                asChild
+              >
+                <NavLink to="/marketplace/recommendations">
+                  <Sparkles className="mr-2 h-4 w-4" />
                   AI Recommendations
                 </NavLink>
-              </nav>
+              </Button>
             </div>
             
             <Outlet />
