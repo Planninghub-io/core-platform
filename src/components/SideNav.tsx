@@ -15,6 +15,7 @@ import { LogOut, Settings } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useEffect } from "react";
 
 const SideNav = () => {
   const navigate = useNavigate();
@@ -28,7 +29,8 @@ const SideNav = () => {
         title: "Logged out successfully",
         description: "You have been logged out of your account",
       });
-      navigate('/');
+      // Force navigation to auth page
+      navigate('/auth', { replace: true });
     } catch (error: any) {
       toast({
         title: "Logout failed",
@@ -37,6 +39,17 @@ const SideNav = () => {
       });
     }
   };
+
+  // Listen for auth state changes and redirect if not logged in
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'SIGNED_OUT') {
+        navigate('/auth', { replace: true });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   return (
     <Sidebar className="border-r w-56">
