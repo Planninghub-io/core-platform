@@ -33,11 +33,18 @@ export const useEvents = (user: any) => {
   }, [searchQuery, dateRange, user]);
 
   const fetchEvents = async () => {
-    console.log("EventsHub: Fetching events");
+    if (!user || !user.id) {
+      console.log("EventsHub: No user ID available, skipping fetch");
+      setLoading(false);
+      return;
+    }
+
+    console.log("EventsHub: Fetching events for user ID:", user.id);
     try {
       // Update event statuses before fetching
       await supabase.rpc('update_event_status');
       
+      // Create base query
       let query = supabase
         .from('events')
         .select(`
@@ -46,12 +53,15 @@ export const useEvents = (user: any) => {
             email
           )
         `)
+        .eq('user_id', user.id) // Filter by the current user's ID
         .order('date', { ascending: true });
 
+      // Apply search filter if provided
       if (searchQuery) {
         query = query.ilike('title', `%${searchQuery}%`);
       }
 
+      // Apply date range filters if provided
       if (dateRange.from) {
         query = query.gte('date', dateRange.from.toISOString());
       }
@@ -67,7 +77,7 @@ export const useEvents = (user: any) => {
         throw new Error("Failed to fetch events. Please try again.");
       }
 
-      console.log("EventsHub: Fetched events", data?.length || 0);
+      console.log("EventsHub: Fetched events:", data?.length || 0);
       setEvents(data || []);
     } catch (error) {
       console.error('Error fetching events:', error);
