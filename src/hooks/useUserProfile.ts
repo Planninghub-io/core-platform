@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile, Company } from "@/types/user";
@@ -7,12 +8,19 @@ export function useUserProfile() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [selectedCompany, setSelectedCompany] = useState<Company | null>(null);
   const [isBusinessUser, setIsBusinessUser] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchUserProfile = async () => {
+    setIsLoading(true);
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.log('No user found');
+        setUserProfile(null);
+        setCompanies([]);
+        setIsBusinessUser(false);
+        setSelectedCompany(null);
+        setIsLoading(false);
         return;
       }
 
@@ -25,6 +33,7 @@ export function useUserProfile() {
 
       if (profileError) {
         console.error('Profile fetch error:', profileError);
+        setIsLoading(false);
         return;
       }
 
@@ -56,6 +65,7 @@ export function useUserProfile() {
 
       if (rolesError) {
         console.error('User roles fetch error:', rolesError);
+        setIsLoading(false);
         return;
       }
 
@@ -89,11 +99,20 @@ export function useUserProfile() {
       setCompanies([]);
       setIsBusinessUser(false);
       setSelectedCompany(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
+  // Listen for auth state changes
   useEffect(() => {
     fetchUserProfile();
+    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      fetchUserProfile();
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   return {
@@ -102,6 +121,7 @@ export function useUserProfile() {
     selectedCompany,
     setSelectedCompany,
     refreshUserProfile: fetchUserProfile,
-    isBusinessUser
+    isBusinessUser,
+    isLoading
   };
 }
