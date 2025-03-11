@@ -15,22 +15,29 @@ const OAuthCallback = () => {
     const handleCallback = async () => {
       try {
         console.log("OAuth callback triggered, processing authentication");
+        console.log("Current URL:", window.location.href);
         
-        // Get URL parameters that might contain error information
-        const params = new URLSearchParams(location.hash.substring(1));
-        const errorDescription = params.get('error_description');
+        // Improved error detection from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const hashParams = new URLSearchParams(location.hash.substring(1));
         
-        if (errorDescription) {
-          setError(errorDescription);
+        // Check URL parameters for errors
+        const errorParam = urlParams.get('error') || hashParams.get('error');
+        const errorDescriptionParam = urlParams.get('error_description') || hashParams.get('error_description');
+        
+        if (errorParam || errorDescriptionParam) {
+          const errorMessage = errorDescriptionParam || errorParam || 'Unknown error';
+          console.error("OAuth error from URL:", errorMessage);
+          setError(errorMessage);
           toast({
             title: "Authentication Error",
-            description: errorDescription,
+            description: errorMessage,
             variant: "destructive",
           });
           setLoading(false);
           return;
         }
-
+        
         // Get the auth session
         const { data, error } = await supabase.auth.getSession();
         

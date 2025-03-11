@@ -74,7 +74,7 @@ export const handleGoogleSignIn = async (
   toast: any
 ) => {
   try {
-    // Use exact match for redirect URL - this is critical for Google OAuth
+    // Simplified OAuth implementation - avoid unnecessary parameters
     const redirectUrl = `${window.location.origin}/auth/callback`;
     console.log("Google sign-in with redirect URL:", redirectUrl);
     
@@ -82,9 +82,12 @@ export const handleGoogleSignIn = async (
       provider: 'google',
       options: {
         redirectTo: redirectUrl,
+        // Avoid complex query parameters that could cause issues
         queryParams: {
-          // Make sure to include the redirect_to parameter here
-          prompt: 'select_account' // Force Google to show account selector
+          // Use access_type=offline to get a refresh token
+          access_type: 'offline',
+          // Ensure consistent prompt behavior
+          prompt: 'select_account'
         }
       }
     });
