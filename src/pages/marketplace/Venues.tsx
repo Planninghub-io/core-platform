@@ -4,9 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, ArrowRight, Building, Sparkles } from "lucide-react";
+import { MapPin, Users, ArrowRight, Building, Sparkles, Search } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VenueRecommendations } from "@/components/venue-recommendations/VenueRecommendations";
+import { useToast } from "@/components/ui/use-toast";
 
 type Venue = {
   id: string;
@@ -33,10 +34,71 @@ const fetchVenues = async (): Promise<Venue[]> => {
 };
 
 const Venues = () => {
-  const { data: venues, isLoading, error } = useQuery({
+  const { toast } = useToast();
+  const [isScrapingVenues, setIsScrapingVenues] = useState(false);
+  const { data: venues, isLoading, error, refetch } = useQuery({
     queryKey: ["venues"],
     queryFn: fetchVenues,
   });
+
+  const handleScrapeVenues = async () => {
+    setIsScrapingVenues(true);
+    try {
+      // Get the Supabase URL and anon key from the client
+      const { data: authData } = await supabase.auth.getSession();
+      const token = authData?.session?.access_token;
+      
+      if (!token) {
+        toast({
+          title: "Authentication Required",
+          description: "You need to be logged in to perform this action.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const response = await fetch(
+        `${supabase.supabaseUrl}/functions/v1/scrape-venues`,
+        {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      const result = await response.json();
+      
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: result.message,
+          duration: 5000,
+        });
+        
+        // Refetch venues to update the list
+        refetch();
+      } else {
+        toast({
+          title: "Error",
+          description: result.error || "Failed to scrape venues",
+          variant: "destructive",
+          duration: 5000,
+        });
+      }
+    } catch (error) {
+      console.error("Error scraping venues:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while scraping venues",
+        variant: "destructive",
+        duration: 5000,
+      });
+    } finally {
+      setIsScrapingVenues(false);
+    }
+  };
 
   return (
     <>
@@ -52,6 +114,16 @@ const Venues = () => {
           </TabsTrigger>
         </TabsList>
         <TabsContent value="browse" className="pt-4">
+          <div className="flex justify-end mb-4">
+            <Button 
+              onClick={handleScrapeVenues} 
+              disabled={isScrapingVenues}
+              className="flex items-center gap-2"
+            >
+              <Search className="h-4 w-4" />
+              {isScrapingVenues ? "Scraping..." : "Find Austin Venues"}
+            </Button>
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {isLoading && (
               <div className="col-span-3 flex justify-center items-center h-64">
@@ -68,7 +140,7 @@ const Venues = () => {
             {venues && venues.length === 0 && !isLoading && (
               <div className="col-span-3 text-center py-10">
                 <h3 className="mt-2 text-lg font-medium text-gray-900">No venues found</h3>
-                <p className="mt-1 text-gray-500">Check back later for available venues.</p>
+                <p className="mt-1 text-gray-500">Check back later for available venues or click "Find Austin Venues" to discover venues in Austin, Texas.</p>
               </div>
             )}
 
