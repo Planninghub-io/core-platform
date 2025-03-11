@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { VenueRecommendations as VenueRecommendationsComponent } from '@/components/VenueRecommendations';
+import { VenueRecommendations as VenueRecommendationsComponent } from '@/components/venue-recommendations/VenueRecommendations';
 
 const VenueRecommendations = () => {
   return (
