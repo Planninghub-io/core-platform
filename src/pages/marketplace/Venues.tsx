@@ -57,8 +57,9 @@ const Venues = () => {
         return;
       }
       
+      // Fix: Use the URL from environment variables instead of accessing protected property
       const response = await fetch(
-        `${supabase.supabaseUrl}/functions/v1/scrape-venues`,
+        `${import.meta.env.VITE_SUPABASE_URL || 'https://asexlqsjachwhabzvzwk.supabase.co'}/functions/v1/scrape-venues`,
         {
           method: "POST",
           headers: {
