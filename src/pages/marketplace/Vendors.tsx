@@ -56,7 +56,7 @@ const Vendors = () => {
           </TabsTrigger>
           <TabsTrigger value="recommendations" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
-            AI Recommendations
+            Vendor AI Agent
           </TabsTrigger>
         </TabsList>
         <TabsContent value="browse" className="pt-4">
