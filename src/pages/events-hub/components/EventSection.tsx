@@ -2,6 +2,7 @@
 import React from "react";
 import EventCard from "@/components/EventCard";
 import EventFilters from "@/components/EventFilters";
+import { format } from "date-fns";
 
 interface EventWithProfile {
   id: string;
@@ -51,8 +52,8 @@ const EventSection: React.FC<EventSectionProps> = ({
             key={event.id}
             id={event.id}
             title={event.title}
-            date={new Date(event.date).toLocaleDateString()}
-            endDate={new Date(event.end_date).toLocaleDateString()}
+            date={event.date}
+            endDate={event.end_date}
             location={event.location}
             imageUrl={event.image_url}
             category={event.category}
