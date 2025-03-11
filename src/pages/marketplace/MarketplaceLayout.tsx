@@ -3,7 +3,7 @@ import React from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
 import SideNav from '@/components/SideNav';
 import { SidebarProvider } from '@/components/ui/sidebar';
-import { Sparkles, Store, Building, Compass } from 'lucide-react';
+import { Store, Building, Compass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const MarketplaceLayout: React.FC = () => {
@@ -29,7 +29,7 @@ const MarketplaceLayout: React.FC = () => {
               </Button>
 
               <Button 
-                variant={location.pathname === '/marketplace/venues' ? "default" : "outline"} 
+                variant={location.pathname.includes('/marketplace/venues') ? "default" : "outline"} 
                 asChild
               >
                 <NavLink to="/marketplace/venues">
@@ -45,16 +45,6 @@ const MarketplaceLayout: React.FC = () => {
                 <NavLink to="/marketplace/vendors">
                   <Compass className="mr-2 h-4 w-4" />
                   Vendors
-                </NavLink>
-              </Button>
-
-              <Button 
-                variant={location.pathname === '/marketplace/recommendations' ? "default" : "outline"} 
-                asChild
-              >
-                <NavLink to="/marketplace/recommendations">
-                  <Sparkles className="mr-2 h-4 w-4" />
-                  AI Recommendations
                 </NavLink>
               </Button>
             </div>
