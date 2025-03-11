@@ -1,4 +1,3 @@
-
 import { Routes, Route } from 'react-router-dom';
 import Index from '@/pages/Index';
 import Discover from '@/pages/Discover';
@@ -23,8 +22,8 @@ import MarketplaceLayout from '@/pages/marketplace/MarketplaceLayout';
 import Marketplace from '@/pages/marketplace/Marketplace';
 import Venues from '@/pages/marketplace/Venues';
 import Vendors from '@/pages/marketplace/Vendors';
+import VenueRecommendations from "./pages/marketplace/VenueRecommendations";
 
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -67,6 +66,7 @@ function App() {
             <Route index element={<Marketplace />} />
             <Route path="venues" element={<Venues />} />
             <Route path="vendors" element={<Vendors />} />
+            <Route path="recommendations" element={<VenueRecommendations />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />
