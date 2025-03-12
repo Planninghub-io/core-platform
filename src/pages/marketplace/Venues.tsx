@@ -1,12 +1,12 @@
 
 import React, { useState } from "react";
-import { Building, Sparkles } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VenueRecommendations } from "@/components/venue-recommendations/VenueRecommendations";
 import { useToast } from "@/components/ui/use-toast";
 import VenueFilters, { VenueFilterValues } from "@/components/venue-filters/VenueFilters";
 import { VenuesList } from "@/components/venue-browser/VenuesList";
 import { useVenues } from "@/hooks/useVenues";
+import { Sparkles } from "lucide-react";
 
 const Venues = () => {
   const { toast } = useToast();
@@ -25,13 +25,10 @@ const Venues = () => {
     <>
       <Tabs defaultValue="browse" className="mb-6">
         <TabsList>
-          <TabsTrigger value="browse" className="flex items-center gap-2">
-            <Building className="h-4 w-4" />
-            Browse Venues
-          </TabsTrigger>
+          <TabsTrigger value="browse">Venues</TabsTrigger>
           <TabsTrigger value="recommendations" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
-            Venue AI Agent
+            AI Recommendations
           </TabsTrigger>
         </TabsList>
         <TabsContent value="browse" className="pt-4">

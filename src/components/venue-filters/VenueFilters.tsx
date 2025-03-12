@@ -41,7 +41,7 @@ const VenueFilters: React.FC<VenueFiltersProps> = ({ onFilterChange }) => {
     <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border">
       <FiltersHeader />
       
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4">
         <CityFilter 
           value={city}
           onChange={(e) => setCity(e.target.value)}
