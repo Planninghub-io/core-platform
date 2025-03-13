@@ -1,9 +1,11 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { MapPin, Users, Calendar, X } from "lucide-react";
+import { MapPin, Users, Calendar, X, CheckCircle, XCircle } from "lucide-react";
 import { Venue } from "@/hooks/useVenues";
+import { format, addDays } from "date-fns";
+import { Calendar as CalendarComponent } from "@/components/ui/calendar";
 
 interface VenueDetailsProps {
   venue: Venue | null;
@@ -12,7 +14,21 @@ interface VenueDetailsProps {
 }
 
 export const VenueDetails: React.FC<VenueDetailsProps> = ({ venue, isOpen, onClose }) => {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [showCalendar, setShowCalendar] = useState(false);
+  
   if (!venue) return null;
+
+  // Get unavailable dates from venue availability
+  const unavailableDates = venue.availability?.dates || [];
+
+  // Convert string dates to Date objects
+  const disabledDates = unavailableDates.map(dateStr => new Date(dateStr));
+  
+  // Check if selected date is available
+  const isDateAvailable = selectedDate ? 
+    !unavailableDates.includes(format(selectedDate, 'yyyy-MM-dd')) : 
+    false;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -62,6 +78,15 @@ export const VenueDetails: React.FC<VenueDetailsProps> = ({ venue, isOpen, onClo
                   </div>
                 </div>
               )}
+
+              <div className="pt-4">
+                <Button 
+                  onClick={() => setShowCalendar(!showCalendar)}
+                  className="bg-[#8b73f4] hover:bg-[#8b73f4]/90"
+                >
+                  {showCalendar ? "Hide Availability Calendar" : "Check Availability"}
+                </Button>
+              </div>
             </div>
 
             <div>
@@ -82,6 +107,66 @@ export const VenueDetails: React.FC<VenueDetailsProps> = ({ venue, isOpen, onClo
               )}
             </div>
           </div>
+
+          {showCalendar && (
+            <div className="border rounded-lg p-4 bg-white">
+              <h3 className="font-medium text-gray-900 mb-3">Venue Availability</h3>
+              <div className="flex flex-col md:flex-row gap-6">
+                <div>
+                  <CalendarComponent
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={setSelectedDate}
+                    disabled={(date) => {
+                      return disabledDates.some(disabledDate => 
+                        format(disabledDate, 'yyyy-MM-dd') === format(date, 'yyyy-MM-dd')
+                      );
+                    }}
+                    className="rounded border"
+                  />
+                </div>
+                
+                <div className="flex-1">
+                  <div className="bg-gray-50 p-4 rounded-lg h-full flex flex-col">
+                    <h4 className="font-medium mb-2">Selected Date Availability</h4>
+                    {selectedDate ? (
+                      <div className="space-y-3">
+                        <p className="text-gray-700">Date: {format(selectedDate, 'MMMM d, yyyy')}</p>
+                        
+                        <div className="flex items-center gap-2">
+                          <span>Status:</span>
+                          {isDateAvailable ? (
+                            <div className="flex items-center text-green-600">
+                              <CheckCircle className="h-5 w-5 mr-1 text-green-600" />
+                              Available
+                            </div>
+                          ) : (
+                            <div className="flex items-center text-red-600">
+                              <XCircle className="h-5 w-5 mr-1 text-red-600" />
+                              Unavailable
+                            </div>
+                          )}
+                        </div>
+                        
+                        <p className="text-sm text-gray-500 mt-4">
+                          Dates marked in the calendar show when the venue is available for booking.
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500">Please select a date on the calendar to check availability.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-2 mt-3 text-xs text-gray-500">
+                <span className="w-3 h-3 inline-block bg-[#8b73f4] rounded-full"></span>
+                <span>Available dates</span>
+                <span className="w-3 h-3 inline-block bg-gray-200 rounded-full ml-3"></span>
+                <span>Unavailable dates</span>
+              </div>
+            </div>
+          )}
 
           {venue.cancellation_policy && (
             <div>

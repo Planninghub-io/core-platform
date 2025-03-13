@@ -11,6 +11,9 @@ export type Venue = {
   amenities: any | null;
   booking_policy: string | null;
   cancellation_policy: string | null;
+  availability?: {
+    dates: string[];
+  };
 };
 
 export type VenueFilterValues = {
@@ -21,6 +24,7 @@ export type VenueFilterValues = {
     max?: number;
   };
   amenities?: string[];
+  availabilityDate?: Date;
 };
 
 export const useVenues = (filters: VenueFilterValues) => {
@@ -47,7 +51,23 @@ export const useVenues = (filters: VenueFilterValues) => {
       throw new Error("Failed to fetch venues");
     }
     
-    return data || [];
+    // If availability date filter is applied, filter venues that are available on that date
+    let filteredData = data || [];
+    
+    if (filters.availabilityDate && filteredData.length > 0) {
+      const dateString = filters.availabilityDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+      
+      filteredData = filteredData.filter(venue => {
+        if (!venue.availability || !Array.isArray(venue.availability.dates)) {
+          return true; // No availability data means we can't filter
+        }
+        
+        // Venue is available if the date is not in the unavailable dates array
+        return !venue.availability.dates.includes(dateString);
+      });
+    }
+    
+    return filteredData;
   };
   
   return useQuery({

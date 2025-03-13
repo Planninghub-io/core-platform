@@ -576,6 +576,7 @@ export type Database = {
       venues: {
         Row: {
           amenities: Json | null
+          availability: Json | null
           booking_policy: string | null
           cancellation_policy: string | null
           capacity: number | null
@@ -591,6 +592,7 @@ export type Database = {
         }
         Insert: {
           amenities?: Json | null
+          availability?: Json | null
           booking_policy?: string | null
           cancellation_policy?: string | null
           capacity?: number | null
@@ -606,6 +608,7 @@ export type Database = {
         }
         Update: {
           amenities?: Json | null
+          availability?: Json | null
           booking_policy?: string | null
           cancellation_policy?: string | null
           capacity?: number | null
@@ -638,6 +641,13 @@ export type Database = {
         Args: {
           _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: boolean
+      }
+      is_venue_available: {
+        Args: {
+          venue_id: string
+          check_date: string
         }
         Returns: boolean
       }

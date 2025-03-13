@@ -2,8 +2,9 @@
 import React from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, ArrowRight } from "lucide-react";
+import { MapPin, Users, ArrowRight, Calendar } from "lucide-react";
 import { Venue } from "@/hooks/useVenues";
+import { Badge } from "@/components/ui/badge";
 
 interface VenueCardProps {
   venue: Venue;
@@ -11,6 +12,14 @@ interface VenueCardProps {
 }
 
 export const VenueCard: React.FC<VenueCardProps> = ({ venue, onViewDetails }) => {
+  // Check if venue has availability data
+  const hasAvailabilityData = venue.availability && Array.isArray(venue.availability.dates);
+  
+  // Calculate availability percentage if data exists
+  const availabilityPercentage = hasAvailabilityData 
+    ? Math.round((1 - (venue.availability.dates.length / 30)) * 100)
+    : null;
+
   return (
     <Card key={venue.id} className="overflow-hidden hover:shadow-lg transition-shadow">
       <CardHeader className="bg-[#f5f3ff] pb-0">
@@ -34,6 +43,12 @@ export const VenueCard: React.FC<VenueCardProps> = ({ venue, onViewDetails }) =>
               </span>
             </div>
           )}
+          {hasAvailabilityData && (
+            <div className="flex items-center text-gray-600">
+              <Calendar className="h-5 w-5 mr-2 text-[#8b73f4]" />
+              <span>Availability: {availabilityPercentage}% available in next 30 days</span>
+            </div>
+          )}
           {venue.amenities && (
             <div className="mt-4">
               <h4 className="font-medium text-sm text-gray-700 mb-1">Amenities</h4>
@@ -54,8 +69,20 @@ export const VenueCard: React.FC<VenueCardProps> = ({ venue, onViewDetails }) =>
         </div>
       </CardContent>
       <CardFooter className="bg-gray-50 border-t flex justify-between">
-        <div className="text-sm text-gray-500">
-          {venue.booking_policy ? "Booking policy available" : ""}
+        <div className="text-sm">
+          {hasAvailabilityData && availabilityPercentage !== null && (
+            <Badge 
+              className={
+                availabilityPercentage > 70 ? "bg-green-100 text-green-800 hover:bg-green-100" :
+                availabilityPercentage > 30 ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" :
+                "bg-red-100 text-red-800 hover:bg-red-100"
+              }
+            >
+              {availabilityPercentage > 70 ? "High Availability" :
+               availabilityPercentage > 30 ? "Medium Availability" :
+               "Low Availability"}
+            </Badge>
+          )}
         </div>
         <Button 
           size="sm" 
