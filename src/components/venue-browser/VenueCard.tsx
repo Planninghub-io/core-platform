@@ -7,9 +7,10 @@ import { Venue } from "@/hooks/useVenues";
 
 interface VenueCardProps {
   venue: Venue;
+  onViewDetails: (venue: Venue) => void;
 }
 
-export const VenueCard: React.FC<VenueCardProps> = ({ venue }) => {
+export const VenueCard: React.FC<VenueCardProps> = ({ venue, onViewDetails }) => {
   return (
     <Card key={venue.id} className="overflow-hidden hover:shadow-lg transition-shadow">
       <CardHeader className="bg-[#f5f3ff] pb-0">
@@ -56,7 +57,11 @@ export const VenueCard: React.FC<VenueCardProps> = ({ venue }) => {
         <div className="text-sm text-gray-500">
           {venue.booking_policy ? "Booking policy available" : ""}
         </div>
-        <Button size="sm" className="bg-[#8b73f4] hover:bg-[#8b73f4]/90">
+        <Button 
+          size="sm" 
+          className="bg-[#8b73f4] hover:bg-[#8b73f4]/90"
+          onClick={() => onViewDetails(venue)}
+        >
           View Details
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>

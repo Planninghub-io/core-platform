@@ -1,20 +1,10 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { VenueCard } from "./VenueCard";
-import { VenueRecommendationsLoading } from "./VenueRecommendationSkeleton";
+import { VenueRecommendationSkeleton } from "./VenueRecommendationSkeleton";
 import { NoRecommendations } from "./NoRecommendations";
-
-interface Venue {
-  id: string;
-  name: string;
-  capacity: number | null;
-  indoor_space_sqft: number | null;
-  outdoor_space_sqft: number | null;
-  amenities: any | null;
-  booking_policy: string | null;
-  cancellation_policy: string | null;
-  source?: 'database' | 'web';
-}
+import { VenueDetails } from "../venue-browser/VenueDetails";
+import { Venue } from "@/hooks/useVenues";
 
 interface VenueRecommendation {
   venueId: string;
@@ -33,28 +23,51 @@ interface VenueRecommendationsListProps {
 export const VenueRecommendationsList: React.FC<VenueRecommendationsListProps> = ({
   recommendations,
   isLoading,
-  searchPerformed
+  searchPerformed,
 }) => {
+  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  
+  const handleViewDetails = (venue: Venue) => {
+    setSelectedVenue(venue);
+    setDetailsOpen(true);
+  };
+  
+  const handleCloseDetails = () => {
+    setDetailsOpen(false);
+  };
+  
   if (isLoading) {
-    return <VenueRecommendationsLoading />;
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+        {[1, 2, 3].map((i) => (
+          <VenueRecommendationSkeleton key={i} />
+        ))}
+      </div>
+    );
   }
 
   if (searchPerformed && recommendations.length === 0) {
     return <NoRecommendations />;
   }
 
-  if (recommendations.length === 0) {
-    return null;
-  }
-
   return (
-    <div className="space-y-6">
-      <h3 className="text-xl font-semibold">Recommended Venues</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {recommendations.map((rec, index) => (
-          <VenueCard key={index} recommendation={rec} />
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+        {recommendations.map((recommendation) => (
+          <VenueCard 
+            key={recommendation.venueId} 
+            recommendation={recommendation} 
+            onViewDetails={handleViewDetails}
+          />
         ))}
       </div>
-    </div>
+      
+      <VenueDetails 
+        venue={selectedVenue} 
+        isOpen={detailsOpen} 
+        onClose={handleCloseDetails} 
+      />
+    </>
   );
 };

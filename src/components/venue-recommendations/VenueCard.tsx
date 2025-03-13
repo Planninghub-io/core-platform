@@ -28,11 +28,18 @@ interface VenueRecommendation {
 
 interface VenueCardProps {
   recommendation: VenueRecommendation;
+  onViewDetails: (venue: Venue) => void;
 }
 
-export const VenueCard: React.FC<VenueCardProps> = ({ recommendation }) => {
+export const VenueCard: React.FC<VenueCardProps> = ({ recommendation, onViewDetails }) => {
   const { venue, matchScore, reason, specialConsiderations } = recommendation;
   const isFromWeb = venue?.source === 'web';
+
+  const handleViewDetails = () => {
+    if (venue) {
+      onViewDetails(venue);
+    }
+  };
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -74,7 +81,12 @@ export const VenueCard: React.FC<VenueCardProps> = ({ recommendation }) => {
         </div>
       </CardContent>
       <CardFooter className="bg-gray-50 border-t">
-        <Button size="sm" className="bg-[#8b73f4] hover:bg-[#8b73f4]/90 w-full">
+        <Button 
+          size="sm" 
+          className="bg-[#8b73f4] hover:bg-[#8b73f4]/90 w-full"
+          onClick={handleViewDetails}
+          disabled={!venue}
+        >
           View Details
         </Button>
       </CardFooter>
