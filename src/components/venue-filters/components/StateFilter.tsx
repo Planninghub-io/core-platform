@@ -6,14 +6,14 @@ import { STATES } from "../constants";
 
 interface StateFilterProps {
   value: string;
-  onChange: (value: string) => void;
+  onValueChange: (value: string) => void;
 }
 
-export const StateFilter: React.FC<StateFilterProps> = ({ value, onChange }) => {
+export const StateFilter: React.FC<StateFilterProps> = ({ value, onValueChange }) => {
   return (
     <div>
       <Label htmlFor="state" className="mb-1.5 block">State</Label>
-      <Select value={value} onValueChange={onChange}>
+      <Select value={value} onValueChange={onValueChange}>
         <SelectTrigger id="state">
           <SelectValue placeholder="Select state" />
         </SelectTrigger>

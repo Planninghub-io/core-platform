@@ -51,23 +51,41 @@ export const useVenues = (filters: VenueFilterValues) => {
       throw new Error("Failed to fetch venues");
     }
     
-    // If availability date filter is applied, filter venues that are available on that date
-    let filteredData = data || [];
+    // Process the venues to ensure they have the correct structure
+    const processedVenues: Venue[] = (data || []).map(venue => {
+      // Process availability data to ensure it has the expected structure
+      let availabilityDates: string[] = [];
+      
+      if (venue.availability && typeof venue.availability === 'object') {
+        // Try to safely extract dates from the availability object
+        const availObj = venue.availability as any;
+        if (availObj.dates && Array.isArray(availObj.dates)) {
+          availabilityDates = availObj.dates;
+        }
+      }
+      
+      // Return a properly structured venue object
+      return {
+        ...venue,
+        availability: {
+          dates: availabilityDates
+        }
+      };
+    });
     
-    if (filters.availabilityDate && filteredData.length > 0) {
+    // If availability date filter is applied, filter venues that are available on that date
+    let filteredVenues = processedVenues;
+    
+    if (filters.availabilityDate && filteredVenues.length > 0) {
       const dateString = filters.availabilityDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
       
-      filteredData = filteredData.filter(venue => {
-        if (!venue.availability || !Array.isArray(venue.availability.dates)) {
-          return true; // No availability data means we can't filter
-        }
-        
+      filteredVenues = filteredVenues.filter(venue => {
         // Venue is available if the date is not in the unavailable dates array
-        return !venue.availability.dates.includes(dateString);
+        return !venue.availability?.dates.includes(dateString);
       });
     }
     
-    return filteredData;
+    return filteredVenues;
   };
   
   return useQuery({

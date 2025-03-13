@@ -6,7 +6,7 @@ import { Users } from "lucide-react";
 
 interface CapacityFilterProps {
   value: string;
-  onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+  onChange: (value: string) => void;
 }
 
 export const CapacityFilter: React.FC<CapacityFilterProps> = ({ value, onChange }) => {
@@ -20,7 +20,7 @@ export const CapacityFilter: React.FC<CapacityFilterProps> = ({ value, onChange 
           type="number"
           placeholder="Min capacity"
           value={value}
-          onChange={onChange}
+          onChange={(e) => onChange(e.target.value)}
           className="pl-9"
         />
       </div>

@@ -1,3 +1,4 @@
+
 import React, { useState, useCallback } from "react";
 import { CityFilter } from "./components/CityFilter";
 import { StateFilter } from "./components/StateFilter";
@@ -18,20 +19,22 @@ const VenueFilters = ({ onFilterChange }: VenueFiltersProps) => {
   const [maxCapacity, setMaxCapacity] = useState<number | undefined>(undefined);
   const [availabilityDate, setAvailabilityDate] = useState<Date | undefined>(undefined);
   
-  const handleCityChange = useCallback((city: string) => {
-    setCity(city);
+  const handleCityChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setCity(e.target.value);
   }, []);
 
-  const handleStateChange = useCallback((state: string) => {
-    setState(state);
+  const handleStateChange = useCallback((value: string) => {
+    setState(value);
   }, []);
 
-  const handleMinCapacityChange = useCallback((min: number) => {
-    setMinCapacity(min);
+  const handleMinCapacityChange = useCallback((value: string) => {
+    const minValue = value ? parseInt(value, 10) : undefined;
+    setMinCapacity(minValue);
   }, []);
 
-  const handleMaxCapacityChange = useCallback((max: number) => {
-    setMaxCapacity(max);
+  const handleMaxCapacityChange = useCallback((value: string) => {
+    const maxValue = value ? parseInt(value, 10) : undefined;
+    setMaxCapacity(maxValue);
   }, []);
 
   const handleResetFilters = useCallback(() => {
@@ -90,13 +93,11 @@ const VenueFilters = ({ onFilterChange }: VenueFiltersProps) => {
       <FiltersHeader onReset={handleResetFilters} />
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
-        <CityFilter city={city} onChange={handleCityChange} />
-        <StateFilter state={state} onChange={handleStateChange} />
+        <CityFilter value={city} onChange={handleCityChange} />
+        <StateFilter value={state} onValueChange={handleStateChange} />
         <CapacityFilter 
-          minCapacity={minCapacity} 
-          maxCapacity={maxCapacity} 
-          onMinChange={handleMinCapacityChange}
-          onMaxChange={handleMaxCapacityChange}
+          value={minCapacity?.toString() || ''} 
+          onChange={handleMinCapacityChange}
         />
         <AvailabilityFilter 
           availabilityDate={availabilityDate}
