@@ -26,7 +26,7 @@ export const EventActionButtons = ({
   };
 
   const handleTicketingClick = () => {
-    navigate(`/event/${eventId}/ticketing`);
+    navigate(`/event/${eventId}/tickets`);
   };
 
   return (
