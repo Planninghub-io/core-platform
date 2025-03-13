@@ -9,13 +9,12 @@ interface FiltersFooterProps {
 
 export const FiltersFooter: React.FC<FiltersFooterProps> = ({ onApply }) => {
   return (
-    <div className="mt-4">
-      <Button 
-        onClick={onApply}
-        className="bg-[#8b73f4] hover:bg-[#8b73f4]/90 w-full"
-      >
-        Search
-      </Button>
-    </div>
+    <Button 
+      onClick={onApply}
+      className="bg-[#8b73f4] hover:bg-[#8b73f4]/90 h-10 px-4"
+    >
+      <Search className="h-4 w-4 mr-2" />
+      Search
+    </Button>
   );
 };

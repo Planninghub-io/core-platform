@@ -12,8 +12,8 @@ interface CityFilterProps {
 export const CityFilter: React.FC<CityFilterProps> = ({ value, onChange }) => {
   return (
     <div>
-      <Label htmlFor="city">City</Label>
-      <div className="relative mt-1">
+      <Label htmlFor="city" className="mb-1.5 block">City</Label>
+      <div className="relative">
         <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500" />
         <Input
           id="city"

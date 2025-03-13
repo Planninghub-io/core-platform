@@ -23,7 +23,7 @@ const Venues = () => {
 
   return (
     <>
-      <Tabs defaultValue="browse" className="mb-6">
+      <Tabs defaultValue="browse" className="mb-4">
         <TabsList>
           <TabsTrigger value="browse">Venues</TabsTrigger>
           <TabsTrigger value="recommendations" className="flex items-center gap-2">

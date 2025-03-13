@@ -12,9 +12,9 @@ interface StateFilterProps {
 export const StateFilter: React.FC<StateFilterProps> = ({ value, onChange }) => {
   return (
     <div>
-      <Label htmlFor="state">State</Label>
+      <Label htmlFor="state" className="mb-1.5 block">State</Label>
       <Select value={value} onValueChange={onChange}>
-        <SelectTrigger id="state" className="mt-1">
+        <SelectTrigger id="state">
           <SelectValue placeholder="Select state" />
         </SelectTrigger>
         <SelectContent>

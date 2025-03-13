@@ -39,26 +39,32 @@ const VenueFilters: React.FC<VenueFiltersProps> = ({ onFilterChange }) => {
   
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 mb-6 border">
-      <FiltersHeader />
-      
-      <div className="grid grid-cols-1 gap-4">
-        <CityFilter 
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-        />
+      <div className="flex flex-col md:flex-row md:items-end gap-4">
+        <div className="flex-1">
+          <CityFilter 
+            value={city}
+            onChange={(e) => setCity(e.target.value)}
+          />
+        </div>
         
-        <StateFilter
-          value={state}
-          onChange={setState}
-        />
+        <div className="flex-1">
+          <StateFilter
+            value={state}
+            onChange={setState}
+          />
+        </div>
         
-        <CapacityFilter
-          value={minCapacity}
-          onChange={(e) => setMinCapacity(e.target.value)}
-        />
+        <div className="flex-1">
+          <CapacityFilter
+            value={minCapacity}
+            onChange={(e) => setMinCapacity(e.target.value)}
+          />
+        </div>
+        
+        <div className="mt-0">
+          <FiltersFooter onApply={handleApplyFilters} />
+        </div>
       </div>
-      
-      <FiltersFooter onApply={handleApplyFilters} />
     </div>
   );
 };
