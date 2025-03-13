@@ -3,3 +3,6 @@ project_id = "asexlqsjachwhabzvzwk"
 
 [functions.generate-invitation]
 verify_jwt = true
+
+[functions.scrape-venues]
+verify_jwt = true
