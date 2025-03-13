@@ -1,11 +1,12 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, DollarSign, Compass, Sparkles } from "lucide-react";
+import { ArrowRight, DollarSign, Compass, Sparkles, RefreshCw } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { toast } from "sonner";
 
 type VendorService = {
   id: string;
@@ -41,10 +42,51 @@ const formatPrice = (price: number | null) => {
 };
 
 const Vendors = () => {
-  const { data: vendorServices, isLoading, error } = useQuery({
+  const [isScrapingVendors, setIsScrapingVendors] = useState(false);
+  const { data: vendorServices, isLoading, error, refetch } = useQuery({
     queryKey: ["vendor_services"],
     queryFn: fetchVendorServices,
   });
+
+  const handleScrapeVendors = async () => {
+    setIsScrapingVendors(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("You need to be logged in to use this feature");
+        return;
+      }
+      
+      const { data, error } = await supabase.functions.invoke('scrape-vendors', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error("Error scraping vendors:", error);
+        toast.error("Failed to scrape vendors. Please try again later.");
+        return;
+      }
+
+      // Refetch vendor data to show the newly added vendors
+      await refetch();
+      
+      if (data.vendors && data.vendors.length > 0) {
+        toast.success(`Successfully added ${data.vendors.length} new vendors from Austin`);
+      } else if (data.message.includes('No new vendors')) {
+        toast.info("No new vendors found. All vendors are already in the database.");
+      } else {
+        toast.success(data.message);
+      }
+    } catch (err) {
+      console.error("Error in scrape vendors process:", err);
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsScrapingVendors(false);
+    }
+  };
 
   return (
     <>
@@ -54,7 +96,7 @@ const Vendors = () => {
             <Compass className="h-4 w-4" />
             Browse Vendors
           </TabsTrigger>
-          <TabsTrigger value="recommendations" className="flex items-center gap-2">
+          <TabsTrigger value="ai-agent" className="flex items-center gap-2">
             <Sparkles className="h-4 w-4" />
             Vendor AI Agent
           </TabsTrigger>
@@ -119,12 +161,45 @@ const Vendors = () => {
             ))}
           </div>
         </TabsContent>
-        <TabsContent value="recommendations" className="pt-4">
-          <div className="bg-gray-50 rounded-xl p-8 text-center">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Vendor recommendations coming soon</h3>
-            <p className="text-gray-600">
-              We're working on AI-powered vendor recommendations to help you find the perfect services for your event.
-            </p>
+        <TabsContent value="ai-agent" className="pt-4">
+          <div className="bg-gradient-to-r from-violet-50/80 to-fuchsia-50/80 rounded-xl p-8 border border-purple-100">
+            <div className="text-center mb-8">
+              <h3 className="text-xl font-medium text-gray-900 mb-3">Vendor AI Discovery Agent</h3>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                Our AI agent can search the web for event vendors in Austin and automatically add them to our database.
+                This helps keep our marketplace up-to-date with the latest available vendors.
+              </p>
+            </div>
+            
+            <div className="flex flex-col items-center space-y-6">
+              <div className="bg-white p-6 rounded-lg shadow-sm border border-purple-100 w-full max-w-md">
+                <h4 className="font-medium text-lg mb-4 text-gray-800">Scrape Austin Vendors</h4>
+                <p className="text-gray-600 mb-6">
+                  Click the button below to scan for event vendors in Austin and add them to our database.
+                </p>
+                <Button 
+                  onClick={handleScrapeVendors}
+                  disabled={isScrapingVendors}
+                  className="w-full bg-[#8b73f4] hover:bg-[#8b73f4]/90 text-white"
+                >
+                  {isScrapingVendors ? (
+                    <>
+                      <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      Scanning for Vendors...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      Discover Austin Vendors
+                    </>
+                  )}
+                </Button>
+              </div>
+              
+              <div className="text-sm text-gray-500 italic max-w-md text-center">
+                Note: This process uses an AI agent to search for vendors. Results are for demonstration purposes.
+              </div>
+            </div>
           </div>
         </TabsContent>
       </Tabs>

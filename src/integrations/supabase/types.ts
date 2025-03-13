@@ -579,10 +579,12 @@ export type Database = {
           booking_policy: string | null
           cancellation_policy: string | null
           capacity: number | null
+          city: string | null
           company_id: string
           created_at: string
           id: string
           indoor_space_sqft: number | null
+          location: string | null
           name: string
           outdoor_space_sqft: number | null
           updated_at: string
@@ -592,10 +594,12 @@ export type Database = {
           booking_policy?: string | null
           cancellation_policy?: string | null
           capacity?: number | null
+          city?: string | null
           company_id: string
           created_at?: string
           id?: string
           indoor_space_sqft?: number | null
+          location?: string | null
           name: string
           outdoor_space_sqft?: number | null
           updated_at?: string
@@ -605,10 +609,12 @@ export type Database = {
           booking_policy?: string | null
           cancellation_policy?: string | null
           capacity?: number | null
+          city?: string | null
           company_id?: string
           created_at?: string
           id?: string
           indoor_space_sqft?: number | null
+          location?: string | null
           name?: string
           outdoor_space_sqft?: number | null
           updated_at?: string
