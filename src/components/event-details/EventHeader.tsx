@@ -114,7 +114,9 @@ export const EventHeader = ({
           <Button 
             variant={activeView === 'dashboard' ? "default" : "outline"} 
             onClick={() => handleActionWithCheck('dashboard')}
-            className={activeView === 'dashboard' ? "bg-[#8B5CF6] hover:bg-[#7C3AED]" : "text-[#8B5CF6] border-[#8B5CF6] hover:bg-purple-50"}
+            className={activeView === 'dashboard' 
+              ? "bg-[#8B5CF6] hover:bg-[#7C3AED]" 
+              : "text-[#8B5CF6] border-[#8B5CF6] hover:bg-purple-50"}
           >
             <LayoutDashboard className="mr-2 h-4 w-4" />
             Dashboard
@@ -122,7 +124,9 @@ export const EventHeader = ({
           <Button 
             variant={activeView === 'ai' ? "default" : "outline"} 
             onClick={() => handleActionWithCheck('ai')}
-            className={activeView === 'ai' ? "bg-[#8B5CF6] hover:bg-[#7C3AED]" : "text-[#8B5CF6] border-[#8B5CF6] hover:bg-purple-50"}
+            className={activeView === 'ai' 
+              ? "bg-[#8B5CF6] hover:bg-[#7C3AED]" 
+              : "text-[#8B5CF6] border-[#8B5CF6] hover:bg-purple-50"}
           >
             <Bot className="mr-2 h-4 w-4" />
             AI Assistant
@@ -153,7 +157,7 @@ export const EventHeader = ({
           <Button 
             variant={isEditing ? "default" : "outline"}
             onClick={onEditToggle}
-            className={isEditing 
+            className={activeView === 'details' && isEditing
               ? "bg-[#8B5CF6] hover:bg-[#7C3AED] text-white" 
               : "text-[#8B5CF6] border-[#8B5CF6] hover:bg-purple-50"}
           >
