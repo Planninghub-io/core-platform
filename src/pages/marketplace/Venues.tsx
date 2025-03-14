@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VenueRecommendations } from "@/components/venue-recommendations/VenueRecommendations";
@@ -13,9 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 const Venues = () => {
   const { toast } = useToast();
-  const [filters, setFilters] = useState<VenueFilterValues>({
-    state: "Texas" // Default to Texas to show Austin venues
-  });
+  const [filters, setFilters] = useState<VenueFilterValues>({});
   const [isScraping, setIsScraping] = useState(false);
   const [activeTab, setActiveTab] = useState("browse");
   

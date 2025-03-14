@@ -18,7 +18,6 @@ export type Venue = {
 
 export type VenueFilterValues = {
   city?: string;
-  state?: string;
   capacity?: {
     min?: number;
     max?: number;
@@ -41,8 +40,6 @@ export const useVenues = (filters: VenueFilterValues) => {
     if (filters.capacity?.min) {
       query = query.gte('capacity', filters.capacity.min);
     }
-    
-    // In the future, we could add filtering by state if that data was in the venues table
     
     const { data, error } = await query;
     
