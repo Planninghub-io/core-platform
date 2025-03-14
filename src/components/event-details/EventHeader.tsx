@@ -153,7 +153,9 @@ export const EventHeader = ({
           <Button 
             variant={isEditing ? "default" : "outline"}
             onClick={onEditToggle}
-            className={isEditing ? "bg-amber-500 hover:bg-amber-600" : "bg-[#8B5CF6] text-white hover:bg-[#7C3AED]"}
+            className={isEditing 
+              ? "bg-[#8B5CF6] hover:bg-[#7C3AED] text-white" 
+              : "text-[#8B5CF6] border-[#8B5CF6] hover:bg-purple-50"}
           >
             <Pencil className="mr-2 h-4 w-4" />
             {isEditing ? "Done" : "Edit"}
