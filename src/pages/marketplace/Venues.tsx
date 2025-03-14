@@ -92,7 +92,9 @@ const Venues = () => {
       </div>
       
       <TabsContent value="browse" className="pt-4">
-        <VenueFilters onFilterChange={handleFilterChange} />
+        <div className="bg-gray-50 p-4 rounded-md mb-6">
+          <VenueFilters onFilterChange={handleFilterChange} />
+        </div>
         <VenuesList venues={venues} isLoading={isLoading} error={error} />
       </TabsContent>
       <TabsContent value="recommendations" className="pt-4">

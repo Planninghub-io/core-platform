@@ -68,22 +68,20 @@ export const VenueCard: React.FC<VenueCardProps> = ({ venue, onViewDetails }) =>
           )}
         </div>
       </CardContent>
-      <CardFooter className="bg-gray-50 border-t flex justify-between">
-        <div className="text-sm">
-          {hasAvailabilityData && availabilityPercentage !== null && (
-            <Badge 
-              className={
-                availabilityPercentage > 70 ? "bg-green-100 text-green-800 hover:bg-green-100" :
-                availabilityPercentage > 30 ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" :
-                "bg-red-100 text-red-800 hover:bg-red-100"
-              }
-            >
-              {availabilityPercentage > 70 ? "High Availability" :
-               availabilityPercentage > 30 ? "Medium Availability" :
-               "Low Availability"}
-            </Badge>
-          )}
-        </div>
+      <CardFooter className="bg-gray-50 border-t flex justify-center items-center gap-4">
+        {hasAvailabilityData && availabilityPercentage !== null && (
+          <Badge 
+            className={
+              availabilityPercentage > 70 ? "bg-green-100 text-green-800 hover:bg-green-100" :
+              availabilityPercentage > 30 ? "bg-yellow-100 text-yellow-800 hover:bg-yellow-100" :
+              "bg-red-100 text-red-800 hover:bg-red-100"
+            }
+          >
+            {availabilityPercentage > 70 ? "High Availability" :
+             availabilityPercentage > 30 ? "Medium Availability" :
+             "Low Availability"}
+          </Badge>
+        )}
         <Button 
           size="sm" 
           className="bg-[#8b73f4] hover:bg-[#8b73f4]/90"

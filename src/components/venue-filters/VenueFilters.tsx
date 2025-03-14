@@ -1,9 +1,7 @@
 
 import React, { useState, useCallback } from "react";
-import { CityFilter } from "./components/CityFilter";
-import { StateFilter } from "./components/StateFilter";
+import { LocationFilter } from "./components/LocationFilter";
 import { CapacityFilter } from "./components/CapacityFilter";
-import { FiltersHeader } from "./components/FiltersHeader";
 import { FiltersFooter } from "./components/FiltersFooter";
 import { AvailabilityFilter } from "./components/AvailabilityFilter";
 import { VenueFilterValues } from "@/hooks/useVenues";
@@ -19,8 +17,8 @@ const VenueFilters = ({ onFilterChange }: VenueFiltersProps) => {
   const [maxCapacity, setMaxCapacity] = useState<number | undefined>(undefined);
   const [availabilityDate, setAvailabilityDate] = useState<Date | undefined>(undefined);
   
-  const handleCityChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setCity(e.target.value);
+  const handleCityChange = useCallback((value: string) => {
+    setCity(value);
   }, []);
 
   const handleStateChange = useCallback((value: string) => {
@@ -90,11 +88,13 @@ const VenueFilters = ({ onFilterChange }: VenueFiltersProps) => {
   
   return (
     <div className="mb-6">
-      <FiltersHeader onReset={handleResetFilters} />
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
-        <CityFilter value={city} onChange={handleCityChange} />
-        <StateFilter value={state} onValueChange={handleStateChange} />
+      <div className="flex flex-wrap gap-4 items-center">
+        <LocationFilter 
+          cityValue={city} 
+          stateValue={state} 
+          onCityChange={handleCityChange}
+          onStateChange={handleStateChange}
+        />
         <CapacityFilter 
           value={minCapacity?.toString() || ''} 
           onChange={handleMinCapacityChange}
@@ -104,9 +104,21 @@ const VenueFilters = ({ onFilterChange }: VenueFiltersProps) => {
           onChange={handleAvailabilityChange}
           onClear={handleAvailabilityClear}
         />
+        <div className="ml-auto">
+          <button 
+            onClick={handleResetFilters}
+            className="text-sm text-gray-500 mr-2 hover:text-gray-700"
+          >
+            Reset
+          </button>
+          <button
+            onClick={handleApplyFilters}
+            className="bg-[#8b73f4] hover:bg-[#8b73f4]/90 text-white px-4 py-2 rounded-md text-sm"
+          >
+            Apply Filters
+          </button>
+        </div>
       </div>
-      
-      <FiltersFooter onApply={handleApplyFilters} />
     </div>
   );
 };
