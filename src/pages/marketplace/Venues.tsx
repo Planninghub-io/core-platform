@@ -17,6 +17,7 @@ const Venues = () => {
     state: "Texas" // Default to Texas to show Austin venues
   });
   const [isScraping, setIsScraping] = useState(false);
+  const [activeTab, setActiveTab] = useState("browse");
   
   const { data: venues, isLoading, error, refetch } = useVenues(filters);
   
@@ -63,18 +64,20 @@ const Venues = () => {
     }
   };
 
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+  };
+
   return (
-    <>
+    <Tabs value={activeTab} onValueChange={handleTabChange}>
       <div className="flex justify-between items-center mb-4">
-        <Tabs defaultValue="browse" className="flex-grow">
-          <TabsList>
-            <TabsTrigger value="browse">Venues</TabsTrigger>
-            <TabsTrigger value="recommendations" className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" />
-              AI Recommendations
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        <TabsList>
+          <TabsTrigger value="browse">Venues</TabsTrigger>
+          <TabsTrigger value="recommendations" className="flex items-center gap-2">
+            <Sparkles className="h-4 w-4" />
+            AI Recommendations
+          </TabsTrigger>
+        </TabsList>
         
         <Button 
           variant="outline" 
@@ -95,7 +98,7 @@ const Venues = () => {
       <TabsContent value="recommendations" className="pt-4">
         <VenueRecommendations />
       </TabsContent>
-    </>
+    </Tabs>
   );
 };
 
