@@ -8,7 +8,6 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -18,7 +17,8 @@ interface InvitationCardProps {
 }
 
 export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isRecipientsOpen, setIsRecipientsOpen] = useState(false);
+  const [isStatsOpen, setIsStatsOpen] = useState(true);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const isMobile = useIsMobile();
 
@@ -103,39 +103,52 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
         </div>
       </div>
 
-      {/* Invitation Preview - Fixed height, no expand/collapse */}
-      <div className={`border rounded-lg overflow-hidden shadow-sm ${isMobile ? 'h-[150px]' : 'h-[200px]'}`}>
+      {/* Full Invitation Preview - No height restriction */}
+      <div className="border rounded-lg overflow-hidden shadow-sm p-4">
         <div 
-          className="overflow-hidden h-full"
+          className="invitation-content"
           dangerouslySetInnerHTML={{ __html: invitation.invitation_templates.template_html }} 
         />
       </div>
 
+      {/* RSVP Statistics Section - Collapsible */}
       <div className="border-t pt-4">
-        <h4 className="font-medium mb-3">RSVP Statistics</h4>
-        <div className="grid grid-cols-3 gap-2 md:gap-4">
-          <div className="bg-green-50 rounded-lg p-2 md:p-4 text-center">
-            <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-semibold text-green-600`}>{rsvpStats.accepted}</p>
-            <p className="text-sm text-green-700">Accepted</p>
+        <Collapsible open={isStatsOpen} onOpenChange={setIsStatsOpen}>
+          <div className="flex items-center justify-between">
+            <h4 className="font-medium">RSVP Statistics</h4>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <ChevronDown className={`h-4 w-4 transition-transform ${isStatsOpen ? 'transform rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
           </div>
-          <div className="bg-red-50 rounded-lg p-2 md:p-4 text-center">
-            <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-semibold text-red-600`}>{rsvpStats.declined}</p>
-            <p className="text-sm text-red-700">Declined</p>
-          </div>
-          <div className="bg-yellow-50 rounded-lg p-2 md:p-4 text-center">
-            <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-semibold text-yellow-600`}>{rsvpStats.maybe}</p>
-            <p className="text-sm text-yellow-700">Maybe</p>
-          </div>
-        </div>
+          <CollapsibleContent className="mt-2">
+            <div className="grid grid-cols-3 gap-2 md:gap-4">
+              <div className="bg-green-50 rounded-lg p-2 md:p-4 text-center">
+                <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-semibold text-green-600`}>{rsvpStats.accepted}</p>
+                <p className="text-sm text-green-700">Accepted</p>
+              </div>
+              <div className="bg-red-50 rounded-lg p-2 md:p-4 text-center">
+                <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-semibold text-red-600`}>{rsvpStats.declined}</p>
+                <p className="text-sm text-red-700">Declined</p>
+              </div>
+              <div className="bg-yellow-50 rounded-lg p-2 md:p-4 text-center">
+                <p className={`${isMobile ? 'text-xl' : 'text-2xl'} font-semibold text-yellow-600`}>{rsvpStats.maybe}</p>
+                <p className="text-sm text-yellow-700">Maybe</p>
+              </div>
+            </div>
+          </CollapsibleContent>
+        </Collapsible>
       </div>
 
+      {/* Recipients Section - Already Collapsible */}
       <div className="border-t pt-4">
-        <Collapsible open={isOpen} onOpenChange={setIsOpen}>
+        <Collapsible open={isRecipientsOpen} onOpenChange={setIsRecipientsOpen}>
           <div className="flex items-center justify-between">
             <h4 className="font-medium">Recipients</h4>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm">
-                <ChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'transform rotate-180' : ''}`} />
+                <ChevronDown className={`h-4 w-4 transition-transform ${isRecipientsOpen ? 'transform rotate-180' : ''}`} />
               </Button>
             </CollapsibleTrigger>
           </div>
