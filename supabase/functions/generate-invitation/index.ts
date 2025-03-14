@@ -78,13 +78,6 @@ serve(async (req) => {
         headerColor = '#ffffff';
         fontFamily = "'Arial Black', sans-serif";
         borderStyle = 'border: 2px solid #4fc3f7;';
-      } else if (themeLower.includes('vader') || themeLower.includes('star wars')) {
-        backgroundColor = '#000000';
-        gradientEnd = '#222222';
-        fontColor = '#ffe81f'; // Star Wars yellow
-        headerColor = '#ff0000'; // Red lightsaber
-        fontFamily = "'Impact', sans-serif";
-        borderStyle = 'border: 3px solid #444444;';
       }
     }
 

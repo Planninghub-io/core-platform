@@ -1,9 +1,8 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { InvitationThemeDialog } from "./InvitationThemeDialog";
-import { supabase } from "@/integrations/supabase/client";
 
 interface EventActionButtonsProps {
   eventId: string;
@@ -37,7 +36,7 @@ export const EventActionButtons = ({
           onClick={() => navigate(`/event/${eventId}/invitations`)}
           className="flex-1"
         >
-          View Invite
+          View Invitation
         </Button>
       ) : (
         <Button 
@@ -45,7 +44,7 @@ export const EventActionButtons = ({
           onClick={handleCreateInvitation}
           className="flex-1"
         >
-          Create Invite
+          Create Invitation
         </Button>
       )}
       <Button 

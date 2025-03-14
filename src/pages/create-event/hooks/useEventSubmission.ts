@@ -5,13 +5,11 @@ import { useNavigate } from "react-router-dom";
 import { EventFormData } from "../types";
 import { supabase } from "@/integrations/supabase/client";
 import { combineDateTime } from "../utils/dateTimeUtils";
-import { useInvitationCreation } from "./useInvitationCreation";
 import { validateRequiredFields } from "../utils/formValidation";
 
 export const useEventSubmission = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { createDefaultInvitation } = useInvitationCreation();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (formData: EventFormData, e?: React.FormEvent) => {
@@ -81,19 +79,6 @@ export const useEventSubmission = () => {
         .select();
 
       if (error) throw error;
-
-      if (data && data.length > 0) {
-        // Create a default invitation for this event
-        await createDefaultInvitation(
-          data[0].id,
-          formData.title,
-          formData.description,
-          startDateTime,
-          formData.location,
-          formData.budget,
-          formData.budgetCurrency
-        );
-      }
 
       toast({
         title: "Success",
