@@ -12,6 +12,9 @@ interface EventDetailsLayoutProps {
   onEditToggle: () => void;
   onViewModeChange: (mode: 'details' | 'ai' | 'dashboard') => void;
   onFieldChange: (field: string, value: string | number) => void;
+  hasUnsavedChanges?: boolean;
+  onSaveChanges?: () => void;
+  onCancelChanges?: () => void;
 }
 
 export const EventDetailsLayout: React.FC<EventDetailsLayoutProps> = ({
@@ -21,7 +24,10 @@ export const EventDetailsLayout: React.FC<EventDetailsLayoutProps> = ({
   onBack,
   onEditToggle,
   onViewModeChange,
-  onFieldChange
+  onFieldChange,
+  hasUnsavedChanges = false,
+  onSaveChanges = () => {},
+  onCancelChanges = () => {}
 }) => {
   return (
     <div className="container py-8">
@@ -35,6 +41,9 @@ export const EventDetailsLayout: React.FC<EventDetailsLayoutProps> = ({
         status={event.status}
         event={event}
         activeView={viewMode}
+        hasUnsavedChanges={hasUnsavedChanges}
+        onSaveChanges={onSaveChanges}
+        onCancelChanges={onCancelChanges}
       />
       
       {/* Added margin-top to create more separation */}

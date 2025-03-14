@@ -56,7 +56,13 @@ export const useEventData = (eventId: string) => {
     }
   };
 
-  const saveChanges = debounce(async (updates: Partial<Event>) => {
+  // This version just updates local state without saving to DB
+  const handleInputChange = (field: string, value: string | number) => {
+    setEvent(prev => prev ? ({ ...prev, [field]: value }) : null);
+  };
+
+  // Non-debounced version for immediate saves
+  const saveChanges = async (updates: Partial<Event>) => {
     try {
       const { error } = await supabase
         .from('events')
@@ -64,10 +70,7 @@ export const useEventData = (eventId: string) => {
         .eq('id', eventId);
 
       if (error) throw error;
-
-      toast({
-        description: "Changes saved successfully",
-      });
+      return true;
     } catch (error) {
       console.error('Error saving changes:', error);
       toast({
@@ -75,13 +78,23 @@ export const useEventData = (eventId: string) => {
         description: "Failed to save changes. Please try again.",
         variant: "destructive",
       });
+      return false;
+    }
+  };
+
+  // Debounced version for auto-save during typing
+  const debouncedSave = debounce(async (updates: Partial<Event>) => {
+    try {
+      const { error } = await supabase
+        .from('events')
+        .update(updates)
+        .eq('id', eventId);
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error auto-saving changes:', error);
     }
   }, 1000);
-
-  const handleInputChange = (field: string, value: string | number) => {
-    setEvent(prev => prev ? ({ ...prev, [field]: value }) : null);
-    saveChanges({ [field]: value });
-  };
 
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
@@ -115,6 +128,8 @@ export const useEventData = (eventId: string) => {
     event,
     loading,
     handleInputChange,
+    saveChanges,
+    debouncedSave,
     handleDelete
   };
 };
