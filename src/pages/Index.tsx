@@ -16,7 +16,7 @@ const Index = () => {
     <SidebarProvider>
       <div className="flex min-h-screen bg-gray-50">
         <SideNav />
-        <main className="flex-1 p-6">
+        <main className="flex-1">
           <div className="max-w-7xl mx-auto">
             <EventGeneratorSection onCreateManualEvent={handleCreateEventClick} />
           </div>
