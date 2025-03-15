@@ -75,7 +75,7 @@ export async function processRequest(prompt: string, additionalInfo: any): Promi
     
     // Combine prompt with additional info if provided
     let fullPrompt = prompt;
-    if (additionalInfo) {
+    if (additionalInfo && Object.keys(additionalInfo).length > 0) {
       const additionalDetails = Object.entries(additionalInfo)
         .map(([key, value]) => `${key}: ${value}`)
         .join(", ");
@@ -84,6 +84,17 @@ export async function processRequest(prompt: string, additionalInfo: any): Promi
 
     // Extract event details from prompt
     const extractedEvent = extractEventDetails(fullPrompt);
+    
+    // Add any manually provided fields from additionalInfo
+    if (additionalInfo) {
+      if (additionalInfo.date && !extractedEvent.date) {
+        extractedEvent.date = additionalInfo.date;
+      }
+      if (additionalInfo.location && !extractedEvent.location) {
+        extractedEvent.location = additionalInfo.location;
+      }
+    }
+    
     console.log('Extracted event data:', extractedEvent);
 
     // Check if we have enough extracted information

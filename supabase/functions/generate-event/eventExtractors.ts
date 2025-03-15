@@ -38,18 +38,39 @@ export function extractTitle(prompt: string): string {
 }
 
 /**
+ * Extract date and time from prompt
+ */
+export function extractDateTime(prompt: string): string | null {
+  const dateTimeRegex = /(?:on|at)\s+((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}(?:\s+at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?)/i;
+  const dateTimeMatch = prompt.match(dateTimeRegex);
+  
+  return dateTimeMatch ? dateTimeMatch[1].trim() : null;
+}
+
+/**
+ * Extract location from prompt
+ */
+export function extractLocation(prompt: string): string | null {
+  const locationRegex = /(?:in|at)\s+([^,.]+(?:,[^,.]+)?)/i;
+  const locationMatch = prompt.match(locationRegex);
+  
+  return locationMatch ? locationMatch[1].trim() : null;
+}
+
+/**
  * Extract other event details from prompt
  */
 export function extractEventDetails(prompt: string): Partial<EventData> {
+  const title = extractTitle(prompt);
+  const dateTime = extractDateTime(prompt);
+  const location = extractLocation(prompt);
+  
   const descriptionMatch = prompt.match(/description:?\s*([^,.]+(?:[^.]+)?)/i);
-  const locationMatch = prompt.match(/location:?\s*([^,.]+)/i) || prompt.match(/in\s+([^,.]+)/i) || prompt.match(/at\s+([^,.]+(?:,[^,.]+)?)/i);
   const categoryMatch = prompt.match(/category:?\s*([^,.]+)/i);
   const priceMatch = prompt.match(/price:?\s*([^,.]+)/i) || prompt.match(/estimatedPrice:?\s*([^,.]+)/i) || prompt.match(/cost:?\s*([^,.]+)/i);
 
   // Default description if one wasn't provided
   let defaultDescription = prompt;
-  
-  const formattedTitle = extractTitle(prompt);
   
   // Determine category based on event type mentions
   let category = categoryMatch ? categoryMatch[1].trim() : "";
@@ -64,10 +85,28 @@ export function extractEventDetails(prompt: string): Partial<EventData> {
   }
   
   return {
-    title: formattedTitle || "",
+    title: title || "",
     description: descriptionMatch ? descriptionMatch[1].trim() : defaultDescription,
-    location: locationMatch ? locationMatch[1].trim() : "",
+    date: dateTime || "",
+    location: location || "",
     category,
     estimatedPrice: priceMatch ? priceMatch[1].trim() : "Free",
   };
+}
+
+/**
+ * Check which fields are missing in the event data
+ */
+export function checkMissingFields(eventData: Partial<EventData>): string[] {
+  const missingFields = [];
+  
+  if (!eventData.date) {
+    missingFields.push('date');
+  }
+  
+  if (!eventData.location) {
+    missingFields.push('location');
+  }
+  
+  return missingFields;
 }

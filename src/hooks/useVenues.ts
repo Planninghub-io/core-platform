@@ -65,8 +65,8 @@ export const useVenues = (filters: VenueFilterValues) => {
         const availabilityDates: string[] = [];
         
         if (venue.availability && typeof venue.availability === 'object') {
-          // Try to safely extract dates from the availability object
           try {
+            // Try to safely extract dates from the availability object
             const availObj = venue.availability as { dates?: unknown };
             if (availObj.dates && Array.isArray(availObj.dates)) {
               // Copy dates to avoid reference issues

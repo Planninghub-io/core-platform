@@ -15,7 +15,7 @@ export const usePromptSubmission = (
   setLocation: (location: string) => void,
   chatMessages: ChatMessage[],
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
-  generateEvent: (prompt: string, selectedDate: string) => Promise<any>,
+  generateEvent: (prompt: string, additionalInfo: Record<string, string>) => Promise<any>,
   isResubmitting: boolean
 ) => {
   const { toast } = useToast();
@@ -82,13 +82,22 @@ export const usePromptSubmission = (
       setLocation(extractedLocation);
     }
 
+    // Prepare additional info
+    const additionalInfo: Record<string, string> = {};
+    if (selectedDate) {
+      additionalInfo.date = selectedDate;
+    }
+    if (location) {
+      additionalInfo.location = location;
+    }
+
     // Save the user's input before clearing it
     const userPrompt = prompt;
     
     // Clear the input field immediately after submission
     setPrompt("");
 
-    const result = await generateEvent(userPrompt, selectedDate);
+    const result = await generateEvent(userPrompt, additionalInfo);
 
     if (result.error) {
       toast({

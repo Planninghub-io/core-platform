@@ -15,13 +15,16 @@ export const useGenerateEventAI = () => {
   const [chatMessages, setChatMessages] = useState<Array<{type: 'user' | 'ai', content: string}>>([]);
   const [missingFields, setMissingFields] = useState<string[]>([]);
 
-  const generateEvent = async (prompt: string, selectedDate: string) => {
+  const generateEvent = async (prompt: string, providedInfo: Record<string, string> = {}) => {
     setIsGenerating(true);
     
     try {
+      // Combine the existing additional info with provided info
+      const combinedInfo = { ...additionalInfo, ...providedInfo };
+      
       let fullPrompt = prompt;
-      if (Object.keys(additionalInfo).length > 0) {
-        const additionalDetails = Object.entries(additionalInfo)
+      if (Object.keys(combinedInfo).length > 0) {
+        const additionalDetails = Object.entries(combinedInfo)
           .map(([key, value]) => `${key}: ${value}`)
           .join(", ");
         fullPrompt = `${prompt}. Additional details: ${additionalDetails}`;
@@ -30,7 +33,10 @@ export const useGenerateEventAI = () => {
       console.log('Sending prompt to generate event:', fullPrompt);
 
       const { data, error } = await supabase.functions.invoke('generate-event', {
-        body: { prompt: fullPrompt },
+        body: { 
+          prompt: fullPrompt,
+          additionalInfo: combinedInfo
+        },
       });
 
       if (error) {
@@ -46,8 +52,8 @@ export const useGenerateEventAI = () => {
         const validatedEvent: GeneratedEvent = {
           title: data.title?.trim() || 'Enter Event Name',
           description: data.description || '',
-          date: selectedDate || data.date || '',
-          location: data.location || '',
+          date: providedInfo.date || data.date || '',
+          location: providedInfo.location || data.location || '',
           category: data.category || 'Other',
           estimatedPrice: data.estimatedPrice || 'Free',
           imagePrompt: data.imagePrompt || 'event',
