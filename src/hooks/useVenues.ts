@@ -62,13 +62,22 @@ export const useVenues = (filters: VenueFilterValues) => {
     if (data) {
       for (const venue of data) {
         // Process availability data to ensure it has the expected structure
-        let availabilityDates: string[] = [];
+        const availabilityDates: string[] = [];
         
         if (venue.availability && typeof venue.availability === 'object') {
           // Try to safely extract dates from the availability object
-          const availObj = venue.availability as Record<string, unknown>;
-          if (availObj.dates && Array.isArray(availObj.dates)) {
-            availabilityDates = availObj.dates;
+          try {
+            const availObj = venue.availability as { dates?: unknown };
+            if (availObj.dates && Array.isArray(availObj.dates)) {
+              // Copy dates to avoid reference issues
+              for (const date of availObj.dates) {
+                if (typeof date === 'string') {
+                  availabilityDates.push(date);
+                }
+              }
+            }
+          } catch (e) {
+            console.error("Error processing venue availability:", e);
           }
         }
         
