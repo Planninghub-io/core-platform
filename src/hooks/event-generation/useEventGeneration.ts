@@ -7,7 +7,14 @@ import { useEventCreationHandler } from "./useEventCreation";
 import { EventGenerationHookReturn } from "./types/hook-types";
 
 export const useEventGeneration = (): EventGenerationHookReturn => {
-  const { createEvent, isCreating, createdEventId, showSignUpDialog, setShowSignUpDialog } = useEventCreation();
+  const { 
+    createEvent: originalCreateEvent, 
+    isCreating, 
+    createdEventId, 
+    showSignUpDialog, 
+    setShowSignUpDialog 
+  } = useEventCreation();
+  
   const {
     isGenerating,
     promptCount,
@@ -34,6 +41,14 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
   const hasMissingDate = missingFields?.includes('date') || !selectedDate && !generatedEvent?.date;
   const hasMissingLocation = missingFields?.includes('location') || !location && !generatedEvent?.location;
 
+  // Wrap the original createEvent to match the expected signature
+  const createEvent = async (eventData: any) => {
+    const result = await originalCreateEvent(eventData, additionalInfo);
+    return { 
+      eventId: result.data ? result.data.id : null 
+    };
+  };
+
   // Use the prompt submission hook
   const { handlePromptSubmit } = usePromptSubmission(
     prompt,
@@ -42,7 +57,7 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
     setShowSignUpDialog,
     selectedDate,
     setSelectedDate,
-    location,
+    location, 
     setLocation,
     chatMessages,
     setChatMessages,

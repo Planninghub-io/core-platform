@@ -61,15 +61,15 @@ export const useVenues = (filters: VenueFilterValues) => {
     
     if (data) {
       for (const venue of data) {
-        // Process availability data to ensure it has the expected structure
+        // Create a default availability object
         const availabilityDates: string[] = [];
         
+        // Safely handle availability data
         if (venue.availability && typeof venue.availability === 'object') {
           try {
-            // Try to safely extract dates from the availability object
             const availObj = venue.availability as { dates?: unknown };
             if (availObj.dates && Array.isArray(availObj.dates)) {
-              // Copy dates to avoid reference issues
+              // Copy each date that is a string
               for (const date of availObj.dates) {
                 if (typeof date === 'string') {
                   availabilityDates.push(date);
