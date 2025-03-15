@@ -1,4 +1,3 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -61,32 +60,35 @@ export const useVenues = (filters: VenueFilterValues) => {
     
     if (data) {
       for (const venue of data) {
-        // Initialize empty availability
-        const availabilityObj: { dates: string[] } = { dates: [] };
+        // Create a simple availability object with empty dates array
+        const venueAvailability = { dates: [] as string[] };
         
-        // Safely handle availability data
+        // Safely process availability data if it exists
         if (venue.availability && typeof venue.availability === 'object') {
           try {
-            const rawAvailability = venue.availability as Record<string, unknown>;
-            if (rawAvailability.dates && Array.isArray(rawAvailability.dates)) {
-              availabilityObj.dates = rawAvailability.dates
-                .filter((date): date is string => typeof date === 'string')
-                .slice();
+            // Type cast to a simple record with string keys and unknown values
+            const availabilityData = venue.availability as Record<string, unknown>;
+            
+            // If the dates property exists and is an array, process it
+            if (Array.isArray(availabilityData.dates)) {
+              // Filter and only keep string dates
+              venueAvailability.dates = availabilityData.dates
+                .filter((date): date is string => typeof date === 'string');
             }
           } catch (e) {
             console.error("Error processing venue availability:", e);
           }
         }
         
-        // Add the processed venue to our array
+        // Add processed venue to our result array
         processedVenues.push({
           ...venue,
-          availability: availabilityObj
+          availability: venueAvailability
         });
       }
     }
     
-    // If availability date filter is applied, filter venues that are available on that date
+    // Apply date filter if specified
     if (filters.availabilityDate && processedVenues.length > 0) {
       const dateString = filters.availabilityDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
       
