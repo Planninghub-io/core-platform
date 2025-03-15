@@ -4,6 +4,7 @@ import { VenueCard } from "./VenueCard";
 import { VenueDetails } from "./VenueDetails";
 import { Venue } from "@/hooks/useVenues";
 import { AlertCircle } from "lucide-react";
+import { VenueSelection } from "../venue-rfp/VenueSelection";
 
 interface VenuesListProps {
   venues: Venue[] | undefined;
@@ -62,13 +63,16 @@ export const VenuesList: React.FC<VenuesListProps> = ({ venues, isLoading, error
 
   return (
     <div>
+      <VenueSelection venues={venues} />
+      
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-6">
         {venues.map((venue) => (
-          <VenueCard 
-            key={venue.id} 
-            venue={venue} 
-            onViewDetails={handleViewDetails}
-          />
+          <div key={venue.id} className="relative">
+            <VenueCard 
+              venue={venue} 
+              onViewDetails={handleViewDetails}
+            />
+          </div>
         ))}
       </div>
       

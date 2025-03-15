@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VenueRecommendations } from "@/components/venue-recommendations/VenueRecommendations";
@@ -6,7 +7,7 @@ import VenueFilters from "@/components/venue-filters/VenueFilters";
 import { VenueFilterValues } from "@/hooks/useVenues";
 import { VenuesList } from "@/components/venue-browser/VenuesList";
 import { useVenues } from "@/hooks/useVenues";
-import { Sparkles, RefreshCw } from "lucide-react";
+import { Sparkles, RefreshCw, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -66,38 +67,48 @@ const Venues = () => {
   };
 
   return (
-    <Tabs value={activeTab} onValueChange={handleTabChange}>
-      <div className="flex justify-between items-center mb-4">
-        <TabsList>
-          <TabsTrigger value="browse">Venues</TabsTrigger>
-          <TabsTrigger value="recommendations" className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4" />
-            AI Recommendations
-          </TabsTrigger>
-        </TabsList>
-        
-        <Button 
-          variant="outline" 
-          size="sm"
-          onClick={handleScrapeCalendars}
-          disabled={isScraping}
-          className="ml-2"
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isScraping ? 'animate-spin' : ''}`} />
-          Update Availability
-        </Button>
+    <div>
+      <div className="bg-[#f9f8ff] p-6 mb-8 rounded-lg">
+        <h1 className="text-2xl font-bold mb-2">Find the Perfect Venue</h1>
+        <p className="text-gray-600 max-w-3xl">
+          Browse our curated selection of venues, check real-time availability, and request proposals from multiple venues with just a few clicks.
+        </p>
       </div>
-      
-      <TabsContent value="browse" className="pt-4">
-        <div className="bg-gray-50 p-4 rounded-md mb-6">
-          <VenueFilters onFilterChange={handleFilterChange} />
+
+      <Tabs value={activeTab} onValueChange={handleTabChange}>
+        <div className="flex justify-between items-center mb-4">
+          <TabsList>
+            <TabsTrigger value="browse">Venues</TabsTrigger>
+            <TabsTrigger value="recommendations" className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              AI Recommendations
+            </TabsTrigger>
+          </TabsList>
+          
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleScrapeCalendars}
+              disabled={isScraping}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isScraping ? 'animate-spin' : ''}`} />
+              Update Availability
+            </Button>
+          </div>
         </div>
-        <VenuesList venues={venues} isLoading={isLoading} error={error} />
-      </TabsContent>
-      <TabsContent value="recommendations" className="pt-4">
-        <VenueRecommendations />
-      </TabsContent>
-    </Tabs>
+        
+        <TabsContent value="browse" className="pt-4">
+          <div className="bg-gray-50 p-4 rounded-md mb-6">
+            <VenueFilters onFilterChange={handleFilterChange} />
+          </div>
+          <VenuesList venues={venues} isLoading={isLoading} error={error} />
+        </TabsContent>
+        <TabsContent value="recommendations" className="pt-4">
+          <VenueRecommendations />
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 };
 

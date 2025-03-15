@@ -11,6 +11,7 @@ export type Venue = {
   amenities: any | null;
   booking_policy: string | null;
   cancellation_policy: string | null;
+  verified?: boolean;
   availability?: {
     dates: string[];
   };
@@ -24,6 +25,7 @@ export type VenueFilterValues = {
   };
   amenities?: string[];
   availabilityDate?: Date;
+  verifiedOnly?: boolean;
 };
 
 export const useVenues = (filters: VenueFilterValues) => {
@@ -39,6 +41,10 @@ export const useVenues = (filters: VenueFilterValues) => {
     
     if (filters.capacity?.min) {
       query = query.gte('capacity', filters.capacity.min);
+    }
+    
+    if (filters.verifiedOnly) {
+      query = query.eq('verified', true);
     }
     
     const { data, error } = await query;

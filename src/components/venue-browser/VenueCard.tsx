@@ -2,7 +2,7 @@
 import React from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, ArrowRight, Calendar } from "lucide-react";
+import { MapPin, Users, ArrowRight, Calendar, CheckCircle } from "lucide-react";
 import { Venue } from "@/hooks/useVenues";
 import { Badge } from "@/components/ui/badge";
 
@@ -20,10 +20,21 @@ export const VenueCard: React.FC<VenueCardProps> = ({ venue, onViewDetails }) =>
     ? Math.round((1 - (venue.availability.dates.length / 30)) * 100)
     : null;
 
+  // Determine if venue is verified (this would come from your database in a real implementation)
+  const isVerified = venue.verified === true;
+
   return (
-    <Card key={venue.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+    <Card key={venue.id} className="overflow-hidden hover:shadow-lg transition-shadow h-full">
       <CardHeader className="bg-[#f5f3ff] pb-0">
-        <CardTitle className="text-xl">{venue.name}</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle className="text-xl">{venue.name}</CardTitle>
+          {isVerified && (
+            <Badge className="bg-green-100 text-green-800 hover:bg-green-100 flex items-center gap-1">
+              <CheckCircle className="h-3 w-3" />
+              Verified
+            </Badge>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="pt-6">
         <div className="space-y-3">
@@ -68,7 +79,7 @@ export const VenueCard: React.FC<VenueCardProps> = ({ venue, onViewDetails }) =>
           )}
         </div>
       </CardContent>
-      <CardFooter className="bg-gray-50 border-t flex justify-center items-center gap-4">
+      <CardFooter className="bg-gray-50 border-t flex justify-center items-center gap-4 mt-auto">
         {hasAvailabilityData && availabilityPercentage !== null && (
           <Badge 
             className={
