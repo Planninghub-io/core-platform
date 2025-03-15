@@ -31,9 +31,10 @@ export type VenueFilterValues = {
 export const useVenues = (filters: VenueFilterValues) => {
   // Function to fetch venues with filters
   const fetchVenues = async (): Promise<Venue[]> => {
+    // Start with a basic query that selects everything from venues
     let query = supabase.from("venues").select("*");
     
-    // Apply filters
+    // Apply filters one by one
     if (filters.city) {
       // This is a basic implementation. In a real app, we'd need to extract city from address or have a city column
       query = query.ilike('name', `%${filters.city}%`);
@@ -47,6 +48,7 @@ export const useVenues = (filters: VenueFilterValues) => {
       query = query.eq('verified', true);
     }
     
+    // Execute the query
     const { data, error } = await query;
     
     if (error) {
@@ -55,7 +57,7 @@ export const useVenues = (filters: VenueFilterValues) => {
     }
     
     // Process the venues to ensure they have the correct structure
-    const processedVenues: Venue[] = (data || []).map(venue => {
+    const processedVenues: Venue[] = (data || []).map((venue: any) => {
       // Process availability data to ensure it has the expected structure
       let availabilityDates: string[] = [];
       
