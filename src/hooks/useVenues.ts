@@ -61,20 +61,17 @@ export const useVenues = (filters: VenueFilterValues) => {
     
     if (data) {
       for (const venue of data) {
-        // Create a default availability object
-        const availabilityDates: string[] = [];
+        // Initialize empty availability
+        const availabilityObj: { dates: string[] } = { dates: [] };
         
         // Safely handle availability data
         if (venue.availability && typeof venue.availability === 'object') {
           try {
-            const availObj = venue.availability as { dates?: unknown };
-            if (availObj.dates && Array.isArray(availObj.dates)) {
-              // Copy each date that is a string
-              for (const date of availObj.dates) {
-                if (typeof date === 'string') {
-                  availabilityDates.push(date);
-                }
-              }
+            const rawAvailability = venue.availability as Record<string, unknown>;
+            if (rawAvailability.dates && Array.isArray(rawAvailability.dates)) {
+              availabilityObj.dates = rawAvailability.dates
+                .filter((date): date is string => typeof date === 'string')
+                .slice();
             }
           } catch (e) {
             console.error("Error processing venue availability:", e);
@@ -84,26 +81,22 @@ export const useVenues = (filters: VenueFilterValues) => {
         // Add the processed venue to our array
         processedVenues.push({
           ...venue,
-          availability: {
-            dates: availabilityDates
-          }
+          availability: availabilityObj
         });
       }
     }
     
     // If availability date filter is applied, filter venues that are available on that date
-    let filteredVenues = processedVenues;
-    
-    if (filters.availabilityDate && filteredVenues.length > 0) {
+    if (filters.availabilityDate && processedVenues.length > 0) {
       const dateString = filters.availabilityDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
       
-      filteredVenues = filteredVenues.filter(venue => {
+      return processedVenues.filter(venue => {
         // Venue is available if the date is not in the unavailable dates array
         return !venue.availability?.dates.includes(dateString);
       });
     }
     
-    return filteredVenues;
+    return processedVenues;
   };
   
   return useQuery({
