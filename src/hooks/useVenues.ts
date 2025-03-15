@@ -57,26 +57,30 @@ export const useVenues = (filters: VenueFilterValues) => {
     }
     
     // Process the venues to ensure they have the correct structure
-    const processedVenues: Venue[] = (data || []).map((venue: any) => {
-      // Process availability data to ensure it has the expected structure
-      let availabilityDates: string[] = [];
-      
-      if (venue.availability && typeof venue.availability === 'object') {
-        // Try to safely extract dates from the availability object
-        const availObj = venue.availability as any;
-        if (availObj.dates && Array.isArray(availObj.dates)) {
-          availabilityDates = availObj.dates;
+    const processedVenues: Venue[] = [];
+    
+    if (data) {
+      for (const venue of data) {
+        // Process availability data to ensure it has the expected structure
+        let availabilityDates: string[] = [];
+        
+        if (venue.availability && typeof venue.availability === 'object') {
+          // Try to safely extract dates from the availability object
+          const availObj = venue.availability as Record<string, unknown>;
+          if (availObj.dates && Array.isArray(availObj.dates)) {
+            availabilityDates = availObj.dates;
+          }
         }
+        
+        // Add the processed venue to our array
+        processedVenues.push({
+          ...venue,
+          availability: {
+            dates: availabilityDates
+          }
+        });
       }
-      
-      // Return a properly structured venue object
-      return {
-        ...venue,
-        availability: {
-          dates: availabilityDates
-        }
-      };
-    });
+    }
     
     // If availability date filter is applied, filter venues that are available on that date
     let filteredVenues = processedVenues;
