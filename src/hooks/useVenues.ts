@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -60,19 +61,19 @@ export const useVenues = (filters: VenueFilterValues) => {
     
     if (data) {
       for (const venue of data) {
-        // Create a simple availability object with empty dates array
-        const venueAvailability = { dates: [] as string[] };
+        // Type-safe availability object
+        const availability: { dates: string[] } = { dates: [] };
         
-        // Safely process availability data if it exists
+        // Process availability data if it exists
         if (venue.availability && typeof venue.availability === 'object') {
           try {
-            // Type cast to a simple record with string keys and unknown values
-            const availabilityData = venue.availability as Record<string, unknown>;
+            // Safe type assertion for the availability object
+            const availabilityObj = venue.availability as { dates?: unknown };
             
-            // If the dates property exists and is an array, process it
-            if (Array.isArray(availabilityData.dates)) {
-              // Filter and only keep string dates
-              venueAvailability.dates = availabilityData.dates
+            // Process dates if they exist and are in array format
+            if (availabilityObj.dates && Array.isArray(availabilityObj.dates)) {
+              // Only include string values in the dates array
+              availability.dates = availabilityObj.dates
                 .filter((date): date is string => typeof date === 'string');
             }
           } catch (e) {
@@ -80,10 +81,10 @@ export const useVenues = (filters: VenueFilterValues) => {
           }
         }
         
-        // Add processed venue to our result array
+        // Add processed venue to the result array
         processedVenues.push({
           ...venue,
-          availability: venueAvailability
+          availability
         });
       }
     }
