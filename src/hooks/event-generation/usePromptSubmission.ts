@@ -16,7 +16,8 @@ export const usePromptSubmission = (
   chatMessages: ChatMessage[],
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
   generateEvent: (prompt: string, additionalInfo: Record<string, string>) => Promise<any>,
-  isResubmitting: boolean
+  isResubmitting: boolean,
+  setShowMissingInfoDialog: (show: boolean) => void
 ) => {
   const { toast } = useToast();
 
@@ -99,7 +100,7 @@ export const usePromptSubmission = (
 
     const result = await generateEvent(userPrompt, additionalInfo);
 
-    if (result.error) {
+    if (result && result.error) {
       toast({
         title: "Error",
         description: result.error.message || "Failed to generate event. Please try again.",
@@ -108,8 +109,14 @@ export const usePromptSubmission = (
       return;
     }
 
+    // Show the missing info dialog if needed
+    if (result && result.needsMoreInfo) {
+      setShowMissingInfoDialog(true);
+      return;
+    }
+
     // If there's a validated event with no missing fields, set the title and proceed
-    if (result.validatedEvent && (!result.missing || result.missing.length === 0)) {
+    if (result && result.validatedEvent && (!result.missing || result.missing.length === 0)) {
       if (result.validatedEvent.location && !location) {
         setLocation(result.validatedEvent.location);
       }

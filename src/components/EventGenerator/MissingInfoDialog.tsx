@@ -12,7 +12,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
 import { useState, useEffect } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
@@ -54,8 +53,8 @@ export const MissingInfoDialog = ({
   const validateFields = () => {
     const newErrors: Record<string, string> = {};
     
-    if (missingInfo?.missingFields.includes("datetime") && isFlexible === "no" && !datetime) {
-      newErrors["datetime"] = "Please select both date and time";
+    if (missingInfo?.missingFields.includes("date") && isFlexible === "no" && !datetime) {
+      newErrors["date"] = "Please select both date and time";
     }
     
     if (missingInfo?.missingFields.includes("location") && !additionalInfo["location"]?.trim()) {
@@ -69,10 +68,13 @@ export const MissingInfoDialog = ({
   const handleSubmit = () => {
     if (validateFields()) {
       if (datetime && isFlexible === "no") {
-        onAdditionalInfoChange("datetime", new Date(datetime).toISOString());
+        onAdditionalInfoChange("date", new Date(datetime).toISOString());
       } else if (isFlexible === "yes") {
-        onAdditionalInfoChange("datetime", "flexible");
+        onAdditionalInfoChange("date", "flexible");
       }
+      
+      // Don't automatically close the dialog
+      // The parent component will handle closing after processing
       onSubmit();
     }
   };
@@ -87,7 +89,7 @@ export const MissingInfoDialog = ({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
-          {missingInfo?.missingFields.includes("datetime") && (
+          {missingInfo?.missingFields.includes("date") && (
             <div className="grid gap-2">
               <Label>Date & Time</Label>
               <div className="flex flex-col gap-2">
@@ -107,14 +109,14 @@ export const MissingInfoDialog = ({
                       type="datetime-local"
                       value={datetime}
                       onChange={(e) => setDatetime(e.target.value)}
-                      className={cn(errors["datetime"] ? "border-red-500" : "")}
+                      className={cn(errors["date"] ? "border-red-500" : "")}
                       min={new Date().toISOString().slice(0, 16)}
                     />
                     <Calendar className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 pointer-events-none" />
                   </div>
                 )}
-                {errors["datetime"] && (
-                  <span className="text-sm text-red-500">{errors["datetime"]}</span>
+                {errors["date"] && (
+                  <span className="text-sm text-red-500">{errors["date"]}</span>
                 )}
               </div>
             </div>

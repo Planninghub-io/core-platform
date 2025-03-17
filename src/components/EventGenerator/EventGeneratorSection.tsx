@@ -7,6 +7,7 @@ import { useEventGeneration } from "@/hooks/event-generation";
 import { WelcomeHeader } from "./components/WelcomeHeader";
 import { ChatInterface } from "./components/ChatInterface";
 import { ManualEventButton } from "./components/ManualEventButton";
+import { MissingInfoDialog } from "./MissingInfoDialog";
 
 interface EventGeneratorSectionProps {
   onCreateManualEvent?: () => void;
@@ -21,6 +22,7 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
     promptCount,
     showSignUpDialog,
     setShowSignUpDialog,
+    missingInfo,
     generatedEvent,
     isCreating,
     createdEventId,
@@ -34,7 +36,12 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
     setLocation,
     hasMissingDate,
     hasMissingLocation,
-    chatMessages
+    chatMessages,
+    additionalInfo,
+    showMissingInfoDialog,
+    setShowMissingInfoDialog,
+    handleAdditionalInfoChange,
+    handleMissingInfoSubmit
   } = useEventGeneration();
 
   // Prepare event data for navigation
@@ -117,6 +124,15 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
           onSignUpIndividual={() => handleSignUp('user')}
           onSignUpBusiness={() => handleSignUp('business')}
           eventData={prepareEventData()}
+        />
+
+        <MissingInfoDialog
+          open={showMissingInfoDialog}
+          onOpenChange={setShowMissingInfoDialog}
+          missingInfo={missingInfo}
+          additionalInfo={additionalInfo}
+          onAdditionalInfoChange={handleAdditionalInfoChange}
+          onSubmit={handleMissingInfoSubmit}
         />
       </div>
     </div>

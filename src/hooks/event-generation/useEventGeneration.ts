@@ -36,6 +36,7 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
   const [eventTitle, setEventTitle] = useState("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [location, setLocation] = useState<string>("");
+  const [showMissingInfoDialog, setShowMissingInfoDialog] = useState(false);
   
   // Check if date or location is missing
   const hasMissingDate = missingFields?.includes('date') || !selectedDate && !generatedEvent?.date;
@@ -62,8 +63,40 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
     chatMessages,
     setChatMessages,
     generateEvent,
-    isResubmitting
+    isResubmitting,
+    setShowMissingInfoDialog
   );
+
+  // Handle changes to the additional info
+  const handleAdditionalInfoChange = (field: string, value: string) => {
+    const updatedInfo = { ...additionalInfo, [field]: value };
+    setAdditionalInfo(updatedInfo);
+
+    // Update the local state as well for display purposes
+    if (field === 'date') {
+      setSelectedDate(value);
+    } else if (field === 'location') {
+      setLocation(value);
+    }
+  };
+
+  // Handle submission of missing info
+  const handleMissingInfoSubmit = () => {
+    // Resubmit the original prompt with the additional info
+    if (isResubmitting) {
+      const lastUserMessage = chatMessages.findLast(msg => msg.type === 'user');
+      if (lastUserMessage) {
+        // Re-generate event with the same prompt but with additional info
+        generateEvent(lastUserMessage.content, additionalInfo)
+          .then(() => {
+            // Close the dialog once processing is complete
+            setShowMissingInfoDialog(false);
+          });
+      }
+    } else {
+      setShowMissingInfoDialog(false);
+    }
+  };
 
   // Use the event creation hook
   const { handleCreateEvent } = useEventCreationHandler(
@@ -102,6 +135,10 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
     handleCreateEvent,
     chatMessages,
     setChatMessages,
-    missingFields
+    missingFields,
+    showMissingInfoDialog,
+    setShowMissingInfoDialog,
+    handleAdditionalInfoChange,
+    handleMissingInfoSubmit
   };
 };
