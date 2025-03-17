@@ -22,6 +22,9 @@ export const useGenerateEventAI = () => {
       // Combine the existing additional info with provided info
       const combinedInfo = { ...additionalInfo, ...providedInfo };
       
+      // Log the provided info to help with debugging
+      console.log("Combined info before API call:", combinedInfo);
+      
       let fullPrompt = prompt;
       if (Object.keys(combinedInfo).length > 0) {
         const additionalDetails = Object.entries(combinedInfo)
@@ -59,14 +62,16 @@ export const useGenerateEventAI = () => {
           imagePrompt: data.imagePrompt || 'event',
         };
 
-        // Check for missing critical fields
+        // Check for missing critical fields, but respect provided info
         const missing: string[] = [];
-        if (!validatedEvent.date) missing.push('date');
-        if (!validatedEvent.location) missing.push('location');
+        if (!validatedEvent.date && !providedInfo.date) missing.push('date');
+        if (!validatedEvent.location && !providedInfo.location) missing.push('location');
+        
+        // Log validated event and missing fields for debugging
+        console.log('Created validated event:', validatedEvent);
+        console.log('Missing fields:', missing);
         
         setMissingFields(missing);
-
-        console.log('Created validated event:', validatedEvent);
         setGeneratedEvent(validatedEvent);
         setMissingInfo(null);
         setAdditionalInfo({});
@@ -116,10 +121,33 @@ export const useGenerateEventAI = () => {
             prePopulatedInfo[locationField] = locationMatch[1];
           }
 
+          // Add any manually provided fields from additionalInfo
+          if (providedInfo.date) {
+            prePopulatedInfo.date = providedInfo.date;
+            // Remove date from missing fields if it was provided
+            if (data.missingFields.includes('date')) {
+              data.missingFields = data.missingFields.filter(f => f !== 'date');
+            }
+          }
+          
+          if (providedInfo.location) {
+            prePopulatedInfo.location = providedInfo.location;
+            // Remove location from missing fields if it was provided
+            if (data.missingFields.includes('location')) {
+              data.missingFields = data.missingFields.filter(f => f !== 'location');
+            }
+          }
+
           setAdditionalInfo(prePopulatedInfo);
           setMissingInfo(data);
           setIsResubmitting(true);
           setMissingFields(data.missingFields || []);
+          
+          // If we have all the required fields after applying provided info,
+          // we should generate the event again with the complete info
+          if (data.missingFields.length === 0) {
+            return generateEvent(prompt, prePopulatedInfo);
+          }
           
           // Format missing fields for display
           const missingFieldsFormatted = data.missingFields.map(field => {
