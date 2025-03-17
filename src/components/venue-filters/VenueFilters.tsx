@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from "react";
 import { LocationFilter } from "./components/LocationFilter";
 import { CapacityFilter } from "./components/CapacityFilter";

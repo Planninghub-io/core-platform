@@ -9,7 +9,7 @@ import { VenueSelection } from "../venue-rfp/VenueSelection";
 interface VenuesListProps {
   venues: Venue[] | undefined;
   isLoading: boolean;
-  error: Error | null;
+  error: string | null;
 }
 
 export const VenuesList: React.FC<VenuesListProps> = ({ venues, isLoading, error }) => {
@@ -45,7 +45,7 @@ export const VenuesList: React.FC<VenuesListProps> = ({ venues, isLoading, error
           <AlertCircle className="h-6 w-6 text-red-600" />
         </div>
         <h3 className="text-lg font-semibold text-gray-900 mb-2">Error Loading Venues</h3>
-        <p className="text-gray-600 max-w-md mx-auto">{error.message}</p>
+        <p className="text-gray-600 max-w-md mx-auto">{error}</p>
       </div>
     );
   }

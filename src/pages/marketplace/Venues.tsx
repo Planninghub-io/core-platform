@@ -1,13 +1,12 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VenueRecommendations } from "@/components/venue-recommendations/VenueRecommendations";
 import { useToast } from "@/components/ui/use-toast";
 import VenueFilters from "@/components/venue-filters/VenueFilters";
-import { VenueFilterValues } from "@/hooks/useVenues";
+import { VenueFilterValues, useVenues } from "@/hooks/useVenues";
 import { VenuesList } from "@/components/venue-browser/VenuesList";
-import { useVenues } from "@/hooks/useVenues";
-import { Sparkles, RefreshCw, FileText } from "lucide-react";
+import { Sparkles, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -17,8 +16,13 @@ const Venues = () => {
   const [isScraping, setIsScraping] = useState(false);
   const [activeTab, setActiveTab] = useState("browse");
   
-  const { data: venues, isLoading, error, refetch } = useVenues(filters);
+  const { venues, isLoading, error, refetch } = useVenues(filters);
   
+  // Effect to fetch venues when filters change
+  useEffect(() => {
+    refetch();
+  }, [filters]);
+
   // Handle filter changes
   const handleFilterChange = (newFilters: VenueFilterValues) => {
     setFilters(newFilters);
