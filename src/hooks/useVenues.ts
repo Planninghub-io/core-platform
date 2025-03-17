@@ -1,3 +1,4 @@
+Fixed useVenues.ts
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,16 +65,24 @@ export const useVenues = (filters: VenueFilterValues) => {
         // Create a simple availability dates array with default empty array
         const availabilityDates: string[] = [];
         
+        // Define raw venue type to avoid type recursion
+        type RawVenue = Omit<Venue, "availability"> & {
+          availability?: unknown;
+        };
+        
+        // Cast venue to RawVenue to safely handle the unknown availability structure
+        const rawVenue = venue as RawVenue;
+        
         // Safely extract availability dates if they exist
-        if (venue.availability) {
+        if (rawVenue.availability) {
           // First check if it's an object
-          if (typeof venue.availability === 'object' && venue.availability !== null) {
-            // Then check if it has a dates property that is an array
-            const availabilityObject = venue.availability as { dates?: unknown };
+          if (typeof rawVenue.availability === 'object' && rawVenue.availability !== null) {
+            // Then check if it has a dates property
+            const availObj = rawVenue.availability as Record<string, unknown>;
             
-            if (Array.isArray(availabilityObject.dates)) {
+            if (Array.isArray(availObj.dates)) {
               // Filter to only include string values
-              for (const date of availabilityObject.dates) {
+              for (const date of availObj.dates) {
                 if (typeof date === 'string') {
                   availabilityDates.push(date);
                 }
@@ -88,7 +97,7 @@ export const useVenues = (filters: VenueFilterValues) => {
           availability: {
             dates: availabilityDates
           }
-        });
+        } as Venue);
       }
     }
     
