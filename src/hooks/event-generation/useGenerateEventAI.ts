@@ -72,34 +72,37 @@ export const useGenerateEventAI = () => {
         console.log('Missing fields:', missing);
         
         setMissingFields(missing);
-        setGeneratedEvent(validatedEvent);
-        setMissingInfo(null);
-        setAdditionalInfo({});
-        setIsResubmitting(false);
         
-        if (!isResubmitting) {
-          setPromptCount(prev => prev + 1);
-        }
-        
-        // Add success message to chat
-        let responseMessage = `Great! I've generated an event based on your request: "${validatedEvent.title}". Check out the details below.`;
-        
-        // Add message about missing information if needed
-        if (missing.length > 0) {
+        // Only set generated event if we have all required fields
+        if (missing.length === 0) {
+          setGeneratedEvent(validatedEvent);
+          setMissingInfo(null);
+          setAdditionalInfo({});
+          setIsResubmitting(false);
+          
+          if (!isResubmitting) {
+            setPromptCount(prev => prev + 1);
+          }
+          
+          // Add success message to chat when all required data is provided
+          setChatMessages(prev => [...prev, {
+            type: 'ai',
+            content: `Great! I've generated an event based on your request: "${validatedEvent.title}". Please review the details below and click "Create This Event" if everything looks good.`
+          }]);
+        } else {
+          // If we have missing fields, ask the user for them
           const missingFieldsFormatted = missing.map(field => {
             if (field === 'date') return 'start date and time';
             return field;
           }).join(' and ');
           
-          responseMessage += ` Please provide the missing ${missingFieldsFormatted} below.`;
+          setChatMessages(prev => [...prev, {
+            type: 'ai',
+            content: `I need a bit more information to create your event. Could you please provide the ${missingFieldsFormatted}?`
+          }]);
         }
         
-        setChatMessages(prev => [...prev, {
-          type: 'ai',
-          content: responseMessage
-        }]);
-        
-        return { validatedEvent, error: null };
+        return { validatedEvent, missing, error: null };
       } 
       // Handle missing info response
       else if (data && data.needsInfo === true) {

@@ -108,8 +108,8 @@ export const usePromptSubmission = (
       return;
     }
 
-    // If there's a validated event, set the title and proceed
-    if (result.validatedEvent) {
+    // If there's a validated event with no missing fields, set the title and proceed
+    if (result.validatedEvent && (!result.missing || result.missing.length === 0)) {
       if (result.validatedEvent.location && !location) {
         setLocation(result.validatedEvent.location);
       }
