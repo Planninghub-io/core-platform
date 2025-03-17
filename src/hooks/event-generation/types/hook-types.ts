@@ -18,6 +18,7 @@ export interface EventGenerationHookState {
   hasMissingLocation: boolean;
   chatMessages: ChatMessage[];
   missingFields: string[];
+  showMissingInfoDialog: boolean;
 }
 
 export interface EventGenerationHookActions {
@@ -30,6 +31,9 @@ export interface EventGenerationHookActions {
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
   handlePromptSubmit: () => Promise<void>;
   handleCreateEvent: () => Promise<void>;
+  setShowMissingInfoDialog: (show: boolean) => void;
+  handleAdditionalInfoChange: (field: string, value: string) => void;
+  handleMissingInfoSubmit: () => void;
 }
 
 export type EventGenerationHookReturn = EventGenerationHookState & EventGenerationHookActions;

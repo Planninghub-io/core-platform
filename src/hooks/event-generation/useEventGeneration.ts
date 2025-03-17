@@ -84,7 +84,15 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
   const handleMissingInfoSubmit = () => {
     // Resubmit the original prompt with the additional info
     if (isResubmitting) {
-      const lastUserMessage = chatMessages.findLast(msg => msg.type === 'user');
+      // Find the last user message in a way compatible with older JS versions
+      let lastUserMessage = null;
+      for (let i = chatMessages.length - 1; i >= 0; i--) {
+        if (chatMessages[i].type === 'user') {
+          lastUserMessage = chatMessages[i];
+          break;
+        }
+      }
+
       if (lastUserMessage) {
         // Re-generate event with the same prompt but with additional info
         generateEvent(lastUserMessage.content, additionalInfo)
