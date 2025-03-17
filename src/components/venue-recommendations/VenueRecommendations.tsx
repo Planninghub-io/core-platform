@@ -4,26 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { VenueSearchForm } from "./VenueSearchForm";
 import { VenueRecommendationsList } from "./VenueRecommendationsList";
-
-interface Venue {
-  id: string;
-  name: string;
-  capacity: number | null;
-  indoor_space_sqft: number | null;
-  outdoor_space_sqft: number | null;
-  amenities: any | null;
-  booking_policy: string | null;
-  cancellation_policy: string | null;
-  source?: 'database' | 'web';
-}
-
-interface VenueRecommendation {
-  venueId: string;
-  matchScore: number;
-  reason: string;
-  specialConsiderations: string;
-  venue: Venue | null;
-}
+import { VenueRecommendation } from "@/hooks/useVenues";
 
 export const VenueRecommendations: React.FC = () => {
   const { toast } = useToast();

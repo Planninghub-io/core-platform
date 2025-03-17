@@ -4,15 +4,7 @@ import { VenueCard } from "./VenueCard";
 import { VenueRecommendationSkeleton } from "./VenueRecommendationSkeleton";
 import { NoRecommendations } from "./NoRecommendations";
 import { VenueDetails } from "../venue-browser/VenueDetails";
-import { Venue } from "@/hooks/useVenues";
-
-interface VenueRecommendation {
-  venueId: string;
-  matchScore: number;
-  reason: string;
-  specialConsiderations: string;
-  venue: Venue | null;
-}
+import { Venue, VenueRecommendation } from "@/hooks/useVenues";
 
 interface VenueRecommendationsListProps {
   recommendations: VenueRecommendation[];

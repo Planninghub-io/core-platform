@@ -5,26 +5,7 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Users } from "lucide-react";
 import { VenueMatchScore } from "./VenueMatchScore";
 import { Badge } from "@/components/ui/badge";
-
-interface Venue {
-  id: string;
-  name: string;
-  capacity: number | null;
-  indoor_space_sqft: number | null;
-  outdoor_space_sqft: number | null;
-  amenities: any | null;
-  booking_policy: string | null;
-  cancellation_policy: string | null;
-  source?: 'database' | 'web';
-}
-
-interface VenueRecommendation {
-  venueId: string;
-  matchScore: number;
-  reason: string;
-  specialConsiderations: string;
-  venue: Venue | null;
-}
+import { Venue, VenueRecommendation } from "@/hooks/useVenues";
 
 interface VenueCardProps {
   recommendation: VenueRecommendation;

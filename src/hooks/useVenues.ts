@@ -24,6 +24,7 @@ export interface Venue {
   availability?: {
     dates?: string[];
   };
+  source?: 'database' | 'web';
 }
 
 export interface Filter {
@@ -43,6 +44,14 @@ export interface VenueFilterValues {
   };
   availabilityDate?: Date;
   verifiedOnly?: boolean;
+}
+
+export interface VenueRecommendation {
+  venueId: string;
+  matchScore: number;
+  reason: string;
+  specialConsiderations: string;
+  venue: Venue | null;
 }
 
 export const useVenues = (filters: VenueFilterValues = {}) => {
