@@ -1,6 +1,6 @@
 
 import { cn } from "@/lib/utils";
-import { Copy, ThumbsDown, ThumbsUp, RotateCcw, Sparkles, User } from "lucide-react";
+import { Copy, ThumbsUp, ThumbsDown, RotateCcw, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -9,9 +9,10 @@ interface ChatMessageProps {
   message: string;
   type: 'user' | 'ai';
   isLoading?: boolean;
+  isWelcomeMessage?: boolean;
 }
 
-export const ChatMessage = ({ message, type, isLoading = false }: ChatMessageProps) => {
+export const ChatMessage = ({ message, type, isLoading = false, isWelcomeMessage = false }: ChatMessageProps) => {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
@@ -42,6 +43,7 @@ export const ChatMessage = ({ message, type, isLoading = false }: ChatMessagePro
     });
   };
 
+  // ChatGPT style: user messages on right, AI messages on left
   return (
     <div 
       className={cn(
@@ -53,20 +55,17 @@ export const ChatMessage = ({ message, type, isLoading = false }: ChatMessagePro
         className={cn(
           "max-w-[85%] rounded-lg px-5 py-4 shadow-sm",
           type === 'user' 
-            ? "bg-[#242424] text-white rounded-tr-none" 
-            : "bg-gray-100 text-gray-900 rounded-tl-none border border-gray-200"
+            ? "bg-[#242424] text-white rounded-2xl" 
+            : "bg-gray-100 text-gray-900 rounded-2xl border border-gray-200"
         )}
       >
         <div className="flex items-start gap-3">
-          {type === 'ai' ? (
+          {type === 'ai' && (
             <div className="mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#8b73f4] text-white shrink-0">
               <Sparkles size={14} />
             </div>
-          ) : (
-            <div className="mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-gray-700 text-white shrink-0">
-              <User size={14} />
-            </div>
           )}
+          
           <div className="flex-1">
             {isLoading ? (
               <div className="flex items-center space-x-2">
@@ -78,7 +77,7 @@ export const ChatMessage = ({ message, type, isLoading = false }: ChatMessagePro
               <p className="whitespace-pre-wrap break-words">{message}</p>
             )}
             
-            {type === 'ai' && !isLoading && (
+            {type === 'ai' && !isLoading && !isWelcomeMessage && (
               <div className="mt-3 flex items-center gap-1 text-gray-500">
                 <Button 
                   variant="ghost" 
@@ -115,6 +114,12 @@ export const ChatMessage = ({ message, type, isLoading = false }: ChatMessagePro
               </div>
             )}
           </div>
+          
+          {type === 'user' && (
+            <div className="mt-1 flex h-6 w-6 items-center justify-center rounded-full bg-gray-700 text-white shrink-0">
+              <User size={14} />
+            </div>
+          )}
         </div>
       </div>
     </div>

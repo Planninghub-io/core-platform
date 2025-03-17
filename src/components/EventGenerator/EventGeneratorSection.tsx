@@ -62,8 +62,9 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
     });
   };
 
-  // Initial welcome message
-  const welcomeMessage = chatMessages.length === 0 ? "Hi! What can I help you with?" : "";
+  // Updated welcome message
+  const welcomeMessage = chatMessages.length === 0 ? 
+    "Hi, please provide your event details including place, date & time to get started with planning." : "";
 
   return (
     <div className="container py-16">
@@ -90,6 +91,7 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
                   message={welcomeMessage}
                   type="ai"
                   isLoading={false}
+                  isWelcomeMessage={true}
                 />
               )}
               
