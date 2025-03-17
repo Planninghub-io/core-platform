@@ -61,18 +61,20 @@ export const useVenues = (filters: VenueFilterValues) => {
     
     if (data) {
       for (const venue of data) {
-        // Create a simple availability object
-        const availability = { dates: [] as string[] };
+        // Initialize availability with empty dates array
+        const venueAvailability: { dates: string[] } = { dates: [] };
         
         // Process availability data if it exists
         if (venue.availability && typeof venue.availability === 'object') {
           try {
-            // Extract dates array if it exists
-            const availabilityData = venue.availability as any;
-            if (Array.isArray(availabilityData.dates)) {
-              // Filter to only include string values
-              availability.dates = availabilityData.dates
-                .filter((date: any): date is string => typeof date === 'string');
+            // Explicitly define the expected shape
+            const availabilityData = venue.availability as { dates?: unknown };
+            
+            // Check if dates is an array before processing
+            if (availabilityData.dates && Array.isArray(availabilityData.dates)) {
+              // Type-safe filter to only include string values
+              venueAvailability.dates = availabilityData.dates
+                .filter((date): date is string => typeof date === 'string');
             }
           } catch (e) {
             console.error("Error processing venue availability:", e);
@@ -82,7 +84,7 @@ export const useVenues = (filters: VenueFilterValues) => {
         // Add processed venue to the result array
         processedVenues.push({
           ...venue,
-          availability
+          availability: venueAvailability
         });
       }
     }
