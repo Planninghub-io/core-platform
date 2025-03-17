@@ -61,16 +61,24 @@ export const useVenues = (filters: VenueFilterValues) => {
     
     if (data) {
       for (const venue of data) {
-        // Define a simple default availability object
-        let availabilityDates: string[] = [];
+        // Create a simple availability dates array with default empty array
+        const availabilityDates: string[] = [];
         
-        // Check if availability exists and has dates
-        if (venue.availability && typeof venue.availability === 'object') {
-          const availData = venue.availability as { dates?: unknown };
-          if (availData.dates && Array.isArray(availData.dates)) {
-            availabilityDates = availData.dates.filter(
-              (date): date is string => typeof date === 'string'
-            );
+        // Safely extract availability dates if they exist
+        if (venue.availability) {
+          // First check if it's an object
+          if (typeof venue.availability === 'object' && venue.availability !== null) {
+            // Then check if it has a dates property that is an array
+            const availabilityObject = venue.availability as { dates?: unknown };
+            
+            if (Array.isArray(availabilityObject.dates)) {
+              // Filter to only include string values
+              for (const date of availabilityObject.dates) {
+                if (typeof date === 'string') {
+                  availabilityDates.push(date);
+                }
+              }
+            }
           }
         }
         
