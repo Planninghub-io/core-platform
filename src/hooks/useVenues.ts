@@ -1,98 +1,86 @@
 
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type Venue = {
+interface Venue {
   id: string;
   name: string;
-  capacity: number | null;
-  indoor_space_sqft: number | null;
-  outdoor_space_sqft: number | null;
-  amenities: any | null;
-  booking_policy: string | null;
-  cancellation_policy: string | null;
-  verified?: boolean;
+  description: string;
+  location: string;
+  city: string;
+  state: string;
+  type: string;
+  capacity: number;
+  price_range: string;
+  features: string[];
+  images: string[];
+  rating: number;
   availability?: {
-    dates: string[];
+    dates?: string[];
   };
-};
+}
 
-export type VenueFilterValues = {
+interface Filter {
   city?: string;
-  capacity?: {
-    min?: number;
-    max?: number;
-  };
-  amenities?: string[];
-  availabilityDate?: Date;
-  verifiedOnly?: boolean;
-};
+  state?: string;
+  type?: string;
+  minCapacity?: number;
+  maxCapacity?: number;
+  date?: string;
+}
 
-export const useVenues = (filters: VenueFilterValues) => {
-  // Function to fetch venues with filters
-  const fetchVenues = async (): Promise<Venue[]> => {
-    // Start with a basic query that selects everything from venues
-    let query = supabase.from("venues").select("*");
-    
-    // Apply filters one by one
-    if (filters.city) {
-      // This is a basic implementation. In a real app, we'd need to extract city from address or have a city column
-      query = query.ilike('name', `%${filters.city}%`);
-    }
-    
-    if (filters.capacity?.min) {
-      query = query.gte('capacity', filters.capacity.min);
-    }
-    
-    if (filters.verifiedOnly) {
-      query = query.eq('verified', true);
-    }
-    
-    // Execute the query
-    const { data, error } = await query;
-    
-    if (error) {
-      console.error("Error fetching venues:", error);
-      throw new Error("Failed to fetch venues");
-    }
-    
-    // Process the venues to ensure they have the correct structure
-    const venues: Venue[] = data?.map(venue => {
-      let availableDates: string[] = [];
-      
-      // Safely extract availability dates if they exist
-      if (venue.availability && 
-          typeof venue.availability === 'object' && 
-          'dates' in venue.availability && 
-          Array.isArray(venue.availability.dates)) {
-        availableDates = venue.availability.dates.filter(
-          (date): date is string => typeof date === 'string'
-        );
-      }
-      
-      return {
-        ...venue,
-        availability: {
-          dates: availableDates
-        }
-      };
-    }) || [];
-    
-    // Apply date filter if specified
-    if (filters.availabilityDate && venues.length > 0) {
-      const dateString = filters.availabilityDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
-      
-      return venues.filter(venue => {
-        // Venue is available if the date is not in the unavailable dates array
-        return !venue.availability?.dates.includes(dateString);
+export const useVenues = () => {
+  const [venues, setVenues] = useState<Venue[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const getVenues = async (filters: Filter = {}) => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("venue-availability", {
+        body: { filters },
       });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      // Simplify how we handle availability data to avoid deep recursion
+      const processedVenues = data.map((venue: any) => ({
+        ...venue,
+        availability: venue.availability ? {
+          dates: Array.isArray(venue.availability.dates) ? venue.availability.dates : []
+        } : undefined
+      }));
+
+      setVenues(processedVenues);
+      return processedVenues;
+    } catch (err: any) {
+      setError(err.message);
+      return [];
+    } finally {
+      setIsLoading(false);
     }
-    
-    return venues;
   };
-  
-  return useQuery({
-    queryKey: ["venues", filters],
-    queryFn: fetchVenues,
-  });
+
+  const checkAvailability = async (venueId: string, date: string) => {
+    try {
+      const { data, error } = await supabase.functions.invoke("venue-availability", {
+        body: { venueId, date },
+      });
+
+      if (error) {
+        throw new Error(error.message);
+      }
+
+      return data.available;
+    } catch (err: any) {
+      setError(err.message);
+      return false;
+    }
+  };
+
+  return { venues, isLoading, error, getVenues, checkAvailability };
 };

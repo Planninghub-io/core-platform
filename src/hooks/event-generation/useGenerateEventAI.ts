@@ -1,8 +1,15 @@
 
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { GeneratedEvent, MissingInfo } from "./types";
+import { generateEventAPI } from "./api/generateEventAPI";
+import { validateEventData, extractFieldsFromPrompt } from "./utils/eventValidation";
+import { 
+  formatMissingFieldsMessage, 
+  createSuccessMessage, 
+  createMissingInfoMessage,
+  createErrorMessage
+} from "./utils/chatMessageUtils";
 
 export const useGenerateEventAI = () => {
   const { toast } = useToast();
@@ -22,54 +29,22 @@ export const useGenerateEventAI = () => {
       // Combine the existing additional info with provided info
       const combinedInfo = { ...additionalInfo, ...providedInfo };
       
-      // Log the provided info to help with debugging
-      console.log("Combined info before API call:", combinedInfo);
-      
-      let fullPrompt = prompt;
-      if (Object.keys(combinedInfo).length > 0) {
-        const additionalDetails = Object.entries(combinedInfo)
-          .map(([key, value]) => `${key}: ${value}`)
-          .join(", ");
-        fullPrompt = `${prompt}. Additional details: ${additionalDetails}`;
-      }
-
-      console.log('Sending prompt to generate event:', fullPrompt);
-
-      const { data, error } = await supabase.functions.invoke('generate-event', {
-        body: { 
-          prompt: fullPrompt,
-          additionalInfo: combinedInfo
-        },
+      // Call the API
+      const response = await generateEventAPI({
+        prompt,
+        additionalInfo: combinedInfo
       });
 
-      if (error) {
-        console.error('Edge function error:', error);
-        throw error;
+      if (response.error) {
+        throw response.error;
       }
 
-      console.log('Received response from generate-event:', data);
+      const { data } = response;
 
       // If we received a proper event response
       if (data && (data.title || data.description || data.location)) {
-        // Create event object, allowing for missing fields
-        const validatedEvent: GeneratedEvent = {
-          title: data.title?.trim() || 'Enter Event Name',
-          description: data.description || '',
-          date: providedInfo.date || data.date || '',
-          location: providedInfo.location || data.location || '',
-          category: data.category || 'Other',
-          estimatedPrice: data.estimatedPrice || 'Free',
-          imagePrompt: data.imagePrompt || 'event',
-        };
-
-        // Check for missing critical fields, but respect provided info
-        const missing: string[] = [];
-        if (!validatedEvent.date && !providedInfo.date) missing.push('date');
-        if (!validatedEvent.location && !providedInfo.location) missing.push('location');
-        
-        // Log validated event and missing fields for debugging
-        console.log('Created validated event:', validatedEvent);
-        console.log('Missing fields:', missing);
+        // Validate the event data
+        const { validatedEvent, missing } = validateEventData(data, providedInfo);
         
         setMissingFields(missing);
         
@@ -87,18 +62,13 @@ export const useGenerateEventAI = () => {
           // Add success message to chat when all required data is provided
           setChatMessages(prev => [...prev, {
             type: 'ai',
-            content: `Great! I've generated an event based on your request: "${validatedEvent.title}". Please review the details below and click "Create This Event" if everything looks good.`
+            content: createSuccessMessage(validatedEvent.title)
           }]);
         } else {
           // If we have missing fields, ask the user for them
-          const missingFieldsFormatted = missing.map(field => {
-            if (field === 'date') return 'start date and time';
-            return field;
-          }).join(' and ');
-          
           setChatMessages(prev => [...prev, {
             type: 'ai',
-            content: `I need a bit more information to create your event. Could you please provide the ${missingFieldsFormatted}?`
+            content: formatMissingFieldsMessage(missing)
           }]);
         }
         
@@ -107,28 +77,14 @@ export const useGenerateEventAI = () => {
       // Handle missing info response
       else if (data && data.needsInfo === true) {
         if (!isResubmitting) {
-          const prePopulatedInfo: Record<string, string> = {};
+          // Extract information from prompt
+          const prePopulatedInfo = extractFieldsFromPrompt(prompt, data);
           
-          const dateTimeRegex = /(?:on|at)\s+((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}(?:\s+at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?)/i;
-          const dateTimeMatch = prompt.match(dateTimeRegex);
-          
-          const locationRegex = /(?:in|at)\s+([^,.]+(?:,[^,.]+)?)/i;
-          const locationMatch = prompt.match(locationRegex);
-
-          if (dateTimeMatch && data.missingFields.includes('date')) {
-            prePopulatedInfo.date = dateTimeMatch[1];
-          }
-          
-          if (locationMatch && (data.missingFields.includes('location') || data.missingFields.includes('city'))) {
-            const locationField = data.missingFields.includes('location') ? 'location' : 'city';
-            prePopulatedInfo[locationField] = locationMatch[1];
-          }
-
-          // Add any manually provided fields from additionalInfo
+          // Add any manually provided fields from providedInfo
           if (providedInfo.date) {
             prePopulatedInfo.date = providedInfo.date;
             // Remove date from missing fields if it was provided
-            if (data.missingFields.includes('date')) {
+            if (data.missingFields?.includes('date')) {
               data.missingFields = data.missingFields.filter(f => f !== 'date');
             }
           }
@@ -136,7 +92,7 @@ export const useGenerateEventAI = () => {
           if (providedInfo.location) {
             prePopulatedInfo.location = providedInfo.location;
             // Remove location from missing fields if it was provided
-            if (data.missingFields.includes('location')) {
+            if (data.missingFields?.includes('location')) {
               data.missingFields = data.missingFields.filter(f => f !== 'location');
             }
           }
@@ -152,15 +108,11 @@ export const useGenerateEventAI = () => {
             return generateEvent(prompt, prePopulatedInfo);
           }
           
-          // Format missing fields for display
-          const missingFieldsFormatted = data.missingFields.map(field => {
-            if (field === 'date') return 'start date and time';
-            return field;
-          }).join(', ');
-          
           // Add AI message to chat
-          const aiMessage = `I'd be happy to help plan your event, but I need a few more details: ${missingFieldsFormatted}. Could you please provide these details in your next message?`;
-          setChatMessages(prev => [...prev, {type: 'ai', content: aiMessage}]);
+          setChatMessages(prev => [...prev, {
+            type: 'ai', 
+            content: createMissingInfoMessage(data.missingFields)
+          }]);
           
           return { needsMoreInfo: true, data };
         }
@@ -178,7 +130,7 @@ export const useGenerateEventAI = () => {
       // Add error message to chat
       setChatMessages(prev => [...prev, {
         type: 'ai',
-        content: `I'm sorry, I encountered an error while generating your event. Please try again with a more detailed prompt.`
+        content: createErrorMessage()
       }]);
       
       return { error };

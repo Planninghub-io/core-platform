@@ -1,0 +1,55 @@
+
+import { supabase } from "@/integrations/supabase/client";
+import { GeneratedEvent } from "../types";
+
+interface GenerateEventParams {
+  prompt: string;
+  additionalInfo?: Record<string, string>;
+}
+
+interface GenerateEventResponse {
+  validatedEvent?: GeneratedEvent;
+  missing?: string[];
+  needsMoreInfo?: boolean;
+  data?: any;
+  error?: Error;
+}
+
+export const generateEventAPI = async ({
+  prompt,
+  additionalInfo = {}
+}: GenerateEventParams): Promise<GenerateEventResponse> => {
+  try {
+    // Log the provided info to help with debugging
+    console.log("Combined info before API call:", additionalInfo);
+    
+    let fullPrompt = prompt;
+    if (Object.keys(additionalInfo).length > 0) {
+      const additionalDetails = Object.entries(additionalInfo)
+        .map(([key, value]) => `${key}: ${value}`)
+        .join(", ");
+      fullPrompt = `${prompt}. Additional details: ${additionalDetails}`;
+    }
+
+    console.log('Sending prompt to generate event:', fullPrompt);
+
+    const { data, error } = await supabase.functions.invoke('generate-event', {
+      body: { 
+        prompt: fullPrompt,
+        additionalInfo
+      },
+    });
+
+    if (error) {
+      console.error('Edge function error:', error);
+      throw error;
+    }
+
+    console.log('Received response from generate-event:', data);
+    
+    return { data };
+  } catch (error: any) {
+    console.error('Error generating event:', error);
+    return { error };
+  }
+};
