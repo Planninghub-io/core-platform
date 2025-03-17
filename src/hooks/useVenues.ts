@@ -1,4 +1,3 @@
-Fixed useVenues.ts
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,42 +61,28 @@ export const useVenues = (filters: VenueFilterValues) => {
     
     if (data) {
       for (const venue of data) {
-        // Create a simple availability dates array with default empty array
-        const availabilityDates: string[] = [];
-        
-        // Define raw venue type to avoid type recursion
-        type RawVenue = Omit<Venue, "availability"> & {
-          availability?: unknown;
+        // Create a basic venue object with an empty availability dates array
+        const processedVenue: Venue = {
+          ...venue,
+          availability: {
+            dates: []
+          }
         };
         
-        // Cast venue to RawVenue to safely handle the unknown availability structure
-        const rawVenue = venue as RawVenue;
-        
         // Safely extract availability dates if they exist
-        if (rawVenue.availability) {
-          // First check if it's an object
-          if (typeof rawVenue.availability === 'object' && rawVenue.availability !== null) {
-            // Then check if it has a dates property
-            const availObj = rawVenue.availability as Record<string, unknown>;
-            
-            if (Array.isArray(availObj.dates)) {
-              // Filter to only include string values
-              for (const date of availObj.dates) {
-                if (typeof date === 'string') {
-                  availabilityDates.push(date);
-                }
-              }
-            }
+        if (venue.availability && typeof venue.availability === 'object') {
+          const availObj = venue.availability as any;
+          
+          if (Array.isArray(availObj.dates)) {
+            // Filter to only include string values
+            const dateStrings = availObj.dates.filter(
+              (date: unknown): date is string => typeof date === 'string'
+            );
+            processedVenue.availability.dates = dateStrings;
           }
         }
         
-        // Add the processed venue with properly typed availability
-        processedVenues.push({
-          ...venue,
-          availability: {
-            dates: availabilityDates
-          }
-        } as Venue);
+        processedVenues.push(processedVenue);
       }
     }
     
