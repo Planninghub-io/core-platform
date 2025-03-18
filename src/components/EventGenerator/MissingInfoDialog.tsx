@@ -73,8 +73,7 @@ export const MissingInfoDialog = ({
         onAdditionalInfoChange("date", "flexible");
       }
       
-      // Don't automatically close the dialog
-      // The parent component will handle closing after processing
+      // Call the submit callback which will handle closing the dialog
       onSubmit();
     }
   };

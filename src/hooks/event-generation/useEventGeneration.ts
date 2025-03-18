@@ -82,27 +82,51 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
 
   // Handle submission of missing info
   const handleMissingInfoSubmit = () => {
-    // Resubmit the original prompt with the additional info
-    if (isResubmitting) {
-      // Find the last user message in a way compatible with older JS versions
-      let lastUserMessage = null;
-      for (let i = chatMessages.length - 1; i >= 0; i--) {
-        if (chatMessages[i].type === 'user') {
-          lastUserMessage = chatMessages[i];
-          break;
+    // First, check if we've collected all required missing info
+    const missingInfoComplete = 
+      (!missingFields.includes('date') || selectedDate || additionalInfo.date) &&
+      (!missingFields.includes('location') || location || additionalInfo.location);
+    
+    // Only proceed if we have all the required info
+    if (missingInfoComplete) {
+      // Resubmit the original prompt with the additional info
+      if (isResubmitting) {
+        // Find the last user message in a way compatible with older JS versions
+        let lastUserMessage = null;
+        for (let i = chatMessages.length - 1; i >= 0; i--) {
+          if (chatMessages[i].type === 'user') {
+            lastUserMessage = chatMessages[i];
+            break;
+          }
         }
-      }
 
-      if (lastUserMessage) {
-        // Re-generate event with the same prompt but with additional info
-        generateEvent(lastUserMessage.content, additionalInfo)
-          .then(() => {
-            // Close the dialog once processing is complete
-            setShowMissingInfoDialog(false);
-          });
+        if (lastUserMessage) {
+          // Prepare the current additional info
+          const currentAdditionalInfo = { ...additionalInfo };
+          if (selectedDate && !currentAdditionalInfo.date) {
+            currentAdditionalInfo.date = selectedDate;
+          }
+          if (location && !currentAdditionalInfo.location) {
+            currentAdditionalInfo.location = location;
+          }
+          
+          // Close the dialog immediately to prevent it from reopening
+          setShowMissingInfoDialog(false);
+          
+          // Re-generate event with the same prompt but with additional info
+          generateEvent(lastUserMessage.content, currentAdditionalInfo)
+            .then(() => {
+              // Clear the missing fields since we've addressed them
+              setMissingInfo(null);
+              setIsResubmitting(false);
+            })
+            .catch(error => {
+              console.error("Error regenerating event:", error);
+            });
+        }
+      } else {
+        setShowMissingInfoDialog(false);
       }
-    } else {
-      setShowMissingInfoDialog(false);
     }
   };
 
