@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { ChatMessage } from "../types";
 import { createBudgetRequestMessage } from "../utils/chatMessageUtils";
+import { extractBudgetFromMessage } from "../utils/budgetUtils";
 
 export const useBudgetHandler = (
   chatMessages: ChatMessage[],
@@ -12,24 +13,18 @@ export const useBudgetHandler = (
   const [waitingForBudget, setWaitingForBudget] = useState(false);
 
   useEffect(() => {
-    // If we're waiting for budget and the last message was from the user, 
-    // check if it contains budget information
-    if (waitingForBudget && chatMessages.length > 0 && chatMessages[chatMessages.length - 1].type === 'user') {
-      const lastMessage = chatMessages[chatMessages.length - 1].content;
+    // Process budget from user messages only when we're waiting for budget input
+    if (waitingForBudget && chatMessages.length > 0) {
+      const lastMessage = chatMessages[chatMessages.length - 1];
       
-      // Try to extract budget from user's message
-      const budgetRegex = /(?:budget(?:\s+of)?\s+)?\$?(\d+)(?:\s+(?:dollars|USD))?/i;
-      const budgetMatch = lastMessage.match(budgetRegex);
-      
-      if (budgetMatch) {
-        // If budget is found, update additionalInfo
-        const extractedBudget = `$${budgetMatch[1]}`;
-        setAdditionalInfo(prev => ({ ...prev, budget: extractedBudget }));
-        setWaitingForBudget(false);
-      } else if (lastMessage.toLowerCase().includes('free') || lastMessage.toLowerCase().includes('no budget')) {
-        // Handle "free" event case
-        setAdditionalInfo(prev => ({ ...prev, budget: 'Free' }));
-        setWaitingForBudget(false);
+      // Only process user messages, not AI responses
+      if (lastMessage.type === 'user') {
+        const extractedBudget = extractBudgetFromMessage(lastMessage.content);
+        
+        if (extractedBudget) {
+          setAdditionalInfo(prev => ({ ...prev, budget: extractedBudget }));
+          setWaitingForBudget(false);
+        }
       }
     }
   }, [chatMessages, waitingForBudget, setAdditionalInfo]);
