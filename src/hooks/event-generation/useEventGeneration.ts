@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useEventCreation } from "@/hooks/useEventCreation";
 import { useGenerateEventAI } from "./useGenerateEventAI";
@@ -30,7 +31,8 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
     setChatMessages,
     missingFields,
     waitingForBudget,
-    setWaitingForBudget
+    setWaitingForBudget,
+    regenerateEventWithUpdatedInfo
   } = useGenerateEventAI();
 
   const [prompt, setPrompt] = useState("");
