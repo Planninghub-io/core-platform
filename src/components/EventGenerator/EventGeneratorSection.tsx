@@ -8,6 +8,7 @@ import { WelcomeHeader } from "./components/WelcomeHeader";
 import { ChatInterface } from "./components/ChatInterface";
 import { ManualEventButton } from "./components/ManualEventButton";
 import { MissingInfoDialog } from "./MissingInfoDialog";
+import { EventDetailsForm } from "./components/EventDetailsForm";
 
 interface EventGeneratorSectionProps {
   onCreateManualEvent?: () => void;
@@ -41,7 +42,9 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
     showMissingInfoDialog,
     setShowMissingInfoDialog,
     handleAdditionalInfoChange,
-    handleMissingInfoSubmit
+    handleMissingInfoSubmit,
+    waitingForBudget,
+    setWaitingForBudget
   } = useEventGeneration();
 
   // Prepare event data for navigation
@@ -90,26 +93,33 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
             generatedEvent={generatedEvent}
           />
 
-          {/* Generated Event Card */}
+          {/* Generated Event Data */}
           {generatedEvent && (
-            <GeneratedEventCard
-              event={{
-                ...generatedEvent,
-                date: selectedDate || generatedEvent.date,
-                location: location || generatedEvent.location
-              }}
-              isCreating={isCreating}
-              eventId={createdEventId || undefined}
-              imageUrl={createdEventId ? `/api/events/${createdEventId}/image` : undefined}
-              onCreateEvent={handleCreateEvent}
-              eventTitle={eventTitle}
-              onTitleChange={setEventTitle}
-              onDateChange={setSelectedDate}
-              onLocationChange={setLocation}
-              selectedDate={selectedDate}
-              missingDate={hasMissingDate}
-              missingLocation={hasMissingLocation}
-            />
+            <div className="space-y-6">
+              {/* Display event image */}
+              <div className="relative overflow-hidden rounded-lg">
+                <img 
+                  src={generatedEvent.imageUrl || "/placeholder.svg"}
+                  alt={eventTitle || generatedEvent.title || "Event"}
+                  className="w-full h-[200px] object-cover animate-fade-in rounded-lg"
+                />
+              </div>
+              
+              {/* Show event details form for editing */}
+              <EventDetailsForm 
+                event={generatedEvent}
+                eventTitle={eventTitle}
+                setEventTitle={setEventTitle}
+                selectedDate={selectedDate || generatedEvent.date}
+                setSelectedDate={setSelectedDate}
+                location={location || generatedEvent.location}
+                setLocation={setLocation}
+                hasMissingDate={hasMissingDate}
+                hasMissingLocation={hasMissingLocation}
+                isCreating={isCreating}
+                handleCreateEvent={handleCreateEvent}
+              />
+            </div>
           )}
         </div>
 
