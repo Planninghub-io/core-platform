@@ -1,4 +1,3 @@
-
 export interface GeneratedEvent {
   title: string;
   description: string;
@@ -7,6 +6,7 @@ export interface GeneratedEvent {
   category: string;
   estimatedPrice: string;
   imagePrompt: string;
+  imageUrl?: string;
 }
 
 export interface MissingInfo {
