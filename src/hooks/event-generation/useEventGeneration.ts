@@ -81,7 +81,7 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
     }
   };
 
-  // Handle submission of missing info
+  // Modify handleMissingInfoSubmit to use the new regenerateEventWithUpdatedInfo function
   const handleMissingInfoSubmit = () => {
     // First, check if we've collected all required missing info
     const missingInfoComplete = 
@@ -102,30 +102,17 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
       // Close the dialog immediately to prevent it from reopening
       setShowMissingInfoDialog(false);
       
-      // If we're resubmitting, find the last user message
+      // If we're resubmitting, regenerate the event with the new info
       if (isResubmitting) {
-        // Find the last user message in a way compatible with older JS versions
-        let lastUserMessage = null;
-        for (let i = chatMessages.length - 1; i >= 0; i--) {
-          if (chatMessages[i].type === 'user') {
-            lastUserMessage = chatMessages[i];
-            break;
-          }
-        }
-
-        if (lastUserMessage) {
-          // Re-generate event with the same prompt but with additional info
-          console.log("Regenerating event with additional info:", currentAdditionalInfo);
-          generateEvent(lastUserMessage.content, currentAdditionalInfo)
-            .then(() => {
-              // Clear the missing fields since we've addressed them
-              setMissingInfo(null);
-              setIsResubmitting(false);
-            })
-            .catch(error => {
-              console.error("Error regenerating event:", error);
-            });
-        }
+        regenerateEventWithUpdatedInfo(currentAdditionalInfo)
+          .then(() => {
+            // Clear the missing fields since we've addressed them
+            setMissingInfo(null);
+            setIsResubmitting(false);
+          })
+          .catch(error => {
+            console.error("Error regenerating event:", error);
+          });
       }
     } else {
       // Some required info is still missing
