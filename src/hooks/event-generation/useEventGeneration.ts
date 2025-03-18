@@ -29,7 +29,9 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
     generateEvent,
     chatMessages,
     setChatMessages,
-    missingFields
+    missingFields,
+    waitingForBudget,
+    setWaitingForBudget
   } = useGenerateEventAI();
 
   const [prompt, setPrompt] = useState("");
@@ -171,6 +173,8 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
     showMissingInfoDialog,
     setShowMissingInfoDialog,
     handleAdditionalInfoChange,
-    handleMissingInfoSubmit
+    handleMissingInfoSubmit,
+    waitingForBudget,
+    setWaitingForBudget
   };
 };

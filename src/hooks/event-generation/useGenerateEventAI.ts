@@ -1,14 +1,15 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { GeneratedEvent, MissingInfo } from "./types";
+import { GeneratedEvent, MissingInfo, ChatMessage } from "./types";
 import { generateEventAPI } from "./api/generateEventAPI";
 import { validateEventData, extractFieldsFromPrompt } from "./utils/eventValidation";
 import { 
   formatMissingFieldsMessage, 
   createSuccessMessage, 
   createMissingInfoMessage,
-  createErrorMessage
+  createErrorMessage,
+  createBudgetRequestMessage
 } from "./utils/chatMessageUtils";
 
 export const useGenerateEventAI = () => {
@@ -21,6 +22,68 @@ export const useGenerateEventAI = () => {
   const [generatedEvent, setGeneratedEvent] = useState<GeneratedEvent | null>(null);
   const [chatMessages, setChatMessages] = useState<Array<{type: 'user' | 'ai', content: string}>>([]);
   const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [waitingForBudget, setWaitingForBudget] = useState(false);
+
+  useEffect(() => {
+    // If we're waiting for budget and the last message was from the user, 
+    // check if it contains budget information
+    if (waitingForBudget && chatMessages.length > 0 && chatMessages[chatMessages.length - 1].type === 'user') {
+      const lastMessage = chatMessages[chatMessages.length - 1].content;
+      
+      // Try to extract budget from user's message
+      const budgetRegex = /(?:budget(?:\s+of)?\s+)?\$?(\d+)(?:\s+(?:dollars|USD))?/i;
+      const budgetMatch = lastMessage.match(budgetRegex);
+      
+      if (budgetMatch) {
+        // If budget is found, update additionalInfo
+        const extractedBudget = `$${budgetMatch[1]}`;
+        setAdditionalInfo(prev => ({ ...prev, budget: extractedBudget }));
+        setWaitingForBudget(false);
+        
+        // Re-generate the event with the budget info
+        const lastUserPrompt = findLastUserPrompt();
+        if (lastUserPrompt) {
+          // Create a new additionalInfo object with the budget
+          const updatedInfo = { ...additionalInfo, budget: extractedBudget };
+          
+          // Generate the event with the updated info
+          generateEvent(lastUserPrompt, updatedInfo);
+        }
+      } else if (lastMessage.toLowerCase().includes('free') || lastMessage.toLowerCase().includes('no budget')) {
+        // Handle "free" event case
+        setAdditionalInfo(prev => ({ ...prev, budget: 'Free' }));
+        setWaitingForBudget(false);
+        
+        // Re-generate the event with the free budget info
+        const lastUserPrompt = findLastUserPrompt();
+        if (lastUserPrompt) {
+          const updatedInfo = { ...additionalInfo, budget: 'Free' };
+          generateEvent(lastUserPrompt, updatedInfo);
+        }
+      }
+    }
+  }, [chatMessages, waitingForBudget]);
+
+  const findLastUserPrompt = () => {
+    // Find the last user message that isn't just answering a specific question
+    for (let i = chatMessages.length - 1; i >= 0; i--) {
+      if (chatMessages[i].type === 'user') {
+        // Skip messages that are just answering budget/date/location questions
+        const content = chatMessages[i].content.toLowerCase();
+        
+        // Simple heuristic: if the message is just a number, date, or location, skip it
+        if (!/^\$?\d+$/.test(content) && 
+            !content.match(/^(january|february|march|april|may|june|july|august|september|october|november|december)/i) &&
+            !content.match(/^(in|at) /i)) {
+          return chatMessages[i].content;
+        }
+      }
+    }
+    
+    // If we couldn't find a good prompt, use the first user message
+    const firstUserMessage = chatMessages.find(msg => msg.type === 'user');
+    return firstUserMessage ? firstUserMessage.content : '';
+  };
 
   const generateEvent = async (prompt: string, providedInfo: Record<string, string> = {}) => {
     setIsGenerating(true);
@@ -56,12 +119,24 @@ export const useGenerateEventAI = () => {
         
         setMissingFields(missing);
         
+        // Check if we're missing budget specifically
+        if (missing.includes('budget') && !waitingForBudget) {
+          setWaitingForBudget(true);
+          setChatMessages(prev => [...prev, {
+            type: 'ai',
+            content: createBudgetRequestMessage()
+          }]);
+          setIsGenerating(false);
+          return { needsBudget: true, validatedEvent, missing };
+        }
+        
         // Only set generated event if we have all required fields
         if (missing.length === 0) {
           setGeneratedEvent(validatedEvent);
           setMissingInfo(null);
           setAdditionalInfo({});
           setIsResubmitting(false);
+          setWaitingForBudget(false);
           
           if (!isResubmitting) {
             setPromptCount(prev => prev + 1);
@@ -106,11 +181,30 @@ export const useGenerateEventAI = () => {
               data.missingFields = data.missingFields.filter(f => f !== 'location');
             }
           }
+          
+          if (providedInfo.budget) {
+            prePopulatedInfo.budget = providedInfo.budget;
+            // Remove budget from missing fields if it was provided
+            if (data.missingFields?.includes('budget')) {
+              data.missingFields = data.missingFields.filter(f => f !== 'budget');
+            }
+          }
 
           setAdditionalInfo(prePopulatedInfo);
           setMissingInfo(data);
           setIsResubmitting(true);
           setMissingFields(data.missingFields || []);
+          
+          // Check if we need budget specifically
+          if (data.missingFields.includes('budget') && !waitingForBudget) {
+            setWaitingForBudget(true);
+            setChatMessages(prev => [...prev, {
+              type: 'ai',
+              content: createBudgetRequestMessage()
+            }]);
+            setIsGenerating(false);
+            return { needsBudget: true, data };
+          }
           
           // If we have all the required fields after applying provided info,
           // we should generate the event again with the complete info
@@ -163,6 +257,8 @@ export const useGenerateEventAI = () => {
     generateEvent,
     chatMessages,
     setChatMessages,
-    missingFields
+    missingFields,
+    waitingForBudget,
+    setWaitingForBudget
   };
 };

@@ -178,22 +178,6 @@ export const MissingInfoDialog = ({
               )}
             </div>
           )}
-
-          <div className="grid gap-2">
-            <Label htmlFor="budget" className="flex items-center gap-2">
-              Estimated Budget
-              <span className="text-sm text-gray-500">(Optional)</span>
-            </Label>
-            <Input
-              id="budget"
-              type="number"
-              min="0"
-              step="0.01"
-              value={additionalInfo["budget"] || ""}
-              onChange={(e) => onAdditionalInfoChange("budget", e.target.value)}
-              placeholder="Enter estimated budget"
-            />
-          </div>
         </div>
         <DialogFooter>
           <Button onClick={handleSubmit} className="w-full">

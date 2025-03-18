@@ -17,7 +17,7 @@ export const validateEventData = (
     date: providedInfo.date || data.date || '',
     location: providedInfo.location || data.location || '',
     category: data.category || 'Other',
-    estimatedPrice: data.estimatedPrice || 'Free',
+    estimatedPrice: providedInfo.budget || data.estimatedPrice || 'Free',
     imagePrompt: data.imagePrompt || 'event',
     imageUrl: data.imageUrl || '',
   };
@@ -26,6 +26,7 @@ export const validateEventData = (
   const missing: string[] = [];
   if (!validatedEvent.date && !providedInfo.date) missing.push('date');
   if (!validatedEvent.location && !providedInfo.location) missing.push('location');
+  if (!validatedEvent.estimatedPrice && !providedInfo.budget && !data.estimatedPrice) missing.push('budget');
   
   // Log validated event and missing fields for debugging
   console.log('Created validated event:', validatedEvent);
@@ -51,7 +52,11 @@ export const extractFieldsFromPrompt = (
   const locationRegex = /(?:in|at)\s+([^,.]+(?:,[^,.]+)?)/i;
   const locationMatch = prompt.match(locationRegex);
 
-  if ((dateTimeMatch || simpleDateMatch) && data.missingFields?.includes('date')) {
+  // Match budget patterns like "$500", "500 dollars", "budget of $500"
+  const budgetRegex = /(?:budget(?:\s+of)?\s+)?\$?(\d+)(?:\s+(?:dollars|USD))?/i;
+  const budgetMatch = prompt.match(budgetRegex);
+
+  if ((dateTimeMatch || simpleDateMatch) && (data.missingFields?.includes('date') || !data.date)) {
     const dateStr = dateTimeMatch ? dateTimeMatch[1] : (simpleDateMatch ? simpleDateMatch[1] : "");
     // If year is missing, add the current year
     const currentYear = new Date().getFullYear();
@@ -69,9 +74,13 @@ export const extractFieldsFromPrompt = (
     }
   }
   
-  if (locationMatch && (data.missingFields?.includes('location') || data.missingFields?.includes('city'))) {
+  if (locationMatch && (data.missingFields?.includes('location') || !data.location)) {
     const locationField = data.missingFields?.includes('location') ? 'location' : 'city';
     prePopulatedInfo[locationField] = locationMatch[1].trim();
+  }
+
+  if (budgetMatch && (data.missingFields?.includes('budget') || !data.estimatedPrice)) {
+    prePopulatedInfo.budget = `$${budgetMatch[1]}`;
   }
 
   return prePopulatedInfo;

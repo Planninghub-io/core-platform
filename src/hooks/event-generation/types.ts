@@ -1,3 +1,4 @@
+
 export interface GeneratedEvent {
   title: string;
   description: string;
@@ -37,4 +38,5 @@ export interface EventGenerationState {
   missingFields: string[];
   hasMissingDate: boolean;
   hasMissingLocation: boolean;
+  waitingForBudget: boolean;
 }

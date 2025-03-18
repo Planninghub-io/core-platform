@@ -108,6 +108,9 @@ export async function processRequest(prompt: string, additionalInfo: any): Promi
       if (additionalInfo.location && !extractedEvent.location) {
         extractedEvent.location = additionalInfo.location;
       }
+      if (additionalInfo.budget && !extractedEvent.estimatedPrice) {
+        extractedEvent.estimatedPrice = additionalInfo.budget;
+      }
     }
     
     console.log('Extracted event data:', extractedEvent);
@@ -117,7 +120,8 @@ export async function processRequest(prompt: string, additionalInfo: any): Promi
       extractedEvent.title || 
       extractedEvent.location || 
       (additionalInfo && additionalInfo.date) || 
-      (additionalInfo && additionalInfo.location)
+      (additionalInfo && additionalInfo.location) ||
+      (additionalInfo && additionalInfo.budget)
     );
     
     if (hasMinimumInfo) {

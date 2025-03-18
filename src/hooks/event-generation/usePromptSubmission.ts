@@ -61,6 +61,25 @@ export const usePromptSubmission = (
     return null;
   };
 
+  const extractBudgetFromPrompt = (promptText: string) => {
+    // Match "$500", "500 dollars", "budget of $500"
+    const budgetRegex = /(?:budget(?:\s+of)?\s+)?\$?(\d+)(?:\s+(?:dollars|USD))?/i;
+    const budgetMatch = promptText.match(budgetRegex);
+    
+    if (budgetMatch) {
+      return `$${budgetMatch[1]}`;
+    }
+    
+    // Check for free events
+    if (promptText.toLowerCase().includes('free event') || 
+        promptText.toLowerCase().includes('no budget') ||
+        promptText.toLowerCase().includes('zero budget')) {
+      return 'Free';
+    }
+    
+    return null;
+  };
+
   const handlePromptSubmit = async () => {
     if (!prompt.trim()) {
       toast({
@@ -95,6 +114,9 @@ export const usePromptSubmission = (
       setLocation(extractedLocation);
     }
 
+    // Extract budget from prompt if present
+    const extractedBudget = extractBudgetFromPrompt(prompt);
+
     // Prepare additional info
     const additionalInfo: Record<string, string> = {};
     if (selectedDate) {
@@ -107,6 +129,10 @@ export const usePromptSubmission = (
       additionalInfo.location = location;
     } else if (extractedLocation) {
       additionalInfo.location = extractedLocation;
+    }
+    
+    if (extractedBudget) {
+      additionalInfo.budget = extractedBudget;
     }
 
     // Save the user's input before clearing it
@@ -126,8 +152,14 @@ export const usePromptSubmission = (
       return;
     }
 
-    // Show the missing info dialog if needed
-    if ((result && result.needsMoreInfo) || (result && result.missing && result.missing.length > 0)) {
+    // No need to show the dialog for asking budget, now handled in chat
+    if (result && result.needsBudget) {
+      return;
+    }
+
+    // Show the missing info dialog if needed but not for budget
+    if ((result && result.needsMoreInfo && !result.missingFields?.includes('budget')) || 
+        (result && result.missing && result.missing.length > 0 && !result.missing.includes('budget'))) {
       setShowMissingInfoDialog(true);
       return;
     }
