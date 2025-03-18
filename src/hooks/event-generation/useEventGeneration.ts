@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useEventCreation } from "@/hooks/useEventCreation";
 import { useGenerateEventAI } from "./useGenerateEventAI";
@@ -91,7 +90,19 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
     
     // Only proceed if we have all the required info
     if (missingInfoComplete) {
-      // Resubmit the original prompt with the additional info
+      // Prepare the current additional info
+      const currentAdditionalInfo = { ...additionalInfo };
+      if (selectedDate && !currentAdditionalInfo.date) {
+        currentAdditionalInfo.date = selectedDate;
+      }
+      if (location && !currentAdditionalInfo.location) {
+        currentAdditionalInfo.location = location;
+      }
+      
+      // Close the dialog immediately to prevent it from reopening
+      setShowMissingInfoDialog(false);
+      
+      // If we're resubmitting, find the last user message
       if (isResubmitting) {
         // Find the last user message in a way compatible with older JS versions
         let lastUserMessage = null;
@@ -103,19 +114,8 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
         }
 
         if (lastUserMessage) {
-          // Prepare the current additional info
-          const currentAdditionalInfo = { ...additionalInfo };
-          if (selectedDate && !currentAdditionalInfo.date) {
-            currentAdditionalInfo.date = selectedDate;
-          }
-          if (location && !currentAdditionalInfo.location) {
-            currentAdditionalInfo.location = location;
-          }
-          
-          // Close the dialog immediately to prevent it from reopening
-          setShowMissingInfoDialog(false);
-          
           // Re-generate event with the same prompt but with additional info
+          console.log("Regenerating event with additional info:", currentAdditionalInfo);
           generateEvent(lastUserMessage.content, currentAdditionalInfo)
             .then(() => {
               // Clear the missing fields since we've addressed them
@@ -126,9 +126,17 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
               console.error("Error regenerating event:", error);
             });
         }
-      } else {
-        setShowMissingInfoDialog(false);
       }
+    } else {
+      // Some required info is still missing
+      console.log("Missing info not complete:", {
+        date: selectedDate || additionalInfo.date,
+        location: location || additionalInfo.location,
+        missingFields
+      });
+      
+      // Keep dialog open
+      setShowMissingInfoDialog(true);
     }
   };
 

@@ -157,10 +157,23 @@ export const usePromptSubmission = (
       return;
     }
 
-    // Show the missing info dialog if needed but not for budget
-    if ((result && result.needsMoreInfo && !result.missingFields?.includes('budget')) || 
-        (result && result.missing && result.missing.length > 0 && !result.missing.includes('budget'))) {
-      setShowMissingInfoDialog(true);
+    // Show the missing info dialog ONLY if we have date or location missing
+    // Budget is handled through chat
+    if (result && result.needsMoreInfo) {
+      const missingInfo = result.data || { missingFields: [] };
+      // Filter out 'budget' from missing fields for dialog
+      const dialogMissingFields = missingInfo.missingFields.filter(
+        (field: string) => field !== 'budget'
+      );
+      
+      if (dialogMissingFields.length > 0) {
+        // Update missingInfo fields to exclude budget
+        missingInfo.missingFields = dialogMissingFields;
+        console.log("Showing dialog for missing fields:", dialogMissingFields);
+        setShowMissingInfoDialog(true);
+      } else {
+        console.log("No fields for dialog, only had budget which is handled in chat");
+      }
       return;
     }
 

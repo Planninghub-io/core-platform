@@ -120,6 +120,20 @@ export const MissingInfoDialog = ({
     // We don't immediately update the parent state to avoid race conditions
   };
 
+  // Don't render fields if there are no missing fields to display
+  const hasMissingFieldsToDisplay = missingInfo && 
+    missingInfo.missingFields && 
+    missingInfo.missingFields.length > 0 &&
+    (missingInfo.missingFields.includes("date") || missingInfo.missingFields.includes("location"));
+
+  // If there's nothing to display, close the dialog
+  useEffect(() => {
+    if (open && (!missingInfo || !hasMissingFieldsToDisplay)) {
+      console.log("No missing fields to display, closing dialog", missingInfo);
+      onOpenChange(false);
+    }
+  }, [open, missingInfo, hasMissingFieldsToDisplay, onOpenChange]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -129,61 +143,69 @@ export const MissingInfoDialog = ({
             Please provide the following details to plan your event
           </DialogDescription>
         </DialogHeader>
-        <div className="grid gap-4 py-4">
-          {missingInfo?.missingFields.includes("date") && (
-            <div className="grid gap-2">
-              <Label>Date & Time</Label>
-              <div className="flex flex-col gap-2">
-                <RadioGroup value={isFlexible} onValueChange={setIsFlexible} className="mb-2">
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="yes" id="flexible" />
-                    <Label htmlFor="flexible">Date & time is flexible</Label>
+        {hasMissingFieldsToDisplay ? (
+          <>
+            <div className="grid gap-4 py-4">
+              {missingInfo?.missingFields.includes("date") && (
+                <div className="grid gap-2">
+                  <Label>Date & Time</Label>
+                  <div className="flex flex-col gap-2">
+                    <RadioGroup value={isFlexible} onValueChange={setIsFlexible} className="mb-2">
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="yes" id="flexible" />
+                        <Label htmlFor="flexible">Date & time is flexible</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="no" id="specific" />
+                        <Label htmlFor="specific">Specific date & time</Label>
+                      </div>
+                    </RadioGroup>
+                    {isFlexible === "no" && (
+                      <div className="relative">
+                        <Input
+                          type="datetime-local"
+                          value={datetime}
+                          onChange={(e) => setDatetime(e.target.value)}
+                          className={cn(errors["date"] ? "border-red-500" : "")}
+                          min={new Date().toISOString().slice(0, 16)}
+                        />
+                        <Calendar className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                      </div>
+                    )}
+                    {errors["date"] && (
+                      <span className="text-sm text-red-500">{errors["date"]}</span>
+                    )}
                   </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="no" id="specific" />
-                    <Label htmlFor="specific">Specific date & time</Label>
-                  </div>
-                </RadioGroup>
-                {isFlexible === "no" && (
-                  <div className="relative">
-                    <Input
-                      type="datetime-local"
-                      value={datetime}
-                      onChange={(e) => setDatetime(e.target.value)}
-                      className={cn(errors["date"] ? "border-red-500" : "")}
-                      min={new Date().toISOString().slice(0, 16)}
-                    />
-                    <Calendar className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  </div>
-                )}
-                {errors["date"] && (
-                  <span className="text-sm text-red-500">{errors["date"]}</span>
-                )}
-              </div>
-            </div>
-          )}
-          
-          {missingInfo?.missingFields.includes("location") && (
-            <div className="grid gap-2">
-              <Label htmlFor="location">Location</Label>
-              <Input
-                id="location"
-                value={localLocation}
-                onChange={handleLocationChange}
-                placeholder="Enter venue or location"
-                className={errors["location"] ? "border-red-500" : ""}
-              />
-              {errors["location"] && (
-                <span className="text-sm text-red-500">{errors["location"]}</span>
+                </div>
+              )}
+              
+              {missingInfo?.missingFields.includes("location") && (
+                <div className="grid gap-2">
+                  <Label htmlFor="location">Location</Label>
+                  <Input
+                    id="location"
+                    value={localLocation}
+                    onChange={handleLocationChange}
+                    placeholder="Enter venue or location"
+                    className={errors["location"] ? "border-red-500" : ""}
+                  />
+                  {errors["location"] && (
+                    <span className="text-sm text-red-500">{errors["location"]}</span>
+                  )}
+                </div>
               )}
             </div>
-          )}
-        </div>
-        <DialogFooter>
-          <Button onClick={handleSubmit} className="w-full">
-            Generate Event
-          </Button>
-        </DialogFooter>
+            <DialogFooter>
+              <Button onClick={handleSubmit} className="w-full">
+                Generate Event
+              </Button>
+            </DialogFooter>
+          </>
+        ) : (
+          <div className="py-4 text-center text-muted-foreground">
+            Loading required fields...
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

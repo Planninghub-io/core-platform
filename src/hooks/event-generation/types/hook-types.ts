@@ -19,6 +19,7 @@ export interface EventGenerationHookState {
   chatMessages: ChatMessage[];
   missingFields: string[];
   showMissingInfoDialog: boolean;
+  waitingForBudget: boolean;
 }
 
 export interface EventGenerationHookActions {
@@ -34,6 +35,7 @@ export interface EventGenerationHookActions {
   setShowMissingInfoDialog: (show: boolean) => void;
   handleAdditionalInfoChange: (field: string, value: string) => void;
   handleMissingInfoSubmit: () => void;
+  setWaitingForBudget: (waiting: boolean) => void;
 }
 
 export type EventGenerationHookReturn = EventGenerationHookState & EventGenerationHookActions;
