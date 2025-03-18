@@ -2,7 +2,7 @@
 // Event processing logic
 
 import { extractEventDetails } from './eventExtractors.ts';
-import { generateEventImage, generateEventWithAI } from './openaiService.ts';
+import { generateEventWithAI, generateEventImage } from './openaiService.ts';
 import { createSuccessResponse, createErrorResponse } from './responseUtils.ts';
 import type { EventData } from './types.ts';
 
@@ -47,6 +47,7 @@ export async function generateResponseWithAI(
       title: aiGeneratedEvent.title || extractedEvent.title || "",
       description: aiGeneratedEvent.description || extractedEvent.description || "",
       location: aiGeneratedEvent.location || extractedEvent.location || "",
+      date: aiGeneratedEvent.date || extractedEvent.date || "",
       category: aiGeneratedEvent.category || extractedEvent.category || "Other",
       estimatedPrice: aiGeneratedEvent.estimatedPrice || extractedEvent.estimatedPrice || "Free",
       imagePrompt: aiGeneratedEvent.imagePrompt || 
@@ -88,7 +89,21 @@ export async function processRequest(prompt: string, additionalInfo: any): Promi
     // Add any manually provided fields from additionalInfo
     if (additionalInfo) {
       if (additionalInfo.date && !extractedEvent.date) {
-        extractedEvent.date = additionalInfo.date;
+        // Handle ISO date strings and convert them to a more readable format
+        if (additionalInfo.date.includes('T')) {
+          try {
+            const date = new Date(additionalInfo.date);
+            if (!isNaN(date.getTime())) {
+              extractedEvent.date = date.toISOString();
+            } else {
+              extractedEvent.date = additionalInfo.date;
+            }
+          } catch (e) {
+            extractedEvent.date = additionalInfo.date;
+          }
+        } else {
+          extractedEvent.date = additionalInfo.date;
+        }
       }
       if (additionalInfo.location && !extractedEvent.location) {
         extractedEvent.location = additionalInfo.location;
@@ -98,7 +113,12 @@ export async function processRequest(prompt: string, additionalInfo: any): Promi
     console.log('Extracted event data:', extractedEvent);
 
     // Check if we have enough extracted information
-    const hasMinimumInfo = (extractedEvent.title || extractedEvent.location);
+    const hasMinimumInfo = (
+      extractedEvent.title || 
+      extractedEvent.location || 
+      (additionalInfo && additionalInfo.date) || 
+      (additionalInfo && additionalInfo.location)
+    );
     
     if (hasMinimumInfo) {
       return await generateResponseWithExtractedInfo(extractedEvent, fullPrompt);

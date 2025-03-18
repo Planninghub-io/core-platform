@@ -14,6 +14,7 @@ import { Calendar } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useToast } from "@/hooks/use-toast";
 
 interface MissingInfo {
   needsInfo: true;
@@ -38,17 +39,43 @@ export const MissingInfoDialog = ({
   onAdditionalInfoChange,
   onSubmit,
 }: MissingInfoDialogProps) => {
+  const { toast } = useToast();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isFlexible, setIsFlexible] = useState("no");
   const [datetime, setDatetime] = useState("");
+  const [localLocation, setLocalLocation] = useState(additionalInfo["location"] || "");
 
   useEffect(() => {
     if (open) {
       setErrors({});
-      setDatetime("");
-      setIsFlexible("no");
+      // If we already have date info, initialize the form
+      if (additionalInfo["date"]) {
+        if (additionalInfo["date"] === "flexible") {
+          setIsFlexible("yes");
+          setDatetime("");
+        } else {
+          setIsFlexible("no");
+          try {
+            // Try to format the date for the datetime-local input
+            const date = new Date(additionalInfo["date"]);
+            if (!isNaN(date.getTime())) {
+              setDatetime(date.toISOString().slice(0, 16));
+            } else {
+              setDatetime("");
+            }
+          } catch (e) {
+            setDatetime("");
+          }
+        }
+      } else {
+        setIsFlexible("no");
+        setDatetime("");
+      }
+      
+      // Initialize location
+      setLocalLocation(additionalInfo["location"] || "");
     }
-  }, [open]);
+  }, [open, additionalInfo]);
 
   const validateFields = () => {
     const newErrors: Record<string, string> = {};
@@ -57,7 +84,7 @@ export const MissingInfoDialog = ({
       newErrors["date"] = "Please select both date and time";
     }
     
-    if (missingInfo?.missingFields.includes("location") && !additionalInfo["location"]?.trim()) {
+    if (missingInfo?.missingFields.includes("location") && !localLocation?.trim()) {
       newErrors["location"] = "Location is required";
     }
 
@@ -67,15 +94,30 @@ export const MissingInfoDialog = ({
 
   const handleSubmit = () => {
     if (validateFields()) {
-      if (datetime && isFlexible === "no") {
-        onAdditionalInfoChange("date", new Date(datetime).toISOString());
-      } else if (isFlexible === "yes") {
+      if (isFlexible === "yes") {
         onAdditionalInfoChange("date", "flexible");
+      } else if (datetime) {
+        onAdditionalInfoChange("date", new Date(datetime).toISOString());
       }
+      
+      if (localLocation) {
+        onAdditionalInfoChange("location", localLocation);
+      }
+      
+      // Show feedback to user
+      toast({
+        title: "Information received",
+        description: "Generating your event now...",
+      });
       
       // Call the submit callback which will handle closing the dialog
       onSubmit();
     }
+  };
+
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalLocation(e.target.value);
+    // We don't immediately update the parent state to avoid race conditions
   };
 
   return (
@@ -126,8 +168,8 @@ export const MissingInfoDialog = ({
               <Label htmlFor="location">Location</Label>
               <Input
                 id="location"
-                value={additionalInfo["location"] || ""}
-                onChange={(e) => onAdditionalInfoChange("location", e.target.value)}
+                value={localLocation}
+                onChange={handleLocationChange}
                 placeholder="Enter venue or location"
                 className={errors["location"] ? "border-red-500" : ""}
               />

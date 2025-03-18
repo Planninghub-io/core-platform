@@ -22,17 +22,26 @@ export const usePromptSubmission = (
   const { toast } = useToast();
 
   const extractDateFromPrompt = (promptText: string) => {
-    const dateTimeRegex = /(?:on|at)\s+((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}(?:\s+at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?)/i;
-    const dateTimeMatch = promptText.match(dateTimeRegex);
+    // Try to find date patterns in the format "April 1st" or "April 1st, 2023" or with "at 2:00 PM"
+    const dateTimeRegex = /(?:on|at)\s+((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+(?:\d{4})?\s*(?:at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?)/i;
+    const simpleDateRegex = /((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?(?:,?\s+\d{4})?)/i;
     
-    if (dateTimeMatch && !selectedDate) {
+    const dateTimeMatch = promptText.match(dateTimeRegex);
+    const simpleDateMatch = !dateTimeMatch ? promptText.match(simpleDateRegex) : null;
+    
+    if ((dateTimeMatch || simpleDateMatch) && !selectedDate) {
       try {
-        const dateStr = dateTimeMatch[1];
-        const date = new Date(dateStr);
+        const dateStr = dateTimeMatch ? dateTimeMatch[1] : (simpleDateMatch ? simpleDateMatch[1] : "");
+        // If year is missing, add the current year
+        const currentYear = new Date().getFullYear();
+        const dateWithYear = dateStr.includes(String(currentYear)) ? dateStr : `${dateStr}, ${currentYear}`;
+        
+        const date = new Date(dateWithYear);
         if (!isNaN(date.getTime())) {
           return date.toISOString();
         }
       } catch (e) {
+        console.error("Error parsing date:", e);
         // Ignore date parsing errors
       }
     }
@@ -40,12 +49,15 @@ export const usePromptSubmission = (
   };
 
   const extractLocationFromPrompt = (promptText: string) => {
-    const locationRegex = /(?:in|at)\s+([^,.]+(?:,[^,.]+)?)/i;
+    // Match "in City", "at Place", "in City, State"
+    const locationRegex = /(?:in|at)\s+([^,.]+(?:,\s*[^,.]+)?)/i;
     const locationMatch = promptText.match(locationRegex);
     
+    // Look for cities/locations directly in the prompt
     if (locationMatch && !location) {
       return locationMatch[1].trim();
     }
+    
     return null;
   };
 
@@ -87,9 +99,14 @@ export const usePromptSubmission = (
     const additionalInfo: Record<string, string> = {};
     if (selectedDate) {
       additionalInfo.date = selectedDate;
+    } else if (extractedDate) {
+      additionalInfo.date = extractedDate;
     }
+    
     if (location) {
       additionalInfo.location = location;
+    } else if (extractedLocation) {
+      additionalInfo.location = extractedLocation;
     }
 
     // Save the user's input before clearing it
@@ -110,7 +127,7 @@ export const usePromptSubmission = (
     }
 
     // Show the missing info dialog if needed
-    if (result && result.needsMoreInfo) {
+    if ((result && result.needsMoreInfo) || (result && result.missing && result.missing.length > 0)) {
       setShowMissingInfoDialog(true);
       return;
     }

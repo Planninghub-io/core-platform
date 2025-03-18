@@ -29,6 +29,10 @@ export const useGenerateEventAI = () => {
       // Combine the existing additional info with provided info
       const combinedInfo = { ...additionalInfo, ...providedInfo };
       
+      // Log the combined info for debugging
+      console.log("Combined info before API call:", combinedInfo);
+      console.log("Sending prompt to generate event:", prompt);
+      
       // Call the API
       const response = await generateEventAPI({
         prompt,
@@ -40,11 +44,15 @@ export const useGenerateEventAI = () => {
       }
 
       const { data } = response;
+      console.log("Received response from generate-event:", data);
 
       // If we received a proper event response
       if (data && (data.title || data.description || data.location)) {
         // Validate the event data
         const { validatedEvent, missing } = validateEventData(data, providedInfo);
+        
+        console.log("Created validated event:", validatedEvent);
+        console.log("Missing fields:", missing);
         
         setMissingFields(missing);
         
@@ -64,15 +72,17 @@ export const useGenerateEventAI = () => {
             type: 'ai',
             content: createSuccessMessage(validatedEvent.title)
           }]);
+          
+          return { validatedEvent, missing: [], error: null };
         } else {
           // If we have missing fields, ask the user for them
           setChatMessages(prev => [...prev, {
             type: 'ai',
             content: formatMissingFieldsMessage(missing)
           }]);
+          
+          return { validatedEvent, missing, error: null };
         }
-        
-        return { validatedEvent, missing, error: null };
       } 
       // Handle missing info response
       else if (data && data.needsInfo === true) {
