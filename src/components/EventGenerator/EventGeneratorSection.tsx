@@ -72,6 +72,36 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
     });
   };
 
+  // Handle manual event creation with populated data
+  const handleManualEventCreation = () => {
+    // Prepare event data based on chat information
+    let eventData = {};
+    
+    if (generatedEvent) {
+      // If we have a generated event, use that data
+      eventData = {
+        title: eventTitle || generatedEvent.title,
+        description: generatedEvent.description,
+        date: selectedDate || generatedEvent.date,
+        location: location || generatedEvent.location,
+        budget: generatedEvent.estimatedPrice,
+        eventType: generatedEvent.category,
+        imageUrl: generatedEvent.imageUrl
+      };
+    } else {
+      // If no generated event yet, but user has entered some data in chat
+      // Extract information from chat messages or additional info
+      eventData = {
+        ...(additionalInfo.date && { date: additionalInfo.date }),
+        ...(additionalInfo.location && { location: additionalInfo.location }),
+        ...(additionalInfo.budget && { budget: additionalInfo.budget })
+      };
+    }
+
+    // Navigate to create-event with the collected data
+    navigate("/create-event", { state: { eventData } });
+  };
+
   // Updated welcome message
   const welcomeMessage = chatMessages.length === 0 ? 
     "Hi, please provide your event details including place, date & time to get started with planning." : "";
@@ -125,7 +155,7 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
 
         <ManualEventButton 
           show={chatMessages.length === 0} 
-          onClick={onCreateManualEvent || (() => navigate("/create-event"))} 
+          onClick={onCreateManualEvent || handleManualEventCreation} 
         />
 
         <SignUpDialog

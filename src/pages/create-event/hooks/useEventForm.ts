@@ -28,13 +28,26 @@ export const useEventForm = () => {
   // Set default end date when start date changes
   useEffect(() => {
     if (formData.date && !formData.endDate) {
-      const startDate = new Date(formData.date);
-      const endDate = new Date(startDate);
-      endDate.setHours(endDate.getHours() + 2);
-      setFormData(prev => ({
-        ...prev,
-        endDate: endDate.toISOString().slice(0, 16)
-      }));
+      // Handle ISO date string
+      if (typeof formData.date === 'string' && formData.date.includes('T')) {
+        // Extract just the date part if it's an ISO string
+        const startDate = new Date(formData.date);
+        const endDate = new Date(startDate);
+        endDate.setHours(endDate.getHours() + 2);
+        setFormData(prev => ({
+          ...prev,
+          endDate: endDate.toISOString().slice(0, 16)
+        }));
+      } else {
+        // Handle regular date object
+        const startDate = new Date(formData.date);
+        const endDate = new Date(startDate);
+        endDate.setHours(endDate.getHours() + 2);
+        setFormData(prev => ({
+          ...prev,
+          endDate: endDate.toISOString().slice(0, 16)
+        }));
+      }
     }
   }, [formData.date]);
 

@@ -8,17 +8,13 @@ import { SidebarProvider } from '@/components/ui/sidebar';
 const Index = () => {
   const navigate = useNavigate();
 
-  const handleCreateEventClick = () => {
-    navigate('/create-event');
-  };
-
   return (
     <SidebarProvider>
       <div className="flex min-h-screen bg-gray-50">
         <SideNav />
         <main className="flex-1">
           <div className="max-w-7xl mx-auto">
-            <EventGeneratorSection onCreateManualEvent={handleCreateEventClick} />
+            <EventGeneratorSection />
           </div>
         </main>
       </div>
