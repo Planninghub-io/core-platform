@@ -1,10 +1,59 @@
-
 // Event processing logic
 
 import { extractEventDetails } from './eventExtractors.ts';
 import { generateEventWithAI, generateEventImage } from './openaiService.ts';
 import { createSuccessResponse, createErrorResponse } from './responseUtils.ts';
 import type { EventData } from './types.ts';
+
+/**
+ * Parse and normalize date strings for consistency
+ */
+function normalizeDate(dateStr: string): string {
+  if (!dateStr) return '';
+  
+  try {
+    // Handle ISO date strings from frontend
+    if (dateStr.includes('T')) {
+      const date = new Date(dateStr);
+      if (!isNaN(date.getTime())) {
+        // Keep ISO format but ensure it's valid
+        return date.toISOString();
+      }
+    }
+    
+    // Handle date strings with time components like "March 20th at 6PM"
+    const monthMatch = dateStr.match(/(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?(?:\s+at\s+(\d{1,2})(?::(\d{2}))?\s*(AM|PM|am|pm)?)?/i);
+    if (monthMatch) {
+      const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+      const month = monthNames.indexOf(monthMatch[1].toLowerCase());
+      const day = parseInt(monthMatch[2]);
+      const year = monthMatch[3] ? parseInt(monthMatch[3]) : new Date().getFullYear();
+      
+      let hours = 0;
+      let minutes = 0;
+      
+      if (monthMatch[4]) {
+        hours = parseInt(monthMatch[4]);
+        if (monthMatch[6] && monthMatch[6].toLowerCase() === 'pm' && hours < 12) {
+          hours += 12;
+        }
+        if (monthMatch[6] && monthMatch[6].toLowerCase() === 'am' && hours === 12) {
+          hours = 0;
+        }
+        
+        minutes = monthMatch[5] ? parseInt(monthMatch[5]) : 0;
+      }
+      
+      const date = new Date(year, month, day, hours, minutes);
+      return date.toISOString();
+    }
+  } catch (e) {
+    console.error('Error normalizing date:', e);
+  }
+  
+  // Return original if we couldn't parse it
+  return dateStr;
+}
 
 /**
  * Generate response using extracted information
@@ -14,6 +63,11 @@ export async function generateResponseWithExtractedInfo(
   fullPrompt: string
 ): Promise<Response> {
   try {
+    // Normalize date format if present
+    if (extractedEvent.date) {
+      extractedEvent.date = normalizeDate(extractedEvent.date);
+    }
+    
     // Create a basic image prompt from title and location
     extractedEvent.imagePrompt = `An event "${extractedEvent.title || "social gathering"}" at ${extractedEvent.location || "a venue"}`;
 
@@ -53,6 +107,11 @@ export async function generateResponseWithAI(
       imagePrompt: aiGeneratedEvent.imagePrompt || 
                   `An event "${aiGeneratedEvent.title || extractedEvent.title}" at ${aiGeneratedEvent.location || extractedEvent.location}`,
     };
+    
+    // Normalize date format if present
+    if (combinedEvent.date) {
+      combinedEvent.date = normalizeDate(combinedEvent.date);
+    }
 
     // Generate image for the event
     const imageUrl = await generateEventImage(combinedEvent.imagePrompt || "An elegant event venue");
@@ -74,6 +133,13 @@ export async function processRequest(prompt: string, additionalInfo: any): Promi
   try {
     console.log('Processing request with prompt:', prompt, 'Additional info:', additionalInfo);
     
+    // Check if additionalInfo includes date/time information before processing
+    if (additionalInfo && additionalInfo.date) {
+      console.log(`Received date information: ${additionalInfo.date}`);
+      // Normalize the date format
+      additionalInfo.date = normalizeDate(additionalInfo.date);
+    }
+    
     // Combine prompt with additional info if provided
     let fullPrompt = prompt;
     if (additionalInfo && Object.keys(additionalInfo).length > 0) {
@@ -89,21 +155,7 @@ export async function processRequest(prompt: string, additionalInfo: any): Promi
     // Add any manually provided fields from additionalInfo
     if (additionalInfo) {
       if (additionalInfo.date && !extractedEvent.date) {
-        // Handle ISO date strings and convert them to a more readable format
-        if (additionalInfo.date.includes('T')) {
-          try {
-            const date = new Date(additionalInfo.date);
-            if (!isNaN(date.getTime())) {
-              extractedEvent.date = date.toISOString();
-            } else {
-              extractedEvent.date = additionalInfo.date;
-            }
-          } catch (e) {
-            extractedEvent.date = additionalInfo.date;
-          }
-        } else {
-          extractedEvent.date = additionalInfo.date;
-        }
+        extractedEvent.date = additionalInfo.date;
       }
       if (additionalInfo.location && !extractedEvent.location) {
         extractedEvent.location = additionalInfo.location;

@@ -10,7 +10,10 @@ import {
   createErrorMessage
 } from "../utils/chatMessageUtils";
 import { ChatMessage, GeneratedEvent, MissingInfo } from "../types";
-import { extractFieldsFromPrompt } from "../utils/promptExtraction";
+import { 
+  extractFieldsFromPrompt, 
+  checkIfResponseContainsRequestedInfo 
+} from "../utils/promptExtraction";
 
 /**
  * Core hook for event generation functionality
@@ -28,6 +31,7 @@ export const useEventGeneratorCore = (
   const [isResubmitting, setIsResubmitting] = useState(false);
   const [generatedEvent, setGeneratedEvent] = useState<GeneratedEvent | null>(null);
   const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [previouslyRequestedFields, setPreviouslyRequestedFields] = useState<string[]>([]);
 
   /**
    * Generate an event based on a prompt and additional information
@@ -36,6 +40,30 @@ export const useEventGeneratorCore = (
     setIsGenerating(true);
     
     try {
+      // Check if the user's response contains information we previously asked for
+      if (previouslyRequestedFields.length > 0) {
+        const { containsAllInfo, extractedInfo } = checkIfResponseContainsRequestedInfo(
+          prompt,
+          previouslyRequestedFields
+        );
+        
+        console.log("Checking if response contains previously requested info:", { 
+          previouslyRequestedFields,
+          containsAllInfo,
+          extractedInfo
+        });
+        
+        // If we found information in the response, add it to provided info
+        if (containsAllInfo) {
+          Object.entries(extractedInfo).forEach(([key, value]) => {
+            if (value) providedInfo[key] = value;
+          });
+          
+          // Clear previously requested fields since we got responses for them
+          setPreviouslyRequestedFields([]);
+        }
+      }
+      
       // Combine the existing additional info with provided info
       const combinedInfo = { ...additionalInfo, ...providedInfo };
       
@@ -79,6 +107,7 @@ export const useEventGeneratorCore = (
           setMissingInfo(null);
           setAdditionalInfo({});
           setIsResubmitting(false);
+          setPreviouslyRequestedFields([]);
           
           if (!isResubmitting) {
             setPromptCount(prev => prev + 1);
@@ -92,6 +121,9 @@ export const useEventGeneratorCore = (
           
           return { validatedEvent, missing: [], error: null };
         } else {
+          // Update previously requested fields to track what we're asking for
+          setPreviouslyRequestedFields(missing);
+          
           // If we have missing fields, ask the user for them
           setChatMessages(prev => [...prev, {
             type: 'ai',
@@ -107,13 +139,25 @@ export const useEventGeneratorCore = (
           // Extract information from prompt
           const prePopulatedInfo = extractFieldsFromPrompt(prompt, data, providedInfo);
           
+          // Log what we extracted
+          console.log("Extracted info from prompt:", prePopulatedInfo);
+          
           setAdditionalInfo(prePopulatedInfo);
           setMissingInfo(data);
           setIsResubmitting(true);
-          setMissingFields(data.missingFields || []);
+          
+          // Update missing fields, filtering out those we've already extracted
+          const remainingMissingFields = (data.missingFields || []).filter(field => 
+            !prePopulatedInfo[field]
+          );
+          
+          setMissingFields(remainingMissingFields);
+          
+          // Update fields we're asking about
+          setPreviouslyRequestedFields(remainingMissingFields);
           
           // Check if we need budget specifically
-          if (data.missingFields.includes('budget') && !waitingForBudget) {
+          if (remainingMissingFields.includes('budget') && !waitingForBudget) {
             requestBudgetInChat();
             setIsGenerating(false);
             return { needsBudget: true, data };
@@ -121,14 +165,14 @@ export const useEventGeneratorCore = (
           
           // If we have all the required fields after applying provided info,
           // we should generate the event again with the complete info
-          if (data.missingFields.length === 0) {
+          if (remainingMissingFields.length === 0) {
             return generateEvent(prompt, prePopulatedInfo);
           }
           
           // Add AI message to chat
           setChatMessages(prev => [...prev, {
             type: 'ai', 
-            content: createMissingInfoMessage(data.missingFields)
+            content: createMissingInfoMessage(remainingMissingFields)
           }]);
           
           return { needsMoreInfo: true, data };
@@ -168,6 +212,7 @@ export const useEventGeneratorCore = (
     generatedEvent,
     setGeneratedEvent,
     generateEvent,
-    missingFields
+    missingFields,
+    previouslyRequestedFields
   };
 };
