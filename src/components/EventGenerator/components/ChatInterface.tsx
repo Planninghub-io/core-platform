@@ -1,6 +1,5 @@
 
-import { ChatDisplay } from "./ChatDisplay";
-import { ChatInput } from "./ChatInput";
+import { ChatContainer } from "./chat/ChatContainer";
 
 interface ChatInterfaceProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
@@ -13,32 +12,6 @@ interface ChatInterfaceProps {
   generatedEvent: any | null;
 }
 
-export const ChatInterface = ({
-  chatMessages,
-  prompt,
-  setPrompt,
-  isGenerating,
-  promptCount,
-  handlePromptSubmit,
-  welcomeMessage,
-  generatedEvent
-}: ChatInterfaceProps) => {
-  return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
-      <ChatDisplay 
-        chatMessages={chatMessages} 
-        isGenerating={isGenerating} 
-        welcomeMessage={welcomeMessage} 
-      />
-      <ChatInput 
-        chatMessages={chatMessages} 
-        prompt={prompt} 
-        setPrompt={setPrompt} 
-        isGenerating={isGenerating} 
-        promptCount={promptCount} 
-        handlePromptSubmit={handlePromptSubmit}
-        generatedEvent={generatedEvent} 
-      />
-    </div>
-  );
+export const ChatInterface = (props: ChatInterfaceProps) => {
+  return <ChatContainer {...props} />;
 };
