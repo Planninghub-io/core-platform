@@ -11,7 +11,7 @@ export const extractFieldsFromPrompt = (
   data: any,
   providedInfo: Record<string, string> = {}
 ): Record<string, string> => {
-  const prePopulatedInfo: Record<string, string> = {};
+  const prePopulatedInfo: Record<string, string> = { ...providedInfo };
   
   // Match date patterns like "April 1st" or "April 1st, 2023"
   const dateTimeRegex = /(?:on|at)\s+((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+(?:\d{4})?\s*(?:at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?)/i;
@@ -28,7 +28,8 @@ export const extractFieldsFromPrompt = (
   const budgetRegex = /(?:budget(?:\s+of)?\s+)?\$?(\d+)(?:\s+(?:dollars|USD))?/i;
   const budgetMatch = prompt.match(budgetRegex);
 
-  if ((dateTimeMatch || simpleDateMatch) && (data.missingFields?.includes('date') || !data.date)) {
+  // Only extract date if we don't already have one in providedInfo
+  if (!prePopulatedInfo.date && (dateTimeMatch || simpleDateMatch)) {
     const dateStr = dateTimeMatch ? dateTimeMatch[1] : (simpleDateMatch ? simpleDateMatch[1] : "");
     // If year is missing, add the current year
     const currentYear = new Date().getFullYear();
@@ -38,6 +39,7 @@ export const extractFieldsFromPrompt = (
       const date = new Date(dateWithYear);
       if (!isNaN(date.getTime())) {
         prePopulatedInfo.date = date.toISOString();
+        console.log(`Extracted date from prompt: ${prePopulatedInfo.date}`);
       } else {
         prePopulatedInfo.date = dateStr; // Use the string as-is if parsing fails
       }
@@ -46,36 +48,29 @@ export const extractFieldsFromPrompt = (
     }
   }
   
-  if (locationMatch && (data.missingFields?.includes('location') || !data.location)) {
-    const locationField = data.missingFields?.includes('location') ? 'location' : 'city';
-    prePopulatedInfo[locationField] = locationMatch[1].trim();
+  // Only extract location if we don't already have one in providedInfo
+  if (!prePopulatedInfo.location && locationMatch) {
+    prePopulatedInfo.location = locationMatch[1].trim();
+    console.log(`Extracted location from prompt: ${prePopulatedInfo.location}`);
   }
 
-  if (budgetMatch && (data.missingFields?.includes('budget') || !data.estimatedPrice)) {
+  // Only extract budget if we don't already have one in providedInfo
+  if (!prePopulatedInfo.budget && budgetMatch) {
     prePopulatedInfo.budget = `$${budgetMatch[1]}`;
+    console.log(`Extracted budget from prompt: ${prePopulatedInfo.budget}`);
   }
   
-  // Add any manually provided fields from providedInfo
-  if (providedInfo.date) {
-    prePopulatedInfo.date = providedInfo.date;
-    // Remove date from missing fields if it was provided
-    if (data.missingFields?.includes('date')) {
+  // Ensure missing fields array is properly updated
+  if (data && data.missingFields) {
+    if (prePopulatedInfo.date && data.missingFields.includes('date')) {
       data.missingFields = data.missingFields.filter((f: string) => f !== 'date');
     }
-  }
-  
-  if (providedInfo.location) {
-    prePopulatedInfo.location = providedInfo.location;
-    // Remove location from missing fields if it was provided
-    if (data.missingFields?.includes('location')) {
+    
+    if (prePopulatedInfo.location && data.missingFields.includes('location')) {
       data.missingFields = data.missingFields.filter((f: string) => f !== 'location');
     }
-  }
-  
-  if (providedInfo.budget) {
-    prePopulatedInfo.budget = providedInfo.budget;
-    // Remove budget from missing fields if it was provided
-    if (data.missingFields?.includes('budget')) {
+    
+    if (prePopulatedInfo.budget && data.missingFields.includes('budget')) {
       data.missingFields = data.missingFields.filter((f: string) => f !== 'budget');
     }
   }

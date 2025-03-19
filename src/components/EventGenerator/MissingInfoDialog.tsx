@@ -45,10 +45,12 @@ export const MissingInfoDialog = ({
   const [datetime, setDatetime] = useState("");
   const [localLocation, setLocalLocation] = useState(additionalInfo["location"] || "");
 
+  // Reset form when dialog opens or additionalInfo changes
   useEffect(() => {
     if (open) {
       setErrors({});
-      // If we already have date info, initialize the form
+      
+      // Initialize date fields
       if (additionalInfo["date"]) {
         if (additionalInfo["date"] === "flexible") {
           setIsFlexible("yes");
@@ -74,16 +76,25 @@ export const MissingInfoDialog = ({
       
       // Initialize location
       setLocalLocation(additionalInfo["location"] || "");
+      
+      console.log("MissingInfoDialog opened with:", { 
+        missingInfo, 
+        additionalInfo, 
+        datetime, 
+        localLocation 
+      });
     }
   }, [open, additionalInfo]);
 
   const validateFields = () => {
     const newErrors: Record<string, string> = {};
     
+    // Only validate date if it's missing and not flexible
     if (missingInfo?.missingFields.includes("date") && isFlexible === "no" && !datetime) {
       newErrors["date"] = "Please select both date and time";
     }
     
+    // Only validate location if it's missing
     if (missingInfo?.missingFields.includes("location") && !localLocation?.trim()) {
       newErrors["location"] = "Location is required";
     }
@@ -93,13 +104,17 @@ export const MissingInfoDialog = ({
   };
 
   const handleSubmit = () => {
+    console.log("Submitting missing info:", { isFlexible, datetime, localLocation });
+    
     if (validateFields()) {
+      // Update date based on flexibility choice
       if (isFlexible === "yes") {
         onAdditionalInfoChange("date", "flexible");
       } else if (datetime) {
         onAdditionalInfoChange("date", new Date(datetime).toISOString());
       }
       
+      // Update location if provided
       if (localLocation) {
         onAdditionalInfoChange("location", localLocation);
       }
@@ -117,7 +132,7 @@ export const MissingInfoDialog = ({
 
   const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setLocalLocation(e.target.value);
-    // We don't immediately update the parent state to avoid race conditions
+    // We update the local state, but don't immediately update parent state to avoid race conditions
   };
 
   // Don't render fields if there are no missing fields to display

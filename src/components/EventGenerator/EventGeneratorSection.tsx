@@ -96,6 +96,9 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
         ...(additionalInfo.location && { location: additionalInfo.location }),
         ...(additionalInfo.budget && { budget: additionalInfo.budget })
       };
+      
+      // Log what data we're passing to manual event creation
+      console.log("Creating manual event with data from chat:", eventData);
     }
 
     // Navigate to create-event with the collected data

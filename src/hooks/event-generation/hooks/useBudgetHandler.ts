@@ -24,17 +24,23 @@ export const useBudgetHandler = (
         if (extractedBudget) {
           setAdditionalInfo(prev => ({ ...prev, budget: extractedBudget }));
           setWaitingForBudget(false);
+          
+          // Log successful budget extraction
+          console.log("Successfully extracted budget:", extractedBudget);
         }
       }
     }
   }, [chatMessages, waitingForBudget, setAdditionalInfo]);
 
   const requestBudgetInChat = () => {
-    setWaitingForBudget(true);
-    setChatMessages(prev => [...prev, {
-      type: 'ai',
-      content: createBudgetRequestMessage()
-    }]);
+    // Only request budget if we don't already have it
+    if (!additionalInfo.budget) {
+      setWaitingForBudget(true);
+      setChatMessages(prev => [...prev, {
+        type: 'ai',
+        content: createBudgetRequestMessage()
+      }]);
+    }
   };
 
   return {
