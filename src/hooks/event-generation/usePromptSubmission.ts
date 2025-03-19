@@ -3,6 +3,11 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { ChatMessage } from "./types";
+import { 
+  extractDateFromPrompt,
+  extractLocationFromPrompt,
+  extractBudgetFromPrompt
+} from "./utils/promptExtraction";
 
 export const usePromptSubmission = (
   prompt: string,
@@ -21,65 +26,6 @@ export const usePromptSubmission = (
 ) => {
   const { toast } = useToast();
 
-  const extractDateFromPrompt = (promptText: string) => {
-    // Try to find date patterns in the format "April 1st" or "April 1st, 2023" or with "at 2:00 PM"
-    const dateTimeRegex = /(?:on|at)\s+((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+(?:\d{4})?\s*(?:at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?)/i;
-    const simpleDateRegex = /((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?(?:,?\s+\d{4})?)/i;
-    
-    const dateTimeMatch = promptText.match(dateTimeRegex);
-    const simpleDateMatch = !dateTimeMatch ? promptText.match(simpleDateRegex) : null;
-    
-    if ((dateTimeMatch || simpleDateMatch) && !selectedDate) {
-      try {
-        const dateStr = dateTimeMatch ? dateTimeMatch[1] : (simpleDateMatch ? simpleDateMatch[1] : "");
-        // If year is missing, add the current year
-        const currentYear = new Date().getFullYear();
-        const dateWithYear = dateStr.includes(String(currentYear)) ? dateStr : `${dateStr}, ${currentYear}`;
-        
-        const date = new Date(dateWithYear);
-        if (!isNaN(date.getTime())) {
-          return date.toISOString();
-        }
-      } catch (e) {
-        console.error("Error parsing date:", e);
-        // Ignore date parsing errors
-      }
-    }
-    return null;
-  };
-
-  const extractLocationFromPrompt = (promptText: string) => {
-    // Match "in City", "at Place", "in City, State"
-    const locationRegex = /(?:in|at)\s+([^,.]+(?:,\s*[^,.]+)?)/i;
-    const locationMatch = promptText.match(locationRegex);
-    
-    // Look for cities/locations directly in the prompt
-    if (locationMatch && !location) {
-      return locationMatch[1].trim();
-    }
-    
-    return null;
-  };
-
-  const extractBudgetFromPrompt = (promptText: string) => {
-    // Match "$500", "500 dollars", "budget of $500"
-    const budgetRegex = /(?:budget(?:\s+of)?\s+)?\$?(\d+)(?:\s+(?:dollars|USD))?/i;
-    const budgetMatch = promptText.match(budgetRegex);
-    
-    if (budgetMatch) {
-      return `$${budgetMatch[1]}`;
-    }
-    
-    // Check for free events
-    if (promptText.toLowerCase().includes('free event') || 
-        promptText.toLowerCase().includes('no budget') ||
-        promptText.toLowerCase().includes('zero budget')) {
-      return 'Free';
-    }
-    
-    return null;
-  };
-
   const handlePromptSubmit = async () => {
     if (!prompt.trim()) {
       toast({
@@ -90,8 +36,8 @@ export const usePromptSubmission = (
       return;
     }
 
+    // Check authentication for non-first prompts
     if (promptCount >= 1 && !isResubmitting) {
-      // Check if user is already signed in
       const { data: userData } = await supabase.auth.getUser();
       if (!userData.user) {
         setShowSignUpDialog(true);
@@ -102,19 +48,17 @@ export const usePromptSubmission = (
     // First add the user message to chat
     setChatMessages(prev => [...prev, { type: 'user', content: prompt }]);
 
-    // Extract date from prompt if present
+    // Extract information from the prompt
     const extractedDate = extractDateFromPrompt(prompt);
     if (extractedDate) {
       setSelectedDate(extractedDate);
     }
 
-    // Extract location from prompt if present
     const extractedLocation = extractLocationFromPrompt(prompt);
     if (extractedLocation) {
       setLocation(extractedLocation);
     }
 
-    // Extract budget from prompt if present
     const extractedBudget = extractBudgetFromPrompt(prompt);
 
     // Prepare additional info
@@ -141,6 +85,7 @@ export const usePromptSubmission = (
     // Clear the input field immediately after submission
     setPrompt("");
 
+    // Generate the event
     const result = await generateEvent(userPrompt, additionalInfo);
 
     if (result && result.error) {

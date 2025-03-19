@@ -4,76 +4,87 @@
  */
 
 /**
- * Extract fields like date, location, and budget from a prompt
+ * Extract date from prompt text
+ * @param promptText The user prompt to analyze
+ * @returns Extracted date in ISO format or null if not found
  */
-export const extractFieldsFromPrompt = (
-  prompt: string, 
-  data: any,
-  providedInfo: Record<string, string> = {}
-): Record<string, string> => {
-  const prePopulatedInfo: Record<string, string> = { ...providedInfo };
-  
-  // Match date patterns like "April 1st" or "April 1st, 2023"
+export const extractDateFromPrompt = (promptText: string): string | null => {
+  // Try to find date patterns in the format "April 1st" or "April 1st, 2023" or with "at 2:00 PM"
   const dateTimeRegex = /(?:on|at)\s+((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+(?:\d{4})?\s*(?:at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?)/i;
   const simpleDateRegex = /((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?(?:,?\s+\d{4})?)/i;
   
-  const dateTimeMatch = prompt.match(dateTimeRegex);
-  const simpleDateMatch = !dateTimeMatch ? prompt.match(simpleDateRegex) : null;
+  const dateTimeMatch = promptText.match(dateTimeRegex);
+  const simpleDateMatch = !dateTimeMatch ? promptText.match(simpleDateRegex) : null;
   
-  // Match location patterns like "in San Francisco" or "at Moscone Center"
-  const locationRegex = /(?:in|at)\s+([^,.]+(?:,[^,.]+)?)/i;
-  const locationMatch = prompt.match(locationRegex);
-
-  // Match budget patterns like "$500", "500 dollars", "budget of $500"
-  const budgetRegex = /(?:budget(?:\s+of)?\s+)?\$?(\d+)(?:\s+(?:dollars|USD))?/i;
-  const budgetMatch = prompt.match(budgetRegex);
-
-  // Only extract date if we don't already have one in providedInfo
-  if (!prePopulatedInfo.date && (dateTimeMatch || simpleDateMatch)) {
-    const dateStr = dateTimeMatch ? dateTimeMatch[1] : (simpleDateMatch ? simpleDateMatch[1] : "");
-    // If year is missing, add the current year
-    const currentYear = new Date().getFullYear();
-    const dateWithYear = dateStr.includes(String(currentYear)) ? dateStr : `${dateStr}, ${currentYear}`;
-    
+  if (dateTimeMatch || simpleDateMatch) {
     try {
+      const dateStr = dateTimeMatch ? dateTimeMatch[1] : (simpleDateMatch ? simpleDateMatch[1] : "");
+      // If year is missing, add the current year
+      const currentYear = new Date().getFullYear();
+      const dateWithYear = dateStr.includes(String(currentYear)) ? dateStr : `${dateStr}, ${currentYear}`;
+      
       const date = new Date(dateWithYear);
       if (!isNaN(date.getTime())) {
-        prePopulatedInfo.date = date.toISOString();
-        console.log(`Extracted date from prompt: ${prePopulatedInfo.date}`);
-      } else {
-        prePopulatedInfo.date = dateStr; // Use the string as-is if parsing fails
+        return date.toISOString();
       }
     } catch (e) {
-      prePopulatedInfo.date = dateStr;
+      console.error("Error parsing date:", e);
+      // Ignore date parsing errors
     }
+  }
+  return null;
+};
+
+/**
+ * Extract location from prompt text
+ * @param promptText The user prompt to analyze
+ * @returns Extracted location string or null if not found
+ */
+export const extractLocationFromPrompt = (promptText: string): string | null => {
+  // Match "in City", "at Place", "in City, State"
+  const locationRegex = /(?:in|at)\s+([^,.]+(?:,\s*[^,.]+)?)/i;
+  const locationMatch = promptText.match(locationRegex);
+  
+  if (locationMatch) {
+    return locationMatch[1].trim();
   }
   
-  // Only extract location if we don't already have one in providedInfo
-  if (!prePopulatedInfo.location && locationMatch) {
-    prePopulatedInfo.location = locationMatch[1].trim();
-    console.log(`Extracted location from prompt: ${prePopulatedInfo.location}`);
-  }
+  return null;
+};
 
-  // Only extract budget if we don't already have one in providedInfo
-  if (!prePopulatedInfo.budget && budgetMatch) {
-    prePopulatedInfo.budget = `$${budgetMatch[1]}`;
-    console.log(`Extracted budget from prompt: ${prePopulatedInfo.budget}`);
+/**
+ * Extract budget information from prompt text
+ * @param promptText The user prompt to analyze
+ * @returns Formatted budget string or null if not found
+ */
+export const extractBudgetFromPrompt = (promptText: string): string | null => {
+  // Match "$500", "500 dollars", "budget of $500"
+  const budgetRegex = /(?:budget(?:\s+of)?\s+)?\$?(\d+)(?:\s+(?:dollars|USD))?/i;
+  const budgetMatch = promptText.match(budgetRegex);
+  
+  if (budgetMatch) {
+    return `$${budgetMatch[1]}`;
   }
   
-  // Ensure missing fields array is properly updated
-  if (data && data.missingFields) {
-    if (prePopulatedInfo.date && data.missingFields.includes('date')) {
-      data.missingFields = data.missingFields.filter((f: string) => f !== 'date');
-    }
-    
-    if (prePopulatedInfo.location && data.missingFields.includes('location')) {
-      data.missingFields = data.missingFields.filter((f: string) => f !== 'location');
-    }
-    
-    if (prePopulatedInfo.budget && data.missingFields.includes('budget')) {
-      data.missingFields = data.missingFields.filter((f: string) => f !== 'budget');
-    }
+  // Check for free events
+  if (promptText.toLowerCase().includes('free event') || 
+      promptText.toLowerCase().includes('no budget') ||
+      promptText.toLowerCase().includes('zero budget')) {
+    return 'Free';
   }
+  
+  return null;
+};
 
-  return prePopulatedInfo;
+/**
+ * Main extraction function to get all event details from a prompt
+ * @param promptText The user prompt to analyze
+ * @returns Object containing extracted fields
+ */
+export const extractAllDetailsFromPrompt = (promptText: string): Record<string, string | null> => {
+  return {
+    date: extractDateFromPrompt(promptText),
+    location: extractLocationFromPrompt(promptText),
+    budget: extractBudgetFromPrompt(promptText)
+  };
 };
