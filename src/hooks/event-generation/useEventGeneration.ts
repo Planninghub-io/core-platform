@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useEventCreation } from "@/hooks/useEventCreation";
 import { useGenerateEventAI } from "./useGenerateEventAI";
 import { usePromptSubmission } from "./usePromptSubmission";
-import { useEventCreationHandler } from "./useEventCreation";
+import { useEventCreationHandler } from "./useEventCreation"; // Fix import
 import { EventGenerationHookReturn } from "./types/hook-types";
 
 export const useEventGeneration = (): EventGenerationHookReturn => {

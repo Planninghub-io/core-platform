@@ -40,3 +40,17 @@ export const extractNumericValue = (value: string | null): number | null => {
   
   return isNaN(numericValue) ? null : numericValue;
 };
+
+/**
+ * Parse price/budget information from event data
+ * @param value String containing price/budget information
+ * @returns Numeric value or null if invalid
+ */
+export const parseEventPrice = (value: string | null): number | null => {
+  if (!value) return null;
+  
+  // Handle 'Free' or similar text values
+  if (value.toLowerCase() === 'free') return 0;
+  
+  return extractNumericValue(value);
+};
