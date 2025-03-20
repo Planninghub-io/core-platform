@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail } from "lucide-react";
-import { sendPasswordResetOTP } from "./utils/authUtils";
+import { sendPasswordResetOTP } from "./utils/otpUtils";
 
 const PasswordResetRequestForm = () => {
   const [email, setEmail] = useState("");
@@ -17,7 +17,7 @@ const PasswordResetRequestForm = () => {
     setIsLoading(true);
     
     try {
-      // Call the password reset function
+      // Call the password reset function from otpUtils, not authUtils
       await sendPasswordResetOTP(email, toast);
       
       // Show additional information to help the user understand what to do next

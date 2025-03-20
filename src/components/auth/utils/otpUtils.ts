@@ -47,10 +47,12 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
-    // The problem might be with the redirectTo URL format - ensure it's properly redirecting to the new password form
+    // Make sure we're using the full URL including origin for the redirectTo
+    const redirectUrl = `${window.location.origin}/auth/new-password`;
+    console.log("Using redirect URL:", redirectUrl);
+    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/new-password`,
-      // Note: We can't customize the email subject directly here - this requires a Supabase Edge Function
+      redirectTo: redirectUrl,
     });
 
     if (error) {
@@ -85,11 +87,13 @@ export const setNewPassword = async (
   redirectCallback: () => void
 ) => {
   try {
+    console.log("Setting new password");
     const { error } = await supabase.auth.updateUser({
       password: password
     });
 
     if (error) {
+      console.error("Password update error:", error);
       toast({
         title: "Password Update Error",
         description: error.message,
@@ -106,6 +110,7 @@ export const setNewPassword = async (
     redirectCallback();
     return true;
   } catch (error: any) {
+    console.error("Password update exception:", error);
     toast({
       title: "Password Update Error",
       description: "An unexpected error occurred. Please try again.",
