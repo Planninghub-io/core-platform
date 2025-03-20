@@ -7,7 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 
 const ResetPassword = () => {
   const [isValidSession, setIsValidSession] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, set/IsLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams] = useSearchParams();

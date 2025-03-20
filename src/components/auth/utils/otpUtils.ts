@@ -47,9 +47,9 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
-    // Use both routes to increase chances of successful redirect
-    // The direct /reset-password route or the nested /auth/new-password
-    const redirectUrl = `${window.location.origin}/reset-password`;
+    // Set the exact URL path to your reset password page
+    // This must be an absolute path with no hash fragment
+    const redirectUrl = window.location.origin + "/reset-password";
     console.log("Using redirect URL:", redirectUrl);
     
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
