@@ -13,4 +13,6 @@ export interface Event {
   user_profiles?: {
     email: string | null;
   } | null;
+  budget?: number | null;
+  estimated_budget?: string | null;
 }

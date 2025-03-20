@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
+import { DollarSign } from "lucide-react";
 
 interface FormFieldProps {
   id: string;
@@ -18,6 +19,7 @@ interface FormFieldProps {
   onChange: (value: string | number) => void;
   type?: "text" | "number" | "textarea" | "select";
   options?: Array<{value: string, label: string}>;
+  prefix?: string;
 }
 
 export const FormField = ({
@@ -28,10 +30,12 @@ export const FormField = ({
   isEditing,
   onChange,
   type = "text",
-  options = []
+  options = [],
+  prefix
 }: FormFieldProps) => {
   const renderReadOnlyField = () => (
     <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
+      {prefix && <span className="mr-1">{prefix}</span>}
       {value !== null ? value.toString() : placeholder}
     </div>
   );
@@ -65,6 +69,24 @@ export const FormField = ({
             ))}
           </SelectContent>
         </Select>
+      );
+    }
+
+    if (prefix) {
+      return (
+        <div className="flex relative">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+            <DollarSign className="h-4 w-4" />
+          </div>
+          <Input
+            id={id}
+            type={type}
+            value={value || ''}
+            onChange={(e) => onChange(type === "number" ? parseInt(e.target.value) : e.target.value)}
+            required={id === "title"}
+            className="pl-8"
+          />
+        </div>
       );
     }
 

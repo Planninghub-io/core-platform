@@ -1,57 +1,77 @@
 
-import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 import { GeneratedEvent } from "./types";
+import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
+import { extractNumericValue } from "@/utils/priceUtils";
 
-export const useEventCreationHandler = (
-  generatedEvent: GeneratedEvent | null,
-  eventTitle: string,
-  hasMissingDate: boolean,
-  selectedDate: string,
-  hasMissingLocation: boolean,
-  location: string,
-  additionalInfo: Record<string, string>,
-  createEvent: (eventData: any) => Promise<{ eventId: string | null }>
-) => {
-  const { toast } = useToast();
+/**
+ * Hook for creating events in the database
+ */
+export const useEventCreation = () => {
+  const [isCreating, setIsCreating] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
-  const handleCreateEvent = async () => {
-    if (!generatedEvent) {
+  const createEvent = async (
+    event: GeneratedEvent, 
+    eventTitle: string = "",
+    selectedDate?: string
+  ) => {
+    setIsCreating(true);
+    
+    try {
+      // Parse budget from string to numeric value for database storage
+      let budgetValue = null;
+      if (event.estimatedPrice) {
+        budgetValue = extractNumericValue(event.estimatedPrice);
+      }
+
+      // Create the event in Supabase
+      const { data, error } = await supabase
+        .from('events')
+        .insert([
+          {
+            title: eventTitle || event.title,
+            description: event.description,
+            date: selectedDate || event.date,
+            // Set end date to 3 hours after start by default
+            end_date: new Date(new Date(selectedDate || event.date).getTime() + 3 * 60 * 60 * 1000).toISOString(),
+            location: event.location,
+            category: event.category,
+            image_url: event.imageUrl,
+            estimated_budget: event.estimatedPrice, // Save the formatted string for display
+            budget: budgetValue, // Save the numeric value for calculations
+          }
+        ])
+        .select()
+        .single();
+      
+      if (error) throw error;
+      
+      toast({
+        description: "Event created successfully!",
+      });
+      
+      // Navigate to the new event page
+      navigate(`/event/${data.id}`);
+      return data;
+    } catch (error) {
+      console.error('Error creating event:', error);
       toast({
         title: "Error",
-        description: "No event details to create",
+        description: "Failed to create event. Please try again.",
         variant: "destructive",
       });
-      return;
-    }
-
-    if (hasMissingDate || hasMissingLocation) {
-      toast({
-        title: "Missing Information",
-        description: `Please provide ${hasMissingDate ? 'date' : ''}${hasMissingDate && hasMissingLocation ? ' and ' : ''}${hasMissingLocation ? 'location' : ''}`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Create event data
-    const eventData = {
-      title: eventTitle || generatedEvent.title,
-      description: generatedEvent.description,
-      date: selectedDate || generatedEvent.date,
-      location: location || generatedEvent.location,
-      category: generatedEvent.category,
-      estimatedPrice: generatedEvent.estimatedPrice,
-      imagePrompt: generatedEvent.imagePrompt
-    };
-
-    const { eventId } = await createEvent(eventData);
-    
-    if (eventId) {
-      navigate(`/events-hub?created=${eventId}`);
+      return null;
+    } finally {
+      setIsCreating(false);
     }
   };
 
-  return { handleCreateEvent };
+  return {
+    isCreating,
+    createEvent
+  };
 };

@@ -4,6 +4,7 @@ import { DateTimeField } from "./components/DateTimeField";
 import { DeleteEventDialog } from "./components/DeleteEventDialog";
 import { formatDateOnly, formatTimeOnly, combineDateTime } from "./utils/dateUtils";
 import { Event } from "./types/event";
+import { formatCurrency } from "@/utils/priceUtils";
 
 // Define event category options
 const EVENT_CATEGORIES = [
@@ -108,6 +109,22 @@ export const EventInfo = ({
           type="number"
         />
       </div>
+      
+      {/* Add Budget Field */}
+      <FormField
+        id="budget"
+        label="Expected Budget"
+        value={event.budget ? formatCurrency(event.budget) : event.estimated_budget}
+        placeholder="No budget specified"
+        isEditing={isEditing}
+        onChange={(value) => {
+          // Remove currency symbol and commas before saving
+          const numericValue = value.toString().replace(/[$,]/g, '');
+          onFieldChange('budget', numericValue);
+        }}
+        type="text"
+        prefix="$"
+      />
 
       <FormField
         id="description"
