@@ -21,10 +21,13 @@ export const ChatInputArea = ({
   handlePromptSubmit,
   generatedEvent
 }: ChatInputAreaProps) => {
+  // Determine if this is the first interaction
+  const isFirstInteraction = promptCount === 0 && chatMessages.length === 0;
+  
   return (
     <div className="border-t border-gray-200 p-4 bg-gray-50">
       <div className="flex items-center gap-2">
-        {promptCount === 0 && chatMessages.length === 0 ? (
+        {isFirstInteraction ? (
           <EventGeneratorForm
             prompt={prompt}
             isGenerating={isGenerating}

@@ -24,7 +24,7 @@ export const ChatContainer = ({
   generatedEvent
 }: ChatContainerProps) => {
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200">
+    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 min-h-[200px]">
       <ChatMessages 
         chatMessages={chatMessages} 
         isGenerating={isGenerating} 
