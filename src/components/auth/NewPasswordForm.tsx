@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { setNewPassword } from "./utils/authUtils";
+import { setNewPassword } from "./utils/otpUtils";
 
 const NewPasswordForm = () => {
   const [password, setPassword] = useState("");

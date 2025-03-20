@@ -54,7 +54,9 @@ function App() {
           <Route path="/auth/*" element={<Auth />} />
           <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route path="/auth/password-reset" element={<PasswordReset />} />
+          {/* Fix: Make sure the reset-password route exists and is direct, not nested under /auth/* */}
           <Route path="/auth/new-password" element={<ResetPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />  {/* Added direct route */}
           <Route path="/auth/mfa-setup" element={<MFASetup />} />
 
           {/* Settings routes */}
