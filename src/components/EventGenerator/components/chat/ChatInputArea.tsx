@@ -24,7 +24,7 @@ export const ChatInputArea = ({
   return (
     <div className="border-t border-gray-200 p-4 bg-gray-50">
       <div className="flex items-center gap-2">
-        {chatMessages.length === 0 ? (
+        {promptCount === 0 && chatMessages.length === 0 ? (
           <EventGeneratorForm
             prompt={prompt}
             isGenerating={isGenerating}
