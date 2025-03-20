@@ -9,6 +9,7 @@ interface EventActionButtonsProps {
   hasInvites: boolean;
   hasTicketing: boolean;
   onGenerateInvitation: (theme: string) => void;
+  category?: string | null; // Add category prop
 }
 
 export const EventActionButtons = ({
@@ -16,6 +17,7 @@ export const EventActionButtons = ({
   hasInvites,
   hasTicketing,
   onGenerateInvitation,
+  category
 }: EventActionButtonsProps) => {
   const navigate = useNavigate();
   const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
@@ -28,13 +30,16 @@ export const EventActionButtons = ({
     navigate(`/event/${eventId}/tickets`);
   };
 
+  // Check if ticketing should be hidden based on event category
+  const hideTicketing = category === 'wedding' || category === 'corporate' || category === 'Wedding' || category === 'Corporate Event';
+
   return (
     <div className="flex gap-4">
       {hasInvites ? (
         <Button 
           variant="outline"
           onClick={() => navigate(`/event/${eventId}/invitations`)}
-          className="flex-1"
+          className={hideTicketing ? "w-full" : "flex-1"}
         >
           View Invitation
         </Button>
@@ -42,18 +47,21 @@ export const EventActionButtons = ({
         <Button 
           variant="outline"
           onClick={handleCreateInvitation}
-          className="flex-1"
+          className={hideTicketing ? "w-full" : "flex-1"}
         >
           Create Invitation
         </Button>
       )}
-      <Button 
-        variant="outline"
-        onClick={handleTicketingClick}
-        className="flex-1"
-      >
-        {hasTicketing ? 'Manage Tickets' : 'Add Ticketing'}
-      </Button>
+      
+      {!hideTicketing && (
+        <Button 
+          variant="outline"
+          onClick={handleTicketingClick}
+          className="flex-1"
+        >
+          {hasTicketing ? 'Manage Tickets' : 'Add Ticketing'}
+        </Button>
+      )}
 
       <InvitationThemeDialog
         isOpen={isThemeDialogOpen}

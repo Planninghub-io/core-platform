@@ -44,6 +44,7 @@ export const LeftPanel = ({
         hasInvites={hasInvites}
         hasTicketing={hasTicketing}
         onGenerateInvitation={generateInvitation}
+        category={event.category}
       />
     </div>
   );
