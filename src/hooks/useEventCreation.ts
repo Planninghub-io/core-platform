@@ -14,6 +14,7 @@ export interface EventToCreate {
   category: string;
   estimatedPrice: string;
   imagePrompt: string;
+  imageUrl?: string;
 }
 
 export const useEventCreation = () => {
@@ -54,13 +55,25 @@ export const useEventCreation = () => {
 
     setIsCreating(true);
     try {
-      console.log('Generating image for event...'); // Debug log
-      const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-event-image', {
-        body: { prompt: event.imagePrompt },
-      });
+      // If we don't already have an image URL, generate one
+      let finalImageUrl = event.imageUrl;
+      
+      if (!finalImageUrl && event.imagePrompt) {
+        console.log('Generating image for event with prompt:', event.imagePrompt); // Debug log
+        try {
+          const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-event-image', {
+            body: { prompt: event.imagePrompt },
+          });
 
-      if (imageError) {
-        console.error('Error generating image:', imageError);
+          if (imageError) {
+            console.error('Error generating image:', imageError);
+          } else if (imageData?.image_url) {
+            finalImageUrl = imageData.image_url;
+            console.log('Successfully generated image URL:', finalImageUrl);
+          }
+        } catch (imgError) {
+          console.error('Exception generating image:', imgError);
+        }
       }
 
       const price = parseEventPrice(event.estimatedPrice);
@@ -76,7 +89,7 @@ export const useEventCreation = () => {
         budget: price,
         user_id: userData.user.id,
         status: 'upcoming',
-        image_url: imageData?.image_url || null
+        image_url: finalImageUrl
       };
 
       console.log('Inserting event with data:', eventData); // Debug log

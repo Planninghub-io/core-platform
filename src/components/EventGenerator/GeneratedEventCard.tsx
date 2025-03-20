@@ -55,6 +55,7 @@ export const GeneratedEventCard = ({
 }: GeneratedEventCardProps) => {
   const navigate = useNavigate();
   const [isTitleFocused, setIsTitleFocused] = useState(false);
+  const [displayImageUrl, setDisplayImageUrl] = useState<string>('/placeholder.svg');
   
   // Auto-focus the title input if it's empty or a placeholder
   useEffect(() => {
@@ -68,6 +69,21 @@ export const GeneratedEventCard = ({
       }, 500);
     }
   }, [eventTitle]);
+
+  // Determine which image URL to use, with proper fallbacks
+  useEffect(() => {
+    // Priority: explicitly passed imageUrl > event.imageUrl > placeholder
+    if (imageUrl) {
+      setDisplayImageUrl(imageUrl);
+      console.log("Using explicitly passed imageUrl:", imageUrl);
+    } else if (event?.imageUrl) {
+      setDisplayImageUrl(event.imageUrl);
+      console.log("Using event.imageUrl:", event.imageUrl);
+    } else {
+      setDisplayImageUrl('/placeholder.svg');
+      console.log("Using placeholder image");
+    }
+  }, [imageUrl, event]);
 
   const formatDate = (dateString: string) => {
     try {
@@ -103,9 +119,13 @@ export const GeneratedEventCard = ({
         <div className="w-full md:w-1/3 p-4">
           <div className="relative overflow-hidden rounded-lg">
             <img 
-              src={event.imageUrl || imageUrl || "/placeholder.svg"}
+              src={displayImageUrl}
               alt={eventTitle || event.title || "Event"}
               className="w-full h-[200px] object-cover animate-fade-in rounded-lg transition-transform duration-300 hover:scale-105"
+              onError={(e) => {
+                console.error("Image failed to load:", displayImageUrl);
+                setDisplayImageUrl('/placeholder.svg');
+              }}
             />
           </div>
         </div>
