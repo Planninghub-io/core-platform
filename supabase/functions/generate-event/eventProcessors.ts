@@ -1,3 +1,4 @@
+
 // Event processing logic
 
 import { extractEventDetails } from './eventExtractors.ts';
@@ -47,12 +48,66 @@ function normalizeDate(dateStr: string): string {
       const date = new Date(year, month, day, hours, minutes);
       return date.toISOString();
     }
+    
+    // Parse time zone abbreviations like "CT", "ET", etc.
+    if (dateStr.match(/\b(CT|ET|PT|MT)\b/i)) {
+      const timeZoneMap: Record<string, number> = {
+        'CT': -6, // Central Time
+        'ET': -5, // Eastern Time
+        'PT': -8, // Pacific Time
+        'MT': -7  // Mountain Time
+      };
+      
+      // Extract the time zone abbreviation
+      const tzMatch = dateStr.match(/\b(CT|ET|PT|MT)\b/i);
+      if (tzMatch) {
+        const tzAbbr = tzMatch[1].toUpperCase();
+        const tzOffset = timeZoneMap[tzAbbr];
+        
+        // Extract date and time components
+        const dateTimeMatch = dateStr.match(/(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2})(?:st|nd|rd|th)?(?:,?\s+(\d{4}))?(?:\s+at\s+(\d{1,2})(?::(\d{2}))?\s*(AM|PM|am|pm)?)?/i);
+        
+        if (dateTimeMatch) {
+          const monthNames = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+          const month = monthNames.indexOf(dateTimeMatch[1].toLowerCase());
+          const day = parseInt(dateTimeMatch[2]);
+          const year = dateTimeMatch[3] ? parseInt(dateTimeMatch[3]) : new Date().getFullYear();
+          
+          let hours = 0;
+          let minutes = 0;
+          
+          if (dateTimeMatch[4]) {
+            hours = parseInt(dateTimeMatch[4]);
+            if (dateTimeMatch[6] && dateTimeMatch[6].toLowerCase() === 'pm' && hours < 12) {
+              hours += 12;
+            }
+            if (dateTimeMatch[6] && dateTimeMatch[6].toLowerCase() === 'am' && hours === 12) {
+              hours = 0;
+            }
+            
+            minutes = dateTimeMatch[5] ? parseInt(dateTimeMatch[5]) : 0;
+          }
+          
+          // Create date in UTC
+          const date = new Date(Date.UTC(year, month, day, hours - tzOffset, minutes));
+          return date.toISOString();
+        }
+      }
+    }
   } catch (e) {
     console.error('Error normalizing date:', e);
   }
   
   // Return original if we couldn't parse it
   return dateStr;
+}
+
+/**
+ * Extract location from a string that may contain time information
+ */
+function extractLocationFromMixedString(inputStr: string): string {
+  // Remove time patterns like "9 AM CT", "9:00 AM", etc.
+  return inputStr.replace(/\b\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?(?:\s+(?:CT|ET|PT|MT))?\b/g, '').trim();
 }
 
 /**
@@ -66,6 +121,32 @@ export async function generateResponseWithExtractedInfo(
     // Normalize date format if present
     if (extractedEvent.date) {
       extractedEvent.date = normalizeDate(extractedEvent.date);
+    }
+    
+    // Clean up location if it contains time information
+    if (extractedEvent.location && extractedEvent.location.match(/\b\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?(?:\s+(?:CT|ET|PT|MT))?\b/)) {
+      extractedEvent.location = extractLocationFromMixedString(extractedEvent.location);
+    }
+    
+    // Generate a better title if the current one is just a month name
+    if (extractedEvent.title && ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'].includes(extractedEvent.title.toLowerCase())) {
+      // Use the prompt to generate a more descriptive title
+      if (fullPrompt.toLowerCase().includes('fundraiser')) {
+        extractedEvent.title = `${extractedEvent.location || ''} Fundraiser`.trim();
+      } else if (fullPrompt.toLowerCase().includes('meeting')) {
+        extractedEvent.title = `${extractedEvent.location || ''} Meeting`.trim();
+      } else if (fullPrompt.toLowerCase().includes('conference')) {
+        extractedEvent.title = `${extractedEvent.location || ''} Conference`.trim();
+      } else if (fullPrompt.toLowerCase().includes('party')) {
+        extractedEvent.title = `${extractedEvent.location || ''} Party`.trim();
+      } else {
+        extractedEvent.title = `${extractedEvent.location || ''} Event`.trim();
+      }
+    }
+    
+    // Clean up description by removing redundant "Additional details" text
+    if (extractedEvent.description) {
+      extractedEvent.description = extractedEvent.description.replace(/Additional details: (?:date|location|budget): [^.]+(?:, )?/g, '').trim();
     }
     
     // Create a basic image prompt from title and location
@@ -107,6 +188,11 @@ export async function generateResponseWithAI(
       imagePrompt: aiGeneratedEvent.imagePrompt || 
                   `An event "${aiGeneratedEvent.title || extractedEvent.title}" at ${aiGeneratedEvent.location || extractedEvent.location}`,
     };
+    
+    // Clean up location if it contains time information
+    if (combinedEvent.location && combinedEvent.location.match(/\b\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?(?:\s+(?:CT|ET|PT|MT))?\b/)) {
+      combinedEvent.location = extractLocationFromMixedString(combinedEvent.location);
+    }
     
     // Normalize date format if present
     if (combinedEvent.date) {

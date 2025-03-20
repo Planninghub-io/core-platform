@@ -15,7 +15,7 @@ export const extractDateFromPrompt = (promptText: string): string | null => {
   // Common date patterns with more variations
   const patterns = [
     // Full format with month name: "March 20th at 6PM" or "March 20th, 2023 at 6PM"
-    /(?:on\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(?:st|nd|rd|th)?(?:,?\s+\d{4})?(?:\s+at\s+\d{1,2}(?::\d{2})?\s*(?:am|pm))?/i,
+    /(?:on\s+)?(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(?:st|nd|rd|th)?(?:,?\s+\d{4})?(?:\s+at\s+\d{1,2}(?::(\d{2}))?\s*(?:am|pm))?/i,
     
     // Short date format: "3/20/2023" or "3/20/23" or "03/20/2023"
     /\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/,
@@ -27,7 +27,10 @@ export const extractDateFromPrompt = (promptText: string): string | null => {
     /\b\d{1,2}(?::\d{2})?\s*(?:am|pm)\b/i,
     
     // Relative dates: "next Monday", "this Friday", "tomorrow"
-    /\b(?:next|this)\s+(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b|\btomorrow\b/i
+    /\b(?:next|this)\s+(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b|\btomorrow\b/i,
+    
+    // Month and day without year: "March 30th"
+    /\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+\d{1,2}(?:st|nd|rd|th)?\b/i
   ];
   
   // Try each pattern until we find a match
@@ -109,7 +112,7 @@ export const extractDateFromPrompt = (promptText: string): string | null => {
           const year = yearMatch ? parseInt(yearMatch[0]) : currentYear;
           
           // Extract time if present
-          let hours = 0;
+          let hours = 9; // Default to 9 AM if no time specified
           let minutes = 0;
           
           const timeMatch = matchedText.match(/(\d{1,2})(?::(\d{2}))?\s*(am|pm)/i);
@@ -122,9 +125,27 @@ export const extractDateFromPrompt = (promptText: string): string | null => {
             if (!isPM && hours === 12) hours = 0;
           }
           
-          if (month >= 0 && day > 0) {
-            const date = new Date(year, month, day, hours, minutes);
+          // Check for time zone abbreviations
+          const timeZoneMatch = normalizedPrompt.match(/\b(ct|et|pt|mt)\b/i);
+          if (timeZoneMatch) {
+            const timeZoneMap: Record<string, number> = {
+              'ct': -6, // Central Time
+              'et': -5, // Eastern Time
+              'pt': -8, // Pacific Time
+              'mt': -7  // Mountain Time
+            };
+            
+            const tzAbbr = timeZoneMatch[1].toLowerCase();
+            const tzOffset = timeZoneMap[tzAbbr];
+            
+            // Adjust for time zone
+            const date = new Date(Date.UTC(year, month, day, hours - tzOffset, minutes));
             return date.toISOString();
+          } else {
+            if (month >= 0 && day > 0) {
+              const date = new Date(year, month, day, hours, minutes);
+              return date.toISOString();
+            }
           }
         }
       } catch (e) {
@@ -146,6 +167,13 @@ export const extractLocationFromPrompt = (promptText: string): string | null => 
   // Normalize the prompt
   const normalizedPrompt = promptText.trim();
   
+  // First, check if there are time patterns within location mentions
+  // and extract only the location part
+  const timeLocationMatch = normalizedPrompt.match(/(?:in|at)\s+([^,.]+)(?:\s+at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))/i);
+  if (timeLocationMatch) {
+    return timeLocationMatch[1].trim();
+  }
+  
   // Multiple patterns for location
   const patterns = [
     // Common location patterns
@@ -155,7 +183,7 @@ export const extractLocationFromPrompt = (promptText: string): string | null => 
     /\b(SFO|NYC|LA|SF|CHI|DC|ATL|BOS|SEA|PDX|MIA|AUS|DEN)\b/,
     
     // Common city names without "in" or "at"
-    /\b(San Francisco|New York|Los Angeles|Chicago|Washington|Seattle|Portland|Miami|Austin|Denver|Boston|Atlanta)\b/i
+    /\b(San Francisco|New York|Los Angeles|Chicago|Washington|Seattle|Portland|Miami|Austin|Denver|Boston|Atlanta|Dallas)\b/i
   ];
   
   for (const pattern of patterns) {
@@ -179,11 +207,16 @@ export const extractLocationFromPrompt = (promptText: string): string | null => 
       };
       
       const locationText = match[1] || match[0];
-      if (cityAbbreviations[locationText.toUpperCase()]) {
-        return cityAbbreviations[locationText.toUpperCase()];
+      
+      // Filter out time information from location
+      let cleanLocation = locationText.trim();
+      cleanLocation = cleanLocation.replace(/\b\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)(?:\s+(?:CT|ET|PT|MT))?\b/g, '').trim();
+      
+      if (cityAbbreviations[cleanLocation.toUpperCase()]) {
+        return cityAbbreviations[cleanLocation.toUpperCase()];
       }
       
-      return locationText.trim();
+      return cleanLocation;
     }
   }
   
