@@ -30,7 +30,9 @@ export const DateTimeSection: React.FC<DateTimeSectionProps> = ({
       const [hours, minutes] = timeValue.split(':').map(Number);
       const dateWithTime = new Date(newDate);
       dateWithTime.setHours(hours, minutes);
-      setSelectedDate(dateWithTime.toISOString());
+      
+      // If flexible, still store the exact date in the state
+      setSelectedDate(isFlexibleDate ? "Flexible" : dateWithTime.toISOString());
     }
   };
 
@@ -41,7 +43,9 @@ export const DateTimeSection: React.FC<DateTimeSectionProps> = ({
       const [hours, minutes] = newTime.split(':').map(Number);
       const dateWithTime = new Date(dateValue);
       dateWithTime.setHours(hours, minutes);
-      setSelectedDate(dateWithTime.toISOString());
+      
+      // If flexible, still store the exact date in the state
+      setSelectedDate(isFlexibleDate ? "Flexible" : dateWithTime.toISOString());
     }
   };
 
@@ -74,27 +78,29 @@ export const DateTimeSection: React.FC<DateTimeSectionProps> = ({
         />
       </div>
       
-      {!isFlexibleDate && (
-        <div className="grid grid-cols-2 gap-2">
-          <div className="relative">
-            <DatePicker 
-              date={dateValue}
-              onDateChange={handleDateChange}
-              disabled={isFlexibleDate}
-            />
-          </div>
-          
-          <div className="relative">
-            <TimePicker
-              value={timeValue}
-              onChange={handleTimeChange}
-              disabled={isFlexibleDate}
-            />
-          </div>
+      <div className="grid grid-cols-2 gap-2">
+        <div className="relative">
+          <DatePicker 
+            date={dateValue}
+            onDateChange={handleDateChange}
+          />
         </div>
+        
+        <div className="relative">
+          <TimePicker
+            value={timeValue}
+            onChange={handleTimeChange}
+          />
+        </div>
+      </div>
+      
+      {isFlexibleDate && (
+        <p className="text-xs text-gray-500 italic">
+          Date and time are flexible, but your selected options will be used for planning.
+        </p>
       )}
       
-      {hasMissingDate && !selectedDate && !isFlexibleDate && (
+      {hasMissingDate && !selectedDate && (
         <p className="text-sm text-red-500">Date is required</p>
       )}
     </div>

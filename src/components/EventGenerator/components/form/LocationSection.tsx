@@ -1,8 +1,10 @@
+
 import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { MapPin } from "lucide-react";
 import { FlexibleLocationCheckbox } from "../../FlexibleLocationCheckbox";
+import { parseLocationComponents } from "@/hooks/event-generation/utils/prompt-extraction/locationExtractor/extractor";
 
 interface LocationSectionProps {
   location: string;
@@ -23,55 +25,27 @@ export const LocationSection: React.FC<LocationSectionProps> = ({
 
   useEffect(() => {
     if (location) {
-      const parsedLocation = parseLocation(location);
+      // Use the enhanced location parser
+      const parsedLocation = parseLocationComponents(location);
       setCityState(parsedLocation);
     }
   }, [location]);
 
-  const parseLocation = (locationString: string): { city: string; state: string } => {
-    let cleaned = locationString.replace(/^(at|in)\s+/i, '');
-    
-    const commaPattern = /([^,]+),\s*([^,]+)(?:,\s*([^,]+))?$/;
-    const commaMatch = cleaned.match(commaPattern);
-    
-    if (commaMatch) {
-      if (commaMatch[3]) {
-        return { city: commaMatch[2].trim(), state: commaMatch[3].trim() };
-      }
-      return { city: commaMatch[1].trim(), state: commaMatch[2].trim() };
-    }
-    
-    const inPattern = /(.+)\s+in\s+([^,]+)(?:,\s*([^,]+))?/i;
-    const inMatch = cleaned.match(inPattern);
-    
-    if (inMatch) {
-      return { 
-        city: inMatch[2].trim(), 
-        state: inMatch[3] ? inMatch[3].trim() : '' 
-      };
-    }
-    
-    const cityStatePattern = /([A-Za-z\s]+)[\s,]+([A-Z]{2})\b/;
-    const cityStateMatch = cleaned.match(cityStatePattern);
-    
-    if (cityStateMatch) {
-      return { city: cityStateMatch[1].trim(), state: cityStateMatch[2] };
-    }
-    
-    const words = cleaned.split(/\s+/);
-    if (words.length > 0) {
-      const lastWord = words[words.length - 1];
-      if (/^[A-Z][a-z]+$/.test(lastWord)) {
-        return { city: lastWord, state: '' };
-      }
-      return { city: cleaned, state: '' };
-    }
-    
-    return { city: '', state: '' };
-  };
-
   const handleFlexibleLocationChange = (checked: boolean) => {
     setIsFlexibleLocation(checked);
+  };
+
+  const handleLocationChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newLocation = e.target.value;
+    setLocation(newLocation);
+    
+    // Parse location as user types
+    if (newLocation) {
+      const parsedLocation = parseLocationComponents(newLocation);
+      setCityState(parsedLocation);
+    } else {
+      setCityState({ city: '', state: '' });
+    }
   };
 
   const displayLocation = cityState.state 
@@ -95,7 +69,7 @@ export const LocationSection: React.FC<LocationSectionProps> = ({
       <Input
         id="location"
         value={location}
-        onChange={(e) => setLocation(e.target.value)}
+        onChange={handleLocationChange}
         placeholder={isFlexibleLocation ? "Enter preferred locations" : "Enter venue or location"}
         className={hasMissingLocation ? "border-red-300 focus:border-red-500" : ""}
       />
@@ -104,9 +78,11 @@ export const LocationSection: React.FC<LocationSectionProps> = ({
         <p className="text-sm text-red-500">Location is required</p>
       )}
       
-      {cityState.city && cityState.state && (
+      {cityState.city && (
         <div className="text-sm text-gray-500 mt-1">
-          Detected: {cityState.city}, {cityState.state}
+          {cityState.state 
+            ? `Detected: ${cityState.city}, ${cityState.state}` 
+            : `Detected: ${cityState.city}`}
         </div>
       )}
     </div>
