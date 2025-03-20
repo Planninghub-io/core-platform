@@ -47,6 +47,19 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
     setWaitingForBudget
   } = useEventGeneration();
 
+  // Get the latest user prompt from chat messages
+  const getLatestUserPrompt = () => {
+    for (let i = chatMessages.length - 1; i >= 0; i--) {
+      if (chatMessages[i].type === 'user') {
+        return chatMessages[i].content;
+      }
+    }
+    return prompt;
+  };
+
+  // Get the latest user prompt
+  const latestPrompt = getLatestUserPrompt();
+
   // Prepare event data for navigation
   const prepareEventData = () => {
     if (!generatedEvent) return null;
@@ -151,6 +164,7 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
                 hasMissingLocation={hasMissingLocation}
                 isCreating={isCreating}
                 handleCreateEvent={handleCreateEvent}
+                prompt={latestPrompt}
               />
             </div>
           )}

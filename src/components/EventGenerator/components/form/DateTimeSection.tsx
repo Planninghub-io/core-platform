@@ -1,8 +1,10 @@
 
 import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
-import { Calendar } from "lucide-react";
+import { Calendar, Clock } from "lucide-react";
 import { DatePicker } from "../../DatePicker";
+import { TimePicker } from "./TimePicker";
+import { FlexibleDatesCheckbox } from "../../FlexibleDatesCheckbox";
 
 interface DateTimeSectionProps {
   selectedDate: string;
@@ -15,18 +17,44 @@ export const DateTimeSection: React.FC<DateTimeSectionProps> = ({
   setSelectedDate,
   hasMissingDate
 }) => {
-  const [isFlexibleDate, setIsFlexibleDate] = useState(false);
+  const [isFlexibleDate, setIsFlexibleDate] = useState(selectedDate === "Flexible");
+  const [dateValue, setDateValue] = useState<Date | undefined>(
+    selectedDate && selectedDate !== "Flexible" ? new Date(selectedDate) : undefined
+  );
+  const [timeValue, setTimeValue] = useState<string>("12:00");
   
   const handleDateChange = (newDate: Date | undefined) => {
+    setDateValue(newDate);
     if (newDate) {
-      setSelectedDate(newDate.toISOString());
+      // Create a new date with the selected time
+      const [hours, minutes] = timeValue.split(':').map(Number);
+      const dateWithTime = new Date(newDate);
+      dateWithTime.setHours(hours, minutes);
+      setSelectedDate(dateWithTime.toISOString());
     }
   };
 
-  const handleFlexibleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setIsFlexibleDate(e.target.checked);
-    if (e.target.checked) {
+  const handleTimeChange = (newTime: string) => {
+    setTimeValue(newTime);
+    if (dateValue) {
+      // Update the date with the new time
+      const [hours, minutes] = newTime.split(':').map(Number);
+      const dateWithTime = new Date(dateValue);
+      dateWithTime.setHours(hours, minutes);
+      setSelectedDate(dateWithTime.toISOString());
+    }
+  };
+
+  const handleFlexibleDateChange = (checked: boolean) => {
+    setIsFlexibleDate(checked);
+    if (checked) {
       setSelectedDate("Flexible");
+    } else if (dateValue) {
+      // If there's already a date selected, use that
+      const [hours, minutes] = timeValue.split(':').map(Number);
+      const dateWithTime = new Date(dateValue);
+      dateWithTime.setHours(hours, minutes);
+      setSelectedDate(dateWithTime.toISOString());
     } else {
       setSelectedDate("");
     }
@@ -34,30 +62,40 @@ export const DateTimeSection: React.FC<DateTimeSectionProps> = ({
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2">
-        <Calendar className="h-4 w-4 text-gray-500" />
-        <Label htmlFor="date">Date & Time</Label>
-      </div>
-      
-      <div className="flex items-center gap-2 mb-2">
-        <input 
-          type="checkbox" 
-          id="flexibleDate"
-          checked={isFlexibleDate}
-          onChange={handleFlexibleDateChange}
-          className="h-4 w-4"
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-gray-500" />
+          <Label htmlFor="date">Date & Time</Label>
+        </div>
+        
+        <FlexibleDatesCheckbox 
+          checked={isFlexibleDate} 
+          onChange={handleFlexibleDateChange} 
         />
-        <Label htmlFor="flexibleDate" className="text-sm font-normal cursor-pointer">
-          Date is flexible
-        </Label>
       </div>
       
       {!isFlexibleDate && (
-        <DatePicker 
-          date={selectedDate ? new Date(selectedDate) : undefined}
-          onDateChange={handleDateChange}
-          disabled={isFlexibleDate}
-        />
+        <div className="grid grid-cols-2 gap-2">
+          <div className="relative">
+            <DatePicker 
+              date={dateValue}
+              onDateChange={handleDateChange}
+              disabled={isFlexibleDate}
+            />
+          </div>
+          
+          <div className="relative">
+            <TimePicker
+              value={timeValue}
+              onChange={handleTimeChange}
+              disabled={isFlexibleDate}
+            />
+          </div>
+        </div>
+      )}
+      
+      {hasMissingDate && !selectedDate && !isFlexibleDate && (
+        <p className="text-sm text-red-500">Date is required</p>
       )}
     </div>
   );

@@ -4,7 +4,8 @@ import { Input } from "@/components/ui/input";
 import { FlexibleDatesCheckbox } from "./FlexibleDatesCheckbox";
 import { FlexibleLocationCheckbox } from "./FlexibleLocationCheckbox";
 import { DatePicker } from "./DatePicker";
-import { MapPin, Calendar } from "lucide-react";
+import { MapPin, Calendar, Clock } from "lucide-react";
+import { TimePicker } from "./components/form/TimePicker";
 
 interface EditableEventFieldsProps {
   eventTitle: string;
@@ -28,12 +29,32 @@ export const EditableEventFields: React.FC<EditableEventFieldsProps> = ({
   missingLocation
 }) => {
   const [isTitleFocused, setIsTitleFocused] = useState(false);
-  const [isFlexibleDates, setIsFlexibleDates] = useState(false);
+  const [isFlexibleDates, setIsFlexibleDates] = useState(date === "Flexible");
   const [isFlexibleLocation, setIsFlexibleLocation] = useState(false);
+  const [dateValue, setDateValue] = useState<Date | undefined>(
+    date && date !== "Flexible" ? new Date(date) : undefined
+  );
+  const [timeValue, setTimeValue] = useState<string>("12:00");
   
   const handleDateChange = (newDate: Date | undefined) => {
+    setDateValue(newDate);
     if (newDate) {
-      onDateChange(newDate.toISOString());
+      // Create a new date with the selected time
+      const [hours, minutes] = timeValue.split(':').map(Number);
+      const dateWithTime = new Date(newDate);
+      dateWithTime.setHours(hours, minutes);
+      onDateChange(dateWithTime.toISOString());
+    }
+  };
+
+  const handleTimeChange = (newTime: string) => {
+    setTimeValue(newTime);
+    if (dateValue) {
+      // Update the date with the new time
+      const [hours, minutes] = newTime.split(':').map(Number);
+      const dateWithTime = new Date(dateValue);
+      dateWithTime.setHours(hours, minutes);
+      onDateChange(dateWithTime.toISOString());
     }
   };
 
@@ -41,6 +62,12 @@ export const EditableEventFields: React.FC<EditableEventFieldsProps> = ({
     setIsFlexibleDates(checked);
     if (checked) {
       onDateChange("Flexible");
+    } else if (dateValue) {
+      // If there's already a date selected, use that
+      const [hours, minutes] = timeValue.split(':').map(Number);
+      const dateWithTime = new Date(dateValue);
+      dateWithTime.setHours(hours, minutes);
+      onDateChange(dateWithTime.toISOString());
     } else {
       onDateChange("");
     }
@@ -77,33 +104,52 @@ export const EditableEventFields: React.FC<EditableEventFieldsProps> = ({
 
       {missingDate && (
         <div className="space-y-2">
-          <div className="flex items-center">
-            <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-            <span className="text-sm font-medium">Event Date</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Calendar className="h-4 w-4 mr-2 text-gray-500" />
+              <span className="text-sm font-medium">Event Date & Time</span>
+            </div>
+            <FlexibleDatesCheckbox checked={isFlexibleDates} onChange={handleFlexibleDatesChange} />
           </div>
-          <DatePicker 
-            date={!isFlexibleDates && date ? new Date(date) : undefined} 
-            onDateChange={handleDateChange} 
-            disabled={isFlexibleDates}
-          />
-          <FlexibleDatesCheckbox checked={isFlexibleDates} onChange={handleFlexibleDatesChange} />
+          
+          {!isFlexibleDates && (
+            <div className="grid grid-cols-2 gap-2">
+              <div className="relative">
+                <DatePicker 
+                  date={dateValue} 
+                  onDateChange={handleDateChange} 
+                  disabled={isFlexibleDates}
+                />
+              </div>
+              
+              <div className="relative">
+                <TimePicker
+                  value={timeValue}
+                  onChange={handleTimeChange}
+                  disabled={isFlexibleDates}
+                />
+              </div>
+            </div>
+          )}
         </div>
       )}
 
       {missingLocation && (
         <div className="space-y-2">
-          <div className="flex items-center">
-            <MapPin className="h-4 w-4 mr-2 text-gray-500" />
-            <span className="text-sm font-medium">Event Location</span>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <MapPin className="h-4 w-4 mr-2 text-gray-500" />
+              <span className="text-sm font-medium">Event Location</span>
+            </div>
+            <FlexibleLocationCheckbox checked={isFlexibleLocation} onChange={handleFlexibleLocationChange} />
           </div>
+          
           <Input
             value={location}
             onChange={(e) => onLocationChange(e.target.value)}
-            placeholder={isFlexibleLocation ? "Please select your preferred event locations (limit to 4 cities)" : "Enter event location"}
+            placeholder={isFlexibleLocation ? "Please select your preferred event locations" : "Enter event location"}
             className="w-full"
-            disabled={!isFlexibleLocation}
           />
-          <FlexibleLocationCheckbox checked={isFlexibleLocation} onChange={handleFlexibleLocationChange} />
         </div>
       )}
     </div>

@@ -22,6 +22,7 @@ interface EventDetailsFormProps {
   hasMissingLocation: boolean;
   isCreating: boolean;
   handleCreateEvent: () => void;
+  prompt?: string;
 }
 
 export const EventDetailsForm: React.FC<EventDetailsFormProps> = ({
@@ -35,7 +36,8 @@ export const EventDetailsForm: React.FC<EventDetailsFormProps> = ({
   hasMissingDate,
   hasMissingLocation,
   isCreating,
-  handleCreateEvent
+  handleCreateEvent,
+  prompt = ""
 }) => {
   const [category, setCategory] = useState(event.category || "Other");
   const [budget, setBudget] = useState(event.estimatedPrice || "Free");
@@ -47,6 +49,7 @@ export const EventDetailsForm: React.FC<EventDetailsFormProps> = ({
         <TitleField 
           eventTitle={eventTitle} 
           setEventTitle={setEventTitle}
+          prompt={prompt}
         />
       </CardHeader>
       
