@@ -1,4 +1,3 @@
-
 /**
  * Utilities for extracting event information from user prompts
  */
@@ -159,7 +158,7 @@ export const extractDateFromPrompt = (promptText: string): string | null => {
 };
 
 /**
- * Extract location from prompt text
+ * Extract location from prompt text with improved city recognition
  * @param promptText The user prompt to analyze
  * @returns Extracted location string or null if not found
  */
@@ -167,7 +166,13 @@ export const extractLocationFromPrompt = (promptText: string): string | null => 
   // Normalize the prompt
   const normalizedPrompt = promptText.trim();
   
-  // First, check if there are time patterns within location mentions
+  // First, look for specific city areas like "Austin Downtown"
+  const cityAreaMatch = normalizedPrompt.match(/\b((?:Austin|Dallas|Houston|New York|Chicago|Los Angeles|San Francisco|Miami|Boston)\s+(?:Downtown|Center|Square|Park|Area|District|Mall))\b/i);
+  if (cityAreaMatch) {
+    return cityAreaMatch[1].trim();
+  }
+  
+  // Check if there are time patterns within location mentions
   // and extract only the location part
   const timeLocationMatch = normalizedPrompt.match(/(?:in|at)\s+([^,.]+)(?:\s+at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))/i);
   if (timeLocationMatch) {
@@ -218,6 +223,11 @@ export const extractLocationFromPrompt = (promptText: string): string | null => 
       
       return cleanLocation;
     }
+  }
+  
+  // Handle specific cases for tailgate events
+  if (normalizedPrompt.toLowerCase().includes('longhorn') && normalizedPrompt.toLowerCase().includes('tailgate')) {
+    return 'Austin';
   }
   
   return null;

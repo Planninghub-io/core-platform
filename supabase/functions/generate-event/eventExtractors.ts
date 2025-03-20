@@ -7,6 +7,18 @@ import type { EventData } from './types.ts';
  * Extract title from prompt using various patterns
  */
 export function extractTitle(prompt: string): string {
+  // Check for specific event names first (e.g. "Longhorn Tailgate")
+  let explicitTitleMatch = prompt.match(/(?:the|a|an)\s+([A-Za-z]+(?:\s+[A-Za-z]+){1,3})\s+(?:event|party|gathering|meeting|tailgate)/i);
+  if (explicitTitleMatch) {
+    return explicitTitleMatch[1].trim();
+  }
+  
+  // Tailgate pattern
+  const tailgateMatch = prompt.match(/([A-Za-z]+(?:\s+[A-Za-z]+)?)\s+tailgate/i);
+  if (tailgateMatch) {
+    return `${tailgateMatch[1]} Tailgate`;
+  }
+  
   // Wedding pattern
   let titleMatch = prompt.match(/(?:plan|create|organize|arrange)\s+(?:an?|the)?\s*([A-Za-z]+(?:'s)?(?:\s+[A-Za-z]+)?)(?:\s+wedding|\s+event)/i);
   if (!titleMatch) {
@@ -112,15 +124,23 @@ export function extractDateTime(prompt: string): string | null {
 }
 
 /**
- * Extract location from prompt, filtering out time information
+ * Extract location from prompt, filtering out time information and better city recognition
  */
 export function extractLocation(prompt: string): string | null {
-  // First check for location with time
+  // First check for specific city/area mentions
+  const cityAreaRegex = /(?:in|at)\s+([A-Za-z]+(?:\s+[A-Za-z]+)?\s+(?:Downtown|Center|Square|Park|Area|District|Mall))/i;
+  const cityAreaMatch = prompt.match(cityAreaRegex);
+  if (cityAreaMatch) {
+    return cityAreaMatch[1].trim();
+  }
+  
+  // Check for location with time
   const locationTimeRegex = /(?:in|at)\s+([^,.]+)(?:\s+at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm))/i;
   const locationTimeMatch = prompt.match(locationTimeRegex);
   
   if (locationTimeMatch) {
-    return locationTimeMatch[1].trim();
+    // Make sure we're not capturing the time in the location
+    return locationTimeMatch[1].trim().replace(/\b\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)(?:\s+(?:CT|ET|PT|MT))?\b/g, '').trim();
   }
   
   // Standard location pattern
@@ -131,6 +151,14 @@ export function extractLocation(prompt: string): string | null {
   if (locationMatch) {
     const location = locationMatch[1].trim();
     return location.replace(/\b\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)(?:\s+(?:CT|ET|PT|MT))?\b/g, '').trim();
+  }
+  
+  // Try to extract just a city name if nothing else worked
+  const cityNameRegex = /\b(Austin|Dallas|Houston|San Antonio|New York|Los Angeles|Chicago|Boston|Miami|Seattle|Portland|Denver|Atlanta|San Francisco|Nashville|New Orleans|Las Vegas)\b/i;
+  const cityMatch = prompt.match(cityNameRegex);
+  
+  if (cityMatch) {
+    return cityMatch[1].trim();
   }
   
   return locationMatch ? locationMatch[1].trim() : null;
@@ -148,8 +176,26 @@ export function extractEventDetails(prompt: string): Partial<EventData> {
   const categoryMatch = prompt.match(/category:?\s*([^,.]+)/i);
   const priceMatch = prompt.match(/price:?\s*([^,.]+)/i) || prompt.match(/estimatedPrice:?\s*([^,.]+)/i) || prompt.match(/cost:?\s*([^,.]+)/i) || prompt.match(/budget:?\s*\$?(\d+)/i);
 
-  // Default description
-  let description = prompt;
+  // Generate a better description based on the event type and location
+  let description = "";
+  if (title && location) {
+    if (prompt.toLowerCase().includes("tailgate")) {
+      description = `Join us for the ${title} at ${location}. Enjoy food, drinks, and fun before the big game!`;
+    } else if (prompt.toLowerCase().includes("wedding")) {
+      description = `Celebrate a special day at the beautiful ${title} in ${location}. Join us for this memorable wedding event.`;
+    } else if (prompt.toLowerCase().includes("birthday")) {
+      description = `Join us for a celebration at ${location} for this special birthday event.`;
+    } else if (prompt.toLowerCase().includes("fundraiser")) {
+      description = `Support a great cause at the ${title} in ${location}. All proceeds will go to charity.`;
+    } else if (prompt.toLowerCase().includes("conference")) {
+      description = `Join industry leaders and experts at the ${title} in ${location} for networking and knowledge sharing.`;
+    } else {
+      description = `Join us for ${title} at ${location}. Don't miss this exciting event!`;
+    }
+  } else {
+    // Use provided description if available or the whole prompt as a fallback
+    description = descriptionMatch ? descriptionMatch[1].trim() : prompt;
+  }
   
   // Clean up description by removing "Additional details: " section
   if (description.includes("Additional details:")) {
@@ -172,6 +218,8 @@ export function extractEventDetails(prompt: string): Partial<EventData> {
       category = "Fundraiser";
     } else if (prompt.toLowerCase().includes("corporate") || prompt.toLowerCase().includes("business")) {
       category = "Corporate";
+    } else if (prompt.toLowerCase().includes("tailgate")) {
+      category = "Sports & Recreation";
     } else {
       category = "Other";
     }
