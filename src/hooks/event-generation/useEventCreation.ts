@@ -55,13 +55,20 @@ export const useEventCreation = () => {
     setIsCreating(true);
     
     try {
+      // Get current user
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !userData.user) {
+        throw new Error("User not authenticated");
+      }
+      
       // Parse budget from string to numeric value for database storage
       let budgetValue = null;
       if (event.estimatedPrice) {
         budgetValue = extractNumericValue(event.estimatedPrice);
       }
 
-      // Create event data object (not in array)
+      // Create event data object with required user_id field
       const eventData = {
         title: eventTitle || event.title,
         description: event.description,
@@ -73,8 +80,8 @@ export const useEventCreation = () => {
         image_url: event.imageUrl,
         // Store numeric budget value
         budget: budgetValue,
-        // We should not use estimated_budget directly as it's not in the schema
-        // Instead, save the information we need and use it for display
+        // Add the required user_id field
+        user_id: userData.user.id
       };
 
       // Create the event in Supabase
