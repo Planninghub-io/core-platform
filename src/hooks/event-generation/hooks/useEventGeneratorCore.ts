@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { generateEventAPI } from "../api/generateEventAPI";
@@ -12,8 +11,8 @@ import {
 import { ChatMessage, GeneratedEvent, MissingInfo } from "../types";
 import { 
   extractFieldsFromPrompt, 
-  checkIfResponseContainsRequestedInfo 
-} from "../utils/promptExtraction";
+  checkResponseForRequestedInfo
+} from "../utils/prompt-extraction";
 
 /**
  * Core hook for event generation functionality
@@ -42,7 +41,7 @@ export const useEventGeneratorCore = (
     try {
       // Check if the user's response contains information we previously asked for
       if (previouslyRequestedFields.length > 0) {
-        const { containsAllInfo, extractedInfo } = checkIfResponseContainsRequestedInfo(
+        const { containsAllInfo, extractedInfo } = checkResponseForRequestedInfo(
           prompt,
           previouslyRequestedFields
         );
