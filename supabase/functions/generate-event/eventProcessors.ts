@@ -1,6 +1,6 @@
 
 // Event processing logic
-import { extractEventDetails } from './eventExtractors.ts';
+import { extractEventDetails, checkMissingFields } from './extractors/index.ts';
 import { generateEventWithAI, generateEventImage } from './openaiService.ts';
 import { createSuccessResponse, createErrorResponse } from './responseUtils.ts';
 import { enhanceEventData, combineEventData, hasMinimumEventInfo } from './eventEnhancer.ts';
