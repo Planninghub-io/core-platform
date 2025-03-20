@@ -25,7 +25,8 @@ export const useEventGenerator = (
     generatedEvent,
     setGeneratedEvent,
     generateEvent,
-    missingFields
+    missingFields,
+    previouslyRequestedFields
   } = useEventGeneratorCore(setChatMessages, waitingForBudget, requestBudgetInChat);
 
   // Use event regeneration functionality
@@ -44,6 +45,7 @@ export const useEventGenerator = (
     setGeneratedEvent,
     generateEvent,
     missingFields,
+    previouslyRequestedFields,
     regenerateEventWithUpdatedInfo
   };
 };

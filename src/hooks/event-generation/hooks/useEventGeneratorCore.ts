@@ -1,18 +1,11 @@
+
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { generateEventAPI } from "../api/generateEventAPI";
-import { validateEventData } from "../utils/eventValidation";
-import { 
-  formatMissingFieldsMessage, 
-  createSuccessMessage, 
-  createMissingInfoMessage,
-  createErrorMessage
-} from "../utils/chatMessageUtils";
-import { ChatMessage, GeneratedEvent, MissingInfo } from "../types";
-import { 
-  extractFieldsFromPrompt, 
-  checkResponseForRequestedInfo
-} from "../utils/prompt-extraction";
+import { createErrorMessage } from "../utils/chatMessageUtils";
+import { ChatMessage } from "../types";
+import { useResponseChecker } from "./useResponseChecker";
+import { useEventProcessor } from "./useEventProcessor";
 
 /**
  * Core hook for event generation functionality
@@ -25,12 +18,25 @@ export const useEventGeneratorCore = (
   const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [promptCount, setPromptCount] = useState(0);
-  const [missingInfo, setMissingInfo] = useState<MissingInfo | null>(null);
-  const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
-  const [isResubmitting, setIsResubmitting] = useState(false);
-  const [generatedEvent, setGeneratedEvent] = useState<GeneratedEvent | null>(null);
-  const [missingFields, setMissingFields] = useState<string[]>([]);
-  const [previouslyRequestedFields, setPreviouslyRequestedFields] = useState<string[]>([]);
+  const [missingInfo, setMissingInfo] = useState<any>(null);
+
+  // Use our new focused hooks
+  const {
+    previouslyRequestedFields,
+    setPreviouslyRequestedFields,
+    checkUserResponse
+  } = useResponseChecker();
+
+  const {
+    additionalInfo,
+    setAdditionalInfo,
+    isResubmitting,
+    setIsResubmitting,
+    generatedEvent,
+    setGeneratedEvent,
+    missingFields,
+    processEventResponse
+  } = useEventProcessor(setChatMessages, waitingForBudget, requestBudgetInChat, setPreviouslyRequestedFields);
 
   /**
    * Generate an event based on a prompt and additional information
@@ -40,27 +46,18 @@ export const useEventGeneratorCore = (
     
     try {
       // Check if the user's response contains information we previously asked for
-      if (previouslyRequestedFields.length > 0) {
-        const { containsAllInfo, extractedInfo } = checkResponseForRequestedInfo(
-          prompt,
-          previouslyRequestedFields
-        );
+      const { containsAllInfo, updatedProvidedInfo } = checkUserResponse(
+        prompt,
+        previouslyRequestedFields
+      );
+      
+      // If we found all the information we asked for, clear the requested fields
+      if (containsAllInfo) {
+        // Add the extracted info to providedInfo
+        Object.assign(providedInfo, updatedProvidedInfo);
         
-        console.log("Checking if response contains previously requested info:", { 
-          previouslyRequestedFields,
-          containsAllInfo,
-          extractedInfo
-        });
-        
-        // If we found information in the response, add it to provided info
-        if (containsAllInfo) {
-          Object.entries(extractedInfo).forEach(([key, value]) => {
-            if (value) providedInfo[key] = value;
-          });
-          
-          // Clear previously requested fields since we got responses for them
-          setPreviouslyRequestedFields([]);
-        }
+        // Clear previously requested fields since we got responses for them
+        setPreviouslyRequestedFields([]);
       }
       
       // Combine the existing additional info with provided info
@@ -83,106 +80,46 @@ export const useEventGeneratorCore = (
       const { data } = response;
       console.log("Received response from generate-event:", data);
 
-      // If we received a proper event response
-      if (data && (data.title || data.description || data.location)) {
-        // Validate the event data
-        const { validatedEvent, missing } = validateEventData(data, providedInfo);
-        
-        console.log("Created validated event:", validatedEvent);
-        console.log("Missing fields:", missing);
-        
-        setMissingFields(missing);
-        
-        // Check if we're missing budget specifically
-        if (missing.includes('budget') && !waitingForBudget) {
-          requestBudgetInChat();
-          setIsGenerating(false);
-          return { needsBudget: true, validatedEvent, missing };
-        }
-        
-        // Only set generated event if we have all required fields
-        if (missing.length === 0) {
-          setGeneratedEvent(validatedEvent);
-          setMissingInfo(null);
-          setAdditionalInfo({});
-          setIsResubmitting(false);
-          setPreviouslyRequestedFields([]);
-          
-          if (!isResubmitting) {
-            setPromptCount(prev => prev + 1);
-          }
-          
-          // Add success message to chat when all required data is provided
-          setChatMessages(prev => [...prev, {
-            type: 'ai',
-            content: createSuccessMessage(validatedEvent.title)
-          }]);
-          
-          return { validatedEvent, missing: [], error: null };
-        } else {
-          // Update previously requested fields to track what we're asking for
-          setPreviouslyRequestedFields(missing);
-          
-          // If we have missing fields, ask the user for them
-          setChatMessages(prev => [...prev, {
-            type: 'ai',
-            content: formatMissingFieldsMessage(missing)
-          }]);
-          
-          return { validatedEvent, missing, error: null };
-        }
-      } 
-      // Handle missing info response
-      else if (data && data.needsInfo === true) {
-        if (!isResubmitting) {
-          // Extract information from prompt
-          const prePopulatedInfo = extractFieldsFromPrompt(prompt, data, providedInfo);
-          
-          // Log what we extracted
-          console.log("Extracted info from prompt:", prePopulatedInfo);
-          
-          setAdditionalInfo(prePopulatedInfo);
-          setMissingInfo(data);
-          setIsResubmitting(true);
-          
-          // Update missing fields, filtering out those we've already extracted
-          const remainingMissingFields = (data.missingFields || []).filter(field => 
-            !prePopulatedInfo[field]
-          );
-          
-          setMissingFields(remainingMissingFields);
-          
-          // Update fields we're asking about
-          setPreviouslyRequestedFields(remainingMissingFields);
-          
-          // Check if we need budget specifically
-          if (remainingMissingFields.includes('budget') && !waitingForBudget) {
-            requestBudgetInChat();
-            setIsGenerating(false);
-            return { needsBudget: true, data };
-          }
-          
-          // If we have all the required fields after applying provided info,
-          // we should generate the event again with the complete info
-          if (remainingMissingFields.length === 0) {
-            return generateEvent(prompt, prePopulatedInfo);
-          }
-          
-          // Add AI message to chat
-          setChatMessages(prev => [...prev, {
-            type: 'ai', 
-            content: createMissingInfoMessage(remainingMissingFields)
-          }]);
-          
-          return { needsMoreInfo: true, data };
-        }
-      } else {
-        // No valid data received
-        throw new Error('Invalid response from event generation');
+      // Process the event response
+      const result = processEventResponse(data, prompt, providedInfo);
+      
+      // If we need to check for budget
+      if (result?.needsBudget) {
+        setIsGenerating(false);
+        return { needsBudget: true, validatedEvent: result.validatedEvent, missing: result.missing };
       }
-
-      // If execution reaches here, handle as error
-      throw new Error('Failed to generate event details');
+      
+      // If we need more info but already extracted all necessary fields from the prompt
+      if (result?.needsMoreInfo && result.remainingMissingFields.length === 0) {
+        return generateEvent(prompt, result.prePopulatedInfo);
+      }
+      
+      // If we need more info and specifically need budget
+      if (result?.needsMoreInfo && 
+          result.remainingMissingFields.includes('budget') && 
+          !waitingForBudget) {
+        requestBudgetInChat();
+        setIsGenerating(false);
+        return { needsBudget: true, data: result.data };
+      }
+      
+      // If we have a valid result to return
+      if (result) {
+        // Update the prompt count if this is a new prompt
+        if (!isResubmitting && result.validatedEvent && result.missing.length === 0) {
+          setPromptCount(prev => prev + 1);
+        }
+        
+        // Store missing info if needed
+        if (result.needsMoreInfo) {
+          setMissingInfo(result.data);
+        }
+        
+        return result;
+      }
+      
+      // If no valid data received
+      throw new Error('Invalid response from event generation');
 
     } catch (error: any) {
       console.error('Error generating event:', error);
