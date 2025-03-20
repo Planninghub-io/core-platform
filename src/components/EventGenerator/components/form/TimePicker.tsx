@@ -35,7 +35,9 @@ export const TimePicker: React.FC<TimePickerProps> = ({
 
   return (
     <div className="relative">
-      <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 z-10" />
+      <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
+        <Clock className="h-4 w-4 text-gray-500" />
+      </div>
       <Select
         value={value}
         onValueChange={onChange}

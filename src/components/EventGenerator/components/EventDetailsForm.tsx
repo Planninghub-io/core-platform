@@ -42,6 +42,7 @@ export const EventDetailsForm: React.FC<EventDetailsFormProps> = ({
   const [category, setCategory] = useState(event.category || "Other");
   const [budget, setBudget] = useState(event.estimatedPrice || "Free");
   const [description, setDescription] = useState(event.description || "");
+  const [attendees, setAttendees] = useState("10");
   
   return (
     <Card className="bg-white shadow-md">
