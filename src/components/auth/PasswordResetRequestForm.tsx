@@ -17,7 +17,14 @@ const PasswordResetRequestForm = () => {
     setIsLoading(true);
     
     try {
+      // Call the password reset function
       await sendPasswordResetOTP(email, toast);
+      
+      // Show additional information to help the user understand what to do next
+      toast({
+        title: "Check your email",
+        description: "If an account exists with this email, you'll receive a password reset link. The link will redirect you to set a new password.",
+      });
     } finally {
       setIsLoading(false);
     }

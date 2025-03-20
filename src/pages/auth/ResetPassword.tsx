@@ -3,29 +3,50 @@ import NewPasswordForm from "@/components/auth/NewPasswordForm";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const ResetPassword = () => {
   const [isValidSession, setIsValidSession] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     // Check if the user has a valid recovery session
     const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      
-      if (!data.session) {
+      try {
+        const { data, error } = await supabase.auth.getSession();
+        
+        console.log("Session check:", data, error);
+        
+        if (!data.session) {
+          console.log("No session found, redirecting to password reset page");
+          toast({
+            title: "Session Expired",
+            description: "Your password reset session has expired. Please request a new reset link.",
+            variant: "destructive",
+          });
+          navigate("/auth/password-reset");
+          return;
+        }
+        
+        // Valid recovery token in URL
+        setIsValidSession(true);
+      } catch (err) {
+        console.error("Error checking session:", err);
+        toast({
+          title: "Error",
+          description: "An error occurred while validating your session.",
+          variant: "destructive",
+        });
         navigate("/auth/password-reset");
-        return;
+      } finally {
+        setIsLoading(false);
       }
-      
-      // Valid recovery token in URL
-      setIsValidSession(true);
-      setIsLoading(false);
     };
     
     checkSession();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   if (isLoading) {
     return (

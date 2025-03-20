@@ -47,8 +47,10 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
+    // The problem might be with the redirectTo URL format - ensure it's properly redirecting to the new password form
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/new-password`,
+      // Note: We can't customize the email subject directly here - this requires a Supabase Edge Function
     });
 
     if (error) {
