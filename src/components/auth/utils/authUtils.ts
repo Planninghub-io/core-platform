@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { SignUpData } from "./signUpUtils";
 import { SignInData, handleUserSignIn, handleGoogleSignIn } from "./signInUtils";
+import { sendPasswordResetOTP, setNewPassword as otpSetNewPassword } from "./otpUtils";
 
 export type { SignUpData, SignInData };
 
@@ -9,63 +10,7 @@ export type { SignUpData, SignInData };
 export { 
   handleUserSignIn,
   handleGoogleSignIn,
-};
-
-// Password reset functions
-export const sendPasswordResetOTP = async (email: string, toast: any) => {
-  try {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`,
-    });
-
-    if (error) {
-      throw error;
-    }
-
-    toast({
-      title: "Reset link sent",
-      description: "Check your email for a password reset link",
-    });
-    return true;
-  } catch (error: any) {
-    toast({
-      title: "Error",
-      description: error.message || "Failed to send reset link",
-      variant: "destructive",
-    });
-    return false;
-  }
-};
-
-export const setNewPassword = async (
-  password: string,
-  toast: any,
-  redirectCallback: () => void
-) => {
-  try {
-    const { error } = await supabase.auth.updateUser({
-      password,
-    });
-
-    if (error) {
-      throw error;
-    }
-
-    toast({
-      title: "Password updated",
-      description: "Your password has been successfully updated",
-    });
-    
-    redirectCallback();
-    return true;
-  } catch (error: any) {
-    toast({
-      title: "Error",
-      description: error.message || "Failed to update password",
-      variant: "destructive",
-    });
-    return false;
-  }
+  sendPasswordResetOTP
 };
 
 // Handle user sign up
@@ -129,3 +74,6 @@ export const handleUserSignUp = async (
     return false;
   }
 };
+
+// Set new password (using the implementation from otpUtils to avoid duplication)
+export const setNewPassword = otpSetNewPassword;

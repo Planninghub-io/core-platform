@@ -53,7 +53,7 @@ function App() {
           {/* Auth routes */}
           <Route path="/auth/*" element={<Auth />} />
           <Route path="/auth/callback" element={<OAuthCallback />} />
-          <Route path="/auth/reset-password" element={<PasswordReset />} />
+          <Route path="/auth/password-reset" element={<PasswordReset />} />
           <Route path="/auth/new-password" element={<ResetPassword />} />
           <Route path="/auth/mfa-setup" element={<MFASetup />} />
 
