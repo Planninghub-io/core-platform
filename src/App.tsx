@@ -1,3 +1,4 @@
+
 import { Routes, Route } from 'react-router-dom';
 import Index from '@/pages/Index';
 import Discover from '@/pages/Discover';
@@ -23,6 +24,7 @@ import Marketplace from '@/pages/marketplace/Marketplace';
 import Venues from '@/pages/marketplace/Venues';
 import Vendors from '@/pages/marketplace/Vendors';
 import VenueRecommendations from "./pages/marketplace/VenueRecommendations";
+import EventManagement from './pages/event-management/EventManagement';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +47,7 @@ function App() {
           <Route path="/event/:id" element={<EventDetails />} />
           <Route path="/event/:id/invitations" element={<EventInvitations />} />
           <Route path="/event/:id/tickets" element={<EventTicketing />} />
+          <Route path="/event/:id/manage" element={<EventManagement />} />
           <Route path="/create-event" element={<CreateEvent />} />
 
           {/* Auth routes */}

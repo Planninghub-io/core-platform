@@ -5,6 +5,9 @@ import { DeleteEventDialog } from "./components/DeleteEventDialog";
 import { formatDateOnly, formatTimeOnly, combineDateTime } from "./utils/dateUtils";
 import { Event } from "./types/event";
 import { formatCurrency } from "@/utils/priceUtils";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
+import { Calendar, ListChecks, Users } from "lucide-react";
 
 // Define event category options
 const EVENT_CATEGORIES = [
@@ -34,6 +37,8 @@ export const EventInfo = ({
   onFieldChange,
   onDelete,
 }: EventInfoProps) => {
+  const navigate = useNavigate();
+  
   const handleDateTimeChange = (field: 'date' | 'end_date', type: 'date' | 'time', value: string) => {
     const currentValue = field === 'date' ? event.date : event.end_date;
     const newDateTime = type === 'date'
@@ -41,6 +46,10 @@ export const EventInfo = ({
       : combineDateTime(formatDateOnly(currentValue), value, currentValue);
     
     onFieldChange(field, newDateTime);
+  };
+
+  const handleManageEvent = () => {
+    navigate(`/event/${event.id}/manage`);
   };
 
   return (
@@ -110,7 +119,7 @@ export const EventInfo = ({
         />
       </div>
       
-      {/* Add Budget Field */}
+      {/* Budget Field */}
       <FormField
         id="budget"
         label="Expected Budget"
@@ -135,6 +144,16 @@ export const EventInfo = ({
         onChange={(value) => onFieldChange('description', value)}
         type="textarea"
       />
+      
+      {!isEditing && (
+        <Button 
+          onClick={handleManageEvent}
+          className="w-full flex items-center justify-center gap-2 bg-[#8B5CF6] hover:bg-[#8B5CF6]/90"
+        >
+          <ListChecks className="h-4 w-4" />
+          Manage Event
+        </Button>
+      )}
 
       {isEditing && onDelete && event.status !== 'completed' && (
         <DeleteEventDialog onDelete={onDelete} />
