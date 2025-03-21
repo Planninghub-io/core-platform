@@ -6,3 +6,6 @@ verify_jwt = true
 
 [functions.scrape-venues]
 verify_jwt = true
+
+[functions.custom-email]
+verify_jwt = false

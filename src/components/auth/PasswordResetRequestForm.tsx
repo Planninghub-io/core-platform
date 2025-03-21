@@ -1,23 +1,42 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail } from "lucide-react";
 import { sendPasswordResetOTP } from "./utils/otpUtils";
+import { supabase } from "@/integrations/supabase/client";
 
 const PasswordResetRequestForm = () => {
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  // Call the custom-email function to set up email templates on component mount
+  useEffect(() => {
+    const setupCustomEmail = async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke('custom-email');
+        if (error) {
+          console.error("Error setting up custom email:", error);
+        } else {
+          console.log("Custom email templates set up successfully:", data);
+        }
+      } catch (err) {
+        console.error("Exception setting up custom email:", err);
+      }
+    };
+    
+    setupCustomEmail();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      // Call the password reset function from otpUtils, not authUtils
+      // Call the password reset function from otpUtils
       await sendPasswordResetOTP(email, toast);
       
       // Show additional information to help the user understand what to do next
