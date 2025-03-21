@@ -55,7 +55,10 @@ function App() {
           <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route path="/auth/password-reset" element={<PasswordReset />} />
           <Route path="/auth/new-password" element={<ResetPassword />} />
+          
+          {/* Important: Make this route a top-level route for proper handling of reset password links */}
           <Route path="/reset-password" element={<ResetPassword />} />
+          
           <Route path="/auth/mfa-setup" element={<MFASetup />} />
 
           {/* Settings routes */}

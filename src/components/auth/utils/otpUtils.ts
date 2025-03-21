@@ -47,16 +47,21 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
-    // Set the exact URL path to your reset password page
-    // This must be an absolute path with no hash fragment
-    const redirectTo = `${window.location.origin}/reset-password`;
+    // Ensure we're using the correct redirect URL for the app
+    // This should be an absolute URL to the reset-password page
+    const origin = window.location.origin;
+    const redirectTo = `${origin}/reset-password`;
+    
+    console.log("Password reset requested for:", email);
     console.log("Using redirect URL:", redirectTo);
     
+    // Request password reset
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectTo,
+      redirectTo,
     });
 
     if (error) {
+      console.error("Password reset error:", error);
       toast({
         title: "Password Reset Error",
         description: error.message,
@@ -72,6 +77,7 @@ export const sendPasswordResetOTP = async (
     
     return true;
   } catch (error: any) {
+    console.error("Password reset exception:", error);
     toast({
       title: "Password Reset Error",
       description: "An unexpected error occurred. Please try again.",

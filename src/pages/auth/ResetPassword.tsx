@@ -17,24 +17,60 @@ const ResetPassword = () => {
     // Check if the user has a valid recovery session
     const checkSession = async () => {
       try {
+        console.log("ResetPassword: Initializing");
         console.log("Current URL:", window.location.href);
-        console.log("Location:", location);
         
-        // First check for hash parameters (from email link)
-        const hashParams = new URLSearchParams(location.hash.substring(1));
-        const accessToken = hashParams.get('access_token');
-        const refreshToken = hashParams.get('refresh_token');
-        const type = hashParams.get('type');
+        // First check if this is a recovery URL with token in the URL parameters
+        const token = searchParams.get('token');
+        const type = searchParams.get('type');
         
-        console.log("Hash parameters:", { 
-          accessToken: !!accessToken, 
-          refreshToken: !!refreshToken, 
+        console.log("URL parameters:", { 
+          token: token ? "present" : "not present", 
           type 
         });
         
-        // If we have token params from the URL hash, set the session
-        if (accessToken && type === 'recovery') {
-          console.log("Setting session from hash parameters");
+        // If we have a recovery token in the URL
+        if (token && type === 'recovery') {
+          console.log("Found recovery token in URL params, verifying...");
+          
+          // Try to verify the recovery token
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: token,
+            type: 'recovery',
+          });
+          
+          if (error) {
+            console.error("Error verifying recovery token:", error);
+            toast({
+              title: "Password Reset Error",
+              description: "Your password reset link is invalid or has expired. Please request a new one.",
+              variant: "destructive",
+            });
+            navigate("/auth/password-reset");
+            return;
+          }
+          
+          console.log("Recovery token verified successfully");
+          setIsValidSession(true);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Check for hash parameters (from email link that uses #)
+        const hashParams = new URLSearchParams(location.hash.substring(1));
+        const accessToken = hashParams.get('access_token');
+        const refreshToken = hashParams.get('refresh_token');
+        const hashType = hashParams.get('type');
+        
+        console.log("Hash parameters:", { 
+          accessToken: accessToken ? "present" : "not present", 
+          type: hashType 
+        });
+        
+        // If we have token params from the URL hash for recovery
+        if (accessToken && hashType === 'recovery') {
+          console.log("Found access token in URL hash, setting session...");
+          
           const { error } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken || '',
@@ -56,60 +92,30 @@ const ResetPassword = () => {
           return;
         }
         
-        // Also check for query parameters (some email clients might convert the hash to query)
-        const token = searchParams.get('token');
-        const type_param = searchParams.get('type');
+        // As a fallback, check if there's already a valid session
+        const { data: sessionData } = await supabase.auth.getSession();
         
-        console.log("Query parameters:", { token: !!token, type: type_param });
+        console.log("Session check:", sessionData?.session ? "session exists" : "no session");
         
-        if (token && type_param === 'recovery') {
-          console.log("Verifying token from query parameters");
-          // Handle recovery token
-          const { data, error } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: 'recovery',
-          });
-          
-          if (error) {
-            console.error("Error verifying token from query params:", error);
-            toast({
-              title: "Session Error",
-              description: "Unable to validate your recovery token. Please request a new reset link.",
-              variant: "destructive",
-            });
-            navigate("/auth/password-reset");
-            return;
-          }
-          
-          console.log("Token verification successful:", data);
+        if (sessionData.session) {
           setIsValidSession(true);
           setIsLoading(false);
           return;
         }
         
-        // If no tokens in URL, check if there's a valid session already
-        const { data, error } = await supabase.auth.getSession();
-        
-        console.log("Session check:", data?.session ? "session exists" : "no session");
-        
-        if (!data.session) {
-          console.log("No session found, redirecting to password reset page");
-          toast({
-            title: "Session Expired",
-            description: "Your password reset session has expired. Please request a new reset link.",
-            variant: "destructive",
-          });
-          navigate("/auth/password-reset");
-          return;
-        }
-        
-        // Valid session exists
-        setIsValidSession(true);
+        // No valid recovery token or session found
+        console.log("No valid recovery token or session found, redirecting to password reset page");
+        toast({
+          title: "Invalid Session",
+          description: "Your password reset session has expired or is invalid. Please request a new reset link.",
+          variant: "destructive",
+        });
+        navigate("/auth/password-reset");
       } catch (err) {
-        console.error("Error checking session:", err);
+        console.error("Error in reset password flow:", err);
         toast({
           title: "Error",
-          description: "An error occurred while validating your session.",
+          description: "An error occurred during the password reset process.",
           variant: "destructive",
         });
         navigate("/auth/password-reset");
