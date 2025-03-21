@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Mail } from "lucide-react";
+import { User, Mail, Eye, EyeOff } from "lucide-react";
 import BusinessDetailsForm from "./BusinessDetailsForm";
 
 interface SignUpFormProps {
@@ -26,6 +26,7 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
   const [lastName, setLastName] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [businessPhone, setBusinessPhone] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,6 +38,10 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
       companyName,
       businessPhone,
     });
+  };
+
+  const toggleShowPassword = () => {
+    setShowPassword(!showPassword);
   };
 
   return (
@@ -101,15 +106,28 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
       
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
-        <Input
-          id="password"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter your password (min. 6 characters)"
-          required
-          minLength={6}
-        />
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password (min. 6 characters)"
+            required
+            minLength={6}
+          />
+          <button
+            type="button"
+            onClick={toggleShowPassword}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+            tabIndex={-1}
+          >
+            {showPassword ? 
+              <EyeOff className="h-4 w-4" /> : 
+              <Eye className="h-4 w-4" />
+            }
+          </button>
+        </div>
       </div>
       <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading ? 'Loading...' : 'Sign Up'}
