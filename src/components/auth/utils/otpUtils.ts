@@ -47,8 +47,8 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
-    // Use the Azure static web app URL for redirects
-    const redirectTo = `https://nice-moss-0d3d9cf0f.5.azurestaticapps.net/auth/new-password`;
+    // Configure redirect to the actual app's password reset page, not Lovable
+    const redirectTo = `${window.location.origin}/auth/new-password`;
     
     console.log("Password reset requested for:", email);
     console.log("Using redirect URL:", redirectTo);
