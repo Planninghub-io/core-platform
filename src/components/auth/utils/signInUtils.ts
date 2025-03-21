@@ -1,5 +1,4 @@
-
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, APP_URL } from "@/integrations/supabase/client";
 
 export interface SignInData {
   email: string;
@@ -22,7 +21,6 @@ export const handleUserSignIn = async (
   }
   
   try {
-    // First, try to sign in with password
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -45,15 +43,12 @@ export const handleUserSignIn = async (
       return false;
     }
 
-    // Check if MFA is required
     if (data.session === null && data.user) {
-      // MFA is required, handle accordingly
       toast({
         title: "Verification Required",
         description: "A verification code has been sent to your email.",
       });
       
-      // Wait for OTP entry or handle differently based on your UI
       return false;
     }
 
@@ -74,26 +69,20 @@ export const handleGoogleSignIn = async (
   toast: any
 ) => {
   try {
-    // Get the current URL and use it for the redirect
-    const origin = window.location.origin;
-    const redirectUrl = `${origin}/auth/callback`;
+    const redirectUrl = `${APP_URL}/auth/callback`;
     console.log("Google sign-in with redirect URL:", redirectUrl);
     
-    // Make sure we store the current path for later redirect after auth
     const currentPath = localStorage.getItem('authRedirectPath') || '/';
     if (!currentPath || currentPath === '/auth') {
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    // Initialize the OAuth sign-in with Google provider
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: redirectUrl,
         queryParams: {
-          // Use access_type=offline to get a refresh token
           access_type: 'offline',
-          // Ensure consistent prompt behavior
           prompt: 'select_account'
         }
       }

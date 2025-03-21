@@ -1,5 +1,4 @@
-
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, APP_URL } from "@/integrations/supabase/client";
 
 // Handle OTP verification
 export const verifyOTP = async (
@@ -47,10 +46,8 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
-    // For production deployment, use the Azure URL for redirects
-    // For development or preview, use window.location.origin
-    const baseUrl = "https://nice-moss-0d3d9cf0f.5.azurestaticapps.net";
-    const redirectTo = `${baseUrl}/auth/new-password`;
+    // Use the APP_URL constant for redirects in all environments
+    const redirectTo = `${APP_URL}/auth/new-password`;
     
     console.log("Password reset requested for:", email);
     console.log("Using redirect URL:", redirectTo);

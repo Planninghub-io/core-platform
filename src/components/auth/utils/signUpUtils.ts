@@ -1,5 +1,5 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, APP_URL } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
 import { toast } from "@/hooks/use-toast";
 
@@ -49,7 +49,7 @@ export const handleUserSignUp = async (
           first_name: firstName,
           last_name: lastName,
         },
-        emailRedirectTo: window.location.origin
+        emailRedirectTo: APP_URL
       }
     });
 
