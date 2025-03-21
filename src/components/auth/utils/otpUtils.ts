@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 // Handle OTP verification
@@ -47,7 +48,7 @@ export const sendPasswordResetOTP = async (
 ) => {
   try {
     // Use the Azure static web app URL for redirects
-    const redirectTo = `https://nice-moss-0d3d9cf0f.5.azurestaticapps.net/reset-password`;
+    const redirectTo = `https://nice-moss-0d3d9cf0f.5.azurestaticapps.net/auth/new-password`;
     
     console.log("Password reset requested for:", email);
     console.log("Using redirect URL:", redirectTo);
