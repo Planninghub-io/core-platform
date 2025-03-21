@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 
 // Handle OTP verification
@@ -47,10 +46,8 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
-    // Ensure we're using the correct redirect URL for the app
-    // This should be an absolute URL to the reset-password page
-    const origin = window.location.origin;
-    const redirectTo = `${origin}/reset-password`;
+    // Use the Azure static web app URL for redirects
+    const redirectTo = `https://nice-moss-0d3d9cf0f.5.azurestaticapps.net/reset-password`;
     
     console.log("Password reset requested for:", email);
     console.log("Using redirect URL:", redirectTo);
