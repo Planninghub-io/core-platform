@@ -57,17 +57,16 @@ const ResetPassword = () => {
         }
         
         // Also check for query parameters (some email clients might convert the hash to query)
-        const queryToken = searchParams.get('token');
-        const queryType = searchParams.get('type');
+        const token = searchParams.get('token');
+        const type_param = searchParams.get('type');
         
-        console.log("Query parameters:", { queryToken: !!queryToken, queryType });
+        console.log("Query parameters:", { token: !!token, type: type_param });
         
-        if (queryToken && queryType === 'recovery') {
-          console.log("Setting session from query parameters");
-          // Handle query parameter tokens
-          // This is a fallback in case the hash is converted to query params
-          const { error } = await supabase.auth.verifyOtp({
-            token_hash: queryToken,
+        if (token && type_param === 'recovery') {
+          console.log("Verifying token from query parameters");
+          // Handle recovery token
+          const { data, error } = await supabase.auth.verifyOtp({
+            token_hash: token,
             type: 'recovery',
           });
           
@@ -82,6 +81,7 @@ const ResetPassword = () => {
             return;
           }
           
+          console.log("Token verification successful:", data);
           setIsValidSession(true);
           setIsLoading(false);
           return;

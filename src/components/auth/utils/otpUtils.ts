@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 
 // Handle OTP verification
@@ -48,11 +49,11 @@ export const sendPasswordResetOTP = async (
   try {
     // Set the exact URL path to your reset password page
     // This must be an absolute path with no hash fragment
-    const redirectUrl = `${window.location.origin}/reset-password`;
-    console.log("Using redirect URL:", redirectUrl);
+    const redirectTo = `${window.location.origin}/reset-password`;
+    console.log("Using redirect URL:", redirectTo);
     
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl,
+      redirectTo: redirectTo,
     });
 
     if (error) {
