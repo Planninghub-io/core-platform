@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 import { Check, X } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface DateTimeFieldProps {
   label: string;
@@ -34,12 +34,16 @@ export const DateTimeField = ({
   const [tempDateValue, setTempDateValue] = useState(dateValue);
   const [tempTimeValue, setTempTimeValue] = useState(timeValue);
   
+  // Update local state when props change
+  useEffect(() => {
+    setTempDateValue(dateValue);
+    setTempTimeValue(timeValue);
+  }, [dateValue, timeValue]);
+  
   const handleFieldClick = () => {
-    if (!isEditing && onEditClick) {
+    if (showEditButton && onEditClick) {
       onEditClick();
       setIsFieldEditing(true);
-      setTempDateValue(dateValue);
-      setTempTimeValue(timeValue);
     }
   };
   
