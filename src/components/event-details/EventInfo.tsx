@@ -48,10 +48,6 @@ export const EventInfo = ({
     onFieldChange(field, newDateTime);
   };
 
-  const handleManageEvent = () => {
-    navigate(`/event/${event.id}/manage`);
-  };
-
   return (
     <div className="space-y-6">
       <FormField
@@ -144,16 +140,6 @@ export const EventInfo = ({
         onChange={(value) => onFieldChange('description', value)}
         type="textarea"
       />
-      
-      {!isEditing && (
-        <Button 
-          onClick={handleManageEvent}
-          className="w-full flex items-center justify-center gap-2 bg-[#8B5CF6] hover:bg-[#8B5CF6]/90"
-        >
-          <ListChecks className="h-4 w-4" />
-          Manage Event
-        </Button>
-      )}
 
       {isEditing && onDelete && event.status !== 'completed' && (
         <DeleteEventDialog onDelete={onDelete} />
