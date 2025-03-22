@@ -9,3 +9,6 @@ verify_jwt = true
 
 [functions.custom-email]
 verify_jwt = false
+
+[functions.generate-checklist]
+verify_jwt = true

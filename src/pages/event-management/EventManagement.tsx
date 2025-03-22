@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { TeamManagement } from "./components/TeamManagement";
-import { TaskManagement } from "./components/TaskManagement";
+import { Checklist } from "./components/Checklist";
 import { EventPlanner } from "./components/EventPlanner";
 
 const EventManagement: React.FC = () => {
@@ -60,7 +60,7 @@ const EventManagement: React.FC = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-3 mb-8">
           <TabsTrigger value="team">Event Team</TabsTrigger>
-          <TabsTrigger value="tasks">Tasks</TabsTrigger>
+          <TabsTrigger value="checklist">Checklist</TabsTrigger>
           <TabsTrigger value="planner">Event Planner</TabsTrigger>
         </TabsList>
         
@@ -68,8 +68,8 @@ const EventManagement: React.FC = () => {
           <TeamManagement eventId={id || ""} />
         </TabsContent>
         
-        <TabsContent value="tasks" className="mt-6">
-          <TaskManagement eventId={id || ""} />
+        <TabsContent value="checklist" className="mt-6">
+          <Checklist eventId={id || ""} event={event} />
         </TabsContent>
         
         <TabsContent value="planner" className="mt-6">
