@@ -8,9 +8,10 @@ import {
   Megaphone, 
   FileText 
 } from "lucide-react";
+import { CategoryData } from "./types";
 
 // Category icons mapping
-export const getCategoryIcon = (category: string) => {
+export const getCategoryIcon = (category: string): React.ReactNode => {
   switch (category.toLowerCase()) {
     case 'venue':
       return <Building2 className="h-4 w-4" />;
@@ -30,7 +31,7 @@ export const getCategoryIcon = (category: string) => {
 };
 
 // Category color mapping
-export const getCategoryColor = (category: string) => {
+export const getCategoryColor = (category: string): string => {
   switch (category.toLowerCase()) {
     case 'venue':
       return "bg-blue-100 text-blue-800";
@@ -60,7 +61,7 @@ export const timelineOrder = [
   "Post-event"
 ];
 
-export const categoryFilters = [
+export const categoryFilters: CategoryData[] = [
   { value: "venue", label: "Venue" },
   { value: "vendors", label: "Vendors" },
   { value: "guests", label: "Guests" },
