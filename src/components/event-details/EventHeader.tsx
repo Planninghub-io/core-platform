@@ -1,8 +1,9 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Pencil, LayoutDashboard, Bot, Save, X } from "lucide-react";
+import { ArrowLeft, Bot, LayoutDashboard, ListChecks, Save, X } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -39,6 +40,7 @@ interface EventHeaderProps {
 
 export const EventHeader = ({
   isEditing,
+  id,
   onBack,
   onEditToggle,
   onDashboard,
@@ -51,6 +53,7 @@ export const EventHeader = ({
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
   const [pendingAction, setPendingAction] = useState<'dashboard' | 'ai' | 'back' | null>(null);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleActionWithCheck = (action: 'dashboard' | 'ai' | 'back') => {
     if (isEditing && hasUnsavedChanges) {
@@ -99,6 +102,10 @@ export const EventHeader = ({
     setShowUnsavedDialog(false);
   };
 
+  const handleManageEvent = () => {
+    navigate(`/event/${id}/manage`);
+  };
+
   return (
     <div className="space-y-4 mb-6">
       <div className="flex items-center justify-between">
@@ -111,6 +118,16 @@ export const EventHeader = ({
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
+          
+          {/* Added Manage Event button */}
+          <Button 
+            onClick={handleManageEvent}
+            className="flex items-center justify-center gap-2 bg-[#8B5CF6] hover:bg-[#8B5CF6]/90"
+          >
+            <ListChecks className="h-4 w-4" />
+            Manage Event
+          </Button>
+          
           <Button 
             variant={activeView === 'dashboard' ? "default" : "outline"} 
             onClick={() => handleActionWithCheck('dashboard')}
@@ -154,16 +171,6 @@ export const EventHeader = ({
               </Button>
             </>
           )}
-          <Button 
-            variant={isEditing ? "default" : "outline"}
-            onClick={onEditToggle}
-            className={activeView === 'details' && isEditing
-              ? "bg-[#8B5CF6] hover:bg-[#7C3AED] text-white" 
-              : "text-[#8B5CF6] border-[#8B5CF6] hover:bg-purple-50"}
-          >
-            <Pencil className="mr-2 h-4 w-4" />
-            {isEditing ? "Done" : "Edit"}
-          </Button>
         </div>
       </div>
 

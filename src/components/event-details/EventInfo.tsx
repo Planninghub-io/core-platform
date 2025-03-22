@@ -5,9 +5,7 @@ import { DeleteEventDialog } from "./components/DeleteEventDialog";
 import { formatDateOnly, formatTimeOnly, combineDateTime } from "./utils/dateUtils";
 import { Event } from "./types/event";
 import { formatCurrency } from "@/utils/priceUtils";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
-import { Calendar, ListChecks, Users } from "lucide-react";
+import { Pencil } from "lucide-react";
 
 // Define event category options
 const EVENT_CATEGORIES = [
@@ -29,6 +27,7 @@ interface EventInfoProps {
   isEditing: boolean;
   onFieldChange: (field: string, value: string | number) => void;
   onDelete?: () => void;
+  onEditField?: (fieldName: string) => void;
 }
 
 export const EventInfo = ({
@@ -36,8 +35,8 @@ export const EventInfo = ({
   isEditing,
   onFieldChange,
   onDelete,
+  onEditField,
 }: EventInfoProps) => {
-  const navigate = useNavigate();
   
   const handleDateTimeChange = (field: 'date' | 'end_date', type: 'date' | 'time', value: string) => {
     const currentValue = field === 'date' ? event.date : event.end_date;
@@ -48,98 +47,145 @@ export const EventInfo = ({
     onFieldChange(field, newDateTime);
   };
 
+  // Render edit button for a specific field
+  const renderEditButton = (fieldName: string) => {
+    if (!isEditing && onEditField) {
+      return (
+        <button 
+          onClick={() => onEditField(fieldName)} 
+          className="ml-2 p-1 text-gray-400 hover:text-purple-600 rounded-full hover:bg-purple-50"
+        >
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+      );
+    }
+    return null;
+  };
+
   return (
     <div className="space-y-6">
-      <FormField
-        id="title"
-        label="Event Title"
-        value={event.title}
-        placeholder="No title"
-        isEditing={isEditing}
-        onChange={(value) => onFieldChange('title', value)}
-      />
+      <div className="flex items-center">
+        <FormField
+          id="title"
+          label="Event Title"
+          value={event.title}
+          placeholder="No title"
+          isEditing={isEditing}
+          onChange={(value) => onFieldChange('title', value)}
+          showEditButton={!isEditing}
+          onEditClick={() => onEditField && onEditField('title')}
+        />
+      </div>
 
       <div className="space-y-2">
         <div className="grid grid-cols-2 gap-4">
-          <DateTimeField
-            id="start"
-            label="Start Date & Time"
-            dateValue={formatDateOnly(event.date)}
-            timeValue={formatTimeOnly(event.date)}
-            isEditing={isEditing}
-            onDateChange={(value) => handleDateTimeChange('date', 'date', value)}
-            onTimeChange={(value) => handleDateTimeChange('date', 'time', value)}
-          />
+          <div className="relative">
+            <DateTimeField
+              id="start"
+              label="Start Date & Time"
+              dateValue={formatDateOnly(event.date)}
+              timeValue={formatTimeOnly(event.date)}
+              isEditing={isEditing}
+              onDateChange={(value) => handleDateTimeChange('date', 'date', value)}
+              onTimeChange={(value) => handleDateTimeChange('date', 'time', value)}
+              showEditButton={!isEditing}
+              onEditClick={() => onEditField && onEditField('date')}
+            />
+          </div>
           
-          <DateTimeField
-            id="end"
-            label="End Date & Time"
-            dateValue={formatDateOnly(event.end_date)}
-            timeValue={formatTimeOnly(event.end_date)}
-            isEditing={isEditing}
-            onDateChange={(value) => handleDateTimeChange('end_date', 'date', value)}
-            onTimeChange={(value) => handleDateTimeChange('end_date', 'time', value)}
-          />
+          <div className="relative">
+            <DateTimeField
+              id="end"
+              label="End Date & Time"
+              dateValue={formatDateOnly(event.end_date)}
+              timeValue={formatTimeOnly(event.end_date)}
+              isEditing={isEditing}
+              onDateChange={(value) => handleDateTimeChange('end_date', 'date', value)}
+              onTimeChange={(value) => handleDateTimeChange('end_date', 'time', value)}
+              showEditButton={!isEditing}
+              onEditClick={() => onEditField && onEditField('end_date')}
+            />
+          </div>
         </div>
       </div>
 
-      <FormField
-        id="location"
-        label="Location"
-        value={event.location}
-        placeholder="No location specified"
-        isEditing={isEditing}
-        onChange={(value) => onFieldChange('location', value)}
-      />
-
-      <div className="grid grid-cols-2 gap-4">
+      <div className="relative">
         <FormField
-          id="category"
-          label="Category"
-          value={event.category}
-          placeholder="Select a category"
+          id="location"
+          label="Location"
+          value={event.location}
+          placeholder="No location specified"
           isEditing={isEditing}
-          onChange={(value) => onFieldChange('category', value)}
-          type={isEditing ? "select" : "text"}
-          options={EVENT_CATEGORIES}
-        />
-
-        <FormField
-          id="expected_attendees"
-          label="Expected Attendees"
-          value={event.expected_attendees}
-          placeholder="No attendees specified"
-          isEditing={isEditing}
-          onChange={(value) => onFieldChange('expected_attendees', value)}
-          type="number"
+          onChange={(value) => onFieldChange('location', value)}
+          showEditButton={!isEditing}
+          onEditClick={() => onEditField && onEditField('location')}
         />
       </div>
-      
-      {/* Budget Field */}
-      <FormField
-        id="budget"
-        label="Expected Budget"
-        value={event.budget ? formatCurrency(event.budget) : event.estimated_budget}
-        placeholder="No budget specified"
-        isEditing={isEditing}
-        onChange={(value) => {
-          // Remove currency symbol and commas before saving
-          const numericValue = value.toString().replace(/[$,]/g, '');
-          onFieldChange('budget', numericValue);
-        }}
-        type="text"
-        prefix="$"
-      />
 
-      <FormField
-        id="description"
-        label="Description"
-        value={event.description}
-        placeholder="No description provided"
-        isEditing={isEditing}
-        onChange={(value) => onFieldChange('description', value)}
-        type="textarea"
-      />
+      <div className="grid grid-cols-2 gap-4">
+        <div className="relative">
+          <FormField
+            id="category"
+            label="Category"
+            value={event.category}
+            placeholder="Select a category"
+            isEditing={isEditing}
+            onChange={(value) => onFieldChange('category', value)}
+            type={isEditing ? "select" : "text"}
+            options={EVENT_CATEGORIES}
+            showEditButton={!isEditing}
+            onEditClick={() => onEditField && onEditField('category')}
+          />
+        </div>
+
+        <div className="relative">
+          <FormField
+            id="expected_attendees"
+            label="Expected Attendees"
+            value={event.expected_attendees}
+            placeholder="No attendees specified"
+            isEditing={isEditing}
+            onChange={(value) => onFieldChange('expected_attendees', value)}
+            type="number"
+            showEditButton={!isEditing}
+            onEditClick={() => onEditField && onEditField('expected_attendees')}
+          />
+        </div>
+      </div>
+      
+      {/* Budget Field - Changed label from "Expected Budget" to "Estimated Budget" */}
+      <div className="relative">
+        <FormField
+          id="budget"
+          label="Estimated Budget"
+          value={event.budget ? formatCurrency(event.budget) : event.estimated_budget}
+          placeholder="No budget specified"
+          isEditing={isEditing}
+          onChange={(value) => {
+            // Remove currency symbol and commas before saving
+            const numericValue = value.toString().replace(/[$,]/g, '');
+            onFieldChange('budget', numericValue);
+          }}
+          type="text"
+          prefix="$"
+          showEditButton={!isEditing}
+          onEditClick={() => onEditField && onEditField('budget')}
+        />
+      </div>
+
+      <div className="relative">
+        <FormField
+          id="description"
+          label="Description"
+          value={event.description}
+          placeholder="No description provided"
+          isEditing={isEditing}
+          onChange={(value) => onFieldChange('description', value)}
+          type="textarea"
+          showEditButton={!isEditing}
+          onEditClick={() => onEditField && onEditField('description')}
+        />
+      </div>
 
       {isEditing && onDelete && event.status !== 'completed' && (
         <DeleteEventDialog onDelete={onDelete} />

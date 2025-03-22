@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
+import { Pencil } from "lucide-react";
 
 interface DateTimeFieldProps {
   label: string;
@@ -12,6 +13,8 @@ interface DateTimeFieldProps {
   onDateChange: (value: string) => void;
   onTimeChange: (value: string) => void;
   id: string;
+  showEditButton?: boolean;
+  onEditClick?: () => void;
 }
 
 export const DateTimeField = ({
@@ -21,7 +24,9 @@ export const DateTimeField = ({
   isEditing,
   onDateChange,
   onTimeChange,
-  id
+  id,
+  showEditButton = false,
+  onEditClick
 }: DateTimeFieldProps) => {
   const formatDate = (dateString: string) => {
     try {
@@ -49,10 +54,20 @@ export const DateTimeField = ({
 
   return (
     <div>
+      <div className="flex items-center justify-between mb-1">
+        <Label htmlFor={`${id}-date`}>{label}</Label>
+        {showEditButton && onEditClick && (
+          <button 
+            onClick={onEditClick}
+            className="p-1 text-gray-400 hover:text-purple-600 rounded-full hover:bg-purple-50"
+            aria-label={`Edit ${label}`}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <Label htmlFor={`${id}-date`}>{labelPrefix} Date</Label>
-          
           {isEditing ? (
             <Input
               id={`${id}-date`}
@@ -69,8 +84,6 @@ export const DateTimeField = ({
           )}
         </div>
         <div>
-          <Label htmlFor={`${id}-time`}>Time</Label>
-          
           {isEditing ? (
             <Input
               id={`${id}-time`}

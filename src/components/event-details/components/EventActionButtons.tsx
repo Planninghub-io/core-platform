@@ -3,7 +3,6 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { InvitationThemeDialog } from "./InvitationThemeDialog";
-import { ListChecks } from "lucide-react";
 
 interface EventActionButtonsProps {
   eventId: string;
@@ -29,10 +28,6 @@ export const EventActionButtons = ({
 
   const handleTicketingClick = () => {
     navigate(`/event/${eventId}/tickets`);
-  };
-
-  const handleManageEvent = () => {
-    navigate(`/event/${eventId}/manage`);
   };
 
   // Check if ticketing should be hidden based on event category
@@ -69,15 +64,6 @@ export const EventActionButtons = ({
           </Button>
         )}
       </div>
-
-      {/* Added Manage Event button */}
-      <Button 
-        onClick={handleManageEvent}
-        className="w-full flex items-center justify-center gap-2 bg-[#8B5CF6] hover:bg-[#8B5CF6]/90"
-      >
-        <ListChecks className="h-4 w-4" />
-        Manage Event
-      </Button>
 
       <InvitationThemeDialog
         isOpen={isThemeDialogOpen}

@@ -9,13 +9,17 @@ interface EventContentProps {
   isEditing: boolean;
   viewMode: 'details' | 'ai' | 'dashboard';
   onFieldChange: (field: string, value: string | number) => void;
+  onEditField?: (fieldName: string) => void;
+  editingField?: string | null;
 }
 
 export const EventContent = ({
   event,
   isEditing,
   viewMode,
-  onFieldChange
+  onFieldChange,
+  onEditField,
+  editingField
 }: EventContentProps) => {
   if (viewMode === 'dashboard') {
     return (
@@ -41,6 +45,7 @@ export const EventContent = ({
           event={event}
           isEditing={isEditing}
           onFieldChange={onFieldChange}
+          onEditField={onEditField}
         />
       </div>
     </div>

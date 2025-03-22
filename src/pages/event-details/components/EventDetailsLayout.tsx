@@ -15,6 +15,8 @@ interface EventDetailsLayoutProps {
   hasUnsavedChanges?: boolean;
   onSaveChanges?: () => void;
   onCancelChanges?: () => void;
+  onEditField?: (fieldName: string) => void;
+  editingField?: string | null;
 }
 
 export const EventDetailsLayout: React.FC<EventDetailsLayoutProps> = ({
@@ -27,7 +29,9 @@ export const EventDetailsLayout: React.FC<EventDetailsLayoutProps> = ({
   onFieldChange,
   hasUnsavedChanges = false,
   onSaveChanges = () => {},
-  onCancelChanges = () => {}
+  onCancelChanges = () => {},
+  onEditField,
+  editingField
 }) => {
   return (
     <div className="container py-8">
@@ -53,6 +57,8 @@ export const EventDetailsLayout: React.FC<EventDetailsLayoutProps> = ({
           isEditing={isEditing}
           viewMode={viewMode}
           onFieldChange={onFieldChange}
+          onEditField={onEditField}
+          editingField={editingField}
         />
       </div>
     </div>

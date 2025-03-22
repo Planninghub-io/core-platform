@@ -7,11 +7,12 @@ import { useToast } from "@/components/ui/use-toast";
 export const useEventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const isEditing = searchParams.get('edit') === 'true';
   const [viewMode, setViewMode] = useState<'details' | 'ai' | 'dashboard'>('details');
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [originalEventData, setOriginalEventData] = useState<any>(null);
+  const [editingField, setEditingField] = useState<string | null>(null);
   const { toast } = useToast();
   
   const { 
@@ -40,6 +41,7 @@ export const useEventDetails = () => {
     if (event) {
       await saveChanges(event);
       setHasUnsavedChanges(false);
+      setEditingField(null);
       toast({
         description: "Changes saved successfully",
       });
@@ -55,6 +57,7 @@ export const useEventDetails = () => {
         }
       });
       setHasUnsavedChanges(false);
+      setEditingField(null);
     }
   };
 
@@ -70,7 +73,15 @@ export const useEventDetails = () => {
       // When exiting edit mode with changes, save them
       handleSaveChanges();
     }
+    setEditingField(null);
     navigate(isEditing ? `/event/${id}` : `/event/${id}?edit=true`);
+  };
+
+  // Handle field-level editing
+  const handleEditField = (fieldName: string) => {
+    setEditingField(fieldName);
+    setSearchParams({ edit: 'true' });
+    setHasUnsavedChanges(true);
   };
 
   const handleBack = () => {
@@ -88,12 +99,14 @@ export const useEventDetails = () => {
     isEditing,
     viewMode,
     hasUnsavedChanges,
+    editingField,
     handleBack,
     handleEditToggle,
     handleViewModeChange,
     handleInputChange,
     handleDeleteAndNavigate,
     handleSaveChanges,
-    handleCancelChanges
+    handleCancelChanges,
+    handleEditField
   };
 };

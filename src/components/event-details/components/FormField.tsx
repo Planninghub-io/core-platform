@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { DollarSign } from "lucide-react";
+import { DollarSign, Pencil } from "lucide-react";
 
 interface FormFieldProps {
   id: string;
@@ -20,6 +20,8 @@ interface FormFieldProps {
   type?: "text" | "number" | "textarea" | "select";
   options?: Array<{value: string, label: string}>;
   prefix?: string;
+  showEditButton?: boolean;
+  onEditClick?: () => void;
 }
 
 export const FormField = ({
@@ -31,7 +33,9 @@ export const FormField = ({
   onChange,
   type = "text",
   options = [],
-  prefix
+  prefix,
+  showEditButton = false,
+  onEditClick
 }: FormFieldProps) => {
   const renderReadOnlyField = () => (
     <div className="flex h-10 w-full rounded-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
@@ -102,8 +106,19 @@ export const FormField = ({
   };
 
   return (
-    <div>
-      <Label htmlFor={id}>{label}</Label>
+    <div className="w-full">
+      <div className="flex items-center justify-between mb-1">
+        <Label htmlFor={id}>{label}</Label>
+        {showEditButton && onEditClick && (
+          <button 
+            onClick={onEditClick}
+            className="p-1 text-gray-400 hover:text-purple-600 rounded-full hover:bg-purple-50"
+            aria-label={`Edit ${label}`}
+          >
+            <Pencil className="h-3.5 w-3.5" />
+          </button>
+        )}
+      </div>
       {isEditing ? renderEditableField() : renderReadOnlyField()}
     </div>
   );

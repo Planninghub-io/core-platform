@@ -12,12 +12,14 @@ const EventDetails: React.FC = () => {
     isEditing,
     viewMode,
     hasUnsavedChanges,
+    editingField,
     handleBack,
     handleEditToggle,
     handleViewModeChange,
     handleInputChange,
     handleSaveChanges,
-    handleCancelChanges
+    handleCancelChanges,
+    handleEditField
   } = useEventDetails();
 
   if (loading) {
@@ -40,6 +42,8 @@ const EventDetails: React.FC = () => {
       hasUnsavedChanges={hasUnsavedChanges}
       onSaveChanges={handleSaveChanges}
       onCancelChanges={handleCancelChanges}
+      onEditField={handleEditField}
+      editingField={editingField}
     />
   );
 };
