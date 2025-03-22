@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { TeamManagement } from "./components/TeamManagement";
-import { Checklist } from "./components/Checklist";
+import { Checklist } from "./components/checklist";
 import { EventPlanner } from "./components/EventPlanner";
 
 const EventManagement: React.FC = () => {
