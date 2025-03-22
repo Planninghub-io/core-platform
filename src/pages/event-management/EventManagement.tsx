@@ -19,9 +19,8 @@ const EventManagement: React.FC = () => {
     return (
       <div className="container py-8">
         <div className="flex items-center space-x-4 mb-6">
-          <Button variant="outline" size="sm" onClick={() => navigate(`/event/${id}`)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Event
+          <Button variant="outline" size="icon" onClick={() => navigate(`/event/${id}`)}>
+            <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-2xl font-bold">Loading event management...</h1>
         </div>
@@ -36,9 +35,8 @@ const EventManagement: React.FC = () => {
     return (
       <div className="container py-8">
         <div className="flex items-center space-x-4 mb-6">
-          <Button variant="outline" size="sm" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
+          <Button variant="outline" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-2xl font-bold">Event not found</h1>
         </div>
@@ -50,9 +48,13 @@ const EventManagement: React.FC = () => {
   return (
     <div className="container py-8">
       <div className="flex items-center space-x-4 mb-6">
-        <Button variant="outline" size="sm" onClick={() => navigate(`/event/${id}`)}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back to Event
+        <Button 
+          variant="outline" 
+          size="icon" 
+          onClick={() => navigate(`/event/${id}`)}
+          className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+        >
+          <ArrowLeft className="h-5 w-5" />
         </Button>
         <h1 className="text-2xl font-bold">Managing: {event.title}</h1>
       </div>
