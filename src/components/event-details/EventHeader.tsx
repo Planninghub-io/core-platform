@@ -109,7 +109,7 @@ export const EventHeader = ({
   return (
     <div className="space-y-4 mb-6">
       <div className="flex items-center justify-between">
-        <div className="flex gap-4">
+        <div className="flex gap-2">
           <Button 
             variant="ghost" 
             onClick={() => handleActionWithCheck('back')}
@@ -117,19 +117,6 @@ export const EventHeader = ({
             size="icon"
           >
             <ArrowLeft className="h-5 w-5" />
-          </Button>
-        </div>
-
-        <div className="flex gap-2">
-          <Button 
-            onClick={handleManageEvent}
-            className={activeView === 'dashboard' 
-              ? "bg-[#8B5CF6] hover:bg-[#7C3AED]" 
-              : "text-[#8B5CF6] border-[#8B5CF6] hover:bg-purple-50"}
-            variant={activeView === 'dashboard' ? "default" : "outline"}
-          >
-            <ListChecks className="mr-2 h-4 w-4" />
-            Manage Event
           </Button>
           
           <Button 
@@ -152,6 +139,19 @@ export const EventHeader = ({
           >
             <Bot className="mr-2 h-4 w-4" />
             AI Assistant
+          </Button>
+        </div>
+
+        <div className="flex gap-2">
+          <Button 
+            onClick={handleManageEvent}
+            className={activeView === 'dashboard' 
+              ? "bg-[#8B5CF6] hover:bg-[#7C3AED]" 
+              : "text-[#8B5CF6] border-[#8B5CF6] hover:bg-purple-50"}
+            variant={activeView === 'dashboard' ? "default" : "outline"}
+          >
+            <ListChecks className="mr-2 h-4 w-4" />
+            Manage Event
           </Button>
           
           {isEditing && hasUnsavedChanges && (
@@ -194,3 +194,4 @@ export const EventHeader = ({
     </div>
   );
 };
+
