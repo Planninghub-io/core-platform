@@ -171,7 +171,9 @@ export const EventInfo = ({
       </div>
 
       {onDelete && (
-        <DeleteEventDialog onDelete={onDelete} disabled={event.status === 'completed'} />
+        <div className="mt-2">
+          <DeleteEventDialog onDelete={onDelete} disabled={event.status === 'completed'} />
+        </div>
       )}
     </div>
   );
