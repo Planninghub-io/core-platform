@@ -11,6 +11,7 @@ interface EventContentProps {
   onFieldChange: (field: string, value: string | number) => void;
   onEditField?: (fieldName: string) => void;
   editingField?: string | null;
+  onDelete?: () => void;
 }
 
 export const EventContent = ({
@@ -19,7 +20,8 @@ export const EventContent = ({
   viewMode,
   onFieldChange,
   onEditField,
-  editingField
+  editingField,
+  onDelete
 }: EventContentProps) => {
   if (viewMode === 'dashboard') {
     return (
@@ -46,6 +48,7 @@ export const EventContent = ({
           isEditing={isEditing}
           onFieldChange={onFieldChange}
           onEditField={onEditField}
+          onDelete={onDelete}
         />
       </div>
     </div>

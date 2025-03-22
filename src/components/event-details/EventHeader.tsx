@@ -118,13 +118,17 @@ export const EventHeader = ({
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          
-          {/* Added Manage Event button */}
+        </div>
+
+        <div className="flex gap-2">
           <Button 
             onClick={handleManageEvent}
-            className="flex items-center justify-center gap-2 bg-[#8B5CF6] hover:bg-[#8B5CF6]/90"
+            className={activeView === 'dashboard' 
+              ? "bg-[#8B5CF6] hover:bg-[#7C3AED]" 
+              : "text-[#8B5CF6] border-[#8B5CF6] hover:bg-purple-50"}
+            variant={activeView === 'dashboard' ? "default" : "outline"}
           >
-            <ListChecks className="h-4 w-4" />
+            <ListChecks className="mr-2 h-4 w-4" />
             Manage Event
           </Button>
           
@@ -138,6 +142,7 @@ export const EventHeader = ({
             <LayoutDashboard className="mr-2 h-4 w-4" />
             Dashboard
           </Button>
+          
           <Button 
             variant={activeView === 'ai' ? "default" : "outline"} 
             onClick={() => handleActionWithCheck('ai')}
@@ -148,9 +153,7 @@ export const EventHeader = ({
             <Bot className="mr-2 h-4 w-4" />
             AI Assistant
           </Button>
-        </div>
-
-        <div className="flex gap-2">
+          
           {isEditing && hasUnsavedChanges && (
             <>
               <Button 

@@ -5,7 +5,6 @@ import { DeleteEventDialog } from "./components/DeleteEventDialog";
 import { formatDateOnly, formatTimeOnly, combineDateTime } from "./utils/dateUtils";
 import { Event } from "./types/event";
 import { formatCurrency } from "@/utils/priceUtils";
-import { Pencil } from "lucide-react";
 
 // Define event category options
 const EVENT_CATEGORIES = [
@@ -45,21 +44,6 @@ export const EventInfo = ({
       : combineDateTime(formatDateOnly(currentValue), value, currentValue);
     
     onFieldChange(field, newDateTime);
-  };
-
-  // Render edit button for a specific field
-  const renderEditButton = (fieldName: string) => {
-    if (!isEditing && onEditField) {
-      return (
-        <button 
-          onClick={() => onEditField(fieldName)} 
-          className="ml-2 p-1 text-gray-400 hover:text-purple-600 rounded-full hover:bg-purple-50"
-        >
-          <Pencil className="h-3.5 w-3.5" />
-        </button>
-      );
-    }
-    return null;
   };
 
   return (
@@ -153,7 +137,6 @@ export const EventInfo = ({
         </div>
       </div>
       
-      {/* Budget Field - Changed label from "Expected Budget" to "Estimated Budget" */}
       <div className="relative">
         <FormField
           id="budget"
@@ -187,8 +170,8 @@ export const EventInfo = ({
         />
       </div>
 
-      {isEditing && onDelete && event.status !== 'completed' && (
-        <DeleteEventDialog onDelete={onDelete} />
+      {onDelete && (
+        <DeleteEventDialog onDelete={onDelete} disabled={event.status === 'completed'} />
       )}
     </div>
   );

@@ -17,6 +17,7 @@ interface EventDetailsLayoutProps {
   onCancelChanges?: () => void;
   onEditField?: (fieldName: string) => void;
   editingField?: string | null;
+  onDelete?: () => void;
 }
 
 export const EventDetailsLayout: React.FC<EventDetailsLayoutProps> = ({
@@ -31,7 +32,8 @@ export const EventDetailsLayout: React.FC<EventDetailsLayoutProps> = ({
   onSaveChanges = () => {},
   onCancelChanges = () => {},
   onEditField,
-  editingField
+  editingField,
+  onDelete
 }) => {
   return (
     <div className="container py-8">
@@ -50,7 +52,6 @@ export const EventDetailsLayout: React.FC<EventDetailsLayoutProps> = ({
         onCancelChanges={onCancelChanges}
       />
       
-      {/* Added margin-top to create more separation */}
       <div className="mt-12">
         <EventContent
           event={event}
@@ -59,6 +60,7 @@ export const EventDetailsLayout: React.FC<EventDetailsLayoutProps> = ({
           onFieldChange={onFieldChange}
           onEditField={onEditField}
           editingField={editingField}
+          onDelete={onDelete}
         />
       </div>
     </div>

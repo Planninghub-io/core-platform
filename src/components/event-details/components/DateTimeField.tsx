@@ -1,9 +1,11 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
-import { Pencil } from "lucide-react";
+import { Check } from "lucide-react";
+import { useState } from "react";
 
 interface DateTimeFieldProps {
   label: string;
@@ -28,6 +30,25 @@ export const DateTimeField = ({
   showEditButton = false,
   onEditClick
 }: DateTimeFieldProps) => {
+  const [isFieldEditing, setIsFieldEditing] = useState(false);
+  const [tempDateValue, setTempDateValue] = useState(dateValue);
+  const [tempTimeValue, setTempTimeValue] = useState(timeValue);
+  
+  const handleFieldClick = () => {
+    if (!isEditing && onEditClick) {
+      onEditClick();
+      setIsFieldEditing(true);
+      setTempDateValue(dateValue);
+      setTempTimeValue(timeValue);
+    }
+  };
+  
+  const handleSaveField = () => {
+    onDateChange(tempDateValue);
+    onTimeChange(tempTimeValue);
+    setIsFieldEditing(false);
+  };
+
   const formatDate = (dateString: string) => {
     try {
       const date = new Date(dateString);
@@ -56,45 +77,54 @@ export const DateTimeField = ({
     <div>
       <div className="flex items-center justify-between mb-1">
         <Label htmlFor={`${id}-date`}>{label}</Label>
-        {showEditButton && onEditClick && (
-          <button 
-            onClick={onEditClick}
-            className="p-1 text-gray-400 hover:text-purple-600 rounded-full hover:bg-purple-50"
-            aria-label={`Edit ${label}`}
-          >
-            <Pencil className="h-3.5 w-3.5" />
-          </button>
-        )}
       </div>
       <div className="grid grid-cols-2 gap-2">
         <div>
-          {isEditing ? (
+          {(isEditing || isFieldEditing) ? (
             <Input
               id={`${id}-date`}
               type="date"
-              value={dateValue}
-              onChange={(e) => onDateChange(e.target.value)}
+              value={isFieldEditing ? tempDateValue : dateValue}
+              onChange={(e) => isFieldEditing ? setTempDateValue(e.target.value) : onDateChange(e.target.value)}
               required
               className="rounded-r-none"
             />
           ) : (
-            <div className="flex h-10 w-full rounded-l-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background border-r-0">
+            <div 
+              className="flex h-10 w-full rounded-l-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background border-r-0 cursor-pointer hover:bg-gray-100"
+              onClick={handleFieldClick}
+            >
               <span>{formatDate(dateValue)}</span>
             </div>
           )}
         </div>
-        <div>
-          {isEditing ? (
-            <Input
-              id={`${id}-time`}
-              type="time"
-              value={timeValue}
-              onChange={(e) => onTimeChange(e.target.value)}
-              required
-              className="rounded-l-none border-l-0"
-            />
+        <div className="relative">
+          {(isEditing || isFieldEditing) ? (
+            <div className="relative">
+              <Input
+                id={`${id}-time`}
+                type="time"
+                value={isFieldEditing ? tempTimeValue : timeValue}
+                onChange={(e) => isFieldEditing ? setTempTimeValue(e.target.value) : onTimeChange(e.target.value)}
+                required
+                className="rounded-l-none border-l-0"
+              />
+              {isFieldEditing && (
+                <Button
+                  size="sm"
+                  onClick={handleSaveField}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
+                  variant="outline"
+                >
+                  <Check className="h-3 w-3" />
+                </Button>
+              )}
+            </div>
           ) : (
-            <div className="flex h-10 w-full rounded-r-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background">
+            <div 
+              className="flex h-10 w-full rounded-r-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background cursor-pointer hover:bg-gray-100"
+              onClick={handleFieldClick}
+            >
               <span>{formatTime(timeValue)}</span>
             </div>
           )}

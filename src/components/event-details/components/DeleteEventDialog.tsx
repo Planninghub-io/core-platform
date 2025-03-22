@@ -20,7 +20,16 @@ interface DeleteEventDialogProps {
 
 export const DeleteEventDialog = ({ onDelete, disabled = false }: DeleteEventDialogProps) => {
   if (disabled) {
-    return null;
+    return (
+      <Button 
+        variant="outline"
+        className="w-full text-gray-400 border-gray-200 cursor-not-allowed"
+        disabled
+      >
+        <Trash2 className="mr-2 h-4 w-4" />
+        Delete Event
+      </Button>
+    );
   }
 
   return (

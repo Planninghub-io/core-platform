@@ -19,7 +19,8 @@ const EventDetails: React.FC = () => {
     handleInputChange,
     handleSaveChanges,
     handleCancelChanges,
-    handleEditField
+    handleEditField,
+    handleDeleteAndNavigate
   } = useEventDetails();
 
   if (loading) {
@@ -44,6 +45,7 @@ const EventDetails: React.FC = () => {
       onCancelChanges={handleCancelChanges}
       onEditField={handleEditField}
       editingField={editingField}
+      onDelete={handleDeleteAndNavigate}
     />
   );
 };
