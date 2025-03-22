@@ -20,11 +20,17 @@ import {
   Truck,
   DollarSign,
   Megaphone,
-  FileText
+  FileText,
+  Pencil,
+  Save,
+  X
 } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ChecklistItem {
   id: string;
@@ -55,6 +61,8 @@ export const Checklist: React.FC<ChecklistProps> = ({ eventId, event }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({});
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
+  const [editFormData, setEditFormData] = useState<Partial<ChecklistItem>>({});
   
   // Define the timeline order for sorting
   const timelineOrder = [
@@ -192,12 +200,51 @@ export const Checklist: React.FC<ChecklistProps> = ({ eventId, event }) => {
     };
     
     setChecklistItems([...checklistItems, newItem]);
+    setEditingItemId(newItem.id);
+    setEditFormData(newItem);
   };
 
   const deleteItem = (id: string) => {
     setChecklistItems(checklistItems.filter(item => item.id !== id));
     toast({
       description: "Item deleted",
+    });
+  };
+
+  const startEditing = (item: ChecklistItem) => {
+    setEditingItemId(item.id);
+    setEditFormData({ ...item });
+  };
+
+  const cancelEditing = () => {
+    setEditingItemId(null);
+    setEditFormData({});
+  };
+
+  const handleEditInputChange = (field: keyof ChecklistItem, value: any) => {
+    setEditFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const saveItemChanges = () => {
+    if (!editingItemId || !editFormData.title) return;
+    
+    setChecklistItems(prevItems =>
+      prevItems.map(item =>
+        item.id === editingItemId
+          ? {
+              ...item,
+              title: editFormData.title || item.title,
+              description: editFormData.description || item.description,
+              category: editFormData.category || item.category
+            }
+          : item
+      )
+    );
+    
+    setEditingItemId(null);
+    setEditFormData({});
+    toast({
+      description: "Item updated successfully",
     });
   };
 
@@ -392,39 +439,112 @@ export const Checklist: React.FC<ChecklistProps> = ({ eventId, event }) => {
                                 key={item.id} 
                                 className={`p-4 ${item.completed ? 'bg-gray-50' : 'bg-white'}`}
                               >
-                                <div className="flex items-start gap-3">
-                                  <Checkbox 
-                                    checked={item.completed} 
-                                    onCheckedChange={() => toggleItemCompletion(item.id)}
-                                    className={item.completed ? 'bg-green-500 text-white' : ''}
-                                  />
-                                  
-                                  <div className="flex-1 min-w-0">
-                                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                                      <h4 className={`font-medium ${item.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
-                                        {item.title}
-                                      </h4>
-                                      
-                                      <Badge className={`mt-1 sm:mt-0 self-start sm:self-auto ${getCategoryColor(item.category)}`}>
-                                        {getCategoryIcon(item.category)}
-                                        <span className="ml-1">{item.category}</span>
-                                      </Badge>
+                                {editingItemId === item.id ? (
+                                  // Edit form
+                                  <div className="space-y-3">
+                                    <div>
+                                      <label className="text-sm font-medium">Title</label>
+                                      <Input 
+                                        value={editFormData.title || ''} 
+                                        onChange={(e) => handleEditInputChange('title', e.target.value)}
+                                        className="mt-1"
+                                      />
                                     </div>
                                     
-                                    <p className={`text-sm mt-1 ${item.completed ? 'text-gray-400' : 'text-gray-600'}`}>
-                                      {item.description}
-                                    </p>
+                                    <div>
+                                      <label className="text-sm font-medium">Description</label>
+                                      <Textarea 
+                                        value={editFormData.description || ''} 
+                                        onChange={(e) => handleEditInputChange('description', e.target.value)}
+                                        className="mt-1"
+                                        rows={2}
+                                      />
+                                    </div>
+                                    
+                                    <div>
+                                      <label className="text-sm font-medium">Category</label>
+                                      <Select 
+                                        value={editFormData.category || ''} 
+                                        onValueChange={(value) => handleEditInputChange('category', value)}
+                                      >
+                                        <SelectTrigger className="mt-1">
+                                          <SelectValue placeholder="Select category" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {categoryFilters.map(cat => (
+                                            <SelectItem key={cat.value} value={cat.value}>
+                                              {cat.label}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    
+                                    <div className="flex justify-end space-x-2 pt-2">
+                                      <Button 
+                                        variant="outline" 
+                                        size="sm" 
+                                        onClick={cancelEditing}
+                                      >
+                                        <X className="h-4 w-4 mr-1" />
+                                        Cancel
+                                      </Button>
+                                      <Button 
+                                        size="sm" 
+                                        onClick={saveItemChanges}
+                                        className="bg-[#8B5CF6] hover:bg-[#8B5CF6]/90"
+                                      >
+                                        <Save className="h-4 w-4 mr-1" />
+                                        Save
+                                      </Button>
+                                    </div>
                                   </div>
-                                  
-                                  <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    onClick={() => deleteItem(item.id)}
-                                    className="text-gray-500 hover:text-red-500"
-                                  >
-                                    Delete
-                                  </Button>
-                                </div>
+                                ) : (
+                                  // Regular view
+                                  <div className="flex items-start gap-3">
+                                    <Checkbox 
+                                      checked={item.completed} 
+                                      onCheckedChange={() => toggleItemCompletion(item.id)}
+                                      className={item.completed ? 'bg-green-500 text-white' : ''}
+                                    />
+                                    
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                                        <h4 className={`font-medium ${item.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                                          {item.title}
+                                        </h4>
+                                        
+                                        <Badge className={`mt-1 sm:mt-0 self-start sm:self-auto ${getCategoryColor(item.category)}`}>
+                                          {getCategoryIcon(item.category)}
+                                          <span className="ml-1">{item.category}</span>
+                                        </Badge>
+                                      </div>
+                                      
+                                      <p className={`text-sm mt-1 ${item.completed ? 'text-gray-400' : 'text-gray-600'}`}>
+                                        {item.description}
+                                      </p>
+                                    </div>
+                                    
+                                    <div className="flex items-center space-x-1">
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={() => startEditing(item)}
+                                        className="text-gray-500 hover:text-[#8B5CF6]"
+                                      >
+                                        <Pencil className="h-4 w-4" />
+                                      </Button>
+                                      <Button 
+                                        variant="ghost" 
+                                        size="sm" 
+                                        onClick={() => deleteItem(item.id)}
+                                        className="text-gray-500 hover:text-red-500"
+                                      >
+                                        <X className="h-4 w-4" />
+                                      </Button>
+                                    </div>
+                                  </div>
+                                )}
                               </div>
                             ))}
                             
