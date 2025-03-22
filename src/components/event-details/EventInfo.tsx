@@ -1,4 +1,3 @@
-
 import { FormField } from "./components/FormField";
 import { DateTimeField } from "./components/DateTimeField";
 import { DeleteEventDialog } from "./components/DeleteEventDialog";
@@ -171,7 +170,7 @@ export const EventInfo = ({
       </div>
 
       {onDelete && (
-        <div className="mt-2">
+        <div className="mt-6">
           <DeleteEventDialog onDelete={onDelete} disabled={event.status === 'completed'} />
         </div>
       )}
