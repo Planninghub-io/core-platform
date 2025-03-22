@@ -40,6 +40,7 @@ export const EventContent = ({
           isEditing={isEditing}
           viewMode={viewMode}
           onFieldChange={onFieldChange}
+          onEditField={onEditField}
         />
       </div>
       <div>

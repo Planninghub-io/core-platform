@@ -10,13 +10,15 @@ interface LeftPanelProps {
   isEditing: boolean;
   viewMode: 'details' | 'ai' | 'dashboard';
   onFieldChange: (field: string, value: string | number) => void;
+  onEditField?: (fieldName: string) => void;
 }
 
 export const LeftPanel = ({
   event,
   isEditing,
   viewMode,
-  onFieldChange
+  onFieldChange,
+  onEditField
 }: LeftPanelProps) => {
   const { hasInvites, hasTicketing, generateInvitation } = useEventFeatures({ eventId: event.id });
 
@@ -37,6 +39,7 @@ export const LeftPanel = ({
         imageUrl={event.image_url}
         isEditing={isEditing}
         onImageChange={(value) => onFieldChange('image_url', value)}
+        onEditField={() => onEditField && onEditField('image_url')}
       />
       
       <EventActionButtons 

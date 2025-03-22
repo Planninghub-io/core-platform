@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue
 } from "@/components/ui/select";
-import { DollarSign, Check } from "lucide-react";
+import { DollarSign, Check, X } from "lucide-react";
 import { useState } from "react";
 
 interface FormFieldProps {
@@ -56,6 +56,11 @@ export const FormField = ({
     }
     setIsFieldEditing(false);
   };
+
+  const handleCancelField = () => {
+    setTempValue(value);
+    setIsFieldEditing(false);
+  };
   
   const handleChange = (newValue: string | number) => {
     if (isFieldEditing) {
@@ -86,14 +91,24 @@ export const FormField = ({
             onChange={(e) => handleChange(e.target.value)}
           />
           {isFieldEditing && (
-            <Button
-              size="sm"
-              onClick={handleSaveField}
-              className="absolute bottom-2 right-2 h-8 w-8 p-0"
-              variant="outline"
-            >
-              <Check className="h-4 w-4" />
-            </Button>
+            <div className="absolute bottom-2 right-2 flex space-x-1">
+              <Button
+                size="sm"
+                onClick={handleCancelField}
+                className="h-8 w-8 p-0"
+                variant="ghost"
+              >
+                <X className="h-4 w-4 text-gray-500" />
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSaveField}
+                className="h-8 w-8 p-0"
+                variant="ghost"
+              >
+                <Check className="h-4 w-4 text-green-500" />
+              </Button>
+            </div>
           )}
         </div>
       );
@@ -122,6 +137,18 @@ export const FormField = ({
               ))}
             </SelectContent>
           </Select>
+          {isFieldEditing && (
+            <div className="absolute right-12 top-1/2 -translate-y-1/2 flex space-x-1">
+              <Button
+                size="sm"
+                onClick={handleCancelField}
+                className="h-7 w-7 p-0"
+                variant="ghost"
+              >
+                <X className="h-3 w-3 text-gray-500" />
+              </Button>
+            </div>
+          )}
         </div>
       );
     }
@@ -139,17 +166,26 @@ export const FormField = ({
             onChange={(e) => handleChange(type === "number" ? parseInt(e.target.value) : e.target.value)}
             required={id === "title"}
             className="pl-8"
-            onBlur={isFieldEditing ? handleSaveField : undefined}
           />
           {isFieldEditing && (
-            <Button
-              size="sm"
-              onClick={handleSaveField}
-              className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-              variant="outline"
-            >
-              <Check className="h-3 w-3" />
-            </Button>
+            <div className="absolute right-1 top-1/2 -translate-y-1/2 flex space-x-1">
+              <Button
+                size="sm"
+                onClick={handleCancelField}
+                className="h-7 w-7 p-0"
+                variant="ghost"
+              >
+                <X className="h-3 w-3 text-gray-500" />
+              </Button>
+              <Button
+                size="sm"
+                onClick={handleSaveField}
+                className="h-7 w-7 p-0"
+                variant="ghost"
+              >
+                <Check className="h-3 w-3 text-green-500" />
+              </Button>
+            </div>
           )}
         </div>
       );
@@ -163,17 +199,26 @@ export const FormField = ({
           value={isFieldEditing ? tempValue || '' : value || ''}
           onChange={(e) => handleChange(type === "number" ? parseInt(e.target.value) : e.target.value)}
           required={id === "title"}
-          onBlur={isFieldEditing ? handleSaveField : undefined}
         />
         {isFieldEditing && (
-          <Button
-            size="sm"
-            onClick={handleSaveField}
-            className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-            variant="outline"
-          >
-            <Check className="h-3 w-3" />
-          </Button>
+          <div className="absolute right-1 top-1/2 -translate-y-1/2 flex space-x-1">
+            <Button
+              size="sm"
+              onClick={handleCancelField}
+              className="h-7 w-7 p-0"
+              variant="ghost"
+            >
+              <X className="h-3 w-3 text-gray-500" />
+            </Button>
+            <Button
+              size="sm"
+              onClick={handleSaveField}
+              className="h-7 w-7 p-0"
+              variant="ghost"
+            >
+              <Check className="h-3 w-3 text-green-500" />
+            </Button>
+          </div>
         )}
       </div>
     );

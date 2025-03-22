@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
-import { Check } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { useState } from "react";
 
 interface DateTimeFieldProps {
@@ -46,6 +46,12 @@ export const DateTimeField = ({
   const handleSaveField = () => {
     onDateChange(tempDateValue);
     onTimeChange(tempTimeValue);
+    setIsFieldEditing(false);
+  };
+
+  const handleCancelField = () => {
+    setTempDateValue(dateValue);
+    setTempTimeValue(timeValue);
     setIsFieldEditing(false);
   };
 
@@ -110,14 +116,24 @@ export const DateTimeField = ({
                 className="rounded-l-none border-l-0"
               />
               {isFieldEditing && (
-                <Button
-                  size="sm"
-                  onClick={handleSaveField}
-                  className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                  variant="outline"
-                >
-                  <Check className="h-3 w-3" />
-                </Button>
+                <div className="absolute right-1 top-1/2 -translate-y-1/2 flex space-x-1">
+                  <Button
+                    size="sm"
+                    onClick={handleCancelField}
+                    className="h-7 w-7 p-0"
+                    variant="ghost"
+                  >
+                    <X className="h-3 w-3 text-gray-500" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={handleSaveField}
+                    className="h-7 w-7 p-0"
+                    variant="ghost"
+                  >
+                    <Check className="h-3 w-3 text-green-500" />
+                  </Button>
+                </div>
               )}
             </div>
           ) : (

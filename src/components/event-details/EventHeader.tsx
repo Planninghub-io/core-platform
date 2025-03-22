@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Bot, LayoutDashboard, ListChecks, Save, X } from "lucide-react";
+import { ArrowLeft, Bot, LayoutDashboard, ListChecks } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
@@ -153,27 +153,6 @@ export const EventHeader = ({
             <ListChecks className="mr-2 h-4 w-4" />
             Manage Event
           </Button>
-          
-          {isEditing && hasUnsavedChanges && (
-            <>
-              <Button 
-                variant="ghost"
-                onClick={onCancelChanges}
-                className="text-gray-500"
-              >
-                <X className="mr-2 h-4 w-4" />
-                Cancel
-              </Button>
-              <Button 
-                variant="outline"
-                onClick={onSaveChanges}
-                className="text-green-600 border-green-600 hover:bg-green-50"
-              >
-                <Save className="mr-2 h-4 w-4" />
-                Save
-              </Button>
-            </>
-          )}
         </div>
       </div>
 
@@ -194,4 +173,3 @@ export const EventHeader = ({
     </div>
   );
 };
-
