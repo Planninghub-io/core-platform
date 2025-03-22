@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { CardTitle, CardDescription } from "@/components/ui/card";
@@ -6,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { FilterX, ListChecks, RefreshCw, CheckCircle2 } from "lucide-react";
 import { CategoryData } from "./types";
-import { getCategoryIcon } from "./utils";
+import { getCategoryIcon, getCategoryColor } from "./utils";
 
 interface ChecklistHeaderProps {
   onGenerateChecklist: () => void;
