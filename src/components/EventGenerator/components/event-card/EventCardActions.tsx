@@ -8,6 +8,7 @@ interface EventCardActionsProps {
   eventId?: string;
   isCreating: boolean;
   eventTitle: string;
+  location: string;
   onCreateEvent: () => void;
 }
 
@@ -15,9 +16,15 @@ export const EventCardActions: React.FC<EventCardActionsProps> = ({
   eventId,
   isCreating,
   eventTitle,
+  location,
   onCreateEvent
 }) => {
   const navigate = useNavigate();
+  
+  const isDisabled = isCreating || 
+    eventTitle === 'Enter Event Name' || 
+    !eventTitle.trim() ||
+    !location.trim();
 
   return (
     <>
@@ -33,7 +40,7 @@ export const EventCardActions: React.FC<EventCardActionsProps> = ({
       ) : (
         <Button 
           onClick={onCreateEvent}
-          disabled={isCreating || eventTitle === 'Enter Event Name' || !eventTitle.trim()}
+          disabled={isDisabled}
           className="flex-1"
         >
           {isCreating ? 'Creating Event...' : 'Create This Event'}

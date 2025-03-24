@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { GeneratedEvent } from "@/hooks/event-generation/types";
 import { TitleField } from "./form/TitleField";
@@ -39,9 +39,9 @@ export const EventDetailsForm: React.FC<EventDetailsFormProps> = ({
   handleCreateEvent,
   prompt = ""
 }) => {
-  const [category, setCategory] = useState(event.category || "Other");
-  const [budget, setBudget] = useState(event.estimatedPrice || "Free");
-  const [description, setDescription] = useState(event.description || "");
+  const [category, setCategory] = React.useState(event.category || "Other");
+  const [budget, setBudget] = React.useState(event.estimatedPrice || "Free");
+  const [description, setDescription] = React.useState(event.description || "");
   
   // Add debugging console log
   const onCreateEvent = () => {

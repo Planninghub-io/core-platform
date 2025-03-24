@@ -1,6 +1,12 @@
 
 import React from "react";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 import { Clock } from "lucide-react";
 
 interface TimePickerProps {
@@ -11,49 +17,43 @@ interface TimePickerProps {
 
 export const TimePicker: React.FC<TimePickerProps> = ({ 
   value, 
-  onChange, 
+  onChange,
   disabled = false 
 }) => {
-  // Generate time options in 30-minute intervals
-  const generateTimeOptions = () => {
-    const options = [];
-    for (let hour = 0; hour < 24; hour++) {
-      for (let minute = 0; minute < 60; minute += 30) {
-        const isPM = hour >= 12;
-        const displayHour = hour % 12 || 12;
-        const displayMinute = minute.toString().padStart(2, '0');
-        const displayTime = `${displayHour}:${displayMinute} ${isPM ? 'PM' : 'AM'}`;
-        const value = `${hour}:${displayMinute}`;
-        
-        options.push({ label: displayTime, value });
-      }
+  // Generate time options in 30 minute increments
+  const timeOptions = [];
+  for (let hour = 0; hour < 24; hour++) {
+    for (let minute = 0; minute < 60; minute += 30) {
+      const hourStr = hour.toString().padStart(2, "0");
+      const minStr = minute.toString().padStart(2, "0");
+      const timeStr = `${hourStr}:${minStr}`;
+      
+      // Format for display (12-hour format)
+      const ampm = hour < 12 ? "AM" : "PM";
+      const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+      const displayTime = `${hour12}:${minStr} ${ampm}`;
+      
+      timeOptions.push({ value: timeStr, display: displayTime });
     }
-    return options;
-  };
-
-  const timeOptions = generateTimeOptions();
+  }
 
   return (
-    <div className="relative">
-      <div className="absolute left-3 top-1/2 -translate-y-1/2 z-10">
-        <Clock className="h-4 w-4 text-gray-500" />
-      </div>
-      <Select
-        value={value}
-        onValueChange={onChange}
-        disabled={disabled}
-      >
-        <SelectTrigger className="pl-10 h-10">
-          <SelectValue placeholder="Select time" />
-        </SelectTrigger>
-        <SelectContent>
-          {timeOptions.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-    </div>
+    <Select 
+      value={value} 
+      onValueChange={onChange}
+      disabled={disabled}
+    >
+      <SelectTrigger className="w-full">
+        <Clock className="mr-2 h-4 w-4" />
+        <SelectValue placeholder="Select time" />
+      </SelectTrigger>
+      <SelectContent>
+        {timeOptions.map((option) => (
+          <SelectItem key={option.value} value={option.value}>
+            {option.display}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 };
