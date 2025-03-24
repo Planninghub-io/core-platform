@@ -43,6 +43,21 @@ export const EventDetailsForm: React.FC<EventDetailsFormProps> = ({
   const [budget, setBudget] = useState(event.estimatedPrice || "Free");
   const [description, setDescription] = useState(event.description || "");
   
+  // Add debugging console log
+  const onCreateEvent = () => {
+    console.log("EventDetailsForm: Create Event button clicked");
+    console.log("Current event data:", {
+      title: eventTitle,
+      location: location,
+      date: selectedDate,
+      category: category,
+      budget: budget
+    });
+    
+    // Call the passed in handler
+    handleCreateEvent();
+  };
+  
   return (
     <Card className="bg-white shadow-md">
       <CardHeader className="pb-2">
@@ -87,7 +102,7 @@ export const EventDetailsForm: React.FC<EventDetailsFormProps> = ({
           isCreating={isCreating}
           eventTitle={eventTitle}
           location={location}
-          handleCreateEvent={handleCreateEvent}
+          handleCreateEvent={onCreateEvent}
         />
       </CardFooter>
     </Card>

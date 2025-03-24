@@ -115,6 +115,17 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
     navigate("/create-event", { state: { eventData } });
   };
 
+  // Debugging handler for the create event button
+  const debugCreateEventHandler = () => {
+    console.log("EventGeneratorSection: Create event button clicked");
+    console.log("Generated event:", generatedEvent);
+    console.log("Event title:", eventTitle);
+    console.log("Location:", location);
+    console.log("Date:", selectedDate);
+    
+    handleCreateEvent();
+  };
+
   // Updated welcome message
   const welcomeMessage = chatMessages.length === 0 ? 
     "Hi, please provide your event details including place, date & time to get started with planning." : "";
@@ -160,7 +171,7 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
                 hasMissingDate={hasMissingDate}
                 hasMissingLocation={hasMissingLocation}
                 isCreating={isCreating}
-                handleCreateEvent={handleCreateEvent}
+                handleCreateEvent={debugCreateEventHandler}
                 prompt={latestPrompt}
               />
             </div>
@@ -169,7 +180,7 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
 
         <ManualEventButton 
           show={chatMessages.length === 0} 
-          onClick={handleManualEventCreation} 
+          onClick={onCreateManualEvent || handleManualEventCreation} 
         />
 
         <SignUpDialog

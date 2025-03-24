@@ -47,6 +47,7 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
 
   // Wrap the original createEvent to match the expected signature
   const createEvent = async (eventData: any) => {
+    console.log("Executing createEvent wrapper function", eventData);
     const result = await originalCreateEvent(eventData, additionalInfo);
     return { 
       eventId: result.data ? result.data.id : null 
@@ -129,8 +130,8 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
     }
   };
 
-  // Use the event creation hook
-  const { handleCreateEvent } = useEventCreationHandler(
+  // Use the event creation hook with debug logging
+  const { handleCreateEvent: originalHandleCreateEvent } = useEventCreationHandler(
     generatedEvent,
     eventTitle,
     hasMissingDate,
@@ -140,6 +141,23 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
     additionalInfo,
     createEvent
   );
+  
+  // Wrap the handler with debugging
+  const handleCreateEvent = async () => {
+    console.log("Create event button handler called");
+    console.log("Event data:", generatedEvent);
+    console.log("Event title:", eventTitle);
+    console.log("Selected date:", selectedDate);
+    console.log("Location:", location);
+    
+    if (!generatedEvent) {
+      console.error("No generated event data available");
+      return;
+    }
+    
+    // Create the event with selected values
+    return originalHandleCreateEvent();
+  };
 
   return {
     prompt,

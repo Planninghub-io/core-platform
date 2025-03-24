@@ -20,7 +20,12 @@ export const useEventCreationHandler = (
   createEvent: (eventData: any) => Promise<{ eventId: string | null }>
 ) => {
   const handleCreateEvent = async () => {
-    if (!generatedEvent) return;
+    if (!generatedEvent) {
+      console.error("No generated event available");
+      return;
+    }
+    
+    console.log("useEventCreationHandler: Creating event");
     
     // Use the eventTitle if provided, otherwise use the generated title
     const finalTitle = eventTitle || generatedEvent.title;
@@ -33,7 +38,16 @@ export const useEventCreationHandler = (
       location: location || generatedEvent.location
     };
     
-    await createEvent(eventToCreate);
+    console.log("Event data to create:", eventToCreate);
+    
+    try {
+      const result = await createEvent(eventToCreate);
+      console.log("Create event result:", result);
+      return result;
+    } catch (error) {
+      console.error("Error creating event:", error);
+      throw error;
+    }
   };
   
   return { handleCreateEvent };
@@ -52,6 +66,11 @@ export const useEventCreation = () => {
     eventTitle: string = "",
     selectedDate?: string
   ) => {
+    console.log("useEventCreation: Creating event:", { 
+      title: eventTitle || event.title,
+      date: selectedDate || event.date
+    });
+    
     setIsCreating(true);
     
     try {
@@ -84,6 +103,8 @@ export const useEventCreation = () => {
         user_id: userData.user.id
       };
 
+      console.log("Event data for DB insert:", eventData);
+
       // Create the event in Supabase
       const { data, error } = await supabase
         .from('events')
@@ -91,14 +112,19 @@ export const useEventCreation = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error("Database error on event insert:", error);
+        throw error;
+      }
+      
+      console.log("Event created successfully:", data);
       
       toast({
         description: "Event created successfully!",
       });
       
-      // Navigate to the new event page
-      navigate(`/event/${data.id}`);
+      // Navigate to the events hub page
+      navigate(`/events-hub`);
       return data;
     } catch (error) {
       console.error('Error creating event:', error);
