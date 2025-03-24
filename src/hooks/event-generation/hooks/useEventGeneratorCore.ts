@@ -88,27 +88,13 @@ export const useEventGeneratorCore = (
       // If we need to check for budget
       if (result?.needsBudget) {
         setIsGenerating(false);
-        return { needsBudget: true, validatedEvent: result.validatedEvent, missing: result.missing };
-      }
-      
-      // If we need more info but already extracted all necessary fields from the prompt
-      if (result?.needsMoreInfo && result.remainingMissingFields.length === 0) {
-        return generateEvent(prompt, modelProvider, result.prePopulatedInfo);
-      }
-      
-      // If we need more info and specifically need budget
-      if (result?.needsMoreInfo && 
-          result.remainingMissingFields.includes('budget') && 
-          !waitingForBudget) {
-        requestBudgetInChat();
-        setIsGenerating(false);
-        return { needsBudget: true, data: result.data };
+        return { needsBudget: true, validatedEvent: result.validatedEvent, missing: result.missing || [] };
       }
       
       // If we have a valid result to return
       if (result) {
         // Update the prompt count if this is a new prompt
-        if (!isResubmitting && result.validatedEvent && result.missing.length === 0) {
+        if (!isResubmitting && result.validatedEvent && (result.missing || []).length === 0) {
           setPromptCount(prev => prev + 1);
         }
         

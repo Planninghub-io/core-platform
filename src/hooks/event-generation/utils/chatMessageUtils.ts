@@ -32,3 +32,7 @@ export const createBudgetRequestMessage = (): string => {
 export const createErrorMessage = (): string => {
   return `I'm sorry, I encountered an error while generating your event. Please try again with a more detailed prompt.`;
 };
+
+export const createAIMessage = (generatedEvent: any): string => {
+  return `I've created an event plan for "${generatedEvent.title || 'your event'}". You can review the details and make any changes before creating it.`;
+};

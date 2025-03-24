@@ -2,11 +2,13 @@
 import { useState } from "react";
 import { useEventCreation } from "@/hooks/useEventCreation";
 import { useGenerateEventAI } from "./useGenerateEventAI";
-import { usePromptSubmission } from "./usePromptSubmission";
-import { useEventCreationHandler } from "./useEventCreation"; // Fix import
+import { usePromptSubmission } from "./hooks/usePromptSubmission";
 import { EventGenerationHookReturn } from "./types/hook-types";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
-export const useEventGeneration = (): EventGenerationHookReturn => {
+export const useEventGeneration = (): any => {
+  const { toast } = useToast();
   const { 
     createEvent: originalCreateEvent, 
     isCreating, 
@@ -15,66 +17,54 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
     setShowSignUpDialog 
   } = useEventCreation();
   
-  const {
-    isGenerating,
-    promptCount,
-    missingInfo,
-    setMissingInfo,
-    additionalInfo,
-    setAdditionalInfo,
-    isResubmitting,
-    setIsResubmitting,
-    generatedEvent,
-    setGeneratedEvent,
-    generateEvent,
-    chatMessages,
-    setChatMessages,
-    missingFields,
-    waitingForBudget,
-    setWaitingForBudget,
-    regenerateEventWithUpdatedInfo
-  } = useGenerateEventAI();
-
+  const [chatMessages, setChatMessages] = useState<Array<{ type: 'user' | 'ai', content: string }>>([]);
   const [prompt, setPrompt] = useState("");
   const [eventTitle, setEventTitle] = useState("");
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [location, setLocation] = useState<string>("");
   const [showMissingInfoDialog, setShowMissingInfoDialog] = useState(false);
+  const [waitingForBudget, setWaitingForBudget] = useState(false);
+  const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
   
-  // Check if date or location is missing
-  const hasMissingDate = missingFields?.includes('date') || !selectedDate && !generatedEvent?.date;
-  const hasMissingLocation = missingFields?.includes('location') || !location && !generatedEvent?.location;
-
-  // Wrap the original createEvent to match the expected signature
-  const createEvent = async (eventData: any) => {
-    console.log("Executing createEvent wrapper function", eventData);
-    const result = await originalCreateEvent(eventData, additionalInfo);
-    return { 
-      eventId: result.data ? result.data.id : null 
-    };
+  // Request budget in chat
+  const requestBudgetInChat = () => {
+    setWaitingForBudget(true);
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        type: "ai",
+        content: "To provide a more accurate event plan, could you please specify your budget?",
+      },
+    ]);
   };
-
+  
   // Use the prompt submission hook
-  const { handlePromptSubmit } = usePromptSubmission(
-    prompt,
-    setPrompt,
-    promptCount,
-    setShowSignUpDialog,
-    selectedDate,
-    setSelectedDate,
-    location, 
-    setLocation,
-    chatMessages,
-    setChatMessages,
-    generateEvent,
+  const { 
+    isGenerating, 
+    promptCount, 
+    missingInfo, 
+    generatedEvent,
+    setGeneratedEvent,
     isResubmitting,
-    setShowMissingInfoDialog
+    setIsResubmitting,
+    missingFields,
+    handlePromptSubmit: originalHandlePromptSubmit
+  } = usePromptSubmission(
+    setChatMessages,
+    waitingForBudget,
+    requestBudgetInChat
   );
 
-  // Handle changes to the additional info
+  // Check if date or location is missing
+  const hasMissingDate = missingFields?.includes('date') || (!selectedDate && !generatedEvent?.date);
+  const hasMissingLocation = missingFields?.includes('location') || (!location && !generatedEvent?.location);
+
+  // Handle additional info changes
   const handleAdditionalInfoChange = (field: string, value: string) => {
-    const updatedInfo = { ...additionalInfo, [field]: value };
-    setAdditionalInfo(updatedInfo);
+    setAdditionalInfo((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
 
     // Update the local state as well for display purposes
     if (field === 'date') {
@@ -84,79 +74,84 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
     }
   };
 
-  // Modify handleMissingInfoSubmit to use the new regenerateEventWithUpdatedInfo function
+  // Handle missing info submission
   const handleMissingInfoSubmit = () => {
-    // First, check if we've collected all required missing info
-    const missingInfoComplete = 
-      (!missingFields.includes('date') || selectedDate || additionalInfo.date) &&
-      (!missingFields.includes('location') || location || additionalInfo.location);
-    
-    // Only proceed if we have all the required info
-    if (missingInfoComplete) {
-      // Prepare the current additional info
-      const currentAdditionalInfo = { ...additionalInfo };
-      if (selectedDate && !currentAdditionalInfo.date) {
-        currentAdditionalInfo.date = selectedDate;
-      }
-      if (location && !currentAdditionalInfo.location) {
-        currentAdditionalInfo.location = location;
-      }
-      
-      // Close the dialog immediately to prevent it from reopening
-      setShowMissingInfoDialog(false);
-      
-      // If we're resubmitting, regenerate the event with the new info
-      if (isResubmitting) {
-        regenerateEventWithUpdatedInfo(currentAdditionalInfo)
-          .then(() => {
-            // Clear the missing fields since we've addressed them
-            setMissingInfo(null);
-            setIsResubmitting(false);
-          })
-          .catch(error => {
-            console.error("Error regenerating event:", error);
-          });
-      }
-    } else {
-      // Some required info is still missing
-      console.log("Missing info not complete:", {
-        date: selectedDate || additionalInfo.date,
-        location: location || additionalInfo.location,
-        missingFields
-      });
-      
-      // Keep dialog open
-      setShowMissingInfoDialog(true);
-    }
+    setShowMissingInfoDialog(false);
+    console.log("Additional info submitted:", additionalInfo);
   };
 
-  // Use the event creation hook with debug logging
-  const { handleCreateEvent: originalHandleCreateEvent } = useEventCreationHandler(
-    generatedEvent,
-    eventTitle,
-    hasMissingDate,
-    selectedDate,
-    hasMissingLocation,
-    location,
-    additionalInfo,
-    createEvent
-  );
-  
-  // Wrap the handler with debugging
+  // Handle create event
   const handleCreateEvent = async () => {
-    console.log("Create event button handler called");
-    console.log("Event data:", generatedEvent);
-    console.log("Event title:", eventTitle);
-    console.log("Selected date:", selectedDate);
-    console.log("Location:", location);
-    
     if (!generatedEvent) {
-      console.error("No generated event data available");
+      toast({
+        title: "Error",
+        description: "Please generate an event first.",
+        variant: "destructive",
+      });
       return;
     }
-    
-    // Create the event with selected values
-    return originalHandleCreateEvent();
+
+    if (!eventTitle) {
+      toast({
+        title: "Error",
+        description: "Please enter an event title.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if user is authenticated
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+      // Store event data for later creation
+      return setShowSignUpDialog(true);
+    }
+
+    // Create event object
+    const eventData = {
+      title: eventTitle,
+      description: generatedEvent.description,
+      date: selectedDate || generatedEvent.date,
+      location: location || generatedEvent.location,
+      budget: generatedEvent.estimatedPrice,
+      eventType: generatedEvent.category,
+      imageUrl: generatedEvent.imageUrl,
+    };
+
+    // Create event in database
+    try {
+      // Insert the new event into the database
+      const { data, error } = await supabase
+        .from("events")
+        .insert([
+          {
+            ...eventData,
+            user_id: user.id,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      // Show success message
+      toast({
+        description: "Event created successfully!",
+      });
+
+      // Redirect to event page
+      window.location.href = `/event/${data.id}`;
+    } catch (error: any) {
+      console.error("Error creating event:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create event. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return {
@@ -169,27 +164,27 @@ export const useEventGeneration = (): EventGenerationHookReturn => {
     missingInfo,
     generatedEvent,
     isCreating,
-    additionalInfo,
-    setAdditionalInfo,
     createdEventId,
     eventTitle,
     setEventTitle,
+    handlePromptSubmit: originalHandlePromptSubmit,
+    handleCreateEvent,
     selectedDate,
     setSelectedDate,
     location,
     setLocation,
     hasMissingDate,
     hasMissingLocation,
-    handlePromptSubmit,
-    handleCreateEvent,
     chatMessages,
     setChatMessages,
-    missingFields,
+    additionalInfo,
+    setAdditionalInfo,
     showMissingInfoDialog,
     setShowMissingInfoDialog,
     handleAdditionalInfoChange,
     handleMissingInfoSubmit,
     waitingForBudget,
-    setWaitingForBudget
+    setWaitingForBudget,
+    requestBudgetInChat
   };
 };

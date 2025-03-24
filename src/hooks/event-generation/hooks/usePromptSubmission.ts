@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { useEventGeneratorCore } from "./useEventGeneratorCore";
 import { createErrorMessage } from "../utils/chatMessageUtils";
@@ -69,7 +70,7 @@ export const usePromptSubmission = (
         return;
       }
 
-      if (response.needsMoreInfo) {
+      if (response.missing && response.missing.length > 0) {
         // Display missing info message
         setChatMessages((prev) => [
           ...prev,
@@ -136,6 +137,7 @@ export const usePromptSubmission = (
     setGeneratedEvent,
     handlePromptSubmit,
     missingFields,
-    previouslyRequestedFields
+    previouslyRequestedFields,
+    generateEventWithPrompt
   };
 };

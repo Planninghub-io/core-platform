@@ -39,10 +39,8 @@ export const generateEventAPI = async ({
     const { data, error } = await supabase.functions.invoke('generate-event', {
       body: { 
         prompt: fullPrompt,
-        additionalInfo: {
-          ...additionalInfo,
-          modelProvider
-        }
+        modelProvider,
+        additionalInfo
       },
     });
 
