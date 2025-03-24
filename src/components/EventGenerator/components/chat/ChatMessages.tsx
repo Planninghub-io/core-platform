@@ -13,7 +13,7 @@ export const ChatMessages = ({
   welcomeMessage 
 }: ChatMessagesProps) => {
   return (
-    <div className="p-4 max-h-[600px] overflow-y-auto">
+    <div className="p-4 h-[300px] overflow-y-auto">
       {welcomeMessage && (
         <ChatMessage
           key="welcome"

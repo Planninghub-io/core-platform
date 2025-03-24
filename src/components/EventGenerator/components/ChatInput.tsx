@@ -26,13 +26,15 @@ export const ChatInput = ({
     <div className="border-t border-gray-200 p-4 bg-gray-50">
       <div className="flex items-center gap-2">
         {chatMessages.length === 0 ? (
-          <EventGeneratorForm
-            prompt={prompt}
-            isGenerating={isGenerating}
-            promptCount={promptCount}
-            onPromptChange={setPrompt}
-            onSubmit={handlePromptSubmit}
-          />
+          <div className="w-full">
+            <EventGeneratorForm
+              prompt={prompt}
+              isGenerating={isGenerating}
+              promptCount={promptCount}
+              onPromptChange={setPrompt}
+              onSubmit={handlePromptSubmit}
+            />
+          </div>
         ) : (
           <>
             <input

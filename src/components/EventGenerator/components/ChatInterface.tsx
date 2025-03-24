@@ -14,7 +14,7 @@ interface ChatInterfaceProps {
 
 export const ChatInterface = (props: ChatInterfaceProps) => {
   return (
-    <div className="w-full min-h-[250px]">
+    <div className="w-full min-h-[400px] flex flex-col">
       <ChatContainer {...props} />
     </div>
   );

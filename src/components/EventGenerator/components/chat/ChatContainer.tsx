@@ -24,12 +24,14 @@ export const ChatContainer = ({
   generatedEvent
 }: ChatContainerProps) => {
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 min-h-[200px]">
-      <ChatMessages 
-        chatMessages={chatMessages} 
-        isGenerating={isGenerating} 
-        welcomeMessage={welcomeMessage} 
-      />
+    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 flex flex-col h-full">
+      <div className="flex-grow overflow-hidden">
+        <ChatMessages 
+          chatMessages={chatMessages} 
+          isGenerating={isGenerating} 
+          welcomeMessage={welcomeMessage} 
+        />
+      </div>
       <ChatInputArea 
         chatMessages={chatMessages} 
         prompt={prompt} 
