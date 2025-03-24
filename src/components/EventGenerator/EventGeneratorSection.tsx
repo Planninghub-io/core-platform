@@ -137,12 +137,6 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
 
   // Add model provider to additionalInfo for API calls
   const handlePromptSubmitWithModel = () => {
-    // Add model provider to additionalInfo
-    const updatedAdditionalInfo = {
-      ...additionalInfo,
-      modelProvider
-    };
-    
     // Call the original handlePromptSubmit with the model info
     handlePromptSubmit(modelProvider);
   };
