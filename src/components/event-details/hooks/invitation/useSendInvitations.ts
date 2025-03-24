@@ -52,12 +52,14 @@ export function useSendInvitations(eventId: string, contacts: Contact[]) {
         const userId = session?.user?.id || 'temp-user';
 
         const tempContactsToAdd = tempContactIds.map(id => {
-          const contact = contacts.find(c => c.id === id) || 
-                        { id, name: "", email: "", phone: "", user_id: "", created_at: "" };
+          const contact = contacts.find(c => c.id === id);
+          if (!contact) {
+            throw new Error(`Contact not found with id ${id}`);
+          }
           
           return {
-            name: contact.name,
-            email: contact.email,
+            name: contact.name || 'Unknown',
+            email: contact.email || null,
             phone: contact.phone || null,
             user_id: userId
           };
@@ -78,6 +80,10 @@ export function useSendInvitations(eventId: string, contacts: Contact[]) {
         }
       }
 
+      if (recipients.length === 0) {
+        throw new Error("No valid recipients found");
+      }
+
       await insertRecipients(recipients);
       await sendInvitations(invitation.id);
 
@@ -89,7 +95,7 @@ export function useSendInvitations(eventId: string, contacts: Contact[]) {
       console.error("Error sending invitations:", error);
       toast({
         title: "Error",
-        description: "Failed to send invitations",
+        description: "Failed to send invitations. Please try again.",
         variant: "destructive",
       });
     } finally {

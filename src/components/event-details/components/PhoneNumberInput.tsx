@@ -15,13 +15,15 @@ export const PhoneNumberInput = ({ onNumbersAdd }: PhoneNumberInputProps) => {
   const [error, setError] = useState<string | null>(null);
 
   const validatePhoneNumber = (number: string) => {
-    // Basic validation - can be enhanced based on requirements
-    return number.replace(/\s+/g, "").length >= 10;
+    // Basic validation - requires at least 10 digits
+    return /^\+?[0-9]{10,15}$/.test(number.replace(/[\s()-]/g, ""));
   };
 
   const handleAddPhone = () => {
-    if (!validatePhoneNumber(phoneNumber)) {
-      setError("Please enter a valid phone number");
+    const cleanNumber = phoneNumber.replace(/[\s()-]/g, "");
+    
+    if (!validatePhoneNumber(cleanNumber)) {
+      setError("Please enter a valid phone number with country code (e.g. +1234567890)");
       return;
     }
 
@@ -30,7 +32,8 @@ export const PhoneNumberInput = ({ onNumbersAdd }: PhoneNumberInputProps) => {
       return;
     }
 
-    const formattedNumber = phoneNumber.replace(/\s+/g, "");
+    // Ensure number has a plus sign for country code
+    const formattedNumber = cleanNumber.startsWith('+') ? cleanNumber : `+${cleanNumber}`;
     
     onNumbersAdd([
       {

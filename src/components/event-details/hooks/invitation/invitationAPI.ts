@@ -81,6 +81,10 @@ export const createInvitation = async (eventId: string, templateId: string) => {
 
 // Insert recipients for an invitation
 export const insertRecipients = async (recipients: any[]) => {
+  if (!recipients || recipients.length === 0) {
+    throw new Error("No recipients provided");
+  }
+  
   const { error } = await supabase
     .from('invitation_recipients')
     .insert(recipients);
@@ -90,15 +94,24 @@ export const insertRecipients = async (recipients: any[]) => {
 
 // Send invitations using Supabase edge function
 export const sendInvitations = async (invitationId: string) => {
-  const { error } = await supabase.functions.invoke("send-invitations", {
-    body: { invitationId }
-  });
+  try {
+    const { error } = await supabase.functions.invoke("send-invitations", {
+      body: { invitationId }
+    });
 
-  if (error) throw error;
+    if (error) throw error;
+  } catch (error) {
+    console.error("Error invoking send-invitations function:", error);
+    throw error;
+  }
 };
 
 // Create temporary contacts
 export const createTempContacts = async (tempContactsToAdd: any[]) => {
+  if (!tempContactsToAdd || tempContactsToAdd.length === 0) {
+    throw new Error("No contacts to add");
+  }
+  
   const { data, error } = await supabase
     .from('contacts')
     .insert(tempContactsToAdd)
