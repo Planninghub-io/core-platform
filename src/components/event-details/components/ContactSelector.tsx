@@ -7,6 +7,7 @@ import { ContactList } from "./contact/ContactList";
 import { ContactSelectorActions } from "./contact/ContactSelectorActions";
 import { PhoneNumberInput } from "./PhoneNumberInput";
 import { ContactImporter } from "./ContactImporter";
+import { Button } from "@/components/ui/button";
 
 interface ContactSelectorProps {
   contacts: Contact[];
@@ -85,15 +86,11 @@ export const ContactSelector = ({
         onContactSelect={onContactSelect}
       />
 
-      <div className="flex justify-end">
-        <Button
-          onClick={onSend}
-          disabled={isLoading || selectedContacts.length === 0}
-          className="w-full"
-        >
-          {isLoading ? "Sending..." : "Send Invitations"}
-        </Button>
-      </div>
+      <ContactSelectorActions 
+        onSend={onSend}
+        isLoading={isLoading}
+        disabled={selectedContacts.length === 0}
+      />
     </div>
   );
 };

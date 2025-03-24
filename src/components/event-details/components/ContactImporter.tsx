@@ -3,6 +3,20 @@ import { Button } from "@/components/ui/button";
 import { Import } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
+// Define types for the Contacts API that isn't in standard TypeScript definitions
+interface ContactProperty {
+  [key: string]: string[];
+}
+
+interface ContactsManager {
+  select: (properties: string[], options?: { multiple?: boolean }) => Promise<ContactProperty[]>;
+}
+
+// Extending Navigator interface to include contacts
+interface NavigatorWithContacts extends Navigator {
+  contacts?: ContactsManager;
+}
+
 interface ContactImporterProps {
   onContactsImport: (contacts: { id: string; name: string; phone: string }[]) => void;
 }
@@ -11,11 +25,14 @@ export const ContactImporter = ({ onContactsImport }: ContactImporterProps) => {
   const { toast } = useToast();
 
   const importContacts = async () => {
+    // Get navigator with contacts type
+    const navigatorWithContacts = navigator as NavigatorWithContacts;
+    
     // Check if the Contacts API is supported
-    if ('contacts' in navigator && 'select' in navigator.contacts) {
+    if (navigatorWithContacts.contacts && 'select' in navigatorWithContacts.contacts) {
       try {
         // Request permission to access contacts
-        const contacts = await navigator.contacts.select(['name', 'tel'], { multiple: true });
+        const contacts = await navigatorWithContacts.contacts.select(['name', 'tel'], { multiple: true });
         
         if (contacts.length > 0) {
           const formattedContacts = contacts.map(contact => ({
