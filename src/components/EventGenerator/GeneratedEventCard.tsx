@@ -62,6 +62,7 @@ export const GeneratedEventCard = ({
   }, [eventTitle]);
 
   const displayDate = selectedDate || event.date;
+  const displayLocation = location || event.location; // Get the current location
 
   return (
     <Card className="mt-6 text-left">
@@ -109,6 +110,7 @@ export const GeneratedEventCard = ({
               eventId={eventId}
               isCreating={isCreating}
               eventTitle={eventTitle}
+              location={location || event.location}
               onCreateEvent={onCreateEvent}
             />
           </CardFooter>
