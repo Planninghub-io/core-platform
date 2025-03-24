@@ -22,7 +22,7 @@ export const EventGeneratorForm = ({
       <div className="relative w-full flex items-center">
         <input
           type="text"
-          placeholder="Find vendors my corporate event in New York..."
+          placeholder="Find vendors for my corporate event in New York..."
           value={prompt}
           onChange={(e) => onPromptChange(e.target.value)}
           onKeyDown={(e) => {
@@ -31,7 +31,8 @@ export const EventGeneratorForm = ({
               onSubmit();
             }
           }}
-          className="w-full rounded-full border-gray-300 py-3 px-4 pr-14"
+          className="w-full rounded-full border border-gray-300 py-3 px-4 pr-14"
+          autoFocus
         />
         <Button
           onClick={onSubmit}

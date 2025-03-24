@@ -19,14 +19,13 @@ export const ChatInputField = ({
   chatMessages,
   handlePromptSubmit
 }: ChatInputFieldProps) => {
-  // Only disable input when generation has completed, not during generation
+  // Only disable input when generation is in progress
   const isInputDisabled = isGenerating;
   
   // Only disable the submit button when: 
   // 1. Generation is in progress
   // 2. Prompt is empty 
-  // 3. A generated event exists AND the last message is from AI (indicating completion)
-  const isButtonDisabled = isGenerating || !prompt.trim() || (generatedEvent && chatMessages[chatMessages.length - 1]?.type === 'ai');
+  const isButtonDisabled = isGenerating || !prompt.trim();
   
   return (
     <>
