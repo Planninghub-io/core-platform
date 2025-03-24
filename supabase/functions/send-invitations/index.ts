@@ -68,8 +68,19 @@ serve(async (req) => {
               .replace("{{recipient_name}}", recipient.contact.name),
           });
         } else if (recipient.delivery_method === "sms" && recipient.contact.phone) {
-          // Implement SMS sending logic here
-          console.log("SMS sending would happen here");
+          // SMS implementation would go here
+          // This is just a placeholder since actual SMS sending would require an SMS provider
+          console.log(`Sending SMS to ${recipient.contact.phone} for ${recipient.contact.name}`);
+          
+          // Uncomment and customize when implementing with a real SMS provider:
+          // const smsResponse = await fetch('YOUR_SMS_PROVIDER_URL', {
+          //   method: 'POST',
+          //   headers: { 'Content-Type': 'application/json' },
+          //   body: JSON.stringify({
+          //     to: recipient.contact.phone,
+          //     message: `Hi ${recipient.contact.name}, you're invited to ${invitation.event.title} on ${new Date(invitation.event.date).toLocaleString()} at ${invitation.event.location}`
+          //   })
+          // });
         }
 
         // Update recipient status

@@ -5,6 +5,8 @@ import { EmailAddressInput } from "./EmailAddressInput";
 import { DeliveryMethodSelector } from "./contact/DeliveryMethodSelector";
 import { ContactList } from "./contact/ContactList";
 import { ContactSelectorActions } from "./contact/ContactSelectorActions";
+import { PhoneNumberInput } from "./PhoneNumberInput";
+import { ContactImporter } from "./ContactImporter";
 
 interface ContactSelectorProps {
   contacts: Contact[];
@@ -12,7 +14,6 @@ interface ContactSelectorProps {
   deliveryMethod: "email" | "sms";
   onDeliveryMethodChange: (method: "email" | "sms") => void;
   onContactSelect: (contacts: string[]) => void;
-  onBack: () => void;
   onSend: () => void;
   isLoading: boolean;
 }
@@ -23,7 +24,6 @@ export const ContactSelector = ({
   deliveryMethod,
   onDeliveryMethodChange,
   onContactSelect,
-  onBack,
   onSend,
   isLoading,
 }: ContactSelectorProps) => {
@@ -47,6 +47,19 @@ export const ContactSelector = ({
     onContactSelect([...selectedContacts, ...newContacts.map(c => c.id)]);
   };
 
+  const handleAddPhoneNumbers = (newPhones: { id: string; name: string; phone: string }[]) => {
+    const newContacts = newPhones.map(item => ({
+      id: item.id,
+      user_id: "temp",
+      name: item.name,
+      phone: item.phone,
+      created_at: new Date().toISOString()
+    }));
+    
+    setTempContacts(prev => [...prev, ...newContacts]);
+    onContactSelect([...selectedContacts, ...newContacts.map(c => c.id)]);
+  };
+
   return (
     <div className="space-y-4">
       <DeliveryMethodSelector 
@@ -58,6 +71,13 @@ export const ContactSelector = ({
         <EmailAddressInput onEmailsAdd={handleAddEmails} />
       )}
 
+      {deliveryMethod === "sms" && (
+        <>
+          <ContactImporter onContactsImport={handleAddPhoneNumbers} />
+          <PhoneNumberInput onNumbersAdd={handleAddPhoneNumbers} />
+        </>
+      )}
+
       <ContactList
         contacts={filteredContacts}
         selectedContacts={selectedContacts}
@@ -65,12 +85,15 @@ export const ContactSelector = ({
         onContactSelect={onContactSelect}
       />
 
-      <ContactSelectorActions
-        onBack={onBack}
-        onSend={onSend}
-        isLoading={isLoading}
-        disabled={selectedContacts.length === 0}
-      />
+      <div className="flex justify-end">
+        <Button
+          onClick={onSend}
+          disabled={isLoading || selectedContacts.length === 0}
+          className="w-full"
+        >
+          {isLoading ? "Sending..." : "Send Invitations"}
+        </Button>
+      </div>
     </div>
   );
 };
