@@ -9,6 +9,7 @@ import { ChatInterface } from "./components/ChatInterface";
 import { ManualEventButton } from "./components/ManualEventButton";
 import { MissingInfoDialog } from "./MissingInfoDialog";
 import { EventDetailsForm } from "./components/EventDetailsForm";
+import { useState } from "react";
 
 interface EventGeneratorSectionProps {
   onCreateManualEvent?: () => void;
@@ -16,6 +17,8 @@ interface EventGeneratorSectionProps {
 
 export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSectionProps) => {
   const navigate = useNavigate();
+  const [modelProvider, setModelProvider] = useState<'openai' | 'anthropic'>('openai');
+  
   const {
     prompt,
     setPrompt,
@@ -126,6 +129,24 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
     handleCreateEvent();
   };
 
+  // Handle model change
+  const handleModelChange = (model: 'openai' | 'anthropic') => {
+    setModelProvider(model);
+    console.log("Model changed to:", model);
+  };
+
+  // Add model provider to additionalInfo for API calls
+  const handlePromptSubmitWithModel = () => {
+    // Add model provider to additionalInfo
+    const updatedAdditionalInfo = {
+      ...additionalInfo,
+      modelProvider
+    };
+    
+    // Call the original handlePromptSubmit with the model info
+    handlePromptSubmit(modelProvider);
+  };
+
   // Updated welcome message
   const welcomeMessage = chatMessages.length === 0 ? 
     "Hi, please provide your event details including place, date & time to get started with planning." : "";
@@ -142,9 +163,11 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
             setPrompt={setPrompt}
             isGenerating={isGenerating}
             promptCount={promptCount}
-            handlePromptSubmit={handlePromptSubmit}
+            handlePromptSubmit={handlePromptSubmitWithModel}
             welcomeMessage={welcomeMessage}
             generatedEvent={generatedEvent}
+            modelProvider={modelProvider}
+            onModelChange={handleModelChange}
           />
 
           {/* Generated Event Data */}

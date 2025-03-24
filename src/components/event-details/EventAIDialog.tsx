@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { AIModelSelector } from "@/components/EventGenerator/components/AIModelSelector";
 
 interface EventAIDialogProps {
   event: {
@@ -23,6 +24,7 @@ export const EventAIDialog = ({ event, embedded = false }: EventAIDialogProps) =
   const [userQuestion, setUserQuestion] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
+  const [modelProvider, setModelProvider] = useState<'openai' | 'anthropic'>('openai');
   const { toast } = useToast();
 
   const handleSubmit = async () => {
@@ -48,6 +50,7 @@ export const EventAIDialog = ({ event, embedded = false }: EventAIDialogProps) =
             category: event.category,
             expected_attendees: event.expected_attendees,
           },
+          modelProvider
         },
       });
 
@@ -72,6 +75,13 @@ export const EventAIDialog = ({ event, embedded = false }: EventAIDialogProps) =
         Ask any questions about this event and I'll help you find the answers.
       </p>
       
+      <div className="mb-4">
+        <AIModelSelector 
+          selectedModel={modelProvider} 
+          onChange={setModelProvider} 
+        />
+      </div>
+      
       <div className="space-y-4 flex-grow">
         <div className="space-y-2">
           <Textarea
@@ -86,12 +96,18 @@ export const EventAIDialog = ({ event, embedded = false }: EventAIDialogProps) =
             disabled={loading}
           >
             <Send className="mr-2 h-4 w-4" />
-            {loading ? 'Getting answer...' : 'Ask Question'}
+            {loading ? `Getting answer with ${modelProvider === 'openai' ? 'ChatGPT' : 'Claude'}...` : 'Ask Question'}
           </Button>
         </div>
         
         {response && (
           <div className="bg-muted p-4 rounded-lg">
+            <div className="flex items-center mb-2">
+              <div className={`h-3 w-3 rounded-full mr-2 ${modelProvider === 'openai' ? 'bg-green-500' : 'bg-purple-500'}`}></div>
+              <span className="text-xs text-muted-foreground">
+                {modelProvider === 'openai' ? 'ChatGPT' : 'Claude'} response
+              </span>
+            </div>
             <p className="whitespace-pre-wrap">{response}</p>
           </div>
         )}

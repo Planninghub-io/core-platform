@@ -5,6 +5,7 @@ import { GeneratedEvent } from "../types";
 interface GenerateEventParams {
   prompt: string;
   additionalInfo?: Record<string, string>;
+  modelProvider?: 'openai' | 'anthropic';
 }
 
 interface GenerateEventResponse {
@@ -17,11 +18,13 @@ interface GenerateEventResponse {
 
 export const generateEventAPI = async ({
   prompt,
-  additionalInfo = {}
+  additionalInfo = {},
+  modelProvider = 'openai'
 }: GenerateEventParams): Promise<GenerateEventResponse> => {
   try {
     // Log the provided info to help with debugging
     console.log("Combined info before API call:", additionalInfo);
+    console.log("Using model provider:", modelProvider);
     
     let fullPrompt = prompt;
     if (Object.keys(additionalInfo).length > 0) {
@@ -36,7 +39,10 @@ export const generateEventAPI = async ({
     const { data, error } = await supabase.functions.invoke('generate-event', {
       body: { 
         prompt: fullPrompt,
-        additionalInfo
+        additionalInfo: {
+          ...additionalInfo,
+          modelProvider
+        }
       },
     });
 

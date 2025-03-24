@@ -13,46 +13,13 @@ serve(async (req) => {
   }
 
   try {
-    const { question, eventContext } = await req.json();
+    const { question, eventContext, modelProvider = 'openai' } = await req.json();
 
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          {
-            role: 'system',
-            content: `You are an AI assistant helping users with questions about an event. 
-            Here are the event details:
-            Title: ${eventContext.title}
-            Date: ${eventContext.date}
-            End Date: ${eventContext.end_date}
-            Description: ${eventContext.description || 'Not provided'}
-            Location: ${eventContext.location || 'Not provided'}
-            Category: ${eventContext.category || 'Not provided'}
-            Expected Attendees: ${eventContext.expected_attendees || 'Not specified'}
-            
-            Provide helpful, concise answers based on this information. If you can't answer something based on the available information, say so.`
-          },
-          {
-            role: 'user',
-            content: question
-          }
-        ],
-      }),
-    });
-
-    const data = await response.json();
-    const aiResponse = data.choices[0].message.content;
-
-    return new Response(
-      JSON.stringify({ response: aiResponse }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    if (modelProvider === 'anthropic') {
+      return await getAnthropicResponse(question, eventContext);
+    } else {
+      return await getOpenAIResponse(question, eventContext);
+    }
   } catch (error) {
     console.error('Error:', error);
     return new Response(
@@ -61,3 +28,84 @@ serve(async (req) => {
     );
   }
 });
+
+async function getOpenAIResponse(question, eventContext) {
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: `You are an AI assistant helping users with questions about an event. 
+          Here are the event details:
+          Title: ${eventContext.title}
+          Date: ${eventContext.date}
+          End Date: ${eventContext.end_date}
+          Description: ${eventContext.description || 'Not provided'}
+          Location: ${eventContext.location || 'Not provided'}
+          Category: ${eventContext.category || 'Not provided'}
+          Expected Attendees: ${eventContext.expected_attendees || 'Not specified'}
+          
+          Provide helpful, concise answers based on this information. If you can't answer something based on the available information, say so.`
+        },
+        {
+          role: 'user',
+          content: question
+        }
+      ],
+    }),
+  });
+
+  const data = await response.json();
+  const aiResponse = data.choices[0].message.content;
+
+  return new Response(
+    JSON.stringify({ response: aiResponse }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}
+
+async function getAnthropicResponse(question, eventContext) {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': Deno.env.get('ANTHROPIC_API_KEY'),
+      'anthropic-version': '2023-06-01',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'claude-3-sonnet-20240229',
+      max_tokens: 1000,
+      system: `You are an AI assistant helping users with questions about an event. 
+      Here are the event details:
+      Title: ${eventContext.title}
+      Date: ${eventContext.date}
+      End Date: ${eventContext.end_date}
+      Description: ${eventContext.description || 'Not provided'}
+      Location: ${eventContext.location || 'Not provided'}
+      Category: ${eventContext.category || 'Not provided'}
+      Expected Attendees: ${eventContext.expected_attendees || 'Not specified'}
+      
+      Provide helpful, concise answers based on this information. If you can't answer something based on the available information, say so.`,
+      messages: [
+        {
+          role: 'user',
+          content: question
+        }
+      ],
+    }),
+  });
+
+  const data = await response.json();
+  const aiResponse = data.content && data.content[0] && data.content[0].text || 'No response generated';
+
+  return new Response(
+    JSON.stringify({ response: aiResponse }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+  );
+}

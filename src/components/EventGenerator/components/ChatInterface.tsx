@@ -1,5 +1,7 @@
 
 import { ChatContainer } from "./chat/ChatContainer";
+import { AIModelSelector } from "../components/AIModelSelector";
+import { useState } from "react";
 
 interface ChatInterfaceProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
@@ -10,11 +12,28 @@ interface ChatInterfaceProps {
   handlePromptSubmit: () => void;
   welcomeMessage: string;
   generatedEvent: any | null;
+  modelProvider?: 'openai' | 'anthropic';
+  onModelChange?: (model: 'openai' | 'anthropic') => void;
 }
 
 export const ChatInterface = (props: ChatInterfaceProps) => {
+  const [modelProvider, setModelProvider] = useState<'openai' | 'anthropic'>(props.modelProvider || 'openai');
+  
+  const handleModelChange = (model: 'openai' | 'anthropic') => {
+    setModelProvider(model);
+    if (props.onModelChange) {
+      props.onModelChange(model);
+    }
+  };
+
   return (
     <div className="w-full min-h-[400px] flex flex-col">
+      <div className="pb-4">
+        <AIModelSelector 
+          selectedModel={modelProvider} 
+          onChange={handleModelChange} 
+        />
+      </div>
       <ChatContainer {...props} />
     </div>
   );
