@@ -38,15 +38,14 @@ export const EventGeneratorContent = ({
   onModelChange,
   promptCount
 }: EventGeneratorContentProps) => {
-  const { prompt, setPrompt, isGenerating, waitingForBudget, handlePromptSubmit } = useEventGeneration();
+  const { prompt, setPrompt, isGenerating, handlePromptSubmit } = useEventGeneration();
 
   // Updated welcome message
   const welcomeMessage = chatMessages.length === 0 ? 
     "Hi, please provide your event details including place, date & time to get started with planning." : "";
 
   // Handle prompt submission with the selected model
-  const handlePromptSubmitWithModel = () => {
-    // Call the handlePromptSubmit with the model info
+  const handleSubmit = () => {
     handlePromptSubmit(modelProvider);
   };
 
@@ -58,7 +57,7 @@ export const EventGeneratorContent = ({
         setPrompt={setPrompt}
         isGenerating={isGenerating}
         promptCount={promptCount}
-        handlePromptSubmit={handlePromptSubmitWithModel}
+        handlePromptSubmit={handleSubmit}
         welcomeMessage={welcomeMessage}
         generatedEvent={generatedEvent}
         modelProvider={modelProvider}

@@ -18,9 +18,11 @@ export const useResponseChecker = () => {
     prompt: string, 
     requestedFields: string[]
   ) => {
-    if (!requestedFields.length) {
+    if (!requestedFields || !requestedFields.length) {
       return { containsAllInfo: false, extractedInfo: {} };
     }
+
+    console.log("Checking user response for fields:", requestedFields);
 
     // Extract requested information from the prompt
     const extractedInfo: Record<string, string | null> = {};
@@ -28,6 +30,7 @@ export const useResponseChecker = () => {
     for (const field of requestedFields) {
       if (extractorFunctions[field]) {
         extractedInfo[field] = extractorFunctions[field](prompt);
+        console.log(`Extracted ${field}:`, extractedInfo[field]);
       }
     }
     
@@ -43,6 +46,9 @@ export const useResponseChecker = () => {
     const containsAllInfo = requestedFields.every(
       field => validExtractedInfo[field] !== undefined
     );
+    
+    console.log("Contains all requested info:", containsAllInfo);
+    console.log("Valid extracted info:", validExtractedInfo);
     
     return { 
       containsAllInfo, 

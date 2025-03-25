@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from "react";
 import { useEventGeneratorCore } from "./useEventGeneratorCore";
-import { createErrorMessage } from "../utils/chatMessageUtils";
+import { createErrorMessage, createAIMessage } from "../utils/chatMessageUtils";
 import { ChatMessage } from "../types";
 
 /**
@@ -32,12 +32,16 @@ export const usePromptSubmission = (
   } = useEventGeneratorCore(setChatMessages, waitingForBudget, requestBudgetInChat);
   
   /**
-   * Generate an event based on a prompt
+   * Handle prompt submission
    */
-  const generateEventWithPrompt = async (
-    prompt: string,
-    modelProvider: 'openai' | 'anthropic' = 'openai'
-  ) => {
+  const handlePromptSubmit = async (modelProvider: 'openai' | 'anthropic' = 'openai') => {
+    // If prompt is empty, do nothing
+    if (!prompt.trim()) return;
+    
+    // Log debug info
+    console.log("Handling prompt submission:", prompt);
+    console.log("Using model provider:", modelProvider);
+    
     // Add the prompt as a user message to the chat
     setChatMessages((prev) => [
       ...prev,
@@ -63,70 +67,46 @@ export const usePromptSubmission = (
           ...prev,
           { type: "ai", content: createErrorMessage() },
         ]);
-        return { error: response.error };
-      }
-
-      // Type guard to check for specific properties
-      if ('needsBudget' in response) {
-        return response;
-      }
-
-      if ('missing' in response && response.missing && response.missing.length > 0) {
+        console.error("Error in event generation:", response.error);
+      } else if ('needsBudget' in response && response.needsBudget) {
+        // Budget request is handled separately
+        console.log("Need budget information");
+      } else if ('missing' in response && response.missing && response.missing.length > 0) {
         // Display missing info message
         setChatMessages((prev) => [
           ...prev,
           { type: "ai", content: "I need more information to generate this event. Can you please provide the missing details?" },
         ]);
-        return response;
-      }
-
-      if ('validatedEvent' in response && response.validatedEvent) {
+        console.log("Missing information:", response.missing);
+      } else if ('validatedEvent' in response && response.validatedEvent) {
         // Display generated event
         setGeneratedEvent(response.validatedEvent);
         setChatMessages((prev) => [
           ...prev,
-          { type: "ai", content: "Here is the event I generated for you:" },
+          { type: "ai", content: createAIMessage(response.validatedEvent) },
         ]);
-        return response;
+        console.log("Generated event:", response.validatedEvent);
+      } else {
+        // If no valid data received
+        setChatMessages((prev) => [
+          ...prev,
+          { type: "ai", content: createErrorMessage() },
+        ]);
+        console.error("Invalid response from event generation");
       }
-
-      // If no valid data received
-      setChatMessages((prev) => [
-        ...prev,
-        { type: "ai", content: createErrorMessage() },
-      ]);
-      
-      return { error: new Error("Invalid response from event generation") };
-
     } catch (error: any) {
       console.error('Error generating event:', error);
       
-      // Add error message to chat
+      // Remove loading message and add error message
+      setChatMessages((prev) => prev.slice(0, -1));
       setChatMessages((prev) => [
         ...prev,
         { type: "ai", content: createErrorMessage() },
       ]);
-      
-      return { error };
+    } finally {
+      // Reset the prompt
+      setPrompt("");
     }
-  };
-
-  /**
-   * Handle prompt submission
-   */
-  const handlePromptSubmit = (modelProvider: 'openai' | 'anthropic' = 'openai') => {
-    // If prompt is empty, do nothing
-    if (!prompt.trim()) return;
-    
-    // Log debug info
-    console.log("Handling prompt submission:", prompt);
-    console.log("Using model provider:", modelProvider);
-    
-    // Start event generation
-    generateEventWithPrompt(prompt, modelProvider);
-    
-    // Reset the prompt
-    setPrompt("");
   };
 
   return {
@@ -144,7 +124,6 @@ export const usePromptSubmission = (
     setGeneratedEvent,
     handlePromptSubmit,
     missingFields,
-    previouslyRequestedFields,
-    generateEventWithPrompt
+    previouslyRequestedFields
   };
 };

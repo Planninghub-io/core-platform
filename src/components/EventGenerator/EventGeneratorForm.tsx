@@ -22,7 +22,7 @@ export const EventGeneratorForm = ({
       <div className="relative w-full flex items-center">
         <input
           type="text"
-          placeholder="Find vendors for my corporate event in New York..."
+          placeholder="Plan a fund raiser event..."
           value={prompt}
           onChange={(e) => onPromptChange(e.target.value)}
           onKeyDown={(e) => {
