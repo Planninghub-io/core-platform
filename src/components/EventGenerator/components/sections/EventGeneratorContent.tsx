@@ -1,7 +1,6 @@
 
 import { ChatInterface } from "../ChatInterface";
 import { EventDetailsSection } from "./EventDetailsSection";
-import { usePromptSubmission } from "@/hooks/event-generation/hooks/usePromptSubmission";
 import { useEventGeneration } from "@/hooks/event-generation";
 
 interface EventGeneratorContentProps {
@@ -39,14 +38,7 @@ export const EventGeneratorContent = ({
   onModelChange,
   promptCount
 }: EventGeneratorContentProps) => {
-  const { prompt, setPrompt, isGenerating, waitingForBudget, requestBudgetInChat } = useEventGeneration();
-
-  // Get the usePromptSubmission hook
-  const { handlePromptSubmit } = usePromptSubmission(
-    setChatMessages => setChatMessages,
-    waitingForBudget,
-    requestBudgetInChat
-  );
+  const { prompt, setPrompt, isGenerating, waitingForBudget, handlePromptSubmit } = useEventGeneration();
 
   // Updated welcome message
   const welcomeMessage = chatMessages.length === 0 ? 
@@ -54,7 +46,7 @@ export const EventGeneratorContent = ({
 
   // Handle prompt submission with the selected model
   const handlePromptSubmitWithModel = () => {
-    // Call the original handlePromptSubmit with the model info
+    // Call the handlePromptSubmit with the model info
     handlePromptSubmit(modelProvider);
   };
 

@@ -45,8 +45,17 @@ export const useEventGeneratorCore = (
     setIsGenerating(true);
     
     try {
+      // Show the prompt being submitted in chat
+      setChatMessages(prev => [...prev, { type: "user", content: prompt }]);
+      
+      // Show loading message
+      setChatMessages(prev => [...prev, { 
+        type: "ai", 
+        content: "Generating your event details..." 
+      }]);
+      
       // Check if the user's response contains information we previously asked for
-      const { containsAllInfo, updatedProvidedInfo } = checkUserResponse(
+      const { containsAllInfo, extractedInfo } = checkUserResponse(
         prompt,
         previouslyRequestedFields
       );
@@ -54,7 +63,7 @@ export const useEventGeneratorCore = (
       // If we found all the information we asked for, clear the requested fields
       if (containsAllInfo) {
         // Add the extracted info to providedInfo
-        Object.assign(providedInfo, updatedProvidedInfo);
+        Object.assign(providedInfo, extractedInfo);
         
         // Clear previously requested fields since we got responses for them
         setPreviouslyRequestedFields([]);
@@ -74,6 +83,9 @@ export const useEventGeneratorCore = (
         additionalInfo: combinedInfo,
         modelProvider
       });
+
+      // Remove the loading message
+      setChatMessages(prev => prev.slice(0, -1));
 
       if (response.error) {
         throw response.error;
@@ -111,6 +123,15 @@ export const useEventGeneratorCore = (
 
     } catch (error: any) {
       console.error('Error generating event:', error);
+      
+      // Remove the loading message if present
+      setChatMessages(prev => {
+        const lastMessage = prev[prev.length - 1];
+        if (lastMessage && lastMessage.type === 'ai' && lastMessage.content === "Generating your event details...") {
+          return prev.slice(0, -1);
+        }
+        return prev;
+      });
       
       // Add error message to chat
       setChatMessages(prev => [...prev, {

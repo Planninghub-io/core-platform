@@ -1,9 +1,12 @@
 
 import { useState } from "react";
-import { checkResponseForRequestedInfo } from "../utils/prompt-extraction";
+import { 
+  checkResponseForRequestedInfo,
+  extractorFunctions 
+} from "../utils/prompt-extraction";
 
 /**
- * Hook for checking and extracting information from user responses
+ * Hook to check user responses against previously requested fields
  */
 export const useResponseChecker = () => {
   const [previouslyRequestedFields, setPreviouslyRequestedFields] = useState<string[]>([]);
@@ -12,45 +15,38 @@ export const useResponseChecker = () => {
    * Check if a user's response contains information we previously asked for
    */
   const checkUserResponse = (
-    prompt: string,
-    previouslyRequestedFields: string[]
-  ): {
-    containsAllInfo: boolean;
-    extractedInfo: Record<string, string | null>;
-    updatedProvidedInfo: Record<string, string>;
-  } => {
-    const providedInfo: Record<string, string> = {};
+    prompt: string, 
+    requestedFields: string[]
+  ) => {
+    if (!requestedFields.length) {
+      return { containsAllInfo: false, extractedInfo: {} };
+    }
+
+    // Extract requested information from the prompt
+    const extractedInfo: Record<string, string | null> = {};
     
-    if (previouslyRequestedFields.length > 0) {
-      const { containsAllInfo, extractedInfo } = checkResponseForRequestedInfo(
-        prompt,
-        previouslyRequestedFields
-      );
-      
-      console.log("Checking if response contains previously requested info:", { 
-        previouslyRequestedFields,
-        containsAllInfo,
-        extractedInfo
-      });
-      
-      // If we found information in the response, add it to provided info
-      if (containsAllInfo) {
-        Object.entries(extractedInfo).forEach(([key, value]) => {
-          if (value) providedInfo[key] = value;
-        });
+    for (const field of requestedFields) {
+      if (extractorFunctions[field]) {
+        extractedInfo[field] = extractorFunctions[field](prompt);
       }
-      
-      return { 
-        containsAllInfo, 
-        extractedInfo, 
-        updatedProvidedInfo: providedInfo 
-      };
     }
     
+    // Filter out null values
+    const validExtractedInfo: Record<string, string> = {};
+    for (const [key, value] of Object.entries(extractedInfo)) {
+      if (value !== null) {
+        validExtractedInfo[key] = value;
+      }
+    }
+    
+    // Check if we found all requested fields
+    const containsAllInfo = requestedFields.every(
+      field => validExtractedInfo[field] !== undefined
+    );
+    
     return { 
-      containsAllInfo: false, 
-      extractedInfo: {}, 
-      updatedProvidedInfo: {} 
+      containsAllInfo, 
+      extractedInfo: validExtractedInfo 
     };
   };
 
