@@ -1,11 +1,12 @@
+
 import React from "react";
-import { Button } from "@/components/ui/button";
 import { CardTitle, CardDescription } from "@/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { FilterX, ListChecks, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ListChecks, RefreshCw, FilterX, CheckCircle2 } from "lucide-react";
 import { CategoryData } from "./types";
-import { getCategoryIcon, getCategoryColor } from "./utils";
+import { getCategoryIcon } from "./utils";
 
 interface ChecklistHeaderProps {
   onGenerateChecklist: () => void;
@@ -104,7 +105,18 @@ export const ChecklistHeader: React.FC<ChecklistHeaderProps> = ({
               <Badge 
                 key={category.value}
                 className={`cursor-pointer ${activeFilter === category.value 
-                  ? getCategoryColor(category.value)
+                  ? `bg-${category.value === 'venue' ? 'blue' : 
+                      category.value === 'vendors' ? 'purple' : 
+                      category.value === 'guests' ? 'green' : 
+                      category.value === 'logistics' ? 'yellow' : 
+                      category.value === 'budget' ? 'emerald' : 
+                      category.value === 'marketing' ? 'pink' : 'gray'}-100 
+                     text-${category.value === 'venue' ? 'blue' : 
+                      category.value === 'vendors' ? 'purple' : 
+                      category.value === 'guests' ? 'green' : 
+                      category.value === 'logistics' ? 'yellow' : 
+                      category.value === 'budget' ? 'emerald' : 
+                      category.value === 'marketing' ? 'pink' : 'gray'}-800`
                   : 'bg-gray-100 text-gray-800 hover:bg-gray-200'}`}
                 onClick={() => onFilterClick(category.value)}
               >
