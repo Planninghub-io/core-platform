@@ -101,7 +101,8 @@ export const useEventGeneration = (): any => {
     }
 
     // Check if user is authenticated
-    const { data: { user } } = await supabase.auth.getUser();
+    const { data } = await supabase.auth.getUser();
+    const user = data.user;
 
     if (!user) {
       // Store event data for later creation
@@ -113,10 +114,12 @@ export const useEventGeneration = (): any => {
       title: eventTitle,
       description: generatedEvent.description,
       date: selectedDate || generatedEvent.date,
+      end_date: selectedDate || generatedEvent.date, // Required field for DB
       location: location || generatedEvent.location,
-      budget: generatedEvent.estimatedPrice,
-      eventType: generatedEvent.category,
-      imageUrl: generatedEvent.imageUrl,
+      budget: parseFloat(generatedEvent.estimatedPrice) || null,
+      event_type: generatedEvent.category,
+      image_url: generatedEvent.imageUrl,
+      user_id: user.id
     };
 
     // Create event in database
@@ -124,12 +127,7 @@ export const useEventGeneration = (): any => {
       // Insert the new event into the database
       const { data, error } = await supabase
         .from("events")
-        .insert([
-          {
-            ...eventData,
-            user_id: user.id,
-          },
-        ])
+        .insert(eventData)
         .select()
         .single();
 

@@ -4,7 +4,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MissingInfo, ChatMessage } from "../types";
 import { createErrorMessage, createAIMessage } from "../utils/chatMessageUtils";
-import { extractMissingFields } from "../utils/prompt-extraction/promptFieldExtractor";
 import { useEventGeneratorCore } from "./useEventGeneratorCore";
 import { usePromptSubmission } from "./usePromptSubmission";
 
@@ -88,11 +87,12 @@ export const useEventGenerator = () => {
         return;
       }
 
-      if (response.needsBudget) {
+      // Type guard to ensure we're handling properties correctly for each response type
+      if ('needsBudget' in response) {
         return;
       }
 
-      if (response.missing && response.missing.length > 0) {
+      if ('missing' in response && response.missing && response.missing.length > 0) {
         // Display missing info message
         setChatMessages(prev => [
           ...prev,
@@ -106,7 +106,7 @@ export const useEventGenerator = () => {
         return;
       }
 
-      if (response.validatedEvent) {
+      if ('validatedEvent' in response && response.validatedEvent) {
         // Display success message
         setGeneratedEvent(response.validatedEvent);
         setChatMessages(prev => [
@@ -150,7 +150,7 @@ export const useEventGenerator = () => {
     if (!missingInfo) return;
 
     // Extract the missing fields from the missingInfo object
-    const missingFields = extractMissingFields(missingInfo);
+    const missingFields = missingInfo.missingFields || [];
 
     // Create a new prompt based on the missing fields
     let newPrompt = `I need more information to generate the event. Please provide the following: ${missingFields.join(
@@ -182,7 +182,8 @@ export const useEventGenerator = () => {
         return;
       }
 
-      if (response.validatedEvent) {
+      // Type guard to ensure we're handling properties correctly
+      if ('validatedEvent' in response && response.validatedEvent) {
         // Display success message
         setGeneratedEvent(response.validatedEvent);
         setChatMessages((prev) => [
@@ -243,7 +244,7 @@ export const useEventGenerator = () => {
       date: selectedDate || generatedEvent.date,
       end_date: selectedDate || generatedEvent.date, // Required field for DB
       location: location || generatedEvent.location,
-      budget: generatedEvent.estimatedPrice,
+      budget: parseFloat(generatedEvent.estimatedPrice) || null, // Convert to number or use null
       event_type: generatedEvent.category,
       image_url: generatedEvent.imageUrl,
       user_id: userData.user.id
@@ -314,7 +315,8 @@ export const useEventGenerator = () => {
         return;
       }
 
-      if (response.validatedEvent) {
+      // Type guard to ensure we're handling properties correctly
+      if ('validatedEvent' in response && response.validatedEvent) {
         // Display success message
         setGeneratedEvent(response.validatedEvent);
         setChatMessages((prev) => [

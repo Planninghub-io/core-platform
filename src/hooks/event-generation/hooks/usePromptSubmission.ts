@@ -66,11 +66,12 @@ export const usePromptSubmission = (
         return { error: response.error };
       }
 
-      if (response.needsBudget) {
+      // Type guard to check for specific properties
+      if ('needsBudget' in response) {
         return response;
       }
 
-      if (response.missing && response.missing.length > 0) {
+      if ('missing' in response && response.missing && response.missing.length > 0) {
         // Display missing info message
         setChatMessages((prev) => [
           ...prev,
@@ -79,7 +80,7 @@ export const usePromptSubmission = (
         return response;
       }
 
-      if (response.validatedEvent) {
+      if ('validatedEvent' in response && response.validatedEvent) {
         // Display generated event
         setGeneratedEvent(response.validatedEvent);
         setChatMessages((prev) => [

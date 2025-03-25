@@ -23,7 +23,7 @@ export const extractFieldsFromPrompt = (
   const prePopulatedInfo = { ...existingInfo };
   
   // Extract date if it's needed and not already provided
-  if (missingInfoData.missingFields.includes('date') && !prePopulatedInfo.date) {
+  if (missingInfoData.missingFields && missingInfoData.missingFields.includes('date') && !prePopulatedInfo.date) {
     const extractedDate = extractDateFromPrompt(promptText);
     if (extractedDate) {
       prePopulatedInfo.date = extractedDate;
@@ -31,7 +31,7 @@ export const extractFieldsFromPrompt = (
   }
   
   // Extract location if it's needed and not already provided
-  if (missingInfoData.missingFields.includes('location') && !prePopulatedInfo.location) {
+  if (missingInfoData.missingFields && missingInfoData.missingFields.includes('location') && !prePopulatedInfo.location) {
     const extractedLocation = extractLocationFromPrompt(promptText);
     if (extractedLocation) {
       prePopulatedInfo.location = extractedLocation;
@@ -39,7 +39,7 @@ export const extractFieldsFromPrompt = (
   }
   
   // Extract budget if it's needed and not already provided
-  if (missingInfoData.missingFields.includes('budget') && !prePopulatedInfo.budget) {
+  if (missingInfoData.missingFields && missingInfoData.missingFields.includes('budget') && !prePopulatedInfo.budget) {
     const extractedBudget = extractBudgetFromPrompt(promptText);
     if (extractedBudget) {
       prePopulatedInfo.budget = extractedBudget;
