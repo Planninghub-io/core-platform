@@ -1,28 +1,20 @@
 
-import { useState, useCallback } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { MissingInfo, ChatMessage } from "../types";
-import { createErrorMessage, createAIMessage } from "../utils/chatMessageUtils";
+import { useState } from "react";
+import { ChatMessage } from "../types";
 import { useEventGeneratorCore } from "./useEventGeneratorCore";
-import { usePromptSubmission } from "./usePromptSubmission";
+import { useEventCreationHandler } from "./useEventCreationHandler";
+import { useMissingInfoHandler } from "./useMissingInfoHandler";
+import { usePromptHandler } from "./usePromptHandler";
+import { useEventRegenerationHandler } from "./useEventRegeneration";
 
 export const useEventGenerator = () => {
-  const [prompt, setPrompt] = useState("");
-  const [showSignUpDialog, setShowSignUpDialog] = useState(false);
-  const [showMissingInfoDialog, setShowMissingInfoDialog] = useState(false);
-  const [eventTitle, setEventTitle] = useState("");
-  const [selectedDate, setSelectedDate] = useState<string>("");
-  const [location, setLocation] = useState("");
   const [chatMessages, setChatMessages] = useState<
     Array<{ type: "user" | "ai"; content: string }>
   >([]);
-  const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
   const [waitingForBudget, setWaitingForBudget] = useState(false);
-  const { toast } = useToast();
 
   // Request budget in chat function
-  const requestBudgetInChat = useCallback(() => {
+  const requestBudgetInChat = () => {
     setWaitingForBudget(true);
     setChatMessages((prev) => [
       ...prev,
@@ -32,7 +24,7 @@ export const useEventGenerator = () => {
           "To provide a more accurate event plan, could you please specify your budget?",
       },
     ]);
-  }, [setChatMessages, setWaitingForBudget]);
+  };
 
   // Event Generator Core Hook
   const {
@@ -42,8 +34,6 @@ export const useEventGenerator = () => {
     setMissingInfo,
     additionalInfo: coreAdditionalInfo,
     setAdditionalInfo: setCoreAdditionalInfo,
-    isResubmitting,
-    setIsResubmitting,
     generatedEvent,
     setGeneratedEvent,
     generateEvent: coreGenerateEvent,
@@ -51,294 +41,52 @@ export const useEventGenerator = () => {
     previouslyRequestedFields
   } = useEventGeneratorCore(setChatMessages, waitingForBudget, requestBudgetInChat);
 
-  // Handle prompt submission
-  const handlePromptSubmit = async (modelProvider: 'openai' | 'anthropic' = 'openai') => {
-    if (!prompt.trim()) {
-      toast({
-        title: "Error",
-        description: "Please enter an event description",
-        variant: "destructive",
-      });
-      return;
-    }
+  // Event Creation Hook
+  const {
+    showSignUpDialog,
+    setShowSignUpDialog,
+    eventTitle,
+    setEventTitle,
+    selectedDate,
+    setSelectedDate,
+    location,
+    setLocation,
+    handleCreateEvent
+  } = useEventCreationHandler();
 
-    // First add the user message to chat
-    setChatMessages(prev => [...prev, { type: 'user', content: prompt }]);
+  // Missing Info Hook
+  const {
+    showMissingInfoDialog,
+    setShowMissingInfoDialog,
+    additionalInfo,
+    setAdditionalInfo,
+    handleAdditionalInfoChange,
+    handleMissingInfoSubmit
+  } = useMissingInfoHandler(setChatMessages, coreGenerateEvent);
 
-    // Show loading message
-    setChatMessages(prev => [
-      ...prev,
-      { type: 'ai', content: "Generating your event details..." }
-    ]);
+  // Prompt Handler Hook
+  const {
+    prompt,
+    setPrompt,
+    handlePromptSubmit
+  } = usePromptHandler(setChatMessages, coreGenerateEvent, setShowMissingInfoDialog, setGeneratedEvent);
 
-    try {
-      // Generate the event
-      const response = await coreGenerateEvent(prompt, modelProvider);
+  // Event Regeneration Hook
+  const {
+    isResubmitting,
+    setIsResubmitting,
+    regenerateEventWithUpdatedInfo
+  } = useEventRegenerationHandler(setChatMessages, coreGenerateEvent, setGeneratedEvent);
 
-      // Remove the loading message
-      setChatMessages(prev => prev.slice(0, -1));
-
-      if (response.error) {
-        // Display error message
-        setChatMessages(prev => [
-          ...prev,
-          { type: 'ai', content: createErrorMessage() }
-        ]);
-        return;
-      }
-
-      // Type guard to ensure we're handling properties correctly for each response type
-      if ('needsBudget' in response) {
-        return;
-      }
-
-      if ('missing' in response && response.missing && response.missing.length > 0) {
-        // Display missing info message
-        setChatMessages(prev => [
-          ...prev,
-          { type: 'ai', content: "I need more information to generate this event. Can you please provide the missing details?" }
-        ]);
-        
-        // Show the missing info dialog if we have date or location missing
-        if (response.missing.includes('date') || response.missing.includes('location')) {
-          setShowMissingInfoDialog(true);
-        }
-        return;
-      }
-
-      if ('validatedEvent' in response && response.validatedEvent) {
-        // Display success message
-        setGeneratedEvent(response.validatedEvent);
-        setChatMessages(prev => [
-          ...prev,
-          { type: 'ai', content: createAIMessage(response.validatedEvent) }
-        ]);
-        
-        toast({
-          title: "Event Generated!",
-          description: "Review the suggested event details below.",
-        });
-      }
-    } catch (error) {
-      // Remove the loading message
-      setChatMessages(prev => prev.slice(0, -1));
-      
-      console.error("Error generating event:", error);
-      setChatMessages(prev => [
-        ...prev,
-        { type: 'ai', content: createErrorMessage() }
-      ]);
-    }
-
-    // Clear the prompt
-    setPrompt("");
-  };
-
-  // Handle missing info change
-  const handleAdditionalInfoChange = (
-    field: string,
-    value: string | Date | null
-  ) => {
-    setAdditionalInfo((prev) => ({
-      ...prev,
-      [field]: typeof value === "string" ? value : String(value),
-    }));
-  };
-
-  // Handle missing info submission
-  const handleMissingInfoSubmit = async () => {
-    if (!missingInfo) return;
-
-    // Extract the missing fields from the missingInfo object
-    const missingFields = missingInfo.missingFields || [];
-
-    // Create a new prompt based on the missing fields
-    let newPrompt = `I need more information to generate the event. Please provide the following: ${missingFields.join(
-      ", "
-    )}`;
-
-    // Add the prompt as a user message to the chat
-    setChatMessages((prev) => [...prev, { type: "user", content: newPrompt }]);
-
-    // Show loading message
-    setChatMessages((prev) => [
-      ...prev,
-      { type: "ai", content: "Generating your event details..." },
-    ]);
-
-    try {
-      // Generate the event
-      const response = await coreGenerateEvent(newPrompt, 'openai', additionalInfo);
-
-      // Remove the loading message
-      setChatMessages((prev) => prev.slice(0, -1));
-
-      if (response.error) {
-        // Display error message
-        setChatMessages((prev) => [
-          ...prev,
-          { type: "ai", content: createErrorMessage() },
-        ]);
-        return;
-      }
-
-      // Type guard to ensure we're handling properties correctly
-      if ('validatedEvent' in response && response.validatedEvent) {
-        // Display success message
-        setGeneratedEvent(response.validatedEvent);
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            type: "ai",
-            content: createAIMessage(response.validatedEvent),
-          },
-        ]);
-      }
-    } catch (error) {
-      // Remove the loading message
-      setChatMessages((prev) => prev.slice(0, -1));
-
-      // Display error message
-      setChatMessages((prev) => [
-        ...prev,
-        { type: "ai", content: createErrorMessage() },
-      ]);
-    }
-
-    // Close the dialog
+  // Adapter for handleMissingInfoSubmit to match expected API
+  const handleMissingInfoSubmitAdapter = async () => {
+    await handleMissingInfoSubmit(missingInfo);
     setShowMissingInfoDialog(false);
   };
 
-  // Handle create event
-  const handleCreateEvent = async () => {
-    if (!generatedEvent) {
-      toast({
-        title: "Error",
-        description: "Please generate an event first.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!eventTitle) {
-      toast({
-        title: "Error",
-        description: "Please enter an event title.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Check if user is authenticated
-    const { data: userData } = await supabase.auth.getUser();
-
-    if (!userData?.user) {
-      // Store event data for later creation
-      return setShowSignUpDialog(true);
-    }
-
-    // Create event object
-    const eventData = {
-      title: eventTitle,
-      description: generatedEvent.description,
-      date: selectedDate || generatedEvent.date,
-      end_date: selectedDate || generatedEvent.date, // Required field for DB
-      location: location || generatedEvent.location,
-      budget: parseFloat(generatedEvent.estimatedPrice) || null, // Convert to number or use null
-      event_type: generatedEvent.category,
-      image_url: generatedEvent.imageUrl,
-      user_id: userData.user.id
-    };
-
-    // Create event in database
-    try {
-      // Insert the new event into the database
-      const { data, error } = await supabase
-        .from("events")
-        .insert(eventData)
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
-      // Show success message
-      toast({
-        description: "Event created successfully!",
-      });
-
-      // Redirect to event page
-      window.location.href = `/event/${data.id}`;
-    } catch (error: any) {
-      console.error("Error creating event:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create event. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Regenerate event with updated info
-  const regenerateEventWithUpdatedInfo = async (
-    updatedPrompt: string,
-    updatedModelProvider: 'openai' | 'anthropic' = 'openai'
-  ) => {
-    setIsResubmitting(true);
-
-    // Add the updated prompt as a user message to the chat
-    setChatMessages((prev) => [
-      ...prev,
-      { type: "user", content: updatedPrompt },
-    ]);
-
-    // Show loading message
-    setChatMessages((prev) => [
-      ...prev,
-      { type: "ai", content: "Regenerating event details..." },
-    ]);
-
-    try {
-      // Generate the event
-      const response = await coreGenerateEvent(updatedPrompt, updatedModelProvider, additionalInfo);
-
-      // Remove the loading message
-      setChatMessages((prev) => prev.slice(0, -1));
-
-      if (response.error) {
-        // Display error message
-        setChatMessages((prev) => [
-          ...prev,
-          { type: "ai", content: createErrorMessage() },
-        ]);
-        return;
-      }
-
-      // Type guard to ensure we're handling properties correctly
-      if ('validatedEvent' in response && response.validatedEvent) {
-        // Display success message
-        setGeneratedEvent(response.validatedEvent);
-        setChatMessages((prev) => [
-          ...prev,
-          {
-            type: "ai",
-            content: createAIMessage(response.validatedEvent),
-          },
-        ]);
-      }
-    } catch (error) {
-      // Remove the loading message
-      setChatMessages((prev) => prev.slice(0, -1));
-
-      // Display error message
-      setChatMessages((prev) => [
-        ...prev,
-        { type: "ai", content: createErrorMessage() },
-      ]);
-    } finally {
-      setIsResubmitting(false);
-    }
+  // Adapter for handleCreateEvent to match expected API
+  const handleCreateEventAdapter = () => {
+    return handleCreateEvent(generatedEvent);
   };
 
   return {
@@ -355,7 +103,7 @@ export const useEventGenerator = () => {
     eventTitle,
     setEventTitle,
     handlePromptSubmit,
-    handleCreateEvent,
+    handleCreateEvent: handleCreateEventAdapter,
     selectedDate,
     setSelectedDate,
     location,
@@ -367,7 +115,7 @@ export const useEventGenerator = () => {
     showMissingInfoDialog,
     setShowMissingInfoDialog,
     handleAdditionalInfoChange,
-    handleMissingInfoSubmit,
+    handleMissingInfoSubmit: handleMissingInfoSubmitAdapter,
     waitingForBudget,
     setWaitingForBudget,
     isResubmitting,
