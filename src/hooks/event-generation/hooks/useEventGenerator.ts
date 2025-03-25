@@ -1,8 +1,10 @@
+
 import { useState, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { MissingInfo, ChatMessage } from "../types";
 import { createErrorMessage, createAIMessage } from "../utils/chatMessageUtils";
-import { extractMissingFields } from "../utils/prompt-extraction";
+import { extractMissingFields } from "../utils/prompt-extraction/promptFieldExtractor";
 import { useEventGeneratorCore } from "./useEventGeneratorCore";
 import { usePromptSubmission } from "./usePromptSubmission";
 
@@ -11,7 +13,7 @@ export const useEventGenerator = () => {
   const [showSignUpDialog, setShowSignUpDialog] = useState(false);
   const [showMissingInfoDialog, setShowMissingInfoDialog] = useState(false);
   const [eventTitle, setEventTitle] = useState("");
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [selectedDate, setSelectedDate] = useState<string>("");
   const [location, setLocation] = useState("");
   const [chatMessages, setChatMessages] = useState<
     Array<{ type: "user" | "ai"; content: string }>
@@ -19,6 +21,19 @@ export const useEventGenerator = () => {
   const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
   const [waitingForBudget, setWaitingForBudget] = useState(false);
   const { toast } = useToast();
+
+  // Request budget in chat function
+  const requestBudgetInChat = useCallback(() => {
+    setWaitingForBudget(true);
+    setChatMessages((prev) => [
+      ...prev,
+      {
+        type: "ai",
+        content:
+          "To provide a more accurate event plan, could you please specify your budget?",
+      },
+    ]);
+  }, [setChatMessages, setWaitingForBudget]);
 
   // Event Generator Core Hook
   const {
@@ -35,37 +50,91 @@ export const useEventGenerator = () => {
     generateEvent: coreGenerateEvent,
     missingFields,
     previouslyRequestedFields
-  } = useEventGeneratorCore(setChatMessages, waitingForBudget, () =>
-    requestBudgetInChat()
-  );
+  } = useEventGeneratorCore(setChatMessages, waitingForBudget, requestBudgetInChat);
 
-  // Prompt Submission Hook
-  const { generateEventWithPrompt, handlePromptSubmit } = usePromptSubmission(
-    prompt,
-    setPrompt,
-    setChatMessages,
-    coreGenerateEvent,
-    createErrorMessage
-  );
+  // Handle prompt submission
+  const handlePromptSubmit = async (modelProvider: 'openai' | 'anthropic' = 'openai') => {
+    if (!prompt.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter an event description",
+        variant: "destructive",
+      });
+      return;
+    }
 
-  // Budget Request Function
-  const requestBudgetInChat = useCallback(() => {
-    setWaitingForBudget(true);
-    setChatMessages((prev) => [
+    // First add the user message to chat
+    setChatMessages(prev => [...prev, { type: 'user', content: prompt }]);
+
+    // Show loading message
+    setChatMessages(prev => [
       ...prev,
-      {
-        type: "ai",
-        content:
-          "To provide a more accurate event plan, could you please specify your budget?",
-      },
+      { type: 'ai', content: "Generating your event details..." }
     ]);
-  }, [setChatMessages, setWaitingForBudget]);
 
-  // Check if date or location is missing
-  const hasMissingDate = missingFields?.includes("date") || false;
-  const hasMissingLocation = missingFields?.includes("location") || false;
+    try {
+      // Generate the event
+      const response = await coreGenerateEvent(prompt, modelProvider);
 
-  // Handle additional info changes
+      // Remove the loading message
+      setChatMessages(prev => prev.slice(0, -1));
+
+      if (response.error) {
+        // Display error message
+        setChatMessages(prev => [
+          ...prev,
+          { type: 'ai', content: createErrorMessage() }
+        ]);
+        return;
+      }
+
+      if (response.needsBudget) {
+        return;
+      }
+
+      if (response.missing && response.missing.length > 0) {
+        // Display missing info message
+        setChatMessages(prev => [
+          ...prev,
+          { type: 'ai', content: "I need more information to generate this event. Can you please provide the missing details?" }
+        ]);
+        
+        // Show the missing info dialog if we have date or location missing
+        if (response.missing.includes('date') || response.missing.includes('location')) {
+          setShowMissingInfoDialog(true);
+        }
+        return;
+      }
+
+      if (response.validatedEvent) {
+        // Display success message
+        setGeneratedEvent(response.validatedEvent);
+        setChatMessages(prev => [
+          ...prev,
+          { type: 'ai', content: createAIMessage(response.validatedEvent) }
+        ]);
+        
+        toast({
+          title: "Event Generated!",
+          description: "Review the suggested event details below.",
+        });
+      }
+    } catch (error) {
+      // Remove the loading message
+      setChatMessages(prev => prev.slice(0, -1));
+      
+      console.error("Error generating event:", error);
+      setChatMessages(prev => [
+        ...prev,
+        { type: 'ai', content: createErrorMessage() }
+      ]);
+    }
+
+    // Clear the prompt
+    setPrompt("");
+  };
+
+  // Handle missing info change
   const handleAdditionalInfoChange = (
     field: string,
     value: string | Date | null
@@ -77,7 +146,7 @@ export const useEventGenerator = () => {
   };
 
   // Handle missing info submission
-  const handleMissingInfoSubmit = () => {
+  const handleMissingInfoSubmit = async () => {
     if (!missingInfo) return;
 
     // Extract the missing fields from the missingInfo object
@@ -97,42 +166,43 @@ export const useEventGenerator = () => {
       { type: "ai", content: "Generating your event details..." },
     ]);
 
-    // Generate the event
-    coreGenerateEvent(newPrompt, 'openai', additionalInfo)
-      .then((response) => {
-        // Remove the loading message
-        setChatMessages((prev) => prev.slice(0, -1));
+    try {
+      // Generate the event
+      const response = await coreGenerateEvent(newPrompt, 'openai', additionalInfo);
 
-        if (response?.error) {
-          // Display error message
-          setChatMessages((prev) => [
-            ...prev,
-            { type: "ai", content: createErrorMessage() },
-          ]);
-          return;
-        }
+      // Remove the loading message
+      setChatMessages((prev) => prev.slice(0, -1));
 
-        if (response?.validatedEvent) {
-          // Display success message
-          setChatMessages((prev) => [
-            ...prev,
-            {
-              type: "ai",
-              content: createAIMessage(response.validatedEvent),
-            },
-          ]);
-        }
-      })
-      .catch((error) => {
-        // Remove the loading message
-        setChatMessages((prev) => prev.slice(0, -1));
-
+      if (response.error) {
         // Display error message
         setChatMessages((prev) => [
           ...prev,
           { type: "ai", content: createErrorMessage() },
         ]);
-      });
+        return;
+      }
+
+      if (response.validatedEvent) {
+        // Display success message
+        setGeneratedEvent(response.validatedEvent);
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            type: "ai",
+            content: createAIMessage(response.validatedEvent),
+          },
+        ]);
+      }
+    } catch (error) {
+      // Remove the loading message
+      setChatMessages((prev) => prev.slice(0, -1));
+
+      // Display error message
+      setChatMessages((prev) => [
+        ...prev,
+        { type: "ai", content: createErrorMessage() },
+      ]);
+    }
 
     // Close the dialog
     setShowMissingInfoDialog(false);
@@ -159,9 +229,9 @@ export const useEventGenerator = () => {
     }
 
     // Check if user is authenticated
-    const user = await supabase.auth.getUser();
+    const { data: userData } = await supabase.auth.getUser();
 
-    if (!user?.data?.user) {
+    if (!userData?.user) {
       // Store event data for later creation
       return setShowSignUpDialog(true);
     }
@@ -171,10 +241,12 @@ export const useEventGenerator = () => {
       title: eventTitle,
       description: generatedEvent.description,
       date: selectedDate || generatedEvent.date,
+      end_date: selectedDate || generatedEvent.date, // Required field for DB
       location: location || generatedEvent.location,
       budget: generatedEvent.estimatedPrice,
-      eventType: generatedEvent.category,
-      imageUrl: generatedEvent.imageUrl,
+      event_type: generatedEvent.category,
+      image_url: generatedEvent.imageUrl,
+      user_id: userData.user.id
     };
 
     // Create event in database
@@ -182,12 +254,7 @@ export const useEventGenerator = () => {
       // Insert the new event into the database
       const { data, error } = await supabase
         .from("events")
-        .insert([
-          {
-            ...eventData,
-            user_id: user.data.user.id,
-          },
-        ])
+        .insert(eventData)
         .select()
         .single();
 
@@ -238,7 +305,7 @@ export const useEventGenerator = () => {
       // Remove the loading message
       setChatMessages((prev) => prev.slice(0, -1));
 
-      if (response?.error) {
+      if (response.error) {
         // Display error message
         setChatMessages((prev) => [
           ...prev,
@@ -247,8 +314,9 @@ export const useEventGenerator = () => {
         return;
       }
 
-      if (response?.validatedEvent) {
+      if (response.validatedEvent) {
         // Display success message
+        setGeneratedEvent(response.validatedEvent);
         setChatMessages((prev) => [
           ...prev,
           {
@@ -290,8 +358,8 @@ export const useEventGenerator = () => {
     setSelectedDate,
     location,
     setLocation,
-    hasMissingDate,
-    hasMissingLocation,
+    hasMissingDate: missingFields?.includes("date") || false,
+    hasMissingLocation: missingFields?.includes("location") || false,
     chatMessages,
     additionalInfo,
     showMissingInfoDialog,

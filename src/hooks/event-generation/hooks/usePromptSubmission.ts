@@ -63,11 +63,11 @@ export const usePromptSubmission = (
           ...prev,
           { type: "ai", content: createErrorMessage() },
         ]);
-        return;
+        return { error: response.error };
       }
 
       if (response.needsBudget) {
-        return;
+        return response;
       }
 
       if (response.missing && response.missing.length > 0) {
@@ -76,7 +76,7 @@ export const usePromptSubmission = (
           ...prev,
           { type: "ai", content: "I need more information to generate this event. Can you please provide the missing details?" },
         ]);
-        return;
+        return response;
       }
 
       if (response.validatedEvent) {
@@ -86,7 +86,7 @@ export const usePromptSubmission = (
           ...prev,
           { type: "ai", content: "Here is the event I generated for you:" },
         ]);
-        return;
+        return response;
       }
 
       // If no valid data received
@@ -94,13 +94,19 @@ export const usePromptSubmission = (
         ...prev,
         { type: "ai", content: createErrorMessage() },
       ]);
+      
+      return { error: new Error("Invalid response from event generation") };
 
     } catch (error: any) {
       console.error('Error generating event:', error);
+      
+      // Add error message to chat
       setChatMessages((prev) => [
         ...prev,
         { type: "ai", content: createErrorMessage() },
       ]);
+      
+      return { error };
     }
   };
 

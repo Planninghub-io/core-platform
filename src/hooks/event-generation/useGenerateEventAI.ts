@@ -16,37 +16,13 @@ export const useGenerateEventAI = () => {
   } = useBudgetHandler(chatMessages, setChatMessages, additionalInfo, setAdditionalInfo);
 
   // Use the event generator hook
-  const {
-    isGenerating,
-    promptCount,
-    missingInfo,
-    setMissingInfo,
-    isResubmitting,
-    setIsResubmitting,
-    generatedEvent,
-    setGeneratedEvent,
-    generateEvent,
-    missingFields,
-    regenerateEventWithUpdatedInfo
-  } = useEventGenerator(chatMessages, setChatMessages, waitingForBudget, requestBudgetInChat);
+  const eventGenerator = useEventGenerator();
 
   return {
-    isGenerating,
-    promptCount,
-    missingInfo,
-    setMissingInfo,
-    additionalInfo,
-    setAdditionalInfo,
-    isResubmitting,
-    setIsResubmitting,
-    generatedEvent,
-    setGeneratedEvent,
-    generateEvent,
+    ...eventGenerator,
     chatMessages,
     setChatMessages,
-    missingFields,
     waitingForBudget,
-    setWaitingForBudget,
-    regenerateEventWithUpdatedInfo
+    setWaitingForBudget
   };
 };

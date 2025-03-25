@@ -62,6 +62,18 @@ export const extractAllDetailsFromPrompt = (promptText: string): Record<string, 
   };
 };
 
+/**
+ * Extract missing fields from missing info data
+ * @param missingInfo Object containing information about missing fields
+ * @returns Array of missing field names
+ */
+export const extractMissingFields = (missingInfo: any): string[] => {
+  if (!missingInfo || !missingInfo.missingFields) {
+    return [];
+  }
+  return missingInfo.missingFields || [];
+};
+
 // Reexport the individual extractors for direct use
 export {
   extractDateFromPrompt,
