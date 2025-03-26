@@ -19,6 +19,7 @@ export interface MissingInfo {
 export interface ChatMessage {
   type: 'user' | 'ai';
   content: string;
+  id?: string; // Add optional id property to fix TypeScript errors
 }
 
 export interface EventGenerationState {

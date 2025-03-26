@@ -1,3 +1,4 @@
+
 import { generateEventWithAPI } from "./eventGenerationAPI";
 import { extractInfoFromPrompt } from "../utils/promptExtractor";
 import { ChatMessage } from "../../types";
@@ -68,6 +69,7 @@ export const submitPrompt = async (
     
     // Remove loading message, looking for it by ID to avoid race conditions
     setChatMessages(prev => {
+      // Safely check for message ID - fix for TypeScript error
       return prev.filter(msg => msg.id !== loadingMessageId);
     });
     
@@ -117,9 +119,11 @@ export const submitPrompt = async (
     
     // Remove loading message if it exists
     setChatMessages(prev => {
-      return prev.filter(msg => 
-        !(msg.id === `loading-${apiCallId}`)
-      );
+      // Safely check for message ID - fix for TypeScript error
+      return prev.filter(msg => {
+        // Check if the message has an id property before comparing it
+        return !(msg.id && msg.id === `loading-${apiCallId}`);
+      });
     });
     
     // Add error message to chat
