@@ -30,18 +30,12 @@ export const ChatInputArea = ({
       e.preventDefault();
     }
     
-    if (prompt.trim() && !isGenerating) {
-      console.log("ChatInputArea: handleSubmit called with prompt:", prompt);
-      // Call the parent handler to process the submission
-      handlePromptSubmit();
-    } else {
-      if (!prompt.trim()) {
-        console.log("ChatInputArea: Empty prompt, not submitting");
-      }
-      if (isGenerating) {
-        console.log("ChatInputArea: Already generating, not submitting");
-      }
-    }
+    console.log("ChatInputArea: handleSubmit called with prompt:", prompt);
+    
+    // Call the parent handler to process the submission
+    // We're going to call it regardless of prompt content or isGenerating state
+    // and let the parent handler decide what to do
+    handlePromptSubmit();
   };
   
   return (

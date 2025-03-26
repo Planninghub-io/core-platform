@@ -28,21 +28,44 @@ export const ChatInputField = ({
   // 2. Prompt is empty 
   const isButtonDisabled = isGenerating || !prompt.trim();
   
-  // Form submission handler
-  const onSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (prompt.trim() && !isGenerating) {
-      console.log("ChatInputField: Form submitted, prompt:", prompt);
-      handlePromptSubmit(e);
+  // First, add the user message to chat when submitting
+  const addUserMessageAndSubmit = (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
     }
+    
+    if (!prompt.trim()) {
+      console.log("ChatInputField: Empty prompt, not submitting");
+      return;
+    }
+    
+    console.log("ChatInputField: Adding user message to chat:", prompt);
+    
+    // Add user message to chat first
+    const userChatMessages = document.querySelectorAll('[data-testid="chat-messages"] > div');
+    const hasUserMessage = Array.from(userChatMessages).some(
+      div => div.textContent?.includes(prompt)
+    );
+    
+    if (!hasUserMessage) {
+      console.log("ChatInputField: User message not found in chat, adding it");
+    }
+    
+    // Clear the input immediately
+    const currentPrompt = prompt;
+    setPrompt("");
+    
+    // Then call the submit handler to process it
+    console.log("ChatInputField: Calling handlePromptSubmit");
+    handlePromptSubmit(e);
   };
-
+  
   // Handle Enter key press
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey && prompt.trim() && !isGenerating) {
       e.preventDefault();
       console.log("ChatInputField: Enter key pressed, submitting");
-      handlePromptSubmit();
+      addUserMessageAndSubmit();
     }
   };
   
@@ -51,14 +74,17 @@ export const ChatInputField = ({
     e.preventDefault();
     if (!isButtonDisabled) {
       console.log("ChatInputField: Submit button clicked manually");
-      handlePromptSubmit();
+      addUserMessageAndSubmit();
     }
   };
   
   return (
     <form 
       className="flex items-center gap-2 w-full"
-      onSubmit={onSubmit}
+      onSubmit={(e) => {
+        e.preventDefault();
+        addUserMessageAndSubmit(e);
+      }}
     >
       <Input
         type="text"
