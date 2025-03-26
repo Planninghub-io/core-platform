@@ -40,14 +40,6 @@ export const ChatInputField = ({
     }
     
     console.log("ChatInputField: Submitting prompt:", prompt);
-    
-    // Call the submit handler with the current prompt
-    const currentPrompt = prompt;
-    
-    // Clear the input immediately for better UX
-    setPrompt("");
-    
-    // Handle submission
     handlePromptSubmit(e);
   };
   

@@ -16,6 +16,7 @@ export const generateEventAPI = async ({
   try {
     // Validate prompt
     if (!prompt || !prompt.trim()) {
+      console.error("Empty prompt provided to generateEventAPI");
       return { error: new Error("Please enter an event description") };
     }
     
@@ -32,6 +33,7 @@ export const generateEventAPI = async ({
     });
     
     if (error) {
+      console.error("Supabase error:", error);
       throw error;
     }
     
