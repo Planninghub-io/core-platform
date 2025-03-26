@@ -26,13 +26,25 @@ export const ChatMessages = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isGenerating]);
 
+  // Enhanced welcome message with more details and formatting
+  const enhancedWelcomeMessage = welcomeMessage ? 
+    "Hi there! 👋 I'm your event planning assistant.\n\n" +
+    "**Please provide details about the event you'd like to create:**\n" +
+    "• Event type (party, meeting, conference, etc.)\n" +
+    "• Date & time\n" +
+    "• Location\n" +
+    "• Expected number of attendees\n" +
+    "• Budget (if applicable)\n" +
+    "• Any other special requirements\n\n" +
+    "The more details you share, the better I can help you plan your perfect event!" : "";
+
   return (
     <div className="p-4 h-[400px] overflow-y-auto">
       {/* Show welcome message if no messages yet */}
-      {chatMessages.length === 0 && welcomeMessage && (
+      {chatMessages.length === 0 && enhancedWelcomeMessage && (
         <ChatMessage
           key="welcome"
-          message={welcomeMessage}
+          message={enhancedWelcomeMessage}
           type="ai"
           isLoading={false}
           isWelcomeMessage={true}

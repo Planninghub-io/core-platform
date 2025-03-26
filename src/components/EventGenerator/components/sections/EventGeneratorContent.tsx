@@ -45,9 +45,8 @@ export const EventGeneratorContent = ({
   const [currentModelProvider, setCurrentModelProvider] = useState<'openai' | 'anthropic'>(modelProvider);
   const [showEventForm, setShowEventForm] = useState<boolean>(false);
 
-  // Updated welcome message with more specific instructions
-  const welcomeMessage = chatMessages.length === 0 ? 
-    "Hi, please provide details about the event you'd like to create. Include a description, date & time, location, and any other details you'd like to add." : "";
+  // Using an empty string as the welcome message to let ChatMessages component use its enhanced version
+  const welcomeMessage = chatMessages.length === 0 ? "" : "";
 
   // Effect to track model changes
   useEffect(() => {
