@@ -24,6 +24,11 @@ export const ChatInputArea = ({
   // Determine if this is the first interaction
   const isFirstInteraction = promptCount === 0 && chatMessages.length === 0;
   
+  const handleSubmit = () => {
+    console.log("ChatInputArea: handleSubmit called");
+    handlePromptSubmit();
+  };
+  
   return (
     <div className="border-t border-gray-200 p-4 bg-gray-50">
       <div className="w-full">
@@ -33,7 +38,7 @@ export const ChatInputArea = ({
             isGenerating={isGenerating}
             promptCount={promptCount}
             onPromptChange={setPrompt}
-            onSubmit={handlePromptSubmit}
+            onSubmit={handleSubmit}
           />
         ) : (
           <ChatInputField
@@ -42,7 +47,7 @@ export const ChatInputArea = ({
             isGenerating={isGenerating}
             generatedEvent={generatedEvent}
             chatMessages={chatMessages}
-            handlePromptSubmit={handlePromptSubmit}
+            handlePromptSubmit={handleSubmit}
           />
         )}
       </div>

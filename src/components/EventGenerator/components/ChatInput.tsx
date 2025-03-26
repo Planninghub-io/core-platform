@@ -23,9 +23,15 @@ export const ChatInput = ({
   handlePromptSubmit,
   generatedEvent
 }: ChatInputProps) => {
+  // Create a wrapper function to ensure logging and proper execution
+  const onSubmit = () => {
+    console.log("ChatInput: onSubmit called");
+    handlePromptSubmit();
+  };
+  
   return (
     <div className="border-t border-gray-200 p-4 bg-gray-50">
-      <div className="flex items-center gap-2">
+      <div className="w-full">
         {chatMessages.length === 0 ? (
           <div className="w-full">
             <EventGeneratorForm
@@ -33,7 +39,7 @@ export const ChatInput = ({
               isGenerating={isGenerating}
               promptCount={promptCount}
               onPromptChange={setPrompt}
-              onSubmit={handlePromptSubmit}
+              onSubmit={onSubmit}
             />
           </div>
         ) : (
@@ -43,7 +49,7 @@ export const ChatInput = ({
             isGenerating={isGenerating}
             generatedEvent={generatedEvent}
             chatMessages={chatMessages}
-            handlePromptSubmit={handlePromptSubmit}
+            handlePromptSubmit={onSubmit}
           />
         )}
       </div>

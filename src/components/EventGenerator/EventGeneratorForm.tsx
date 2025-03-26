@@ -19,7 +19,9 @@ export const EventGeneratorForm = ({
 }: EventGeneratorFormProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (prompt.trim()) {
+    console.log("EventGeneratorForm: form submitted");
+    if (prompt.trim() && !isGenerating) {
+      console.log("EventGeneratorForm: calling onSubmit");
       onSubmit();
     }
   };
@@ -33,8 +35,9 @@ export const EventGeneratorForm = ({
           value={prompt}
           onChange={(e) => onPromptChange(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === 'Enter' && !e.shiftKey && prompt.trim()) {
+            if (e.key === 'Enter' && !e.shiftKey && prompt.trim() && !isGenerating) {
               e.preventDefault();
+              console.log("EventGeneratorForm: Enter key pressed");
               onSubmit();
             }
           }}
@@ -42,7 +45,13 @@ export const EventGeneratorForm = ({
           autoFocus
         />
         <Button
-          type="submit"
+          type="button"
+          onClick={() => {
+            if (prompt.trim() && !isGenerating) {
+              console.log("EventGeneratorForm: Submit button clicked");
+              onSubmit();
+            }
+          }}
           size="icon"
           className="absolute right-1 h-10 w-10 rounded-full bg-[#8b73f4] hover:bg-[#8b73f4]/90"
           disabled={isGenerating || !prompt.trim()}
