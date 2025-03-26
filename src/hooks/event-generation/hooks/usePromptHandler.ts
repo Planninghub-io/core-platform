@@ -49,9 +49,18 @@ export const usePromptHandler = (
       // Clear the prompt input for better UX
       setPrompt("");
       
+      // Add a loading message to indicate processing
+      setChatMessages(prev => [...prev, { 
+        type: "ai", 
+        content: "Generating your event details..." 
+      }]);
+      
       // Generate the event using the stored prompt
       const response = await coreGenerateEvent(promptToSend, modelProvider);
       console.log("Response received:", response);
+
+      // Remove the loading message
+      setChatMessages(prev => prev.filter(msg => msg.content !== "Generating your event details..."));
 
       if (response?.error) {
         // Display error message
@@ -81,10 +90,10 @@ ${data.missingFields?.length > 0 ? `I need more information about: ${data.missin
 
         // Add the AI response to chat
         console.log("Adding AI response to chat:", aiMessage);
-        setChatMessages(prev => {
-          console.log("Previous chat messages:", prev);
-          return [...prev, { type: 'ai', content: aiMessage }];
-        });
+        setChatMessages(prev => [
+          ...prev.filter(msg => msg.content !== "Generating your event details..."),
+          { type: 'ai', content: aiMessage }
+        ]);
 
         // If we have a validated event, set it
         if (data.title || data.description) {
@@ -104,13 +113,17 @@ ${data.missingFields?.length > 0 ? `I need more information about: ${data.missin
       // If we don't have data in the expected format, add a generic message
       console.log("Response did not contain expected data format");
       setChatMessages(prev => [
-        ...prev,
+        ...prev.filter(msg => msg.content !== "Generating your event details..."),
         { type: 'ai', content: "I've processed your request, but couldn't generate a complete event. Please try providing more details." }
       ]);
       
       return null;
     } catch (error) {
       console.error("Error generating event:", error);
+      // Remove the loading message if present
+      setChatMessages(prev => prev.filter(msg => msg.content !== "Generating your event details..."));
+      
+      // Add error message to chat
       setChatMessages(prev => [
         ...prev,
         { type: 'ai', content: createErrorMessage() }

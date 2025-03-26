@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Send, Sparkles } from "lucide-react";
+import { Send } from "lucide-react";
 import { EventGeneratorForm } from "../EventGeneratorForm";
 import { ChatInputField } from "./chat/ChatInputField";
 
@@ -43,13 +43,26 @@ export const ChatInput = ({
             />
           </div>
         ) : (
-          <ChatInputField
-            prompt={prompt}
-            setPrompt={setPrompt}
-            isGenerating={isGenerating}
-            onSubmit={() => prompt.trim() && onSubmit(prompt)}
-            shouldShowButton={false}
-          />
+          <div className="flex items-end gap-2">
+            <ChatInputField
+              prompt={prompt}
+              setPrompt={setPrompt}
+              isGenerating={isGenerating}
+              onSubmit={() => prompt.trim() && onSubmit(prompt)}
+              shouldShowButton={false}
+              generatedEvent={generatedEvent}
+              chatMessages={chatMessages}
+            />
+            <Button
+              type="submit"
+              size="icon"
+              disabled={isGenerating || !prompt.trim()}
+              className="h-10 w-10 rounded-full bg-[#242424] hover:bg-[#242424]/90"
+              onClick={() => prompt.trim() && onSubmit(prompt)}
+            >
+              <Send size={18} className="text-white" />
+            </Button>
+          </div>
         )}
       </div>
     </div>

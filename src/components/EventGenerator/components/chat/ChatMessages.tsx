@@ -28,6 +28,7 @@ export const ChatMessages = ({
 
   return (
     <div className="p-4 h-[400px] overflow-y-auto">
+      {/* Show welcome message if no messages and welcomeMessage is provided */}
       {welcomeMessage && chatMessages.length === 0 && (
         <ChatMessage
           key="welcome"
@@ -38,9 +39,10 @@ export const ChatMessages = ({
         />
       )}
       
+      {/* Map through and display all chat messages */}
       {chatMessages.map((message, index) => (
         <ChatMessage 
-          key={index} 
+          key={`message-${index}`} 
           message={message.content} 
           type={message.type} 
           isLoading={false}
