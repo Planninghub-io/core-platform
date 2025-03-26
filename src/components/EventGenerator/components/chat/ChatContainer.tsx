@@ -8,7 +8,7 @@ interface ChatContainerProps {
   setPrompt: (prompt: string) => void;
   isGenerating: boolean;
   promptCount: number;
-  handlePromptSubmit: () => void;
+  handlePromptSubmit: (prompt: string) => void;  // Updated type to accept a string parameter
   welcomeMessage: string;
   generatedEvent: any | null;
 }

@@ -24,7 +24,7 @@ export const ChatInputArea = ({
   // Determine if this is the first interaction
   const isFirstInteraction = promptCount === 0 && chatMessages.length === 0;
   
-  // Wrapper function to handle submit with proper logging
+  // Wrapper function to adapt the form's event-based submission to our string-based handler
   const handleSubmit = (e?: React.FormEvent, userPrompt?: string) => {
     if (e) {
       e.preventDefault();
@@ -67,7 +67,7 @@ export const ChatInputArea = ({
             isGenerating={isGenerating}
             generatedEvent={generatedEvent}
             chatMessages={chatMessages}
-            handlePromptSubmit={handleSubmit}
+            handlePromptSubmit={(submittedPrompt) => handlePromptSubmit(submittedPrompt)}
           />
         )}
       </div>
