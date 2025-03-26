@@ -56,8 +56,17 @@ export const usePromptSubmission = (
     setIsGenerating(true);
     
     try {
+      // Add user message to chat
+      setChatMessages(prev => [...prev, { type: 'user', content: prompt }]);
+      
+      // Add loading message
+      setChatMessages(prev => [...prev, { type: 'ai', content: "Generating your event details..." }]);
+      
       // Process the prompt to extract and combine information
       const combinedInfo = processPrompt(prompt, additionalInfo);
+      
+      console.log("usePromptSubmission: Combined info:", combinedInfo);
+      console.log("usePromptSubmission: Using model:", modelProvider);
       
       // Generate the event
       const response = await generateEventWithAPI(
@@ -65,6 +74,14 @@ export const usePromptSubmission = (
         modelProvider,
         combinedInfo
       );
+      
+      // Remove loading message
+      setChatMessages(prev => {
+        const newMessages = [...prev];
+        return newMessages.filter((msg, index) => 
+          !(index === newMessages.length - 1 && msg.type === 'ai' && msg.content === "Generating your event details...")
+        );
+      });
       
       if (response.error) {
         throw response.error;
@@ -80,6 +97,14 @@ export const usePromptSubmission = (
       );
       
     } catch (error: any) {
+      // Remove loading message if it exists
+      setChatMessages(prev => {
+        const newMessages = [...prev];
+        return newMessages.filter((msg, index) => 
+          !(index === newMessages.length - 1 && msg.type === 'ai' && msg.content === "Generating your event details...")
+        );
+      });
+      
       addErrorMessage(setChatMessages, error);
       
       toast({
@@ -87,6 +112,8 @@ export const usePromptSubmission = (
         description: error.message || "Failed to generate event. Please try again.",
         variant: "destructive",
       });
+      
+      console.error("usePromptSubmission: Error generating event:", error);
     } finally {
       setIsGenerating(false);
     }

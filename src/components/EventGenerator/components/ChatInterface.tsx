@@ -39,6 +39,10 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
     }
   };
 
+  useEffect(() => {
+    console.log("ChatInterface: Current model provider:", modelProvider);
+  }, [modelProvider]);
+
   return (
     <div className="w-full min-h-[400px] flex flex-col">
       <div className="pb-4">

@@ -8,7 +8,7 @@ interface ChatContainerProps {
   setPrompt: (prompt: string) => void;
   isGenerating: boolean;
   promptCount: number;
-  handlePromptSubmit: (prompt: string) => void;  // Updated type to accept a string parameter
+  handlePromptSubmit: (prompt: string) => void;
   welcomeMessage: string;
   generatedEvent: any | null;
 }
@@ -23,6 +23,8 @@ export const ChatContainer = ({
   welcomeMessage,
   generatedEvent
 }: ChatContainerProps) => {
+  console.log("ChatContainer: Rendering with isGenerating =", isGenerating);
+  
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 flex flex-col h-full">
       <div className="flex-grow overflow-hidden">

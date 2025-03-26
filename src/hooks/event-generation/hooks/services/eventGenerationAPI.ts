@@ -12,10 +12,16 @@ export const generateEventWithAPI = async (
   console.log(`Generating event with model: ${modelProvider}`);
   console.log("Combined info for API call:", combinedInfo);
   
+  // Add model provider to combinedInfo
+  const apiPayload = {
+    ...combinedInfo,
+    modelProvider
+  };
+  
   // Generate the event
   return await generateEventAPI({
     prompt: userPrompt,
-    additionalInfo: combinedInfo,
+    additionalInfo: apiPayload,
     modelProvider
   });
 };

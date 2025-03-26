@@ -2,6 +2,7 @@
 import { ChatInterface } from "../ChatInterface";
 import { EventDetailsSection } from "./EventDetailsSection";
 import { useEventGeneration } from "@/hooks/event-generation";
+import { useState, useEffect } from "react";
 
 interface EventGeneratorContentProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
@@ -39,18 +40,34 @@ export const EventGeneratorContent = ({
   promptCount
 }: EventGeneratorContentProps) => {
   const { prompt, setPrompt, isGenerating, handlePromptSubmit } = useEventGeneration();
+  const [currentModelProvider, setCurrentModelProvider] = useState<'openai' | 'anthropic'>(modelProvider);
 
   // Updated welcome message
   const welcomeMessage = chatMessages.length === 0 ? 
     "Hi, please provide your event details including place, date & time to get started with planning." : "";
 
+  // Effect to track model changes
+  useEffect(() => {
+    console.log("EventGeneratorContent: Model provider changed to:", currentModelProvider);
+  }, [currentModelProvider]);
+
   // Handle prompt submission with the selected model
   const handleSubmit = (userPrompt: string, selectedModel?: 'openai' | 'anthropic') => {
     console.log("EventGeneratorContent: handleSubmit called with prompt:", userPrompt);
-    console.log("EventGeneratorContent: handleSubmit called with model:", selectedModel || modelProvider);
-    // Use the model selected in the UI component if provided, otherwise fall back to the prop
+    console.log("EventGeneratorContent: handleSubmit called with model:", selectedModel || currentModelProvider);
+    
+    // Use the model selected in the UI component if provided, otherwise fall back to the state
+    const modelToUse = selectedModel || currentModelProvider;
+    
+    // Update the current model if different
+    if (selectedModel && selectedModel !== currentModelProvider) {
+      setCurrentModelProvider(selectedModel);
+      onModelChange(selectedModel);
+    }
+    
+    // Submit the prompt if valid
     if (userPrompt && userPrompt.trim() !== "") {
-      handlePromptSubmit(userPrompt, selectedModel || modelProvider);
+      handlePromptSubmit(userPrompt, modelToUse);
     } else {
       console.error("EventGeneratorContent: Empty prompt submitted");
     }
@@ -67,8 +84,12 @@ export const EventGeneratorContent = ({
         handlePromptSubmit={handleSubmit}
         welcomeMessage={welcomeMessage}
         generatedEvent={generatedEvent}
-        modelProvider={modelProvider}
-        onModelChange={onModelChange}
+        modelProvider={currentModelProvider}
+        onModelChange={(model) => {
+          setCurrentModelProvider(model);
+          onModelChange(model);
+          console.log("EventGeneratorContent: Model changed to:", model);
+        }}
       />
 
       {/* Generated Event Data */}

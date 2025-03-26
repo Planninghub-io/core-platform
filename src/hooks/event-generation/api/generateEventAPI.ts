@@ -28,9 +28,13 @@ export const generateEventAPI = async ({
     
     let fullPrompt = prompt;
     if (Object.keys(additionalInfo).length > 0) {
-      const additionalDetails = Object.entries(additionalInfo)
+      // Filter out modelProvider from the prompt details
+      const { modelProvider: _, ...promptDetails } = additionalInfo;
+      
+      const additionalDetails = Object.entries(promptDetails)
         .map(([key, value]) => `${key}: ${value}`)
         .join(", ");
+      
       fullPrompt = `${prompt}. Additional details: ${additionalDetails}`;
     }
 
