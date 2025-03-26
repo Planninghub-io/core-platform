@@ -95,8 +95,8 @@ export const trackPendingInformation = (
   };
   
   // Check if we now have all required information
-  const hasAllRequiredInfo = updatedInfo.date && updatedInfo.location && 
-                           (updatedInfo.description || originalPrompt);
+  const hasAllRequiredInfo = Boolean(updatedInfo.date && updatedInfo.location && 
+                           (updatedInfo.description || originalPrompt));
                            
   // Construct a complete prompt that includes all the gathered information
   let completePrompt = originalPrompt || "";
