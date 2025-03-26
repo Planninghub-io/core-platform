@@ -23,13 +23,19 @@ export const submitPrompt = async (
 ): Promise<SubmissionResult> => {
   // Validate the prompt
   if (!prompt || prompt.trim() === "") {
-    console.log("Empty prompt, not submitting");
+    console.log("submitPrompt: Empty prompt, not submitting");
     return { error: new Error("Please enter an event description") };
   }
   
+  console.log("submitPrompt: Starting prompt submission with model:", modelProvider);
+  console.log("submitPrompt: Prompt content:", prompt);
+  
   // Extract additional information from the prompt
   const extractedInfo = extractInfoFromPrompt(prompt);
+  console.log("submitPrompt: Extracted info from prompt:", extractedInfo);
+  
   const combinedInfo = { ...additionalInfo, ...extractedInfo };
+  console.log("submitPrompt: Combined info for API call:", combinedInfo);
   
   setIsGenerating(true);
   
@@ -40,15 +46,15 @@ export const submitPrompt = async (
     // Add loading message
     setChatMessages(prev => [...prev, { type: 'ai', content: "Generating your event details..." }]);
     
-    console.log("Combined info for API call:", combinedInfo);
-    console.log("Using model provider:", modelProvider);
-    
     // Generate the event
+    console.log("submitPrompt: Calling generateEventWithAPI");
     const response = await generateEventWithAPI(
       prompt,
       modelProvider,
       combinedInfo
     ) as GenerateEventResponse;
+    
+    console.log("submitPrompt: Received API response:", JSON.stringify(response, null, 2));
     
     // Remove loading message
     setChatMessages(prev => {
@@ -59,10 +65,12 @@ export const submitPrompt = async (
     });
     
     if (response.error) {
+      console.error("submitPrompt: Error in API response:", response.error);
       throw response.error;
     }
     
     // Process the response and handle missing fields
+    console.log("submitPrompt: Processing API response through processResponse");
     const processed = processResponse(
       response, 
       setChatMessages, 
@@ -70,6 +78,8 @@ export const submitPrompt = async (
       requestBudgetInChat, 
       setPreviouslyRequestedFields
     );
+    
+    console.log("submitPrompt: ProcessResponse result:", processed);
     
     // If we processed the response successfully
     if (processed) {
@@ -82,6 +92,7 @@ export const submitPrompt = async (
     }
     
     // If we couldn't process the response, show a generic success message
+    console.log("submitPrompt: Could not process response, showing generic success message");
     setChatMessages(prev => [...prev, {
       type: 'ai',
       content: "I've generated an event based on your request. Please review the details."
@@ -94,7 +105,7 @@ export const submitPrompt = async (
     };
     
   } catch (error: any) {
-    console.error("Error submitting prompt:", error);
+    console.error("submitPrompt: Error submitting prompt:", error);
     
     // Remove loading message if it exists
     setChatMessages(prev => {

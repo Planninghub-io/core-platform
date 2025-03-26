@@ -44,7 +44,10 @@ export const usePromptSubmission = (
         isResubmitting
       );
       
+      console.log("usePromptSubmission: Result from submitPrompt:", JSON.stringify(result, null, 2));
+      
       if (result.error) {
+        console.error("usePromptSubmission: Error in result:", result.error);
         toast({
           title: "Error",
           description: result.error.message || "Failed to generate event. Please try again.",
@@ -55,12 +58,18 @@ export const usePromptSubmission = (
       
       // Update generated event if we have one
       if (result.validatedEvent) {
+        console.log("usePromptSubmission: Setting generated event:", result.validatedEvent);
         setGeneratedEvent(result.validatedEvent);
+      } else {
+        console.log("usePromptSubmission: No validated event in result");
       }
       
       // Update missing fields if any
       if (result.missing) {
+        console.log("usePromptSubmission: Setting missing fields:", result.missing);
         setMissingFields(result.missing);
+      } else {
+        console.log("usePromptSubmission: No missing fields in result");
       }
       
     } catch (error: any) {
