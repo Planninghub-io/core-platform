@@ -2,7 +2,6 @@
 import { Button } from "@/components/ui/button";
 import { Send, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
 
 interface ChatInputFieldProps {
   prompt: string;
@@ -31,9 +30,8 @@ export const ChatInputField = ({
   
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Form submitted, prompt:", prompt);
     if (prompt.trim() && !isGenerating) {
-      console.log("Calling handlePromptSubmit");
+      console.log("ChatInputField: Form submitted, prompt:", prompt);
       handlePromptSubmit();
     }
   };
@@ -42,7 +40,14 @@ export const ChatInputField = ({
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey && prompt.trim() && !isGenerating) {
       e.preventDefault();
-      console.log("Enter key pressed, submitting");
+      console.log("ChatInputField: Enter key pressed, submitting");
+      handlePromptSubmit();
+    }
+  };
+  
+  const handleButtonClick = () => {
+    if (!isButtonDisabled) {
+      console.log("ChatInputField: Submit button clicked");
       handlePromptSubmit();
     }
   };
@@ -62,13 +67,8 @@ export const ChatInputField = ({
         disabled={isInputDisabled}
       />
       <Button 
-        type="button"
-        onClick={() => {
-          if (!isButtonDisabled) {
-            console.log("Submit button clicked");
-            handlePromptSubmit();
-          }
-        }}
+        type="submit"
+        onClick={handleButtonClick}
         disabled={isButtonDisabled}
         size="icon"
         className="h-12 w-12 rounded-full bg-[#8b73f4] hover:bg-[#8b73f4]/90"

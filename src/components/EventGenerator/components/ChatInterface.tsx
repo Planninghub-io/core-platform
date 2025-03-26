@@ -1,7 +1,7 @@
 
 import { ChatContainer } from "./chat/ChatContainer";
 import { AIModelSelector } from "../components/AIModelSelector";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface ChatInterfaceProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string }>;

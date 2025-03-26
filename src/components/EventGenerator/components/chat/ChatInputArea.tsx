@@ -25,8 +25,10 @@ export const ChatInputArea = ({
   const isFirstInteraction = promptCount === 0 && chatMessages.length === 0;
   
   const handleSubmit = () => {
-    console.log("ChatInputArea: handleSubmit called");
-    handlePromptSubmit();
+    if (prompt.trim() && !isGenerating) {
+      console.log("ChatInputArea: handleSubmit called");
+      handlePromptSubmit();
+    }
   };
   
   return (
