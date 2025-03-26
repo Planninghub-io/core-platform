@@ -24,13 +24,12 @@ export const usePromptSubmission = (
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const [previouslyRequestedFields, setPreviouslyRequestedFields] = useState<string[]>([]);
 
-  const handlePromptSubmit = async (modelProvider: 'openai' | 'anthropic' = 'openai') => {
+  const handlePromptSubmit = async (prompt: string, modelProvider: 'openai' | 'anthropic' = 'openai') => {
     console.log("usePromptSubmission: handlePromptSubmit called with model:", modelProvider);
+    console.log("usePromptSubmission: Prompt received:", prompt);
     
-    // Get the current prompt from the most recent user message
-    let userPrompt = findLastUserMessage(setChatMessages);
-    
-    if (userPrompt === "") {
+    // Validate the prompt
+    if (!prompt || prompt.trim() === "") {
       console.log("usePromptSubmission: Empty prompt, not submitting");
       toast({
         title: "Error",
@@ -41,7 +40,7 @@ export const usePromptSubmission = (
     }
     
     // Handle budget prompt specifically
-    if (processBudgetResponse(userPrompt, waitingForBudget, setAdditionalInfo)) {
+    if (processBudgetResponse(prompt, waitingForBudget, setAdditionalInfo)) {
       return;
     }
 
@@ -58,11 +57,11 @@ export const usePromptSubmission = (
     
     try {
       // Process the prompt to extract and combine information
-      const combinedInfo = processPrompt(userPrompt, additionalInfo);
+      const combinedInfo = processPrompt(prompt, additionalInfo);
       
       // Generate the event
       const response = await generateEventWithAPI(
-        userPrompt,
+        prompt,
         modelProvider,
         combinedInfo
       );
@@ -108,26 +107,6 @@ export const usePromptSubmission = (
     previouslyRequestedFields,
     handlePromptSubmit
   };
-};
-
-// Fix for TypeScript error with accessing chat messages
-const findLastUserMessage = (
-  setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>
-): string => {
-  let userPrompt = "";
-  setChatMessages((prev) => {
-    const messages = [...prev];
-    for (let i = messages.length - 1; i >= 0; i--) {
-      if (messages[i].type === 'user') {
-        userPrompt = messages[i].content;
-        break;
-      }
-    }
-    return messages; // Return unchanged, just using for inspection
-  });
-  
-  console.log("usePromptSubmission: User prompt from chat:", userPrompt);
-  return userPrompt;
 };
 
 // Import used by callback function above

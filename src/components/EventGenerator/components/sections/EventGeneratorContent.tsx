@@ -45,10 +45,15 @@ export const EventGeneratorContent = ({
     "Hi, please provide your event details including place, date & time to get started with planning." : "";
 
   // Handle prompt submission with the selected model
-  const handleSubmit = (selectedModel?: 'openai' | 'anthropic') => {
+  const handleSubmit = (userPrompt: string, selectedModel?: 'openai' | 'anthropic') => {
+    console.log("EventGeneratorContent: handleSubmit called with prompt:", userPrompt);
     console.log("EventGeneratorContent: handleSubmit called with model:", selectedModel || modelProvider);
     // Use the model selected in the UI component if provided, otherwise fall back to the prop
-    handlePromptSubmit(selectedModel || modelProvider);
+    if (userPrompt && userPrompt.trim() !== "") {
+      handlePromptSubmit(userPrompt, selectedModel || modelProvider);
+    } else {
+      console.error("EventGeneratorContent: Empty prompt submitted");
+    }
   };
 
   return (

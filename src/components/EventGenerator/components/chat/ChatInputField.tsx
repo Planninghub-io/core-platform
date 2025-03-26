@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Send, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -8,7 +9,7 @@ interface ChatInputFieldProps {
   isGenerating: boolean;
   generatedEvent: any | null;
   chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
-  handlePromptSubmit: (e?: React.FormEvent) => void;
+  handlePromptSubmit: (prompt: string) => void;
 }
 
 export const ChatInputField = ({
@@ -39,8 +40,10 @@ export const ChatInputField = ({
     }
     
     console.log("ChatInputField: Submitting prompt:", prompt);
-    // Keep the prompt value available for the handler
-    handlePromptSubmit(e);
+    // Pass the prompt value to the handler
+    handlePromptSubmit(prompt);
+    // Clear the input
+    setPrompt("");
   };
   
   // Handle Enter key press

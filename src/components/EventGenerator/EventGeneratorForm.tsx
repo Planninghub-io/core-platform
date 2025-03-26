@@ -7,7 +7,7 @@ interface EventGeneratorFormProps {
   isGenerating: boolean;
   promptCount: number;
   onPromptChange: (value: string) => void;
-  onSubmit: (e?: React.FormEvent) => void;
+  onSubmit: (e?: React.FormEvent, prompt?: string) => void;
 }
 
 export const EventGeneratorForm = ({
@@ -24,7 +24,7 @@ export const EventGeneratorForm = ({
     console.log("EventGeneratorForm: form submitted with prompt:", prompt);
     
     if (prompt.trim()) {
-      onSubmit(e);
+      onSubmit(e, prompt);
     } else {
       console.log("EventGeneratorForm: Empty prompt, not submitting");
     }
@@ -42,7 +42,7 @@ export const EventGeneratorForm = ({
             if (e.key === 'Enter' && !e.shiftKey && prompt.trim() && !isGenerating) {
               e.preventDefault();
               console.log("EventGeneratorForm: Enter key pressed");
-              onSubmit();
+              onSubmit(undefined, prompt);
             }
           }}
           className="w-full rounded-full border border-gray-300 py-3 px-4 pr-14"

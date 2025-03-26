@@ -10,7 +10,7 @@ interface ChatInputProps {
   setPrompt: (prompt: string) => void;
   isGenerating: boolean;
   promptCount: number;
-  handlePromptSubmit: () => void;
+  handlePromptSubmit: (prompt: string) => void;
   generatedEvent: any | null;
 }
 
@@ -24,9 +24,9 @@ export const ChatInput = ({
   generatedEvent
 }: ChatInputProps) => {
   // Create a wrapper function to ensure logging and proper execution
-  const onSubmit = () => {
-    console.log("ChatInput: onSubmit called");
-    handlePromptSubmit();
+  const onSubmit = (submittedPrompt: string) => {
+    console.log("ChatInput: onSubmit called with prompt:", submittedPrompt);
+    handlePromptSubmit(submittedPrompt);
   };
   
   return (
@@ -39,7 +39,7 @@ export const ChatInput = ({
               isGenerating={isGenerating}
               promptCount={promptCount}
               onPromptChange={setPrompt}
-              onSubmit={onSubmit}
+              onSubmit={(_, submittedPrompt) => submittedPrompt && onSubmit(submittedPrompt)}
             />
           </div>
         ) : (

@@ -8,7 +8,7 @@ interface ChatInputAreaProps {
   setPrompt: (prompt: string) => void;
   isGenerating: boolean;
   promptCount: number;
-  handlePromptSubmit: () => void;
+  handlePromptSubmit: (prompt: string) => void;
   generatedEvent: any | null;
 }
 
@@ -25,17 +25,28 @@ export const ChatInputArea = ({
   const isFirstInteraction = promptCount === 0 && chatMessages.length === 0;
   
   // Wrapper function to handle submit with proper logging
-  const handleSubmit = (e?: React.FormEvent) => {
+  const handleSubmit = (e?: React.FormEvent, userPrompt?: string) => {
     if (e) {
       e.preventDefault();
     }
     
-    console.log("ChatInputArea: handleSubmit called with prompt:", prompt);
+    // Use passed prompt if available, otherwise use state
+    const submitPrompt = userPrompt || prompt;
     
-    // Call the parent handler to process the submission
-    // We're going to call it regardless of prompt content or isGenerating state
-    // and let the parent handler decide what to do
-    handlePromptSubmit();
+    console.log("ChatInputArea: handleSubmit called with prompt:", submitPrompt);
+    
+    if (!submitPrompt || submitPrompt.trim() === "") {
+      console.log("ChatInputArea: Empty prompt, not submitting");
+      return;
+    }
+    
+    // Call the parent handler to process the submission with the prompt
+    handlePromptSubmit(submitPrompt);
+    
+    // Clear the prompt if we're using the state
+    if (!userPrompt) {
+      setPrompt("");
+    }
   };
   
   return (

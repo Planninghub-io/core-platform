@@ -9,7 +9,7 @@ interface ChatInterfaceProps {
   setPrompt: (prompt: string) => void;
   isGenerating: boolean;
   promptCount: number;
-  handlePromptSubmit: (modelProvider?: 'openai' | 'anthropic') => void;
+  handlePromptSubmit: (prompt: string, modelProvider?: 'openai' | 'anthropic') => void;
   welcomeMessage: string;
   generatedEvent: any | null;
   modelProvider?: 'openai' | 'anthropic';
@@ -28,12 +28,12 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
   };
 
   // Create a new wrapper for the submit handler to ensure proper logging
-  const handleSubmit = () => {
-    console.log("ChatInterface: Submit button clicked");
+  const handleSubmit = (userPrompt: string) => {
+    console.log("ChatInterface: Submit button clicked with prompt:", userPrompt);
     if (props.handlePromptSubmit) {
       console.log("ChatInterface: Calling parent handlePromptSubmit with model:", modelProvider);
-      // Pass the current modelProvider to the handler
-      props.handlePromptSubmit(modelProvider);
+      // Pass the current userPrompt and modelProvider to the handler
+      props.handlePromptSubmit(userPrompt, modelProvider);
     } else {
       console.error("ChatInterface: handlePromptSubmit prop is undefined");
     }
