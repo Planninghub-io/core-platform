@@ -5,6 +5,10 @@
 export const extractInfoFromPrompt = (prompt: string): Record<string, string> => {
   const combinedInfo: Record<string, string> = {};
   
+  if (!prompt) {
+    return combinedInfo;
+  }
+  
   // Check for attendees information
   if (prompt.toLowerCase().includes("attendees") || prompt.toLowerCase().includes("guests")) {
     const attendeesMatch = prompt.match(/(\d+)\s*(attendees|guests|people)/i);
@@ -26,6 +30,14 @@ export const extractInfoFromPrompt = (prompt: string): Record<string, string> =>
     const locationMatch = prompt.match(/(?:location|place|at|in)\s*:\s*([^,\.]+)/i);
     if (locationMatch) {
       combinedInfo.location = locationMatch[1].trim();
+    }
+  }
+  
+  // Additional extraction for date information
+  if (prompt.toLowerCase().includes("date") || prompt.toLowerCase().includes("when")) {
+    const dateMatch = prompt.match(/(?:date|when|on)\s*:\s*([^,\.]+)/i);
+    if (dateMatch) {
+      combinedInfo.date = dateMatch[1].trim();
     }
   }
   

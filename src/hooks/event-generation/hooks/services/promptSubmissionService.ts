@@ -6,6 +6,16 @@ import { useToast } from "@/hooks/use-toast";
 import { processResponse } from "../utils/responseProcessor";
 
 /**
+ * Result type for the submission response
+ */
+export interface SubmissionResult {
+  validatedEvent?: any;
+  missing?: string[];
+  needsBudget?: boolean;
+  error?: Error;
+}
+
+/**
  * Submit prompt to the API and process the response
  */
 export const submitPrompt = async (
@@ -19,7 +29,7 @@ export const submitPrompt = async (
   setPreviouslyRequestedFields: React.Dispatch<React.SetStateAction<string[]>>,
   setPromptCount: React.Dispatch<React.SetStateAction<number>>,
   isResubmitting: boolean
-) => {
+): Promise<SubmissionResult> => {
   // Validate the prompt
   if (!prompt || prompt.trim() === "") {
     console.log("Empty prompt, not submitting");
@@ -86,8 +96,11 @@ export const submitPrompt = async (
       content: "I've generated an event based on your request. Please review the details."
     }]);
     
-    // Return the raw response
-    return response;
+    // Return a default result with the data from the API
+    return { 
+      validatedEvent: response.data,
+      missing: []
+    };
     
   } catch (error: any) {
     console.error("Error submitting prompt:", error);

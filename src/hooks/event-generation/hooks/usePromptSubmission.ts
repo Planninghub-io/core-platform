@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ChatMessage } from "../types";
-import { submitPrompt } from "./services/promptSubmissionService";
+import { submitPrompt, SubmissionResult } from "./services/promptSubmissionService";
 
 /**
  * Hook for handling prompt submission and processing

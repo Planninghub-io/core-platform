@@ -1,5 +1,6 @@
 
 import { ChatMessage } from "../../types";
+import { SubmissionResult } from "../services/promptSubmissionService";
 
 /**
  * Process API response, extracting missing fields and generating user-friendly messages
@@ -10,7 +11,7 @@ export const processResponse = (
   waitingForBudget: boolean,
   requestBudgetInChat: () => void,
   setPreviouslyRequestedFields: React.Dispatch<React.SetStateAction<string[]>>
-) => {
+): SubmissionResult | false => {
   if (response && response.data) {
     // Extract all missing fields based on response
     const missing = response.missing || [];
