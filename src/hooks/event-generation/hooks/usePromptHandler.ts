@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ChatMessage, GeneratedEvent } from "../types";
 import { createErrorMessage, createAIMessage } from "../utils/chatMessageUtils";
-import { getPromptFromChatMessages } from "./utils/promptProcessor";
 
 export const usePromptHandler = (
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
@@ -16,20 +15,9 @@ export const usePromptHandler = (
 
   // Handle prompt submission
   const handlePromptSubmit = async (modelProvider: 'openai' | 'anthropic' = 'openai') => {
-    // Get the current prompt either from the input field or the last chat message
+    // Get the current prompt from the input field
     let currentPrompt = prompt.trim();
     
-    // If no current prompt in the input, try to get it from chat history
-    if (!currentPrompt) {
-      // We need to get the current chat messages from the setter function
-      // Since we can't directly access the state from the setter, we'll have to 
-      // implement a different approach
-      setChatMessages(prevMessages => {
-        currentPrompt = getPromptFromChatMessages(prevMessages);
-        return prevMessages; // Return the same array to avoid re-render
-      });
-    }
-      
     console.log("Processing prompt:", currentPrompt);
     
     if (!currentPrompt) {
@@ -57,13 +45,19 @@ export const usePromptHandler = (
     ]);
 
     try {
-      // Generate the event
-      const response = await coreGenerateEvent(currentPrompt, modelProvider);
+      // Store the prompt before clearing the input
+      const promptToSend = currentPrompt;
+      
+      // Clear the prompt input for better UX
+      setPrompt("");
+      
+      // Generate the event using the stored prompt
+      const response = await coreGenerateEvent(promptToSend, modelProvider);
 
       // Remove the loading message
       setChatMessages(prev => prev.slice(0, -1));
 
-      if (response.error) {
+      if (response?.error) {
         // Display error message
         setChatMessages(prev => [
           ...prev,
@@ -73,11 +67,11 @@ export const usePromptHandler = (
       }
 
       // Type guard to ensure we're handling properties correctly for each response type
-      if ('needsBudget' in response) {
+      if (response && 'needsBudget' in response) {
         return response;
       }
 
-      if ('missing' in response && response.missing && response.missing.length > 0) {
+      if (response && 'missing' in response && response.missing && response.missing.length > 0) {
         // Display missing info message
         setChatMessages(prev => [
           ...prev,
@@ -91,7 +85,7 @@ export const usePromptHandler = (
         return response;
       }
 
-      if ('validatedEvent' in response && response.validatedEvent) {
+      if (response && 'validatedEvent' in response && response.validatedEvent) {
         // Display success message
         setGeneratedEvent(response.validatedEvent);
         setChatMessages(prev => [
@@ -119,9 +113,6 @@ export const usePromptHandler = (
       ]);
       
       return null;
-    } finally {
-      // Clear the prompt
-      setPrompt("");
     }
   };
 

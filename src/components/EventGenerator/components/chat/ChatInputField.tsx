@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Send, Sparkles } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -40,6 +39,7 @@ export const ChatInputField = ({
     }
     
     console.log("ChatInputField: Submitting prompt:", prompt);
+    // Keep the prompt value available for the handler
     handlePromptSubmit(e);
   };
   

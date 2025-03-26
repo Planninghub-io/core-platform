@@ -58,3 +58,21 @@ export const getPromptFromChatMessages = (chatMessages: ChatMessage[]): string =
   
   return "";
 };
+
+/**
+ * Find the most recent user message in chat history
+ */
+export const findMostRecentUserMessage = (chatMessages: ChatMessage[]): string => {
+  if (!chatMessages || chatMessages.length === 0) {
+    return "";
+  }
+  
+  // Iterate from the most recent message backwards
+  for (let i = chatMessages.length - 1; i >= 0; i--) {
+    if (chatMessages[i].type === 'user') {
+      return chatMessages[i].content;
+    }
+  }
+  
+  return "";
+};

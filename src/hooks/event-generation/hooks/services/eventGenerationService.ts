@@ -22,6 +22,7 @@ export const generateEventAPI = async ({
     
     console.log('Sending prompt to generate event:', prompt);
     console.log('Using model provider:', modelProvider);
+    console.log('Additional info:', additionalInfo);
     
     // Call the actual API
     const { data, error } = await supabase.functions.invoke('generate-event', {
