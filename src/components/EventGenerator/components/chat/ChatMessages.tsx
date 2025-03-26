@@ -20,6 +20,12 @@ export const ChatMessages = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isGenerating]);
 
+  // Debugging
+  useEffect(() => {
+    console.log("ChatMessages: Rendering with", chatMessages.length, "messages");
+    console.log("ChatMessages: Messages content:", chatMessages);
+  }, [chatMessages]);
+
   return (
     <div className="p-4 h-[400px] overflow-y-auto">
       {welcomeMessage && chatMessages.length === 0 && (

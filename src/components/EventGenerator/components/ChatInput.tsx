@@ -47,9 +47,8 @@ export const ChatInput = ({
             prompt={prompt}
             setPrompt={setPrompt}
             isGenerating={isGenerating}
-            generatedEvent={generatedEvent}
-            chatMessages={chatMessages}
-            handlePromptSubmit={onSubmit}
+            onSubmit={() => prompt.trim() && onSubmit(prompt)}
+            shouldShowButton={false}
           />
         )}
       </div>

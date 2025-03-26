@@ -10,10 +10,24 @@ interface ChatInputFieldProps {
   isGenerating: boolean;
   onSubmit: (e?: FormEvent) => void;
   shouldShowButton?: boolean;
+  // Add the missing props that are being passed from ChatInput
+  generatedEvent?: any;
+  chatMessages?: Array<{ type: 'user' | 'ai', content: string }>;
+  handlePromptSubmit?: (prompt: string) => void;
 }
 
 export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
-  ({ prompt, setPrompt, isGenerating, onSubmit, shouldShowButton = false }, ref) => {
+  ({ 
+    prompt, 
+    setPrompt, 
+    isGenerating, 
+    onSubmit, 
+    shouldShowButton = false,
+    // Adding the new props with default values
+    generatedEvent,
+    chatMessages,
+    handlePromptSubmit 
+  }, ref) => {
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
       if (e.key === "Enter" && !e.shiftKey && prompt.trim() && !isGenerating) {
         e.preventDefault();

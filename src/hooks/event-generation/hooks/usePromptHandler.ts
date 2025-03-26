@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ChatMessage, GeneratedEvent } from "../types";
-import { createErrorMessage, createAIMessage } from "../utils/chatMessageUtils";
+import { createErrorMessage, createAIMessage, addAIMessage } from "../utils/chatMessageUtils";
 
 export const usePromptHandler = (
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
@@ -36,6 +36,7 @@ export const usePromptHandler = (
     setChatMessages(prev => {
       const lastMessage = prev[prev.length - 1];
       if (lastMessage?.type !== 'user' || lastMessage?.content !== currentPrompt) {
+        console.log("Adding user message to chat:", currentPrompt);
         return [...prev, { type: 'user', content: currentPrompt }];
       }
       return prev;
@@ -54,6 +55,7 @@ export const usePromptHandler = (
 
       if (response?.error) {
         // Display error message
+        console.log("Error in response, adding error message to chat");
         setChatMessages(prev => [
           ...prev,
           { type: 'ai', content: createErrorMessage() }
@@ -64,6 +66,7 @@ export const usePromptHandler = (
       // Type guard to ensure we're handling properties correctly for each response type
       if (response && 'data' in response) {
         const data = response.data;
+        console.log("Processing response data:", data);
         
         // Create an AI response message
         const aiMessage = `I've generated an event plan for "${data.title || 'your event'}". Here's what I've planned:
@@ -77,18 +80,21 @@ ${data.estimatedPrice ? `- Estimated budget: ${data.estimatedPrice}` : ''}
 ${data.missingFields?.length > 0 ? `I need more information about: ${data.missingFields.join(', ')}` : ''}`;
 
         // Add the AI response to chat
-        setChatMessages(prev => [
-          ...prev,
-          { type: 'ai', content: aiMessage }
-        ]);
+        console.log("Adding AI response to chat:", aiMessage);
+        setChatMessages(prev => {
+          console.log("Previous chat messages:", prev);
+          return [...prev, { type: 'ai', content: aiMessage }];
+        });
 
         // If we have a validated event, set it
         if (data.title || data.description) {
+          console.log("Setting generated event:", data);
           setGeneratedEvent(data);
         }
 
         // Show the missing info dialog if we have date or location missing
         if (data.missingFields && (data.missingFields.includes('date') || data.missingFields.includes('location'))) {
+          console.log("Missing fields detected, showing dialog");
           setShowMissingInfoDialog(true);
         }
         
@@ -96,6 +102,7 @@ ${data.missingFields?.length > 0 ? `I need more information about: ${data.missin
       }
       
       // If we don't have data in the expected format, add a generic message
+      console.log("Response did not contain expected data format");
       setChatMessages(prev => [
         ...prev,
         { type: 'ai', content: "I've processed your request, but couldn't generate a complete event. Please try providing more details." }
