@@ -2,7 +2,7 @@
 import { cn } from "@/lib/utils";
 import { Copy, ThumbsUp, ThumbsDown, RotateCcw, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ChatMessageProps {
@@ -14,12 +14,69 @@ interface ChatMessageProps {
 
 export const ChatMessage = ({ message, type, isLoading = false, isWelcomeMessage = false }: ChatMessageProps) => {
   const [copied, setCopied] = useState(false);
+  const [displayedMessage, setDisplayedMessage] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
   const { toast } = useToast();
+  const messageRef = useRef<string>(message);
+  const typingIntervalRef = useRef<number | null>(null);
+  const typingIndexRef = useRef(0);
   
   // Debug log for message rendering
   useEffect(() => {
     console.log(`Rendering message type: ${type}, loading: ${isLoading}, content: ${message.substring(0, 30)}...`);
   }, [message, type, isLoading]);
+
+  // Effect for auto-typing animation
+  useEffect(() => {
+    // Skip typing animation for user messages or when loading
+    if (type === 'user' || isLoading || isWelcomeMessage) {
+      setDisplayedMessage(message);
+      return;
+    }
+
+    // If the message changes, reset the animation
+    if (messageRef.current !== message) {
+      messageRef.current = message;
+      typingIndexRef.current = 0;
+      setDisplayedMessage("");
+      
+      // Clear any existing interval
+      if (typingIntervalRef.current) {
+        window.clearInterval(typingIntervalRef.current);
+      }
+      
+      // Start typing animation if we have a message to type
+      if (message) {
+        setIsTyping(true);
+        const speed = 15; // characters per interval (adjust for faster/slower typing)
+        
+        typingIntervalRef.current = window.setInterval(() => {
+          if (typingIndexRef.current < message.length) {
+            const nextChunk = message.substring(
+              typingIndexRef.current, 
+              Math.min(typingIndexRef.current + speed, message.length)
+            );
+            setDisplayedMessage(prev => prev + nextChunk);
+            typingIndexRef.current += speed;
+          } else {
+            // Done typing
+            setIsTyping(false);
+            if (typingIntervalRef.current) {
+              window.clearInterval(typingIntervalRef.current);
+              typingIntervalRef.current = null;
+            }
+          }
+        }, 50);
+      }
+    }
+    
+    // Cleanup interval on unmount
+    return () => {
+      if (typingIntervalRef.current) {
+        window.clearInterval(typingIntervalRef.current);
+      }
+    };
+  }, [message, type, isLoading, isWelcomeMessage]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(message);
@@ -81,13 +138,14 @@ export const ChatMessage = ({ message, type, isLoading = false, isWelcomeMessage
             ) : (
               <div className="whitespace-pre-wrap break-words" 
                 dangerouslySetInnerHTML={{ 
-                  __html: message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                  __html: (type === 'ai' && !isWelcomeMessage ? displayedMessage : message)
+                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                           .replace(/\n/g, '<br />') 
                 }}
               />
             )}
             
-            {type === 'ai' && !isLoading && !isWelcomeMessage && (
+            {type === 'ai' && !isLoading && !isTyping && !isWelcomeMessage && (
               <div className="mt-3 flex items-center gap-1 text-gray-500">
                 <Button 
                   variant="ghost" 
@@ -135,3 +193,4 @@ export const ChatMessage = ({ message, type, isLoading = false, isWelcomeMessage
     </div>
   );
 };
+
