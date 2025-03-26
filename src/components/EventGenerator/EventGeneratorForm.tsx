@@ -7,7 +7,7 @@ interface EventGeneratorFormProps {
   isGenerating: boolean;
   promptCount: number;
   onPromptChange: (value: string) => void;
-  onSubmit: () => void;
+  onSubmit: (e?: React.FormEvent) => void;
 }
 
 export const EventGeneratorForm = ({
@@ -21,11 +21,12 @@ export const EventGeneratorForm = ({
     e.preventDefault();
     if (prompt.trim() && !isGenerating) {
       console.log("EventGeneratorForm: form submitted");
-      onSubmit();
+      onSubmit(e);
     }
   };
 
-  const handleButtonClick = () => {
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (prompt.trim() && !isGenerating) {
       console.log("EventGeneratorForm: Submit button clicked");
       onSubmit();
@@ -51,7 +52,7 @@ export const EventGeneratorForm = ({
           autoFocus
         />
         <Button
-          type="submit"
+          type="button"
           onClick={handleButtonClick}
           size="icon"
           className="absolute right-1 h-10 w-10 rounded-full bg-[#8b73f4] hover:bg-[#8b73f4]/90"

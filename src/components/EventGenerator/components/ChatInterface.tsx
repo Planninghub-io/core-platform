@@ -26,6 +26,13 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
     }
   };
 
+  const handleSubmit = () => {
+    console.log("ChatInterface: Submit button clicked");
+    if (props.handlePromptSubmit) {
+      props.handlePromptSubmit();
+    }
+  };
+
   return (
     <div className="w-full min-h-[400px] flex flex-col">
       <div className="pb-4">
@@ -34,7 +41,10 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
           onChange={handleModelChange} 
         />
       </div>
-      <ChatContainer {...props} />
+      <ChatContainer 
+        {...props} 
+        handlePromptSubmit={handleSubmit}
+      />
     </div>
   );
 };

@@ -9,7 +9,7 @@ interface ChatInputFieldProps {
   isGenerating: boolean;
   generatedEvent: any | null;
   chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
-  handlePromptSubmit: () => void;
+  handlePromptSubmit: (e?: React.FormEvent) => void;
 }
 
 export const ChatInputField = ({
@@ -32,7 +32,7 @@ export const ChatInputField = ({
     e.preventDefault();
     if (prompt.trim() && !isGenerating) {
       console.log("ChatInputField: Form submitted, prompt:", prompt);
-      handlePromptSubmit();
+      handlePromptSubmit(e);
     }
   };
 
@@ -45,7 +45,8 @@ export const ChatInputField = ({
     }
   };
   
-  const handleButtonClick = () => {
+  const handleButtonClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     if (!isButtonDisabled) {
       console.log("ChatInputField: Submit button clicked");
       handlePromptSubmit();
