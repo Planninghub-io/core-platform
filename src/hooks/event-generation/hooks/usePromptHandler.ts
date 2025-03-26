@@ -11,6 +11,7 @@ export const usePromptHandler = (
   setGeneratedEvent: React.Dispatch<React.SetStateAction<GeneratedEvent | null>>
 ) => {
   const [prompt, setPrompt] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
   // Handle prompt submission
@@ -29,6 +30,8 @@ export const usePromptHandler = (
       return null;
     }
 
+    setIsGenerating(true);
+
     // First add the user message to chat if it's not already there
     setChatMessages(prev => {
       const lastMessage = prev[prev.length - 1];
@@ -37,12 +40,6 @@ export const usePromptHandler = (
       }
       return prev;
     });
-
-    // Show loading message
-    setChatMessages(prev => [
-      ...prev,
-      { type: 'ai', content: "Generating your event details..." }
-    ]);
 
     try {
       // Store the prompt before clearing the input
@@ -53,9 +50,7 @@ export const usePromptHandler = (
       
       // Generate the event using the stored prompt
       const response = await coreGenerateEvent(promptToSend, modelProvider);
-
-      // Remove the loading message
-      setChatMessages(prev => prev.slice(0, -1));
+      console.log("Response received:", response);
 
       if (response?.error) {
         // Display error message
@@ -67,71 +62,47 @@ export const usePromptHandler = (
       }
 
       // Type guard to ensure we're handling properties correctly for each response type
-      if (response && 'needsBudget' in response) {
-        return response;
-      }
+      if (response && 'data' in response) {
+        const data = response.data;
+        
+        // Create an AI response message
+        const aiMessage = `I've generated an event plan for "${data.title || 'your event'}". Here's what I've planned:
+        
+- Event: ${data.title || 'Unnamed Event'}
+- Description: ${data.description || 'No description provided'}
+- Location: ${data.location || 'Location to be determined'}
+- Category: ${data.category || 'Other'}
+${data.estimatedPrice ? `- Estimated budget: ${data.estimatedPrice}` : ''}
 
-      if (response && 'missing' in response && response.missing && response.missing.length > 0) {
-        // Create a message asking for missing information
-        const missingFields = response.missing;
-        let missingInfoMessage = "I need more information to generate this event. Could you please provide:";
-        
-        if (missingFields.includes('date')) {
-          missingInfoMessage += "\n• The date and time of the event";
-        }
-        if (missingFields.includes('location')) {
-          missingInfoMessage += "\n• The location for the event";
-        }
-        if (missingFields.includes('attendees')) {
-          missingInfoMessage += "\n• The expected number of attendees";
-        }
-        if (missingFields.includes('budget')) {
-          missingInfoMessage += "\n• Your budget for the event";
-        }
-        
-        // Display missing info message
+${data.missingFields?.length > 0 ? `I need more information about: ${data.missingFields.join(', ')}` : ''}`;
+
+        // Add the AI response to chat
         setChatMessages(prev => [
           ...prev,
-          { type: 'ai', content: missingInfoMessage }
+          { type: 'ai', content: aiMessage }
         ]);
-        
+
+        // If we have a validated event, set it
+        if (data.title || data.description) {
+          setGeneratedEvent(data);
+        }
+
         // Show the missing info dialog if we have date or location missing
-        if (response.missing.includes('date') || response.missing.includes('location')) {
+        if (data.missingFields && (data.missingFields.includes('date') || data.missingFields.includes('location'))) {
           setShowMissingInfoDialog(true);
         }
-        return response;
-      }
-
-      if (response && 'validatedEvent' in response && response.validatedEvent) {
-        // Display success message
-        setGeneratedEvent(response.validatedEvent);
-        setChatMessages(prev => [
-          ...prev,
-          { type: 'ai', content: createAIMessage(response.validatedEvent) }
-        ]);
-        
-        toast({
-          title: "Event Generated!",
-          description: "Review the suggested event details below.",
-        });
         
         return response;
       }
       
-      // If we have data but not in the expected format, create a generic success message
-      if (response && response.data) {
-        setChatMessages(prev => [
-          ...prev,
-          { type: 'ai', content: "I've created an event based on your request. Check out the details below!" }
-        ]);
-        return response;
-      }
+      // If we don't have data in the expected format, add a generic message
+      setChatMessages(prev => [
+        ...prev,
+        { type: 'ai', content: "I've processed your request, but couldn't generate a complete event. Please try providing more details." }
+      ]);
       
       return null;
     } catch (error) {
-      // Remove the loading message
-      setChatMessages(prev => prev.slice(0, -1));
-      
       console.error("Error generating event:", error);
       setChatMessages(prev => [
         ...prev,
@@ -139,12 +110,15 @@ export const usePromptHandler = (
       ]);
       
       return null;
+    } finally {
+      setIsGenerating(false);
     }
   };
 
   return {
     prompt,
     setPrompt,
+    isGenerating,
     handlePromptSubmit
   };
 };

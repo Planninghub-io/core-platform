@@ -2,7 +2,7 @@
 import { ChatInputField } from "./ChatInputField";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
-import React, { FormEvent, useRef, useEffect } from "react";
+import React, { FormEvent, useRef } from "react";
 
 interface ChatInputAreaProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
@@ -25,7 +25,7 @@ export const ChatInputArea = ({
 }: ChatInputAreaProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     // Focus the input field when the component mounts or after generation completes
     if (inputRef.current && !isGenerating) {
       inputRef.current.focus();
@@ -48,9 +48,6 @@ export const ChatInputArea = ({
     
     // Call the provided handlePromptSubmit with the current prompt
     handlePromptSubmit(trimmedPrompt);
-    
-    // Clear the input field after submission
-    setPrompt("");
   };
 
   return (
@@ -62,6 +59,7 @@ export const ChatInputArea = ({
           setPrompt={setPrompt}
           isGenerating={isGenerating}
           onSubmit={submitPrompt}
+          shouldShowButton={false}
         />
         <Button
           type="submit"
@@ -72,6 +70,12 @@ export const ChatInputArea = ({
           <Send size={18} className="text-white" />
         </Button>
       </form>
+      
+      {promptCount === 1 && (
+        <p className="text-sm text-gray-500 mt-2 text-center">
+          You have used your free prompt. Sign up to generate more events!
+        </p>
+      )}
     </div>
   );
 };

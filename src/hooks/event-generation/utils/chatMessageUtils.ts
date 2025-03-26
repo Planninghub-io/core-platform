@@ -34,5 +34,12 @@ export const createErrorMessage = (): string => {
 };
 
 export const createAIMessage = (generatedEvent: any): string => {
-  return `I've created an event plan for "${generatedEvent.title || 'your event'}". You can review the details and make any changes before creating it.`;
+  return `I've created an event plan for "${generatedEvent.title || 'your event'}" at ${generatedEvent.location || 'your chosen location'}. ${generatedEvent.description || ''}`;
+};
+
+export const addAIMessage = (
+  setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
+  content: string
+): void => {
+  setChatMessages(prev => [...prev, { type: 'ai', content }]);
 };

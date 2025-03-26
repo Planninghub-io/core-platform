@@ -37,12 +37,9 @@ export const ChatMessages = ({
           key={index} 
           message={message.content} 
           type={message.type} 
-          isLoading={index === chatMessages.length - 1 && message.type === 'ai' && isGenerating}
+          isLoading={false}
         />
       ))}
-      
-      {/* This empty div helps with auto-scrolling */}
-      <div ref={messagesEndRef} />
       
       {/* Show typing indicator when generating */}
       {isGenerating && (
@@ -52,6 +49,9 @@ export const ChatMessages = ({
           <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
         </div>
       )}
+      
+      {/* This empty div helps with auto-scrolling */}
+      <div ref={messagesEndRef} />
     </div>
   );
 };
