@@ -7,10 +7,11 @@ import { generateEventAPI } from "../../api/generateEventAPI";
 export const generateEventWithAPI = async (
   userPrompt: string,
   modelProvider: 'openai' | 'anthropic',
-  combinedInfo: Record<string, string>
+  combinedInfo: Record<string, string>,
+  apiCallId: string = 'default'
 ) => {
-  console.log(`Generating event with model: ${modelProvider}`);
-  console.log("Combined info for API call:", combinedInfo);
+  console.log(`generateEventWithAPI [${apiCallId}]: Generating event with model: ${modelProvider}`);
+  console.log(`generateEventWithAPI [${apiCallId}]: Combined info for API call:`, combinedInfo);
   
   // Generate the event
   const response = await generateEventAPI({
@@ -19,7 +20,7 @@ export const generateEventWithAPI = async (
     modelProvider
   });
   
-  console.log("API response:", response);
+  console.log(`generateEventWithAPI [${apiCallId}]: API response:`, response);
   
   return response;
 };

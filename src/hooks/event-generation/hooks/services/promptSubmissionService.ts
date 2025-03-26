@@ -1,4 +1,3 @@
-
 import { generateEventWithAPI } from "./eventGenerationAPI";
 import { extractInfoFromPrompt } from "../utils/promptExtractor";
 import { ChatMessage } from "../../types";
@@ -19,67 +18,76 @@ export const submitPrompt = async (
   requestBudgetInChat: () => void,
   setPreviouslyRequestedFields: React.Dispatch<React.SetStateAction<string[]>>,
   setPromptCount: React.Dispatch<React.SetStateAction<number>>,
-  isResubmitting: boolean
+  isResubmitting: boolean,
+  apiCallId: string = 'default'
 ): Promise<SubmissionResult> => {
   // Validate the prompt
   if (!prompt || prompt.trim() === "") {
-    console.log("submitPrompt: Empty prompt, not submitting");
+    console.log(`submitPrompt [${apiCallId}]: Empty prompt, not submitting`);
     return { error: new Error("Please enter an event description") };
   }
   
-  console.log("submitPrompt: Starting prompt submission with model:", modelProvider);
-  console.log("submitPrompt: Prompt content:", prompt);
+  console.log(`submitPrompt [${apiCallId}]: Starting prompt submission with model:`, modelProvider);
+  console.log(`submitPrompt [${apiCallId}]: Prompt content:`, prompt);
   
   // Extract additional information from the prompt
   const extractedInfo = extractInfoFromPrompt(prompt);
-  console.log("submitPrompt: Extracted info from prompt:", extractedInfo);
+  console.log(`submitPrompt [${apiCallId}]: Extracted info from prompt:`, extractedInfo);
   
   const combinedInfo = { ...additionalInfo, ...extractedInfo };
-  console.log("submitPrompt: Combined info for API call:", combinedInfo);
+  console.log(`submitPrompt [${apiCallId}]: Combined info for API call:`, combinedInfo);
   
   setIsGenerating(true);
+  
+  // Keep track of whether this request was aborted
+  let isAborted = false;
   
   try {
     // Add user message to chat
     setChatMessages(prev => [...prev, { type: 'user', content: prompt }]);
     
     // Add loading message
-    setChatMessages(prev => [...prev, { type: 'ai', content: "Generating your event details..." }]);
+    const loadingMessageId = `loading-${apiCallId}`;
+    setChatMessages(prev => [...prev, { type: 'ai', content: "Generating your event details...", id: loadingMessageId }]);
     
     // Generate the event
-    console.log("submitPrompt: Calling generateEventWithAPI");
+    console.log(`submitPrompt [${apiCallId}]: Calling generateEventWithAPI`);
     const response = await generateEventWithAPI(
       prompt,
       modelProvider,
-      combinedInfo
+      combinedInfo,
+      apiCallId
     ) as GenerateEventResponse;
     
-    console.log("submitPrompt: Received API response:", JSON.stringify(response, null, 2));
+    console.log(`submitPrompt [${apiCallId}]: Received API response:`, JSON.stringify(response, null, 2));
     
-    // Remove loading message
+    if (isAborted) {
+      console.log(`submitPrompt [${apiCallId}]: Request was aborted, ignoring response`);
+      return { error: new Error("Request aborted") };
+    }
+    
+    // Remove loading message, looking for it by ID to avoid race conditions
     setChatMessages(prev => {
-      const newMessages = [...prev];
-      return newMessages.filter((msg, index) => 
-        !(index === newMessages.length - 1 && msg.type === 'ai' && msg.content === "Generating your event details...")
-      );
+      return prev.filter(msg => msg.id !== loadingMessageId);
     });
     
     if (response.error) {
-      console.error("submitPrompt: Error in API response:", response.error);
+      console.error(`submitPrompt [${apiCallId}]: Error in API response:`, response.error);
       throw response.error;
     }
     
     // Process the response and handle missing fields
-    console.log("submitPrompt: Processing API response through processResponse");
+    console.log(`submitPrompt [${apiCallId}]: Processing API response through processResponse`);
     const processed = processResponse(
       response, 
       setChatMessages, 
       waitingForBudget, 
       requestBudgetInChat, 
-      setPreviouslyRequestedFields
+      setPreviouslyRequestedFields,
+      apiCallId
     );
     
-    console.log("submitPrompt: ProcessResponse result:", processed);
+    console.log(`submitPrompt [${apiCallId}]: ProcessResponse result:`, processed);
     
     // If we processed the response successfully
     if (processed) {
@@ -92,7 +100,7 @@ export const submitPrompt = async (
     }
     
     // If we couldn't process the response, show a generic success message
-    console.log("submitPrompt: Could not process response, showing generic success message");
+    console.log(`submitPrompt [${apiCallId}]: Could not process response, showing generic success message`);
     setChatMessages(prev => [...prev, {
       type: 'ai',
       content: "I've generated an event based on your request. Please review the details."
@@ -105,12 +113,12 @@ export const submitPrompt = async (
     };
     
   } catch (error: any) {
-    console.error("submitPrompt: Error submitting prompt:", error);
+    console.error(`submitPrompt [${apiCallId}]: Error submitting prompt:`, error);
     
     // Remove loading message if it exists
     setChatMessages(prev => {
       return prev.filter(msg => 
-        !(msg.type === 'ai' && msg.content === "Generating your event details...")
+        !(msg.id === `loading-${apiCallId}`)
       );
     });
     
@@ -122,6 +130,17 @@ export const submitPrompt = async (
     
     return { error };
   } finally {
-    setIsGenerating(false);
+    if (!isAborted) {
+      setIsGenerating(false);
+    }
   }
+  
+  // Expose a method to abort this request (for race conditions)
+  return {
+    abort: () => {
+      console.log(`submitPrompt [${apiCallId}]: Aborting request`);
+      isAborted = true;
+    },
+    error: new Error("Request setup failed")
+  } as any;
 };

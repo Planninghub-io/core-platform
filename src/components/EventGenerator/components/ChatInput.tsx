@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { EventGeneratorForm } from "../EventGeneratorForm";
 import { ChatInputField } from "./chat/ChatInputField";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 
 interface ChatInputProps {
-  chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
+  chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
   prompt: string;
   setPrompt: (prompt: string) => void;
   isGenerating: boolean;
@@ -25,6 +25,7 @@ export const ChatInput = ({
   generatedEvent
 }: ChatInputProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   // Focus the input field after generation completes
   useEffect(() => {
@@ -36,8 +37,19 @@ export const ChatInput = ({
   // Create a wrapper function to ensure logging and proper execution
   const onSubmit = (submittedPrompt: string) => {
     console.log("ChatInput: onSubmit called with prompt:", submittedPrompt);
-    if (submittedPrompt.trim() && !isGenerating) {
-      handlePromptSubmit(submittedPrompt);
+    
+    if (submittedPrompt.trim() && !isGenerating && !isSubmitting) {
+      setIsSubmitting(true);
+      
+      // Add a small delay to prevent double submissions
+      setTimeout(() => {
+        handlePromptSubmit(submittedPrompt);
+        
+        // Reset submission state after a delay
+        setTimeout(() => {
+          setIsSubmitting(false);
+        }, 1000);
+      }, 100);
     }
   };
   
@@ -48,7 +60,7 @@ export const ChatInput = ({
           <div className="w-full">
             <EventGeneratorForm
               prompt={prompt}
-              isGenerating={isGenerating}
+              isGenerating={isGenerating || isSubmitting}
               promptCount={promptCount}
               onPromptChange={setPrompt}
               onSubmit={(_, submittedPrompt) => submittedPrompt && onSubmit(submittedPrompt)}
@@ -67,7 +79,7 @@ export const ChatInput = ({
                 ref={inputRef}
                 prompt={prompt}
                 setPrompt={setPrompt}
-                isGenerating={isGenerating}
+                isGenerating={isGenerating || isSubmitting}
                 onSubmit={() => prompt.trim() && onSubmit(prompt)}
                 shouldShowButton={false}
               />
@@ -75,7 +87,7 @@ export const ChatInput = ({
             <Button
               type="submit"
               size="icon"
-              disabled={isGenerating || !prompt.trim()}
+              disabled={isGenerating || isSubmitting || !prompt.trim()}
               className="h-10 w-10 rounded-full bg-[#242424] hover:bg-[#242424]/90"
               onClick={() => prompt.trim() && onSubmit(prompt)}
             >
