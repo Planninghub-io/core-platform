@@ -14,7 +14,7 @@ interface ChatInputFieldProps {
   onSubmit?: (e?: React.FormEvent) => void;
 }
 
-export const ChatInputField = forwardRef<HTMLTextAreaElement, ChatInputFieldProps>(
+export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
   ({ prompt, setPrompt, isGenerating, generatedEvent, chatMessages, handlePromptSubmit, onSubmit }, ref) => {
     // Only disable input when generation is in progress
     const isInputDisabled = isGenerating;
@@ -73,7 +73,7 @@ export const ChatInputField = forwardRef<HTMLTextAreaElement, ChatInputFieldProp
           placeholder="Type your message..."
           disabled={isInputDisabled}
           data-testid="chat-input-field"
-          ref={ref as React.RefObject<HTMLInputElement>}
+          ref={ref}
         />
         <Button 
           type="submit"

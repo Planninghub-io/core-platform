@@ -23,7 +23,7 @@ export const ChatInputArea = ({
   handlePromptSubmit,
   generatedEvent
 }: ChatInputAreaProps) => {
-  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     // Focus the input field when the component mounts or after generation completes
