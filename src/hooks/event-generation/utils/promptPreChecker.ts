@@ -12,20 +12,30 @@ import { ChatMessage } from "../types";
 export const checkPromptForRequiredFields = (
   prompt: string,
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>
-): { promptToUse: string; missingFields: string[]; shouldProceed: boolean } => {
+): { 
+  promptToUse: string; 
+  missingFields: string[]; 
+  shouldProceed: boolean;
+  extractedInfo: { date?: string; location?: string } 
+} => {
   const missingFields: string[] = [];
   let shouldProceed = true;
+  const extractedInfo: { date?: string; location?: string } = {};
   
   // Check for date in the prompt
   const extractedDate = extractDateFromPrompt(prompt);
   if (!extractedDate) {
     missingFields.push("date");
+  } else {
+    extractedInfo.date = extractedDate;
   }
   
   // Check for location in the prompt
   const extractedLocation = extractLocationFromPrompt(prompt);
   if (!extractedLocation) {
     missingFields.push("location");
+  } else {
+    extractedInfo.location = extractedLocation;
   }
   
   // If missing fields, add a message asking for them
@@ -45,5 +55,5 @@ export const checkPromptForRequiredFields = (
     shouldProceed = false;
   }
   
-  return { promptToUse: prompt, missingFields, shouldProceed };
+  return { promptToUse: prompt, missingFields, shouldProceed, extractedInfo };
 };

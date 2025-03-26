@@ -93,6 +93,8 @@ export const EventGeneratorContent = ({
           onModelChange(model);
           console.log("EventGeneratorContent: Model changed to:", model);
         }}
+        setSelectedDate={setSelectedDate}
+        setLocation={setLocation}
       />
 
       {/* Generated Event Data */}
