@@ -2,7 +2,7 @@
 import { ChatContainer } from "./chat/ChatContainer";
 import { AIModelSelector } from "../components/AIModelSelector";
 import { useState, useEffect, useRef } from "react";
-import { checkPromptForRequiredFields } from "@/hooks/event-generation/utils/promptPreChecker";
+import { checkPromptForRequiredFields, trackPendingInformation } from "@/hooks/event-generation/utils/promptPreChecker";
 
 interface ChatInterfaceProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -26,6 +26,7 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
   const [pendingInfo, setPendingInfo] = useState<{
     date?: string;
     location?: string;
+    description?: string;
     originalPrompt?: string;
   }>({});
   
@@ -54,17 +55,67 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
     // Add the user message to chat
     props.setChatMessages(prev => [...prev, { type: 'user', content: userPrompt }]);
     
-    // Check if the prompt has required information
+    // If we're in the middle of gathering information for an initial prompt
+    if (pendingInfo.originalPrompt) {
+      console.log("ChatInterface: Processing follow-up information for original prompt");
+      
+      const { updatedInfo, shouldProceed, completePrompt } = trackPendingInformation(
+        pendingInfo.originalPrompt,
+        pendingInfo,
+        userPrompt
+      );
+      
+      // Update our pending info state with any new extracted data
+      setPendingInfo({ 
+        ...updatedInfo, 
+        originalPrompt: pendingInfo.originalPrompt 
+      });
+      
+      // Update date and location if provided
+      if (updatedInfo.date && props.setSelectedDate) {
+        props.setSelectedDate(updatedInfo.date);
+      }
+      
+      if (updatedInfo.location && props.setLocation) {
+        props.setLocation(updatedInfo.location);
+      }
+      
+      // If we now have all required info, proceed with the API call
+      if (shouldProceed) {
+        console.log("ChatInterface: All required info collected, proceeding with request");
+        console.log("ChatInterface: Complete prompt:", completePrompt);
+        
+        // Call the handler with the complete prompt
+        lastSubmissionRef.current = { prompt: completePrompt, timestamp: now };
+        props.handlePromptSubmit(completePrompt, modelProvider);
+        
+        // Clear pending info since we're done collecting
+        setPendingInfo({});
+        return;
+      } else {
+        // Still missing info, clear input for user to provide more
+        props.setPrompt("");
+        return;
+      }
+    }
+    
+    // First time prompt submission - check if it has all required fields
     const { shouldProceed, extractedInfo } = checkPromptForRequiredFields(
       userPrompt,
       props.setChatMessages
     );
     
-    // If all required fields are now present and we had pending info, proceed with the combined prompt
-    if (shouldProceed && pendingInfo.originalPrompt) {
-      console.log("ChatInterface: All required info collected, proceeding with original request");
+    // If not all required fields are present, store what we have and wait for more info
+    if (!shouldProceed) {
+      console.log("ChatInterface: Missing required fields in prompt, asking user for more information");
+      // Store the original prompt and any extracted info
+      setPendingInfo({
+        originalPrompt: userPrompt,
+        description: userPrompt,
+        ...extractedInfo
+      });
       
-      // Update date and location if provided
+      // Update date and location if extracted
       if (extractedInfo.date && props.setSelectedDate) {
         props.setSelectedDate(extractedInfo.date);
       }
@@ -73,36 +124,12 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
         props.setLocation(extractedInfo.location);
       }
       
-      // Call the handler with the original prompt
-      lastSubmissionRef.current = { prompt: pendingInfo.originalPrompt, timestamp: now };
-      props.handlePromptSubmit(pendingInfo.originalPrompt, modelProvider);
-      
-      // Clear the pending info
-      setPendingInfo({});
-      return;
-    }
-    
-    // If not all required fields are present, don't proceed with the API call
-    if (!shouldProceed) {
-      console.log("ChatInterface: Missing required fields in prompt, asking user for more information");
-      // Store the original prompt if this is the first message
-      if (!pendingInfo.originalPrompt) {
-        setPendingInfo({
-          ...pendingInfo,
-          originalPrompt: userPrompt,
-          ...extractedInfo
-        });
-      } else {
-        // Update with any new extracted info
-        setPendingInfo({
-          ...pendingInfo,
-          ...extractedInfo
-        });
-      }
-      
       props.setPrompt(""); // Clear input for user to add more info
       return;
     }
+    
+    // If we have all required fields, proceed with the API call
+    console.log("ChatInterface: All required fields present, proceeding with API call");
     
     // Update date and location if provided
     if (extractedInfo.date && props.setSelectedDate) {

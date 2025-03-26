@@ -16,11 +16,18 @@ export const checkPromptForRequiredFields = (
   promptToUse: string; 
   missingFields: string[]; 
   shouldProceed: boolean;
-  extractedInfo: { date?: string; location?: string } 
+  extractedInfo: { date?: string; location?: string; description?: string } 
 } => {
   const missingFields: string[] = [];
   let shouldProceed = true;
-  const extractedInfo: { date?: string; location?: string } = {};
+  const extractedInfo: { date?: string; location?: string; description?: string } = {};
+  
+  // Check if we have any event description
+  if (!prompt || prompt.trim().length < 10) {
+    missingFields.push("description");
+  } else {
+    extractedInfo.description = prompt;
+  }
   
   // Check for date in the prompt
   const extractedDate = extractDateFromPrompt(prompt);
@@ -42,7 +49,9 @@ export const checkPromptForRequiredFields = (
   if (missingFields.length > 0) {
     let missingFieldsMessage = "I'd like to help plan your event. ";
     
-    if (missingFields.includes("date") && missingFields.includes("location")) {
+    if (missingFields.includes("description")) {
+      missingFieldsMessage = "Please provide more details about the event you'd like to create.";
+    } else if (missingFields.includes("date") && missingFields.includes("location")) {
       missingFieldsMessage += "Could you please provide both a date/time and location for your event?";
     } else if (missingFields.includes("date")) {
       missingFieldsMessage += "Could you please provide a date and time for your event?";
@@ -56,4 +65,50 @@ export const checkPromptForRequiredFields = (
   }
   
   return { promptToUse: prompt, missingFields, shouldProceed, extractedInfo };
+};
+
+/**
+ * Track pending information and check if all required fields are now present
+ * @param originalPrompt The original user prompt
+ * @param pendingInfo Current pending information
+ * @param newPrompt New user input
+ * @returns Updated pending info and whether we should proceed
+ */
+export const trackPendingInformation = (
+  originalPrompt: string | undefined,
+  pendingInfo: { date?: string; location?: string; description?: string },
+  newPrompt: string
+): { 
+  updatedInfo: { date?: string; location?: string; description?: string };
+  shouldProceed: boolean;
+  completePrompt: string;
+} => {
+  // Extract new information from the prompt
+  const extractedDate = extractDateFromPrompt(newPrompt);
+  const extractedLocation = extractLocationFromPrompt(newPrompt);
+  
+  // Update pending info with any new extracted information
+  const updatedInfo = { 
+    ...pendingInfo,
+    date: extractedDate || pendingInfo.date,
+    location: extractedLocation || pendingInfo.location,
+  };
+  
+  // Check if we now have all required information
+  const hasAllRequiredInfo = updatedInfo.date && updatedInfo.location && 
+                           (updatedInfo.description || originalPrompt);
+                           
+  // Construct a complete prompt that includes all the gathered information
+  let completePrompt = originalPrompt || "";
+  
+  // If we're gathering additional info, append it to the original prompt
+  if (originalPrompt && (extractedDate || extractedLocation)) {
+    completePrompt += ` The event will be on ${updatedInfo.date || "[unspecified date]"} at ${updatedInfo.location || "[unspecified location]"}.`;
+  }
+  
+  return { 
+    updatedInfo, 
+    shouldProceed: hasAllRequiredInfo,
+    completePrompt: completePrompt || newPrompt
+  };
 };

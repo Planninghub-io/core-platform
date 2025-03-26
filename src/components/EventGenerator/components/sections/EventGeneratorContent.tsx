@@ -43,15 +43,23 @@ export const EventGeneratorContent = ({
 }: EventGeneratorContentProps) => {
   const { prompt, setPrompt, isGenerating, handlePromptSubmit } = useEventGeneration();
   const [currentModelProvider, setCurrentModelProvider] = useState<'openai' | 'anthropic'>(modelProvider);
+  const [showEventForm, setShowEventForm] = useState<boolean>(false);
 
   // Updated welcome message with more specific instructions
   const welcomeMessage = chatMessages.length === 0 ? 
-    "Hi, please provide your event details including description, date & time, location, number of attendees, and budget to get started with planning." : "";
+    "Hi, please provide details about the event you'd like to create. Include a description, date & time, location, and any other details you'd like to add." : "";
 
   // Effect to track model changes
   useEffect(() => {
     console.log("EventGeneratorContent: Model provider changed to:", currentModelProvider);
   }, [currentModelProvider]);
+  
+  // Show the event form when we have a generated event
+  useEffect(() => {
+    if (generatedEvent) {
+      setShowEventForm(true);
+    }
+  }, [generatedEvent]);
 
   // Handle prompt submission with the selected model
   const handleSubmit = (userPrompt: string, selectedModel?: 'openai' | 'anthropic') => {
@@ -97,8 +105,8 @@ export const EventGeneratorContent = ({
         setLocation={setLocation}
       />
 
-      {/* Generated Event Data */}
-      {generatedEvent && (
+      {/* Generated Event Data - Show only after we have a generated event */}
+      {generatedEvent && showEventForm && (
         <EventDetailsSection
           generatedEvent={generatedEvent}
           eventTitle={eventTitle}
