@@ -5,7 +5,7 @@ import { ManualEventButton } from "../ManualEventButton";
 import { SignUpDialog } from "../../SignUpDialog";
 import { MissingInfoDialog } from "../../MissingInfoDialog";
 import { useEventGeneration } from "@/hooks/event-generation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface EventGeneratorContainerProps {
   onCreateManualEvent?: () => void;
@@ -39,6 +39,13 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
     waitingForBudget,
   } = useEventGeneration();
 
+  // Debug effect to check if we have a generated event
+  useEffect(() => {
+    if (generatedEvent) {
+      console.log("EventGeneratorContainer: Generated event available:", generatedEvent);
+    }
+  }, [generatedEvent]);
+
   // Get the latest user prompt from chat messages
   const getLatestUserPrompt = () => {
     for (let i = chatMessages.length - 1; i >= 0; i--) {
@@ -58,7 +65,7 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
     
     return {
       ...generatedEvent,
-      title: eventTitle,
+      title: eventTitle || generatedEvent.title,
       date: selectedDate || generatedEvent.date,
       location: location || generatedEvent.location
     };

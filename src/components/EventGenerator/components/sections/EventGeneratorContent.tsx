@@ -58,6 +58,7 @@ export const EventGeneratorContent = ({
   useEffect(() => {
     if (generatedEvent) {
       setShowEventForm(true);
+      console.log("EventGeneratorContent: Showing event form with generated event:", generatedEvent);
     }
   }, [generatedEvent]);
 
@@ -109,7 +110,7 @@ export const EventGeneratorContent = ({
       {generatedEvent && showEventForm && (
         <EventDetailsSection
           generatedEvent={generatedEvent}
-          eventTitle={eventTitle}
+          eventTitle={eventTitle || generatedEvent.title || "New Event"}
           setEventTitle={setEventTitle}
           selectedDate={selectedDate || generatedEvent.date}
           setSelectedDate={setSelectedDate}
