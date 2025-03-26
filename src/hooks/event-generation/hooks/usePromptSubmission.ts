@@ -2,7 +2,8 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ChatMessage } from "../types";
-import { submitPrompt, SubmissionResult } from "./services/promptSubmissionService";
+import { submitPrompt } from "./services/promptSubmissionService";
+import { SubmissionResult, GeneratedEvent } from "../types/api-types";
 
 /**
  * Hook for handling prompt submission and processing
@@ -18,7 +19,7 @@ export const usePromptSubmission = (
   const [missingInfo, setMissingInfo] = useState<any>(null);
   const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
   const [isResubmitting, setIsResubmitting] = useState(false);
-  const [generatedEvent, setGeneratedEvent] = useState<any>(null);
+  const [generatedEvent, setGeneratedEvent] = useState<GeneratedEvent | null>(null);
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const [previouslyRequestedFields, setPreviouslyRequestedFields] = useState<string[]>([]);
 

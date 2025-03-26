@@ -2,7 +2,7 @@
 import { cn } from "@/lib/utils";
 import { Copy, ThumbsUp, ThumbsDown, RotateCcw, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
 interface ChatMessageProps {
@@ -15,6 +15,11 @@ interface ChatMessageProps {
 export const ChatMessage = ({ message, type, isLoading = false, isWelcomeMessage = false }: ChatMessageProps) => {
   const [copied, setCopied] = useState(false);
   const { toast } = useToast();
+  
+  // Debug log for message rendering
+  useEffect(() => {
+    console.log(`Rendering message type: ${type}, loading: ${isLoading}, content: ${message.substring(0, 30)}...`);
+  }, [message, type, isLoading]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(message);
@@ -42,7 +47,7 @@ export const ChatMessage = ({ message, type, isLoading = false, isWelcomeMessage
       description: "Regenerating response...",
     });
   };
-
+  
   // ChatGPT style: user messages on right, AI messages on left
   return (
     <div 
@@ -74,7 +79,12 @@ export const ChatMessage = ({ message, type, isLoading = false, isWelcomeMessage
                 <div className="h-2 w-2 animate-bounce rounded-full bg-gray-400" style={{ animationDelay: '0.4s' }}></div>
               </div>
             ) : (
-              <p className="whitespace-pre-wrap break-words">{message}</p>
+              <div className="whitespace-pre-wrap break-words" 
+                dangerouslySetInnerHTML={{ 
+                  __html: message.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                          .replace(/\n/g, '<br />') 
+                }}
+              />
             )}
             
             {type === 'ai' && !isLoading && !isWelcomeMessage && (

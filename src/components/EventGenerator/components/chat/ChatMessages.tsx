@@ -15,20 +15,21 @@ export const ChatMessages = ({
 }: ChatMessagesProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
+  // Debug logging
+  useEffect(() => {
+    console.log("ChatMessages: Rendering with", chatMessages.length, "messages");
+    console.log("ChatMessages: Messages content:", JSON.stringify(chatMessages.slice(-2)));
+  }, [chatMessages]);
+
   // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isGenerating]);
 
-  // Debugging
-  useEffect(() => {
-    console.log("ChatMessages: Rendering with", chatMessages.length, "messages");
-    console.log("ChatMessages: Messages content:", JSON.stringify(chatMessages));
-  }, [chatMessages]);
-
-  if (chatMessages.length === 0 && welcomeMessage) {
-    return (
-      <div className="p-4 h-[400px] overflow-y-auto">
+  return (
+    <div className="p-4 h-[400px] overflow-y-auto">
+      {/* Show welcome message if no messages yet */}
+      {chatMessages.length === 0 && welcomeMessage && (
         <ChatMessage
           key="welcome"
           message={welcomeMessage}
@@ -36,24 +37,20 @@ export const ChatMessages = ({
           isLoading={false}
           isWelcomeMessage={true}
         />
-        <div ref={messagesEndRef} />
-      </div>
-    );
-  }
+      )}
 
-  return (
-    <div className="p-4 h-[400px] overflow-y-auto" id="chat-messages-container">
+      {/* Render chat messages */}
       {chatMessages.map((message, index) => (
         <ChatMessage 
           key={`message-${index}`} 
           message={message.content} 
           type={message.type} 
-          isLoading={false}
+          isLoading={index === chatMessages.length - 1 && message.type === 'ai' && isGenerating}
         />
       ))}
       
-      {/* Show typing indicator when generating */}
-      {isGenerating && (
+      {/* Show typing indicator when generating and no loading message exists */}
+      {isGenerating && !chatMessages.some(msg => msg.type === 'ai' && msg.content === "Generating your event details...") && (
         <div className="flex items-center space-x-1 mt-2">
           <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
           <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>

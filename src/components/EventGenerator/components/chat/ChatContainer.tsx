@@ -29,20 +29,21 @@ export const ChatContainer = ({
   
   useEffect(() => {
     // Scroll chat to bottom when messages update or during generation
-    const chatContainer = document.querySelector(".chat-messages-container");
-    if (chatContainer) {
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+    const messagesEndRef = document.getElementById("messages-end-ref");
+    if (messagesEndRef) {
+      messagesEndRef.scrollIntoView({ behavior: 'smooth' });
     }
   }, [chatMessages, isGenerating]);
   
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 flex flex-col h-full">
-      <div className="flex-grow overflow-hidden chat-messages-container">
+      <div className="flex-grow overflow-hidden">
         <ChatMessages 
           chatMessages={chatMessages} 
           isGenerating={isGenerating} 
           welcomeMessage={welcomeMessage} 
         />
+        <div id="messages-end-ref" className="h-0" />
       </div>
       <ChatInputArea 
         chatMessages={chatMessages} 

@@ -2,18 +2,9 @@
 import { generateEventWithAPI } from "./eventGenerationAPI";
 import { extractInfoFromPrompt } from "../utils/promptExtractor";
 import { ChatMessage } from "../../types";
-import { useToast } from "@/hooks/use-toast";
+import { SubmissionResult, GenerateEventResponse } from "../../types/api-types";
 import { processResponse } from "../utils/responseProcessor";
-
-/**
- * Result type for the submission response
- */
-export interface SubmissionResult {
-  validatedEvent?: any;
-  missing?: string[];
-  needsBudget?: boolean;
-  error?: Error;
-}
+import { createErrorMessage } from "../../utils/chatMessageUtils";
 
 /**
  * Submit prompt to the API and process the response
@@ -57,7 +48,7 @@ export const submitPrompt = async (
       prompt,
       modelProvider,
       combinedInfo
-    );
+    ) as GenerateEventResponse;
     
     // Remove loading message
     setChatMessages(prev => {
@@ -99,7 +90,7 @@ export const submitPrompt = async (
     // Return a default result with the data from the API
     return { 
       validatedEvent: response.data,
-      missing: []
+      missing: response.missing || []
     };
     
   } catch (error: any) {
@@ -115,7 +106,7 @@ export const submitPrompt = async (
     // Add error message to chat
     setChatMessages(prev => [...prev, {
       type: 'ai',
-      content: "I'm sorry, I encountered an error while generating your event. Please try again with more details."
+      content: createErrorMessage()
     }]);
     
     return { error };
