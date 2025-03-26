@@ -56,20 +56,18 @@ export const ChatInputArea = ({
   return (
     <div className="border-t border-gray-200 p-4">
       <form onSubmit={submitPrompt} className="flex items-end gap-2">
-        <div className="flex-grow">
-          <ChatInputField
-            ref={inputRef}
-            prompt={prompt}
-            setPrompt={setPrompt}
-            isGenerating={isGenerating}
-            onSubmit={submitPrompt}
-          />
-        </div>
+        <ChatInputField
+          ref={inputRef}
+          prompt={prompt}
+          setPrompt={setPrompt}
+          isGenerating={isGenerating}
+          onSubmit={submitPrompt}
+        />
         <Button
           type="submit"
           size="icon"
           disabled={isGenerating || !prompt.trim()}
-          className="h-10 w-10 rounded-full bg-primary hover:bg-primary/90"
+          className="h-10 w-10 rounded-full bg-[#242424] hover:bg-[#242424]/90"
         >
           <Send size={18} className="text-white" />
         </Button>

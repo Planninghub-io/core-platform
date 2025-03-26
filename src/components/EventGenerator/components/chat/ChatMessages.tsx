@@ -22,7 +22,7 @@ export const ChatMessages = ({
 
   return (
     <div className="p-4 h-[400px] overflow-y-auto">
-      {welcomeMessage && (
+      {welcomeMessage && chatMessages.length === 0 && (
         <ChatMessage
           key="welcome"
           message={welcomeMessage}

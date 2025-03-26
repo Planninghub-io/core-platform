@@ -14,9 +14,9 @@ export const usePromptHandler = (
   const { toast } = useToast();
 
   // Handle prompt submission
-  const handlePromptSubmit = async (modelProvider: 'openai' | 'anthropic' = 'openai') => {
-    // Get the current prompt from the input field
-    let currentPrompt = prompt.trim();
+  const handlePromptSubmit = async (userPrompt: string, modelProvider: 'openai' | 'anthropic' = 'openai') => {
+    // Get the current prompt from the input field or use the passed one
+    let currentPrompt = userPrompt.trim() || prompt.trim();
     
     console.log("Processing prompt:", currentPrompt);
     
@@ -72,10 +72,27 @@ export const usePromptHandler = (
       }
 
       if (response && 'missing' in response && response.missing && response.missing.length > 0) {
+        // Create a message asking for missing information
+        const missingFields = response.missing;
+        let missingInfoMessage = "I need more information to generate this event. Could you please provide:";
+        
+        if (missingFields.includes('date')) {
+          missingInfoMessage += "\n• The date and time of the event";
+        }
+        if (missingFields.includes('location')) {
+          missingInfoMessage += "\n• The location for the event";
+        }
+        if (missingFields.includes('attendees')) {
+          missingInfoMessage += "\n• The expected number of attendees";
+        }
+        if (missingFields.includes('budget')) {
+          missingInfoMessage += "\n• Your budget for the event";
+        }
+        
         // Display missing info message
         setChatMessages(prev => [
           ...prev,
-          { type: 'ai', content: "I need more information to generate this event. Can you please provide the missing details?" }
+          { type: 'ai', content: missingInfoMessage }
         ]);
         
         // Show the missing info dialog if we have date or location missing
@@ -98,6 +115,15 @@ export const usePromptHandler = (
           description: "Review the suggested event details below.",
         });
         
+        return response;
+      }
+      
+      // If we have data but not in the expected format, create a generic success message
+      if (response && response.data) {
+        setChatMessages(prev => [
+          ...prev,
+          { type: 'ai', content: "I've created an event based on your request. Check out the details below!" }
+        ]);
         return response;
       }
       

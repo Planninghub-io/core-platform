@@ -52,11 +52,11 @@ export const EventGeneratorForm = ({
         <Button
           type="submit"
           size="icon"
-          className="absolute right-1 h-10 w-10 rounded-full bg-[#8b73f4] hover:bg-[#8b73f4]/90"
+          className="absolute right-1 h-10 w-10 rounded-full bg-[#242424] hover:bg-[#242424]/90"
           disabled={isGenerating || !prompt.trim()}
           data-testid="generator-submit-button"
         >
-          <Send className="h-4 w-4" />
+          <Send className="h-4 w-4 text-white" />
         </Button>
       </form>
       

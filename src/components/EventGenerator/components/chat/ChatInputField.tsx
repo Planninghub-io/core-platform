@@ -1,8 +1,7 @@
 
 import React, { forwardRef } from "react";
 import { Input } from "@/components/ui/input";
-import { Sparkles, Send } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Sparkles } from "lucide-react";
 
 interface ChatInputFieldProps {
   prompt: string;
@@ -18,11 +17,6 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
   ({ prompt, setPrompt, isGenerating, generatedEvent, chatMessages, handlePromptSubmit, onSubmit }, ref) => {
     // Only disable input when generation is in progress
     const isInputDisabled = isGenerating;
-    
-    // Only disable the submit button when: 
-    // 1. Generation is in progress
-    // 2. Prompt is empty 
-    const isButtonDisabled = isGenerating || !prompt.trim();
     
     // Handle form submission
     const handleSubmission = (e?: React.FormEvent) => {
@@ -57,38 +51,24 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
     };
     
     return (
-      <form 
-        className="flex items-center gap-2 w-full"
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleSubmission(e);
-        }}
-      >
+      <div className="flex-grow">
         <Input
           type="text"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="flex-1 py-3 px-4"
+          className="w-full py-3 px-4"
           placeholder="Type your message..."
           disabled={isInputDisabled}
           data-testid="chat-input-field"
           ref={ref}
         />
-        <Button 
-          type="submit"
-          disabled={isButtonDisabled}
-          size="icon"
-          className="h-12 w-12 rounded-full bg-[#8b73f4] hover:bg-[#8b73f4]/90"
-          data-testid="chat-submit-button"
-        >
-          {isGenerating ? (
-            <Sparkles className="h-5 w-5 animate-spin" />
-          ) : (
-            <Send className="h-5 w-5" />
-          )}
-        </Button>
-      </form>
+        {isGenerating && (
+          <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+            <Sparkles className="h-5 w-5 animate-spin text-gray-400" />
+          </div>
+        )}
+      </div>
     );
   }
 );
