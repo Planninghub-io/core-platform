@@ -1,6 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Send, Sparkles } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 interface ChatInputFieldProps {
   prompt: string;
@@ -27,21 +28,23 @@ export const ChatInputField = ({
   // 2. Prompt is empty 
   const isButtonDisabled = isGenerating || !prompt.trim();
   
+  const onSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (prompt.trim() && !isButtonDisabled) {
+      handlePromptSubmit();
+    }
+  };
+  
   return (
     <form 
       className="flex items-center gap-2 w-full"
-      onSubmit={(e) => {
-        e.preventDefault();
-        if (prompt.trim() && !isButtonDisabled) {
-          handlePromptSubmit();
-        }
-      }}
+      onSubmit={onSubmit}
     >
-      <input
+      <Input
         type="text"
         value={prompt}
         onChange={(e) => setPrompt(e.target.value)}
-        className="flex-1 rounded-md border border-gray-300 py-3 px-4"
+        className="flex-1 py-3 px-4"
         placeholder="Type your message..."
         disabled={isInputDisabled}
       />
