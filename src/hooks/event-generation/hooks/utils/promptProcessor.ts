@@ -4,6 +4,7 @@ import {
   extractLocationFromPrompt,
   extractBudgetFromPrompt
 } from "../../utils/prompt-extraction";
+import { ChatMessage } from "../../types";
 
 /**
  * Extract information from a prompt and combine with additional info
@@ -43,7 +44,7 @@ export const processPrompt = (
 /**
  * Extract the prompt directly from chat messages
  */
-export const getPromptFromChatMessages = (chatMessages: Array<{type: 'user' | 'ai', content: string}>): string => {
+export const getPromptFromChatMessages = (chatMessages: ChatMessage[]): string => {
   if (!chatMessages || chatMessages.length === 0) {
     return "";
   }

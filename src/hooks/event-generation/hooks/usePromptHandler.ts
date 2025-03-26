@@ -17,9 +17,18 @@ export const usePromptHandler = (
   // Handle prompt submission
   const handlePromptSubmit = async (modelProvider: 'openai' | 'anthropic' = 'openai') => {
     // Get the current prompt either from the input field or the last chat message
-    const currentPrompt = prompt.trim() 
-      ? prompt.trim() 
-      : getPromptFromChatMessages(setChatMessages.getMostRecent?.() || []);
+    let currentPrompt = prompt.trim();
+    
+    // If no current prompt in the input, try to get it from chat history
+    if (!currentPrompt) {
+      // We need to get the current chat messages from the setter function
+      // Since we can't directly access the state from the setter, we'll have to 
+      // implement a different approach
+      setChatMessages(prevMessages => {
+        currentPrompt = getPromptFromChatMessages(prevMessages);
+        return prevMessages; // Return the same array to avoid re-render
+      });
+    }
       
     console.log("Processing prompt:", currentPrompt);
     
