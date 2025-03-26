@@ -2,12 +2,12 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { ChatMessage } from "./types";
+import { ChatMessage } from "../types";
 import { 
   extractDateFromPrompt,
   extractLocationFromPrompt,
   extractBudgetFromPrompt
-} from "./utils/prompt-extraction";
+} from "../utils/prompt-extraction";
 
 export const usePromptSubmission = (
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
