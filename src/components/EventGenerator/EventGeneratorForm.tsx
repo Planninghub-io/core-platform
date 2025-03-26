@@ -17,6 +17,7 @@ export const EventGeneratorForm = ({
   onPromptChange,
   onSubmit,
 }: EventGeneratorFormProps) => {
+  // Form submission handler
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (prompt.trim() && !isGenerating) {
@@ -25,6 +26,7 @@ export const EventGeneratorForm = ({
     }
   };
 
+  // Button click handler - explicit to avoid conflicts
   const handleButtonClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (prompt.trim() && !isGenerating) {
@@ -50,6 +52,7 @@ export const EventGeneratorForm = ({
           }}
           className="w-full rounded-full border border-gray-300 py-3 px-4 pr-14"
           autoFocus
+          data-testid="generator-input-field"
         />
         <Button
           type="button"
@@ -57,6 +60,7 @@ export const EventGeneratorForm = ({
           size="icon"
           className="absolute right-1 h-10 w-10 rounded-full bg-[#8b73f4] hover:bg-[#8b73f4]/90"
           disabled={isGenerating || !prompt.trim()}
+          data-testid="generator-submit-button"
         >
           <Send className="h-4 w-4" />
         </Button>

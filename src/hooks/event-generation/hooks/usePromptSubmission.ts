@@ -36,16 +36,25 @@ export const usePromptSubmission = (
    */
   const handlePromptSubmit = async (modelProvider: 'openai' | 'anthropic' = 'openai') => {
     // If prompt is empty, do nothing
-    if (!prompt.trim()) return;
+    if (!prompt.trim()) {
+      console.log("usePromptSubmission: Empty prompt, not submitting");
+      return;
+    }
     
     // Log debug info
-    console.log("Handling prompt submission:", prompt);
-    console.log("Using model provider:", modelProvider);
+    console.log("usePromptSubmission: Handling prompt submission:", prompt);
+    console.log("usePromptSubmission: Using model provider:", modelProvider);
+    
+    // Store prompt before clearing
+    const currentPrompt = prompt;
+    
+    // Clear the prompt immediately to prevent duplicate submissions
+    setPrompt("");
     
     // Add the prompt as a user message to the chat
     setChatMessages((prev) => [
       ...prev,
-      { type: "user", content: prompt },
+      { type: "user", content: currentPrompt },
     ]);
 
     // Show loading message
@@ -56,7 +65,9 @@ export const usePromptSubmission = (
 
     try {
       // Generate the event
-      const response = await generateEvent(prompt, modelProvider);
+      console.log("usePromptSubmission: Calling generateEvent");
+      const response = await generateEvent(currentPrompt, modelProvider);
+      console.log("usePromptSubmission: Response received:", response);
 
       // Remove the loading message
       setChatMessages((prev) => prev.slice(0, -1));
@@ -103,9 +114,6 @@ export const usePromptSubmission = (
         ...prev,
         { type: "ai", content: createErrorMessage() },
       ]);
-    } finally {
-      // Reset the prompt
-      setPrompt("");
     }
   };
 

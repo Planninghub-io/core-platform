@@ -28,6 +28,7 @@ export const ChatInputField = ({
   // 2. Prompt is empty 
   const isButtonDisabled = isGenerating || !prompt.trim();
   
+  // Form submission handler
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (prompt.trim() && !isGenerating) {
@@ -45,10 +46,11 @@ export const ChatInputField = ({
     }
   };
   
+  // Button click handler
   const handleButtonClick = (e: React.MouseEvent) => {
     e.preventDefault();
     if (!isButtonDisabled) {
-      console.log("ChatInputField: Submit button clicked");
+      console.log("ChatInputField: Submit button clicked manually");
       handlePromptSubmit();
     }
   };
@@ -66,6 +68,7 @@ export const ChatInputField = ({
         className="flex-1 py-3 px-4"
         placeholder="Type your message..."
         disabled={isInputDisabled}
+        data-testid="chat-input-field"
       />
       <Button 
         type="submit"
@@ -73,6 +76,7 @@ export const ChatInputField = ({
         disabled={isButtonDisabled}
         size="icon"
         className="h-12 w-12 rounded-full bg-[#8b73f4] hover:bg-[#8b73f4]/90"
+        data-testid="chat-submit-button"
       >
         {isGenerating ? (
           <Sparkles className="h-5 w-5 animate-spin" />

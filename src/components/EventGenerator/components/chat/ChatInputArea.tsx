@@ -24,6 +24,7 @@ export const ChatInputArea = ({
   // Determine if this is the first interaction
   const isFirstInteraction = promptCount === 0 && chatMessages.length === 0;
   
+  // Wrapper function to handle submit with proper logging
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();
@@ -31,7 +32,15 @@ export const ChatInputArea = ({
     
     if (prompt.trim() && !isGenerating) {
       console.log("ChatInputArea: handleSubmit called with prompt:", prompt);
+      // Call the parent handler to process the submission
       handlePromptSubmit();
+    } else {
+      if (!prompt.trim()) {
+        console.log("ChatInputArea: Empty prompt, not submitting");
+      }
+      if (isGenerating) {
+        console.log("ChatInputArea: Already generating, not submitting");
+      }
     }
   };
   
