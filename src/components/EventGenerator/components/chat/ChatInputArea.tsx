@@ -67,7 +67,7 @@ export const ChatInputArea = ({
             isGenerating={isGenerating}
             generatedEvent={generatedEvent}
             chatMessages={chatMessages}
-            handlePromptSubmit={(submittedPrompt) => handlePromptSubmit(submittedPrompt)}
+            handlePromptSubmit={handlePromptSubmit}
           />
         )}
       </div>
