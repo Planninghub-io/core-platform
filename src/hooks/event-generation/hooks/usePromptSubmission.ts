@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ChatMessage } from "../types";
-import { findLastUserMessage, addErrorMessage } from "./utils/chatMessageUtils";
+import { addErrorMessage } from "./utils/chatMessageUtils";
 import { processPrompt } from "./utils/promptProcessor";
 import { processBudgetResponse } from "./services/budgetService";
 import { verifyAuthentication } from "./services/authService";
