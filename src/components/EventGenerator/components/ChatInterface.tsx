@@ -2,6 +2,7 @@
 import { ChatContainer } from "./chat/ChatContainer";
 import { AIModelSelector } from "../components/AIModelSelector";
 import { useState, useEffect, useRef } from "react";
+import { checkPromptForRequiredFields } from "@/hooks/event-generation/utils/promptPreChecker";
 
 interface ChatInterfaceProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -14,6 +15,7 @@ interface ChatInterfaceProps {
   generatedEvent: any | null;
   modelProvider?: 'openai' | 'anthropic';
   onModelChange?: (model: 'openai' | 'anthropic') => void;
+  setChatMessages: React.Dispatch<React.SetStateAction<Array<{ type: 'user' | 'ai', content: string, id?: string }>>>;
 }
 
 export const ChatInterface = (props: ChatInterfaceProps) => {
@@ -39,6 +41,22 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
         lastSubmissionRef.current.prompt === userPrompt && 
         now - lastSubmissionRef.current.timestamp < 3000) {
       console.log("ChatInterface: Ignoring duplicate submission within 3 seconds");
+      return;
+    }
+    
+    // Add the user message to chat
+    props.setChatMessages(prev => [...prev, { type: 'user', content: userPrompt }]);
+    
+    // Check if the prompt has required information
+    const { shouldProceed } = checkPromptForRequiredFields(
+      userPrompt,
+      props.setChatMessages
+    );
+    
+    // If not all required fields are present, don't proceed with the API call
+    if (!shouldProceed) {
+      console.log("ChatInterface: Missing required fields in prompt, asking user for more information");
+      props.setPrompt(""); // Clear input for user to add more info
       return;
     }
     

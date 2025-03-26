@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 
 interface EventGeneratorContentProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
+  setChatMessages: React.Dispatch<React.SetStateAction<Array<{ type: 'user' | 'ai', content: string }>>>;
   generatedEvent: any | null;
   eventTitle: string;
   setEventTitle: (title: string) => void;
@@ -24,6 +25,7 @@ interface EventGeneratorContentProps {
 
 export const EventGeneratorContent = ({
   chatMessages,
+  setChatMessages,
   generatedEvent,
   eventTitle,
   setEventTitle,
@@ -77,6 +79,7 @@ export const EventGeneratorContent = ({
     <>
       <ChatInterface
         chatMessages={chatMessages}
+        setChatMessages={setChatMessages}
         prompt={prompt}
         setPrompt={setPrompt}
         isGenerating={isGenerating}

@@ -30,6 +30,7 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
     hasMissingDate,
     hasMissingLocation,
     chatMessages,
+    setChatMessages,
     additionalInfo,
     showMissingInfoDialog,
     setShowMissingInfoDialog,
@@ -107,6 +108,7 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
         <div className="animate-fade-up space-y-4">
           <EventGeneratorContent 
             chatMessages={chatMessages}
+            setChatMessages={setChatMessages}
             generatedEvent={generatedEvent}
             eventTitle={eventTitle}
             setEventTitle={setEventTitle}
