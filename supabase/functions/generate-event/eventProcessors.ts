@@ -18,12 +18,19 @@ export async function generateResponseWithExtractedInfo(
     // Enhance event data with improved fields
     const enhancedEvent = enhanceEventData(extractedEvent, fullPrompt);
     
+    // Check for missing required fields
+    const missingFields = checkMissingFields(enhancedEvent);
+    
+    console.log("Checking for missing fields:", missingFields);
+    
     // Generate image for the event
     const imageUrl = await generateEventImage(enhancedEvent.imagePrompt || "An elegant event venue");
 
+    // Return with missing fields information if needed
     return createSuccessResponse({
       ...enhancedEvent,
-      imageUrl
+      imageUrl,
+      missingFields
     });
   } catch (error) {
     console.error('Error in generateResponseWithExtractedInfo:', error);
@@ -48,13 +55,20 @@ export async function generateResponseWithAI(
     
     // Enhance the combined event data
     const enhancedEvent = enhanceEventData(combinedEvent, fullPrompt);
+    
+    // Check for missing required fields
+    const missingFields = checkMissingFields(enhancedEvent);
+    
+    console.log("After AI generation, checking for missing fields:", missingFields);
 
     // Generate image for the event
     const imageUrl = await generateEventImage(enhancedEvent.imagePrompt || "An elegant event venue");
 
+    // Return with missing fields information if needed
     return createSuccessResponse({
       ...enhancedEvent,
-      imageUrl
+      imageUrl,
+      missingFields
     });
   } catch (error) {
     console.error('Error in generateResponseWithAI:', error);
@@ -102,6 +116,9 @@ export async function processRequest(prompt: string, additionalInfo: any): Promi
       }
       if (additionalInfo.budget && !extractedEvent.estimatedPrice) {
         extractedEvent.estimatedPrice = additionalInfo.budget;
+      }
+      if (additionalInfo.attendees) {
+        extractedEvent.attendees = additionalInfo.attendees;
       }
     }
     

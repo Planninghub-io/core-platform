@@ -42,9 +42,9 @@ export const EventGeneratorContent = ({
   const { prompt, setPrompt, isGenerating, handlePromptSubmit } = useEventGeneration();
   const [currentModelProvider, setCurrentModelProvider] = useState<'openai' | 'anthropic'>(modelProvider);
 
-  // Updated welcome message
+  // Updated welcome message with more specific instructions
   const welcomeMessage = chatMessages.length === 0 ? 
-    "Hi, please provide your event details including place, date & time to get started with planning." : "";
+    "Hi, please provide your event details including description, date & time, location, number of attendees, and budget to get started with planning." : "";
 
   // Effect to track model changes
   useEffect(() => {

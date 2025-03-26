@@ -1,5 +1,6 @@
 
-// Define the structure of event data
+// Common types for the generate-event function
+
 export interface EventData {
   title: string;
   description: string;
@@ -7,13 +8,15 @@ export interface EventData {
   location: string;
   category: string;
   estimatedPrice: string;
-  imagePrompt: string;
+  imagePrompt?: string;
   imageUrl?: string;
+  attendees?: string;
 }
 
-// Define the structure of missing information response
-export interface MissingInfoResponse {
-  needsInfo: true;
-  missingFields: string[];
-  message: string;
+export interface EventResponse {
+  [key: string]: any;
+}
+
+export interface ErrorResponse {
+  error: string;
 }

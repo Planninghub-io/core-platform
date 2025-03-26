@@ -35,7 +35,9 @@ export const generateEventAPI = async ({
         .map(([key, value]) => `${key}: ${value}`)
         .join(", ");
       
-      fullPrompt = `${prompt}. Additional details: ${additionalDetails}`;
+      if (additionalDetails) {
+        fullPrompt = `${prompt}. Additional details: ${additionalDetails}`;
+      }
     }
 
     console.log('Sending prompt to generate event:', fullPrompt);
@@ -54,6 +56,25 @@ export const generateEventAPI = async ({
     }
 
     console.log('Received response from generate-event:', data);
+    
+    // Process the data to check if we're missing required fields
+    const missingFields = [];
+    
+    // Check for required fields
+    if (!data.date) missingFields.push('date');
+    if (!data.location) missingFields.push('location');
+    if (!data.estimatedPrice) missingFields.push('budget');
+    if (!additionalInfo.attendees) missingFields.push('attendees');
+    
+    // If we're missing fields, format the response appropriately
+    if (missingFields.length > 0) {
+      console.log('Missing fields detected:', missingFields);
+      return { 
+        data,
+        missing: missingFields,
+        needsMoreInfo: true
+      };
+    }
     
     return { data };
   } catch (error: any) {

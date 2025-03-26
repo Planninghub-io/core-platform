@@ -1,6 +1,7 @@
 
 import { ChatMessages } from "./ChatMessages";
 import { ChatInputArea } from "./ChatInputArea";
+import { useEffect } from "react";
 
 interface ChatContainerProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
@@ -24,10 +25,19 @@ export const ChatContainer = ({
   generatedEvent
 }: ChatContainerProps) => {
   console.log("ChatContainer: Rendering with isGenerating =", isGenerating);
+  console.log("ChatContainer: Chat messages:", chatMessages);
+  
+  useEffect(() => {
+    // Scroll chat to bottom when messages update or during generation
+    const chatContainer = document.querySelector(".chat-messages-container");
+    if (chatContainer) {
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+  }, [chatMessages, isGenerating]);
   
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 flex flex-col h-full">
-      <div className="flex-grow overflow-hidden">
+      <div className="flex-grow overflow-hidden chat-messages-container">
         <ChatMessages 
           chatMessages={chatMessages} 
           isGenerating={isGenerating} 

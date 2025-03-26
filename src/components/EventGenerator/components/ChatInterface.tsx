@@ -30,12 +30,12 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
   // Create a new wrapper for the submit handler to ensure proper logging
   const handleSubmit = (userPrompt: string) => {
     console.log("ChatInterface: Submit button clicked with prompt:", userPrompt);
-    if (props.handlePromptSubmit) {
+    if (props.handlePromptSubmit && userPrompt) {
       console.log("ChatInterface: Calling parent handlePromptSubmit with model:", modelProvider);
       // Pass the current userPrompt and modelProvider to the handler
       props.handlePromptSubmit(userPrompt, modelProvider);
     } else {
-      console.error("ChatInterface: handlePromptSubmit prop is undefined");
+      console.error("ChatInterface: handlePromptSubmit prop is undefined or prompt is empty");
     }
   };
 
@@ -52,8 +52,14 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
         />
       </div>
       <ChatContainer 
-        {...props} 
+        chatMessages={props.chatMessages}
+        prompt={props.prompt}
+        setPrompt={props.setPrompt}
+        isGenerating={props.isGenerating}
+        promptCount={props.promptCount}
         handlePromptSubmit={handleSubmit}
+        welcomeMessage={props.welcomeMessage}
+        generatedEvent={props.generatedEvent}
       />
     </div>
   );
