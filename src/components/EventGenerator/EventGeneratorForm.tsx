@@ -17,9 +17,16 @@ export const EventGeneratorForm = ({
   onPromptChange,
   onSubmit,
 }: EventGeneratorFormProps) => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (prompt.trim()) {
+      onSubmit();
+    }
+  };
+
   return (
     <div className="w-full">
-      <div className="relative w-full flex items-center">
+      <form onSubmit={handleSubmit} className="relative w-full flex items-center">
         <input
           type="text"
           placeholder="Plan a fund raiser event..."
@@ -35,14 +42,14 @@ export const EventGeneratorForm = ({
           autoFocus
         />
         <Button
-          onClick={onSubmit}
+          type="submit"
           size="icon"
           className="absolute right-1 h-10 w-10 rounded-full bg-[#8b73f4] hover:bg-[#8b73f4]/90"
           disabled={isGenerating || !prompt.trim()}
         >
           <Send className="h-4 w-4" />
         </Button>
-      </div>
+      </form>
       
       {promptCount === 1 && (
         <p className="text-sm text-gray-500 mt-2 text-center">
