@@ -26,7 +26,7 @@ export const ChatInputArea = ({
   
   return (
     <div className="border-t border-gray-200 p-4 bg-gray-50">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 w-full">
         {isFirstInteraction ? (
           <EventGeneratorForm
             prompt={prompt}
