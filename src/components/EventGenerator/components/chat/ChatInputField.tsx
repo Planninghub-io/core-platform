@@ -28,8 +28,8 @@ export const ChatInputField = ({
   // 2. Prompt is empty 
   const isButtonDisabled = isGenerating || !prompt.trim();
   
-  // First, add the user message to chat when submitting
-  const addUserMessageAndSubmit = (e?: React.FormEvent) => {
+  // Handle form submission
+  const handleSubmission = (e?: React.FormEvent) => {
     if (e) {
       e.preventDefault();
     }
@@ -39,24 +39,15 @@ export const ChatInputField = ({
       return;
     }
     
-    console.log("ChatInputField: Adding user message to chat:", prompt);
+    console.log("ChatInputField: Submitting prompt:", prompt);
     
-    // Add user message to chat first
-    const userChatMessages = document.querySelectorAll('[data-testid="chat-messages"] > div');
-    const hasUserMessage = Array.from(userChatMessages).some(
-      div => div.textContent?.includes(prompt)
-    );
-    
-    if (!hasUserMessage) {
-      console.log("ChatInputField: User message not found in chat, adding it");
-    }
-    
-    // Clear the input immediately
+    // Call the submit handler with the current prompt
     const currentPrompt = prompt;
+    
+    // Clear the input immediately for better UX
     setPrompt("");
     
-    // Then call the submit handler to process it
-    console.log("ChatInputField: Calling handlePromptSubmit");
+    // Handle submission
     handlePromptSubmit(e);
   };
   
@@ -65,16 +56,7 @@ export const ChatInputField = ({
     if (e.key === 'Enter' && !e.shiftKey && prompt.trim() && !isGenerating) {
       e.preventDefault();
       console.log("ChatInputField: Enter key pressed, submitting");
-      addUserMessageAndSubmit();
-    }
-  };
-  
-  // Button click handler
-  const handleButtonClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (!isButtonDisabled) {
-      console.log("ChatInputField: Submit button clicked manually");
-      addUserMessageAndSubmit();
+      handleSubmission();
     }
   };
   
@@ -83,7 +65,7 @@ export const ChatInputField = ({
       className="flex items-center gap-2 w-full"
       onSubmit={(e) => {
         e.preventDefault();
-        addUserMessageAndSubmit(e);
+        handleSubmission(e);
       }}
     >
       <Input
@@ -98,7 +80,6 @@ export const ChatInputField = ({
       />
       <Button 
         type="submit"
-        onClick={handleButtonClick}
         disabled={isButtonDisabled}
         size="icon"
         className="h-12 w-12 rounded-full bg-[#8b73f4] hover:bg-[#8b73f4]/90"

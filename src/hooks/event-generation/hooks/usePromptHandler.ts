@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ChatMessage, GeneratedEvent } from "../types";
 import { createErrorMessage, createAIMessage } from "../utils/chatMessageUtils";
+import { getPromptFromChatMessages } from "./utils/promptProcessor";
 
 export const usePromptHandler = (
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
@@ -15,17 +16,30 @@ export const usePromptHandler = (
 
   // Handle prompt submission
   const handlePromptSubmit = async (modelProvider: 'openai' | 'anthropic' = 'openai') => {
-    if (!prompt.trim()) {
+    // Get the current prompt either from the input field or the last chat message
+    const currentPrompt = prompt.trim() 
+      ? prompt.trim() 
+      : getPromptFromChatMessages(setChatMessages.getMostRecent?.() || []);
+      
+    console.log("Processing prompt:", currentPrompt);
+    
+    if (!currentPrompt) {
       toast({
         title: "Error",
         description: "Please enter an event description",
         variant: "destructive",
       });
-      return;
+      return null;
     }
 
-    // First add the user message to chat
-    setChatMessages(prev => [...prev, { type: 'user', content: prompt }]);
+    // First add the user message to chat if it's not already there
+    setChatMessages(prev => {
+      const lastMessage = prev[prev.length - 1];
+      if (lastMessage?.type !== 'user' || lastMessage?.content !== currentPrompt) {
+        return [...prev, { type: 'user', content: currentPrompt }];
+      }
+      return prev;
+    });
 
     // Show loading message
     setChatMessages(prev => [
@@ -35,7 +49,7 @@ export const usePromptHandler = (
 
     try {
       // Generate the event
-      const response = await coreGenerateEvent(prompt, modelProvider);
+      const response = await coreGenerateEvent(currentPrompt, modelProvider);
 
       // Remove the loading message
       setChatMessages(prev => prev.slice(0, -1));

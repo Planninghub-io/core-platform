@@ -20,18 +20,13 @@ export const EventGeneratorForm = ({
   // Form submission handler
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (prompt.trim() && !isGenerating) {
-      console.log("EventGeneratorForm: form submitted");
+    
+    console.log("EventGeneratorForm: form submitted with prompt:", prompt);
+    
+    if (prompt.trim()) {
       onSubmit(e);
-    }
-  };
-
-  // Button click handler - explicit to avoid conflicts
-  const handleButtonClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (prompt.trim() && !isGenerating) {
-      console.log("EventGeneratorForm: Submit button clicked");
-      onSubmit();
+    } else {
+      console.log("EventGeneratorForm: Empty prompt, not submitting");
     }
   };
 
@@ -55,8 +50,7 @@ export const EventGeneratorForm = ({
           data-testid="generator-input-field"
         />
         <Button
-          type="button"
-          onClick={handleButtonClick}
+          type="submit"
           size="icon"
           className="absolute right-1 h-10 w-10 rounded-full bg-[#8b73f4] hover:bg-[#8b73f4]/90"
           disabled={isGenerating || !prompt.trim()}

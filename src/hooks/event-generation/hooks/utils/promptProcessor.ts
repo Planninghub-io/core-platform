@@ -12,6 +12,11 @@ export const processPrompt = (
   userPrompt: string,
   additionalInfo: Record<string, string> = {}
 ): Record<string, string> => {
+  // Handle empty prompts
+  if (!userPrompt || !userPrompt.trim()) {
+    return { ...additionalInfo };
+  }
+  
   // Extract information from the prompt
   const extractedDate = extractDateFromPrompt(userPrompt);
   const extractedLocation = extractLocationFromPrompt(userPrompt);
@@ -33,4 +38,22 @@ export const processPrompt = (
   }
   
   return combinedInfo;
+};
+
+/**
+ * Extract the prompt directly from chat messages
+ */
+export const getPromptFromChatMessages = (chatMessages: Array<{type: 'user' | 'ai', content: string}>): string => {
+  if (!chatMessages || chatMessages.length === 0) {
+    return "";
+  }
+  
+  // Find the most recent user message
+  for (let i = chatMessages.length - 1; i >= 0; i--) {
+    if (chatMessages[i].type === 'user') {
+      return chatMessages[i].content;
+    }
+  }
+  
+  return "";
 };

@@ -14,6 +14,11 @@ export const generateEventAPI = async ({
   modelProvider?: 'openai' | 'anthropic';
 }) => {
   try {
+    // Validate prompt
+    if (!prompt || !prompt.trim()) {
+      return { error: new Error("Please enter an event description") };
+    }
+    
     console.log('Sending prompt to generate event:', prompt);
     console.log('Using model provider:', modelProvider);
     
