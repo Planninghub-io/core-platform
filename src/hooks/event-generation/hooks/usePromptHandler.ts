@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ChatMessage, GeneratedEvent } from "../types";
-import { createErrorMessage, createAIMessage, addAIMessage } from "../utils/chatMessageUtils";
+import { createErrorMessage, createAIMessage } from "../utils/chatMessageUtils";
 
 export const usePromptHandler = (
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
@@ -32,50 +32,58 @@ export const usePromptHandler = (
 
     setIsGenerating(true);
 
-    // First add the user message to chat if it's not already there
-    setChatMessages(prev => {
-      const lastMessage = prev[prev.length - 1];
-      if (lastMessage?.type !== 'user' || lastMessage?.content !== currentPrompt) {
-        console.log("Adding user message to chat:", currentPrompt);
-        return [...prev, { type: 'user', content: currentPrompt }];
-      }
-      return prev;
-    });
-
     try {
+      // First add the user message to chat
+      console.log("Adding user message:", currentPrompt);
+      setChatMessages(prev => {
+        const lastMessage = prev[prev.length - 1];
+        // Only add if it's not a duplicate
+        if (lastMessage?.type !== 'user' || lastMessage?.content !== currentPrompt) {
+          return [...prev, { type: 'user', content: currentPrompt }];
+        }
+        return prev;
+      });
+
       // Store the prompt before clearing the input
       const promptToSend = currentPrompt;
       
-      // Clear the prompt input for better UX
+      // Clear the prompt input
       setPrompt("");
       
-      // Add a loading message to indicate processing
+      // Add a loading indicator message
       setChatMessages(prev => [...prev, { 
         type: "ai", 
         content: "Generating your event details..." 
       }]);
       
-      // Generate the event using the stored prompt
+      // Generate the event
+      console.log("Sending prompt to API:", promptToSend, "with model:", modelProvider);
       const response = await coreGenerateEvent(promptToSend, modelProvider);
-      console.log("Response received:", response);
+      console.log("API response received:", response);
 
       // Remove the loading message
-      setChatMessages(prev => prev.filter(msg => msg.content !== "Generating your event details..."));
+      setChatMessages(prev => 
+        prev.filter(msg => msg.content !== "Generating your event details...")
+      );
 
-      if (response?.error) {
+      if (!response || response?.error) {
         // Display error message
-        console.log("Error in response, adding error message to chat");
+        console.error("Error in response:", response?.error);
         setChatMessages(prev => [
-          ...prev,
+          ...prev.filter(msg => msg.content !== "Generating your event details..."),
           { type: 'ai', content: createErrorMessage() }
         ]);
         return null;
       }
 
-      // Type guard to ensure we're handling properties correctly for each response type
+      // Type guard to ensure we're handling properties correctly
       if (response && 'data' in response) {
         const data = response.data;
         console.log("Processing response data:", data);
+        
+        if (!data) {
+          throw new Error("Invalid response data");
+        }
         
         // Create an AI response message
         const aiMessage = `I've generated an event plan for "${data.title || 'your event'}". Here's what I've planned:
@@ -111,7 +119,7 @@ ${data.missingFields?.length > 0 ? `I need more information about: ${data.missin
       }
       
       // If we don't have data in the expected format, add a generic message
-      console.log("Response did not contain expected data format");
+      console.error("Response did not contain expected data format:", response);
       setChatMessages(prev => [
         ...prev.filter(msg => msg.content !== "Generating your event details..."),
         { type: 'ai', content: "I've processed your request, but couldn't generate a complete event. Please try providing more details." }
@@ -120,8 +128,11 @@ ${data.missingFields?.length > 0 ? `I need more information about: ${data.missin
       return null;
     } catch (error) {
       console.error("Error generating event:", error);
-      // Remove the loading message if present
-      setChatMessages(prev => prev.filter(msg => msg.content !== "Generating your event details..."));
+      
+      // Remove the loading message
+      setChatMessages(prev => 
+        prev.filter(msg => msg.content !== "Generating your event details...")
+      );
       
       // Add error message to chat
       setChatMessages(prev => [

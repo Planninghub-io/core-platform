@@ -23,13 +23,12 @@ export const ChatMessages = ({
   // Debugging
   useEffect(() => {
     console.log("ChatMessages: Rendering with", chatMessages.length, "messages");
-    console.log("ChatMessages: Messages content:", chatMessages);
+    console.log("ChatMessages: Messages content:", JSON.stringify(chatMessages));
   }, [chatMessages]);
 
-  return (
-    <div className="p-4 h-[400px] overflow-y-auto">
-      {/* Show welcome message if no messages and welcomeMessage is provided */}
-      {welcomeMessage && chatMessages.length === 0 && (
+  if (chatMessages.length === 0 && welcomeMessage) {
+    return (
+      <div className="p-4 h-[400px] overflow-y-auto">
         <ChatMessage
           key="welcome"
           message={welcomeMessage}
@@ -37,9 +36,13 @@ export const ChatMessages = ({
           isLoading={false}
           isWelcomeMessage={true}
         />
-      )}
-      
-      {/* Map through and display all chat messages */}
+        <div ref={messagesEndRef} />
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4 h-[400px] overflow-y-auto" id="chat-messages-container">
       {chatMessages.map((message, index) => (
         <ChatMessage 
           key={`message-${index}`} 
