@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { ChatMessages } from "./chat/ChatMessages";
 import { ChatInput } from "./ChatInput";
-import { Card } from "@/components/ui/card"; // Replace Paper with Card from shadcn/ui
+import { Card } from "@/components/ui/card";
 import { ChatInterfaceRefactored } from "./chat/ChatInterfaceRefactored";
 
 interface ChatInterfaceProps {

@@ -60,8 +60,9 @@ export const EventGeneratorContent = ({
   const welcomeMessage = "";
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div className="flex flex-col lg:col-span-1 w-full">
+    <div className="w-full">
+      {/* Full width container for chat interface */}
+      <div className="w-full mb-6">
         <ChatInterface
           chatMessages={chatMessages}
           setChatMessages={setChatMessages}
@@ -79,8 +80,9 @@ export const EventGeneratorContent = ({
         />
       </div>
       
+      {/* Only show event details section when an event is generated */}
       {showEventDetails && generatedEvent && (
-        <div className="flex flex-col lg:col-span-1">
+        <div className="w-full">
           <EventDetailsSection
             generatedEvent={generatedEvent}
             eventTitle={eventTitle}
