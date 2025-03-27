@@ -76,10 +76,6 @@ export const ChatInputArea = ({
           onSubmit={submitPrompt}
           shouldShowButton={false}
         />
-        <ModelDropdown 
-          modelProvider={modelProvider}
-          onModelChange={onModelChange}
-        />
         <Button
           type="submit"
           size="icon"
@@ -88,6 +84,10 @@ export const ChatInputArea = ({
         >
           <Send size={18} className="text-white" />
         </Button>
+        <ModelDropdown 
+          modelProvider={modelProvider}
+          onModelChange={onModelChange}
+        />
       </form>
       
       {promptCount === 1 && (

@@ -105,12 +105,6 @@ export const ChatInput = ({
                 shouldShowButton={false}
               />
             </div>
-            {modelProvider && onModelChange && (
-              <ModelDropdown
-                modelProvider={modelProvider}
-                onModelChange={onModelChange}
-              />
-            )}
             <Button
               type="submit"
               size="icon"
@@ -124,6 +118,12 @@ export const ChatInput = ({
             >
               <Send size={18} className="text-white" />
             </Button>
+            {modelProvider && onModelChange && (
+              <ModelDropdown
+                modelProvider={modelProvider}
+                onModelChange={onModelChange}
+              />
+            )}
           </form>
         )}
       </div>
