@@ -61,7 +61,7 @@ export const EventGeneratorContent = ({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="flex flex-col">
+      <div className="flex flex-col md:col-span-1">
         <ChatInterface
           chatMessages={chatMessages}
           setChatMessages={setChatMessages}
@@ -80,7 +80,7 @@ export const EventGeneratorContent = ({
       </div>
       
       {showEventDetails && generatedEvent && (
-        <div className="flex flex-col">
+        <div className="flex flex-col md:col-span-1">
           <EventDetailsSection
             generatedEvent={generatedEvent}
             eventTitle={eventTitle}
