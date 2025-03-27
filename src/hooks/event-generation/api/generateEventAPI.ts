@@ -8,7 +8,6 @@ const apiCache = new Map();
 interface GenerateEventParams {
   prompt: string;
   additionalInfo?: Record<string, string>;
-  modelProvider?: 'openai' | 'anthropic';
 }
 
 interface GenerateEventResponse {
@@ -21,12 +20,11 @@ interface GenerateEventResponse {
 
 export const generateEventAPI = async ({
   prompt,
-  additionalInfo = {},
-  modelProvider = 'openai'
+  additionalInfo = {}
 }: GenerateEventParams): Promise<GenerateEventResponse> => {
   try {
     // Create a cache key from the request parameters
-    const cacheKey = `${prompt}-${JSON.stringify(additionalInfo)}-${modelProvider}`;
+    const cacheKey = `${prompt}-${JSON.stringify(additionalInfo)}`;
     
     // Check cache for recent identical requests (valid for 1 minute)
     const cachedResponse = apiCache.get(cacheKey);
@@ -39,15 +37,11 @@ export const generateEventAPI = async ({
     if (process.env.NODE_ENV === 'development') {
       console.log("generateEventAPI: Called with prompt:", prompt);
       console.log("generateEventAPI: Additional info:", additionalInfo);
-      console.log("generateEventAPI: Using model provider:", modelProvider);
     }
     
     let fullPrompt = prompt;
     if (Object.keys(additionalInfo).length > 0) {
-      // Filter out modelProvider from the prompt details
-      const { modelProvider: _, ...promptDetails } = additionalInfo;
-      
-      const additionalDetails = Object.entries(promptDetails)
+      const additionalDetails = Object.entries(additionalInfo)
         .map(([key, value]) => `${key}: ${value}`)
         .join(", ");
       
@@ -61,7 +55,6 @@ export const generateEventAPI = async ({
     const { data, error } = await supabase.functions.invoke('generate-event', {
       body: { 
         prompt: fullPrompt,
-        modelProvider,
         additionalInfo
       },
     });

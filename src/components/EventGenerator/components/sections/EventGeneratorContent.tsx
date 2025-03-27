@@ -18,8 +18,8 @@ interface EventGeneratorContentProps {
   hasMissingLocation: boolean;
   handleCreateEvent: () => void;
   latestPrompt: string;
-  modelProvider: 'openai' | 'anthropic';
-  onModelChange: (model: 'openai' | 'anthropic') => void;
+  modelProvider: 'openai';
+  onModelChange: (model: 'openai') => void;
   promptCount: number;
 }
 
@@ -42,7 +42,7 @@ export const EventGeneratorContent = ({
   promptCount
 }: EventGeneratorContentProps) => {
   const { prompt, setPrompt, isGenerating, handlePromptSubmit } = useEventGeneration();
-  const [currentModelProvider, setCurrentModelProvider] = useState<'openai' | 'anthropic'>(modelProvider);
+  const [currentModelProvider, setCurrentModelProvider] = useState<'openai'>(modelProvider);
 
   // Using an empty string as the welcome message to let ChatMessages component use its enhanced version
   const welcomeMessage = chatMessages.length === 0 ? "" : "";
@@ -59,31 +59,6 @@ export const EventGeneratorContent = ({
     }
   }, [generatedEvent]);
 
-  // Handle prompt submission with the selected model
-  const handleSubmit = (userPrompt: string, selectedModel?: 'openai' | 'anthropic') => {
-    console.log("EventGeneratorContent: handleSubmit called with prompt:", userPrompt);
-    console.log("EventGeneratorContent: handleSubmit called with model:", selectedModel || currentModelProvider);
-    
-    // Use the model selected in the UI component if provided, otherwise fall back to the state
-    const modelToUse = selectedModel || currentModelProvider;
-    
-    // Update the current model if different
-    if (selectedModel && selectedModel !== currentModelProvider) {
-      setCurrentModelProvider(selectedModel);
-      onModelChange(selectedModel);
-    }
-    
-    // Clear prompt here as well to ensure it's cleared in all relevant places
-    setPrompt("");
-    
-    // Submit the prompt if valid
-    if (userPrompt && userPrompt.trim() !== "") {
-      handlePromptSubmit(userPrompt, modelToUse);
-    } else {
-      console.error("EventGeneratorContent: Empty prompt submitted");
-    }
-  };
-
   return (
     <>
       <ChatInterface
@@ -93,7 +68,7 @@ export const EventGeneratorContent = ({
         setPrompt={setPrompt}
         isGenerating={isGenerating}
         promptCount={promptCount}
-        handlePromptSubmit={handleSubmit}
+        handlePromptSubmit={handlePromptSubmit}
         welcomeMessage={welcomeMessage}
         generatedEvent={generatedEvent}
         modelProvider={currentModelProvider}
