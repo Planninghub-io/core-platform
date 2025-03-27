@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import React, { FormEvent, forwardRef, useState, useEffect, useRef } from "react";
 import { RotateCcw } from "lucide-react";
@@ -9,6 +10,7 @@ interface ChatInputFieldProps {
   isGenerating: boolean;
   onSubmit: (e?: FormEvent) => void;
   shouldShowButton?: boolean;
+  className?: string; // Add className prop to the interface
   // Add the missing props that are being passed from ChatInput
   generatedEvent?: any;
   chatMessages?: Array<{ type: 'user' | 'ai', content: string }>;
@@ -35,6 +37,7 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
     isGenerating, 
     onSubmit, 
     shouldShowButton = false,
+    className = '', // Add default empty string for className
     // Adding the new props with default values
     generatedEvent,
     chatMessages,
@@ -179,7 +182,7 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
     };
 
     return (
-      <div className="relative flex-1">
+      <div className={`relative flex-1 ${className}`}>
         <Input
           ref={ref}
           type="text"
