@@ -13,6 +13,16 @@ export function extractDateTime(prompt: string): string | null {
     return timeZoneMatch[1].trim();
   }
   
+  // Simple month date like "April 5th" without on/at prefix
+  const simpleDateRegex = /(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?/i;
+  const simpleDateMatch = prompt.match(simpleDateRegex);
+  
+  if (simpleDateMatch && prompt.split(' ').length <= 3) {
+    // This is likely a date-only response
+    const currentYear = new Date().getFullYear();
+    return `${simpleDateMatch[0]}, ${currentYear}`;
+  }
+  
   // Standard date/time pattern
   const dateTimeRegex = /(?:on|at)\s+((?:January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2}(?:st|nd|rd|th)?,?\s+\d{4}(?:\s+at\s+\d{1,2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?)/i;
   const dateTimeMatch = prompt.match(dateTimeRegex);

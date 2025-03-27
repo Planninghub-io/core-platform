@@ -35,7 +35,33 @@ export const submitPrompt = async (
   const extractedInfo = extractInfoFromPrompt(prompt);
   console.log(`submitPrompt [${apiCallId}]: Extracted info from prompt:`, extractedInfo);
   
-  const combinedInfo = { ...additionalInfo, ...extractedInfo };
+  // Store the original prompt in follow-up conversations so we can use it later
+  // This is particularly useful for date-only responses
+  let combinedInfo = { ...additionalInfo, ...extractedInfo };
+  if (!combinedInfo.originalPrompt && additionalInfo.previousPrompts) {
+    // Use the last non-date prompt as the original prompt
+    const previousPrompts = JSON.parse(additionalInfo.previousPrompts);
+    if (previousPrompts && previousPrompts.length > 0) {
+      combinedInfo.originalPrompt = previousPrompts[previousPrompts.length - 1];
+    }
+  } else if (!combinedInfo.originalPrompt && prompt.split(' ').length > 3) {
+    // If this is a full prompt (not just a date), store it for later
+    combinedInfo.originalPrompt = prompt;
+  }
+  
+  // Track previous prompts
+  if (!combinedInfo.previousPrompts) {
+    combinedInfo.previousPrompts = JSON.stringify([prompt]);
+  } else {
+    try {
+      const previousPrompts = JSON.parse(combinedInfo.previousPrompts);
+      previousPrompts.push(prompt);
+      combinedInfo.previousPrompts = JSON.stringify(previousPrompts);
+    } catch (e) {
+      combinedInfo.previousPrompts = JSON.stringify([prompt]);
+    }
+  }
+  
   console.log(`submitPrompt [${apiCallId}]: Combined info for API call:`, combinedInfo);
   
   setIsGenerating(true);
