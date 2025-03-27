@@ -47,7 +47,9 @@ export async function generateEventWithAI(prompt: string, provider: string = 'op
     }
   } catch (error) {
     console.error(`Error generating event with ${provider}:`, error);
-    return {};
+    return {
+      missingFields: ['date', 'location']
+    };
   }
 }
 
@@ -84,7 +86,7 @@ async function generateEventWithOpenAI(prompt: string): Promise<Partial<EventDat
 
     if (!response.ok) {
       console.error('AI generation error:', await response.text());
-      return {};
+      return { missingFields: ['date', 'location'] };
     }
 
     const data = await response.json();
@@ -93,7 +95,7 @@ async function generateEventWithOpenAI(prompt: string): Promise<Partial<EventDat
     return parseEventContent(content);
   } catch (error) {
     console.error('Error generating event with OpenAI:', error);
-    return {};
+    return { missingFields: ['date', 'location'] };
   }
 }
 
@@ -128,7 +130,7 @@ async function generateEventWithAnthropic(prompt: string): Promise<Partial<Event
 
     if (!response.ok) {
       console.error('AI generation error:', await response.text());
-      return {};
+      return { missingFields: ['date', 'location'] };
     }
 
     const data = await response.json();
@@ -137,7 +139,7 @@ async function generateEventWithAnthropic(prompt: string): Promise<Partial<Event
     return parseEventContent(content);
   } catch (error) {
     console.error('Error generating event with Anthropic:', error);
-    return {};
+    return { missingFields: ['date', 'location'] };
   }
 }
 
@@ -147,7 +149,17 @@ async function generateEventWithAnthropic(prompt: string): Promise<Partial<Event
 function parseEventContent(content: string): Partial<EventData> {
   // Parse the response and extract event details
   const lines = content.split('\n');
-  let event: Partial<EventData> = {};
+  let event: Partial<EventData> = {
+    missingFields: []
+  };
+  
+  // Initialize default values for required fields
+  event.date = '';
+  event.location = '';
+  event.estimatedPrice = '';
+  event.category = '';
+  event.title = '';
+  event.description = '';
   
   lines.forEach(line => {
     if (line.toLowerCase().startsWith('title:')) event.title = line.split(':')[1].trim();
@@ -157,6 +169,15 @@ function parseEventContent(content: string): Partial<EventData> {
     if (line.toLowerCase().startsWith('estimated price:')) event.estimatedPrice = line.split(':')[1].trim();
     if (line.toLowerCase().startsWith('image prompt:')) event.imagePrompt = line.split(':')[1].trim();
   });
+  
+  // Check missing fields
+  const missingFields = [];
+  if (!event.date) missingFields.push('date');
+  if (!event.location) missingFields.push('location');
+  if (!event.estimatedPrice) missingFields.push('budget');
+  
+  // Add missingFields to the event object
+  event.missingFields = missingFields;
 
   return event;
 }

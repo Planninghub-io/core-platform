@@ -59,13 +59,7 @@ export const generateEventAPI = async ({
     console.log('generateEventAPI: Received response from generate-event:', data);
     
     // Process the data to check if we're missing required fields
-    const missingFields = [];
-    
-    // Check for required fields
-    if (!data.date) missingFields.push('date');
-    if (!data.location) missingFields.push('location');
-    if (!data.estimatedPrice) missingFields.push('budget');
-    if (!additionalInfo.attendees) missingFields.push('attendees');
+    const missingFields = data.missingFields || [];
     
     // If we're missing fields, format the response appropriately
     if (missingFields.length > 0) {

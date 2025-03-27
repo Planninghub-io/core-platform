@@ -20,12 +20,13 @@ export const processSuccessfulResponse = (
   
   console.log("Processing successful API response:", response);
   
-  // Process the event response
-  if (response.data) {
-    console.log("Setting generated event data:", response.data);
+  // Process the event response - ensure we're getting the data regardless of model
+  if (response && (response.data || response.validatedEvent)) {
+    const eventData = response.data || response.validatedEvent;
+    console.log("Setting generated event data:", eventData);
     
     // Store generated event
-    setGeneratedEvent(response.data);
+    setGeneratedEvent(eventData);
     
     // Update prompt count for new prompts
     if (!isResubmitting) {
