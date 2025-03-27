@@ -20,3 +20,6 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
     />
   );
 };
+
+// Add a default export for lazy loading compatibility
+export default EventGeneratorSection;

@@ -9,6 +9,9 @@
     
     <!-- Facebook Pixel Code - Fully deferred implementation -->
     <script>
+      // Define process.env for development mode checks
+      window.process = { env: { NODE_ENV: 'production' } };
+      
       // Create a stub function that just queues commands without making network requests
       window.fbq = function() {
         // Store commands in _fbq array for later execution
@@ -25,7 +28,7 @@
         window._fbPixelLoaded = true;
         
         // Log loading in development
-        if (process.env.NODE_ENV === 'development') {
+        if (window.process.env.NODE_ENV === 'development') {
           console.log('Loading Facebook Pixel on user interaction or timeout');
         }
         

@@ -4,11 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import SideNav from "@/components/SideNav";
 import { SidebarProvider } from '@/components/ui/sidebar';
 
-// Lazy load the EventGeneratorSection to improve initial page load
+// Fix the lazy import by using default export
 const EventGeneratorSection = lazy(() => 
-  import('@/components/EventGenerator/EventGeneratorSection').then(module => ({
-    default: module.EventGeneratorSection
-  }))
+  import('@/components/EventGenerator/EventGeneratorSection')
 );
 
 const Index = () => {

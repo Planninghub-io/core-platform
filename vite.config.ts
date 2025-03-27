@@ -20,4 +20,10 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  define: {
+    // Explicitly define process.env
+    'process.env': {
+      NODE_ENV: JSON.stringify(mode),
+    }
+  }
 }));
