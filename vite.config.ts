@@ -20,10 +20,28 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Improve chunking strategy
+          vendor: [
+            'react', 
+            'react-dom', 
+            'react-router-dom'
+          ],
+        }
+      }
+    }
+  },
   define: {
     // Explicitly define process.env
     'process.env': {
       NODE_ENV: JSON.stringify(mode),
     }
+  },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom']
   }
 }));

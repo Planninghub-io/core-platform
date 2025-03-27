@@ -4,10 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import SideNav from "@/components/SideNav";
 import { SidebarProvider } from '@/components/ui/sidebar';
 
-// Fix the lazy import by using default export
-const EventGeneratorSection = lazy(() => 
-  import('@/components/EventGenerator/EventGeneratorSection')
-);
+// Use direct import instead of lazy loading for now to diagnose the issue
+import EventGeneratorSection from '@/components/EventGenerator/EventGeneratorSection';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -23,9 +21,7 @@ const Index = () => {
         <SideNav />
         <main className="flex-1">
           <div className="max-w-7xl mx-auto">
-            <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
-              <EventGeneratorSection onCreateManualEvent={handleCreateManualEvent} />
-            </Suspense>
+            <EventGeneratorSection onCreateManualEvent={handleCreateManualEvent} />
           </div>
         </main>
       </div>

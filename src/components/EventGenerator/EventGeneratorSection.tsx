@@ -6,7 +6,7 @@ interface EventGeneratorSectionProps {
   onCreateManualEvent?: () => void;
 }
 
-export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSectionProps) => {
+const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSectionProps) => {
   const navigate = useNavigate();
   
   // Create a handler for manual event creation
@@ -21,5 +21,5 @@ export const EventGeneratorSection = ({ onCreateManualEvent }: EventGeneratorSec
   );
 };
 
-// Add a default export for lazy loading compatibility
+// Make sure we have a proper default export
 export default EventGeneratorSection;
