@@ -1,3 +1,4 @@
+
 import { generateEventWithAPI } from "./eventGenerationAPI";
 import { extractInfoFromPrompt } from "../utils/promptExtractor";
 import { ChatMessage } from "../../types";
@@ -10,6 +11,7 @@ import { createErrorMessage } from "../../utils/chatMessageUtils";
  */
 export const submitPrompt = async (
   prompt: string,
+  modelProvider: 'openai' | 'anthropic',
   additionalInfo: Record<string, string>,
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
   setIsGenerating: React.Dispatch<React.SetStateAction<boolean>>,
@@ -26,7 +28,7 @@ export const submitPrompt = async (
     return { error: new Error("Please enter an event description") };
   }
   
-  console.log(`submitPrompt [${apiCallId}]: Starting prompt submission`);
+  console.log(`submitPrompt [${apiCallId}]: Starting prompt submission with model:`, modelProvider);
   console.log(`submitPrompt [${apiCallId}]: Prompt content:`, prompt);
   
   // Extract additional information from the prompt
@@ -79,6 +81,7 @@ export const submitPrompt = async (
     console.log(`submitPrompt [${apiCallId}]: Calling generateEventWithAPI`);
     const response = await generateEventWithAPI(
       prompt,
+      modelProvider,
       combinedInfo,
       apiCallId
     ) as GenerateEventResponse;

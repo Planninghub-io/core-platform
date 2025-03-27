@@ -36,7 +36,7 @@ export const usePromptSubmission = (
   /**
    * Handle prompt submission - only when explicitly called with a non-empty prompt
    */
-  const handlePromptSubmit = async (prompt: string) => {
+  const handlePromptSubmit = async (prompt: string, modelProvider: 'openai' | 'anthropic' = 'openai') => {
     // Skip empty prompts or automatic calls
     if (!prompt || prompt.trim() === '') {
       console.log("usePromptSubmission: Empty prompt, ignoring request");
@@ -48,6 +48,7 @@ export const usePromptSubmission = (
       setHasInitiated(true);
     }
     
+    console.log("usePromptSubmission: handlePromptSubmit called with model:", modelProvider);
     console.log("usePromptSubmission: Prompt received:", prompt);
     
     if (isGenerating) {
@@ -63,6 +64,7 @@ export const usePromptSubmission = (
     try {
       const result = await submitPrompt(
         prompt,
+        modelProvider,
         additionalInfo,
         setChatMessages,
         setIsGenerating,

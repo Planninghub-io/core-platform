@@ -6,11 +6,9 @@ import { usePromptSubmission } from "./hooks/usePromptSubmission";
 import { EventGenerationHookReturn } from "./types/hook-types";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "react-router-dom";
 
 export const useEventGeneration = (): any => {
   const { toast } = useToast();
-  const navigate = useNavigate();
   const { 
     createEvent: originalCreateEvent, 
     isCreating, 
@@ -142,8 +140,8 @@ export const useEventGeneration = (): any => {
         description: "Event created successfully!",
       });
 
-      // Redirect to events hub page
-      navigate('/events-hub');
+      // Redirect to event page
+      window.location.href = `/event/${data.id}`;
     } catch (error: any) {
       console.error("Error creating event:", error);
       toast({

@@ -10,18 +10,18 @@ interface ChatInterfaceProps {
   setPrompt: (prompt: string) => void;
   isGenerating: boolean;
   promptCount: number;
-  handlePromptSubmit: (prompt: string) => void;
+  handlePromptSubmit: (prompt: string, modelProvider?: 'openai' | 'anthropic') => void;
   welcomeMessage: string;
   generatedEvent: any | null;
-  modelProvider?: 'openai';
-  onModelChange?: (model: 'openai') => void;
+  modelProvider?: 'openai' | 'anthropic';
+  onModelChange?: (model: 'openai' | 'anthropic') => void;
   setChatMessages: React.Dispatch<React.SetStateAction<Array<{ type: 'user' | 'ai', content: string, id?: string }>>>;
   setSelectedDate?: (date: string) => void;
   setLocation?: (location: string) => void;
 }
 
 export const ChatInterface = (props: ChatInterfaceProps) => {
-  const [modelProvider, setModelProvider] = useState<'openai'>(props.modelProvider || 'openai');
+  const [modelProvider, setModelProvider] = useState<'openai' | 'anthropic'>(props.modelProvider || 'openai');
   const lastSubmissionRef = useRef<{ prompt: string, timestamp: number } | null>(null);
   const [pendingInfo, setPendingInfo] = useState<{
     date?: string;
@@ -30,13 +30,16 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
     originalPrompt?: string;
   }>({});
   
-  // Handle model change 
-  const handleModelChange = useCallback((model: 'openai') => {
+  // Handle model change with debounce to prevent unnecessary API calls
+  const handleModelChange = useCallback((model: 'openai' | 'anthropic') => {
+    if (model === modelProvider) return; // Skip if same model
+    
+    console.log("ChatInterface: Model changed from", modelProvider, "to", model);
     setModelProvider(model);
     if (props.onModelChange) {
       props.onModelChange(model);
     }
-  }, [props.onModelChange]);
+  }, [modelProvider, props.onModelChange]);
 
   // Create a new wrapper for the submit handler with optimized checks
   const handleSubmit = useCallback((userPrompt: string) => {
@@ -88,13 +91,10 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
         
         // Call the handler with the complete prompt
         lastSubmissionRef.current = { prompt: completePrompt, timestamp: now };
-        props.handlePromptSubmit(completePrompt);
+        props.handlePromptSubmit(completePrompt, modelProvider);
         
         // Clear pending info since we're done collecting
         setPendingInfo({});
-        
-        // Clear the input field
-        props.setPrompt("");
         return;
       } else {
         // Still missing info, clear input for user to provide more
@@ -148,15 +148,13 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
     lastSubmissionRef.current = { prompt: userPrompt, timestamp: now };
     
     if (props.handlePromptSubmit) {
-      console.log("ChatInterface: Calling parent handlePromptSubmit");
-      // Pass the current userPrompt to the handler
-      props.handlePromptSubmit(userPrompt);
-      // Clear input after submitting
-      props.setPrompt("");
+      console.log("ChatInterface: Calling parent handlePromptSubmit with model:", modelProvider);
+      // Pass the current userPrompt and modelProvider to the handler
+      props.handlePromptSubmit(userPrompt, modelProvider);
     } else {
       console.error("ChatInterface: handlePromptSubmit prop is undefined or prompt is empty");
     }
-  }, [pendingInfo, props.setChatMessages, props.setSelectedDate, props.setLocation, props.setPrompt, props.handlePromptSubmit]);
+  }, [pendingInfo, modelProvider, props.setChatMessages, props.setSelectedDate, props.setLocation, props.setPrompt, props.handlePromptSubmit]);
 
   // Avoid excessive logging
   useEffect(() => {

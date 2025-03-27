@@ -48,9 +48,6 @@ export const ChatInputArea = ({
     
     // Call the provided handlePromptSubmit with the current prompt
     handlePromptSubmit(trimmedPrompt);
-    
-    // Clear the prompt input after submission
-    setPrompt("");
   };
 
   return (

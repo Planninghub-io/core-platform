@@ -6,6 +6,7 @@ import { generateEventAPI } from "../../api/generateEventAPI";
  */
 export const generateEventWithAPI = async (
   userPrompt: string,
+  modelProvider: 'openai' | 'anthropic',
   combinedInfo: Record<string, string>,
   apiCallId: string = 'default'
 ) => {
@@ -16,7 +17,7 @@ export const generateEventWithAPI = async (
   }
   
   try {
-    console.log(`generateEventWithAPI [${apiCallId}]: Generating event`);
+    console.log(`generateEventWithAPI [${apiCallId}]: Generating event with model: ${modelProvider}`);
     console.log(`generateEventWithAPI [${apiCallId}]: Combined info for API call:`, combinedInfo);
     
     // Check if the prompt contains a date reference like "April 5th"
@@ -44,7 +45,8 @@ export const generateEventWithAPI = async (
         // Generate the event with the original prompt and date info
         const response = await generateEventAPI({
           prompt: fullPrompt,
-          additionalInfo: updatedInfo
+          additionalInfo: updatedInfo,
+          modelProvider
         });
         
         console.log(`generateEventWithAPI [${apiCallId}]: API response for original prompt with date:`, response);
@@ -55,7 +57,8 @@ export const generateEventWithAPI = async (
     // Standard flow - generate the event with the current prompt
     const response = await generateEventAPI({
       prompt: userPrompt,
-      additionalInfo: combinedInfo
+      additionalInfo: combinedInfo,
+      modelProvider
     });
     
     console.log(`generateEventWithAPI [${apiCallId}]: API response:`, response);

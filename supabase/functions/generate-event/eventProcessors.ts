@@ -11,7 +11,8 @@ import type { EventData } from './types.ts';
  */
 export async function generateResponseWithExtractedInfo(
   extractedEvent: Partial<EventData>, 
-  fullPrompt: string
+  fullPrompt: string,
+  modelProvider: string = 'openai'
 ): Promise<Response> {
   try {
     // Enhance event data with improved fields
@@ -42,11 +43,12 @@ export async function generateResponseWithExtractedInfo(
  */
 export async function generateResponseWithAI(
   fullPrompt: string, 
-  extractedEvent: Partial<EventData>
+  extractedEvent: Partial<EventData>,
+  modelProvider: string = 'openai'
 ): Promise<Response> {
   try {
     // Use AI to generate event details
-    const aiGeneratedEvent = await generateEventWithAI(fullPrompt);
+    const aiGeneratedEvent = await generateEventWithAI(fullPrompt, modelProvider);
     
     // Combine extracted data with AI-generated data
     const combinedEvent = combineEventData(aiGeneratedEvent, extractedEvent);
@@ -81,6 +83,9 @@ export async function processRequest(prompt: string, additionalInfo: any): Promi
   try {
     console.log('Processing request with prompt:', prompt, 'Additional info:', additionalInfo);
     
+    // Extract model provider if specified
+    const modelProvider = additionalInfo?.modelProvider || 'openai';
+    
     // Combine prompt with additional info if provided
     let fullPrompt = prompt;
     if (additionalInfo && Object.keys(additionalInfo).length > 0) {
@@ -95,6 +100,7 @@ export async function processRequest(prompt: string, additionalInfo: any): Promi
       }
     }
 
+    console.log('Using model provider:', modelProvider);
     console.log('Sending prompt to generate event:', fullPrompt);
 
     // Extract event details from prompt
@@ -120,9 +126,9 @@ export async function processRequest(prompt: string, additionalInfo: any): Promi
 
     // Check if we have enough extracted information
     if (hasMinimumEventInfo(extractedEvent, additionalInfo)) {
-      return await generateResponseWithExtractedInfo(extractedEvent, fullPrompt);
+      return await generateResponseWithExtractedInfo(extractedEvent, fullPrompt, modelProvider);
     } else {
-      return await generateResponseWithAI(fullPrompt, extractedEvent);
+      return await generateResponseWithAI(fullPrompt, extractedEvent, modelProvider);
     }
   } catch (error) {
     console.error('Error processing request:', error);

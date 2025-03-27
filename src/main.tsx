@@ -17,7 +17,7 @@ const trackingState = {
 // Only initialize tracking on deliberate user interaction
 const initializeTracking = () => {
   // Skip if already initialized or not in production
-  if (trackingState.initialized || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
+  if (trackingState.initialized || process.env.NODE_ENV !== 'production') return;
   
   // Mark as initialized to prevent duplicate calls
   trackingState.initialized = true;
@@ -40,7 +40,7 @@ const initializeTracking = () => {
 
 // Set up the delayed initialization only in production
 const setupDeferredTracking = () => {
-  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
+  if (process.env.NODE_ENV !== 'production') return;
   
   // Use passive listeners to not impact performance
   document.addEventListener('click', function() {

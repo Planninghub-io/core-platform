@@ -24,7 +24,7 @@ export const EventAIDialog = ({ event, embedded = false }: EventAIDialogProps) =
   const [userQuestion, setUserQuestion] = useState('');
   const [response, setResponse] = useState('');
   const [loading, setLoading] = useState(false);
-  const [modelProvider, setModelProvider] = useState<'openai'>('openai');
+  const [modelProvider, setModelProvider] = useState<'openai' | 'anthropic'>('openai');
   const { toast } = useToast();
 
   const handleSubmit = async () => {
@@ -50,6 +50,7 @@ export const EventAIDialog = ({ event, embedded = false }: EventAIDialogProps) =
             category: event.category,
             expected_attendees: event.expected_attendees,
           },
+          modelProvider
         },
       });
 
@@ -95,16 +96,16 @@ export const EventAIDialog = ({ event, embedded = false }: EventAIDialogProps) =
             disabled={loading}
           >
             <Send className="mr-2 h-4 w-4" />
-            {loading ? `Getting answer with ChatGPT...` : 'Ask Question'}
+            {loading ? `Getting answer with ${modelProvider === 'openai' ? 'ChatGPT' : 'Claude'}...` : 'Ask Question'}
           </Button>
         </div>
         
         {response && (
           <div className="bg-muted p-4 rounded-lg">
             <div className="flex items-center mb-2">
-              <div className="h-3 w-3 rounded-full mr-2 bg-green-500"></div>
+              <div className={`h-3 w-3 rounded-full mr-2 ${modelProvider === 'openai' ? 'bg-green-500' : 'bg-purple-500'}`}></div>
               <span className="text-xs text-muted-foreground">
-                ChatGPT response
+                {modelProvider === 'openai' ? 'ChatGPT' : 'Claude'} response
               </span>
             </div>
             <p className="whitespace-pre-wrap">{response}</p>

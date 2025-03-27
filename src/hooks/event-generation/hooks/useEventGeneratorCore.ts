@@ -41,7 +41,7 @@ export const useEventGeneratorCore = (
   /**
    * Generate an event based on a prompt and additional information
    */
-  const generateEvent = async (prompt: string, providedInfo: Record<string, string> = {}) => {
+  const generateEvent = async (prompt: string, modelProvider: 'openai' | 'anthropic' = 'openai', providedInfo: Record<string, string> = {}) => {
     setIsGenerating(true);
     
     try {
@@ -74,11 +74,14 @@ export const useEventGeneratorCore = (
       
       // Log the combined info for debugging
       console.log("Combined info before API call:", combinedInfo);
+      console.log("Using model provider:", modelProvider);
+      console.log("Sending prompt to generate event:", prompt);
       
       // Call the API
       const response = await generateEventAPI({
         prompt,
-        additionalInfo: combinedInfo
+        additionalInfo: combinedInfo,
+        modelProvider
       });
 
       // Remove the loading message

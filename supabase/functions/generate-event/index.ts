@@ -26,7 +26,7 @@ serve(async (req) => {
   try {
     // Get request body
     const body = await req.json();
-    const { prompt, additionalInfo } = body;
+    const { prompt, additionalInfo, modelProvider } = body;
     
     // Skip empty prompts entirely
     if (!prompt || prompt.trim() === '') {
@@ -42,7 +42,7 @@ serve(async (req) => {
     }
     
     // Generate a cache key based on the request
-    const cacheKey = `${prompt}-${JSON.stringify(additionalInfo || {})}`;
+    const cacheKey = `${prompt}-${JSON.stringify(additionalInfo || {})}-${modelProvider || 'openai'}`;
     
     // Check if we have a cached response (valid for 10 minutes)
     const cachedResponse = responseCache.get(cacheKey);
@@ -61,8 +61,9 @@ serve(async (req) => {
     }
     
     console.log(`Processing request with prompt: ${prompt}`);
+    console.log(`Using model provider: ${modelProvider || 'openai'}`);
     
-    const response = await processRequest(prompt, additionalInfo);
+    const response = await processRequest(prompt, additionalInfo, modelProvider);
     
     // Cache the successful response
     if (response.status === 200) {
