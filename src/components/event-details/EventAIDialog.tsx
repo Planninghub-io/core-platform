@@ -50,7 +50,6 @@ export const EventAIDialog = ({ event, embedded = false }: EventAIDialogProps) =
             category: event.category,
             expected_attendees: event.expected_attendees,
           },
-          modelProvider
         },
       });
 
