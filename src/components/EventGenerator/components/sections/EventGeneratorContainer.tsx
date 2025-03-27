@@ -12,7 +12,7 @@ interface EventGeneratorContainerProps {
 }
 
 export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorContainerProps) => {
-  const [modelProvider, setModelProvider] = useState<'openai' | 'anthropic'>('openai');
+  const [modelProvider, setModelProvider] = useState<'openai'>('openai');
   
   const {
     promptCount,
@@ -72,7 +72,7 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
   };
 
   // Handle model change
-  const handleModelChange = (model: 'openai' | 'anthropic') => {
+  const handleModelChange = (model: 'openai') => {
     setModelProvider(model);
     console.log("Model changed to:", model);
   };
