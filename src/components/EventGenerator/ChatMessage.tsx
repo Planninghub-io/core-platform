@@ -79,7 +79,7 @@ export const ChatMessage = ({ message, type, isLoading = false, isWelcomeMessage
   return (
     <div 
       className={cn(
-        "w-full mb-6",
+        "w-full mb-6 px-4", // Added px-4 to ensure full message visibility
         type === 'user' ? "flex justify-end" : "flex justify-start"
       )}
     >
