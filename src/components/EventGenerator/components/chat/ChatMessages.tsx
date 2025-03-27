@@ -3,7 +3,7 @@ import { ChatMessage } from "../../ChatMessage";
 import { useEffect, useRef } from "react";
 
 interface ChatMessagesProps {
-  chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
+  chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
   isGenerating: boolean;
   welcomeMessage: string;
 }
@@ -54,7 +54,7 @@ export const ChatMessages = ({
       {/* Render chat messages */}
       {chatMessages.map((message, index) => (
         <ChatMessage 
-          key={`message-${index}`} 
+          key={`message-${index}-${message.id || ''}`} 
           message={message.content} 
           type={message.type} 
           isLoading={index === chatMessages.length - 1 && message.type === 'ai' && isGenerating}

@@ -23,8 +23,9 @@ export const generateEventAPI = async ({
 }: GenerateEventParams): Promise<GenerateEventResponse> => {
   try {
     // Log the provided info to help with debugging
-    console.log("Combined info before API call:", additionalInfo);
-    console.log("Using model provider:", modelProvider);
+    console.log("generateEventAPI: Called with prompt:", prompt);
+    console.log("generateEventAPI: Additional info:", additionalInfo);
+    console.log("generateEventAPI: Using model provider:", modelProvider);
     
     let fullPrompt = prompt;
     if (Object.keys(additionalInfo).length > 0) {
@@ -40,7 +41,7 @@ export const generateEventAPI = async ({
       }
     }
 
-    console.log('Sending prompt to generate event:', fullPrompt);
+    console.log('generateEventAPI: Sending prompt to generate event:', fullPrompt);
 
     const { data, error } = await supabase.functions.invoke('generate-event', {
       body: { 
@@ -51,11 +52,11 @@ export const generateEventAPI = async ({
     });
 
     if (error) {
-      console.error('Edge function error:', error);
+      console.error('generateEventAPI: Edge function error:', error);
       throw error;
     }
 
-    console.log('Received response from generate-event:', data);
+    console.log('generateEventAPI: Received response from generate-event:', data);
     
     // Process the data to check if we're missing required fields
     const missingFields = [];
@@ -68,7 +69,7 @@ export const generateEventAPI = async ({
     
     // If we're missing fields, format the response appropriately
     if (missingFields.length > 0) {
-      console.log('Missing fields detected:', missingFields);
+      console.log('generateEventAPI: Missing fields detected:', missingFields);
       return { 
         data,
         missing: missingFields,
@@ -78,7 +79,7 @@ export const generateEventAPI = async ({
     
     return { data };
   } catch (error: any) {
-    console.error('Error generating event:', error);
+    console.error('generateEventAPI: Error generating event:', error);
     return { error };
   }
 };

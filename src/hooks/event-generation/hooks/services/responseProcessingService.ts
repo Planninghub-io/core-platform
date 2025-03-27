@@ -18,10 +18,12 @@ export const processSuccessfulResponse = (
     `I've generated an event plan based on your request. Please review the details below.`
   );
   
-  console.log("API response:", response);
+  console.log("Processing successful API response:", response);
   
   // Process the event response
   if (response.data) {
+    console.log("Setting generated event data:", response.data);
+    
     // Store generated event
     setGeneratedEvent(response.data);
     
@@ -29,5 +31,7 @@ export const processSuccessfulResponse = (
     if (!isResubmitting) {
       setPromptCount(prev => prev + 1);
     }
+  } else {
+    console.error("Missing data property in API response:", response);
   }
 };

@@ -30,13 +30,16 @@ export const useEventProcessor = (
     prompt: string,
     providedInfo: Record<string, string> = {}
   ) => {
+    // Debug logging
+    console.log("processEventResponse: Processing response with data:", data);
+    
     // If we received a proper event response
     if (data && (data.title || data.description || data.location)) {
       // Validate the event data
       const { validatedEvent, missing } = validateEventData(data, providedInfo);
       
-      console.log("Created validated event:", validatedEvent);
-      console.log("Missing fields:", missing);
+      console.log("processEventResponse: Created validated event:", validatedEvent);
+      console.log("processEventResponse: Missing fields:", missing);
       
       setMissingFields(missing);
       
@@ -48,7 +51,10 @@ export const useEventProcessor = (
       
       // Only set generated event if we have all required fields
       if (missing.length === 0) {
+        // Important: update the generatedEvent state with the validated event data
         setGeneratedEvent(validatedEvent);
+        console.log("processEventResponse: Setting complete generated event:", validatedEvent);
+        
         setAdditionalInfo({});
         setIsResubmitting(false);
         setPreviouslyRequestedFields([]);
@@ -75,12 +81,14 @@ export const useEventProcessor = (
     } 
     // Handle missing info response
     else if (data && data.needsInfo === true) {
+      console.log("processEventResponse: Handling missing info response");
+      
       if (!isResubmitting) {
         // Extract information from prompt
         const prePopulatedInfo = extractFieldsFromPrompt(prompt, data, providedInfo);
         
         // Log what we extracted
-        console.log("Extracted info from prompt:", prePopulatedInfo);
+        console.log("processEventResponse: Extracted info from prompt:", prePopulatedInfo);
         
         setAdditionalInfo(prePopulatedInfo);
         setIsResubmitting(true);
@@ -102,6 +110,8 @@ export const useEventProcessor = (
           remainingMissingFields 
         };
       }
+    } else {
+      console.error("processEventResponse: Invalid or unexpected response format:", data);
     }
     
     return null;
