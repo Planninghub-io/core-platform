@@ -20,9 +20,17 @@ export const CreateEventButton: React.FC<CreateEventButtonProps> = ({
     !eventTitle.trim() ||
     !location.trim();
 
+  const onClick = () => {
+    console.log("CreateEventButton: Create button clicked");
+    console.log("CreateEventButton: isDisabled:", isDisabled);
+    if (!isDisabled) {
+      handleCreateEvent();
+    }
+  };
+
   return (
     <Button 
-      onClick={handleCreateEvent}
+      onClick={onClick}
       disabled={isDisabled}
       className="w-full"
     >

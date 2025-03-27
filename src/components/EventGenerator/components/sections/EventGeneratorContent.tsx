@@ -43,7 +43,6 @@ export const EventGeneratorContent = ({
 }: EventGeneratorContentProps) => {
   const { prompt, setPrompt, isGenerating, handlePromptSubmit } = useEventGeneration();
   const [currentModelProvider, setCurrentModelProvider] = useState<'openai' | 'anthropic'>(modelProvider);
-  const [showEventForm, setShowEventForm] = useState<boolean>(false);
 
   // Using an empty string as the welcome message to let ChatMessages component use its enhanced version
   const welcomeMessage = chatMessages.length === 0 ? "" : "";
@@ -53,11 +52,10 @@ export const EventGeneratorContent = ({
     console.log("EventGeneratorContent: Model provider changed to:", currentModelProvider);
   }, [currentModelProvider]);
   
-  // Show the event form when we have a generated event
+  // Debug event data
   useEffect(() => {
     if (generatedEvent) {
-      console.log("EventGeneratorContent: Showing event form with generated event:", generatedEvent);
-      setShowEventForm(true);
+      console.log("EventGeneratorContent: Generated event available:", generatedEvent);
     }
   }, [generatedEvent]);
 

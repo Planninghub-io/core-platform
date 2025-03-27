@@ -28,7 +28,7 @@ export const useEventCreation = () => {
 
   const createEvent = async (
     event: EventToCreate,
-    additionalInfo: Record<string, string>
+    additionalInfo: Record<string, string> = {}
   ) => {
     console.log('Creating event with data:', event); // Debug log
 
@@ -108,6 +108,13 @@ export const useEventCreation = () => {
       console.log('Event created successfully:', data); // Debug log
       
       setCreatedEventId(data.id);
+      toast({
+        description: "Event created successfully!",
+      });
+      
+      // Navigate to the events hub page after successful creation
+      navigate('/events-hub');
+      
       return { data, error: null };
 
     } catch (error: any) {
