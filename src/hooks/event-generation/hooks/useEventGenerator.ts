@@ -62,21 +62,21 @@ export const useEventGenerator = () => {
     setAdditionalInfo,
     handleAdditionalInfoChange,
     handleMissingInfoSubmit
-  } = useMissingInfoHandler(setChatMessages, coreGenerateEvent);
+  } = useMissingInfoHandler(setChatMessages, (prompt, additionalInfo) => coreGenerateEvent(prompt, additionalInfo));
 
   // Prompt Handler Hook
   const {
     prompt,
     setPrompt,
     handlePromptSubmit
-  } = usePromptHandler(setChatMessages, coreGenerateEvent, setShowMissingInfoDialog, setGeneratedEvent);
+  } = usePromptHandler(setChatMessages, (prompt, additionalInfo) => coreGenerateEvent(prompt, additionalInfo), setShowMissingInfoDialog, setGeneratedEvent);
 
   // Event Regeneration Hook
   const {
     isResubmitting,
     setIsResubmitting,
     regenerateEventWithUpdatedInfo
-  } = useEventRegenerationHandler(setChatMessages, coreGenerateEvent, setGeneratedEvent);
+  } = useEventRegenerationHandler(setChatMessages, (prompt, additionalInfo) => coreGenerateEvent(prompt, additionalInfo), setGeneratedEvent);
 
   // Adapter for handleMissingInfoSubmit to match expected API
   const handleMissingInfoSubmitAdapter = async () => {

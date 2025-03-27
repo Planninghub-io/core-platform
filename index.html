@@ -24,8 +24,8 @@
         if (window._fbPixelLoaded) return;
         window._fbPixelLoaded = true;
         
-        // Log loading in development
-        if (process.env.NODE_ENV === 'development') {
+        // Log loading in development - using window.location check instead of process.env
+        if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
           console.log('Loading Facebook Pixel on user interaction or timeout');
         }
         
