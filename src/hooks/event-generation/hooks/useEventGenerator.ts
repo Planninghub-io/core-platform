@@ -92,7 +92,7 @@ export const useEventGenerator = () => {
       ...(modelProvider ? { modelPreference: modelProvider } : {})
     };
     
-    return coreGenerateEvent(prompt, combinedInfo || {});
+    return coreGenerateEvent(prompt, modelProvider, combinedInfo);
   };
 
   // Adapter for handleCreateEvent to match expected API
