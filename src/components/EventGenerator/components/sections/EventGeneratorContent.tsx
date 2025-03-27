@@ -56,8 +56,8 @@ export const EventGeneratorContent = ({
   // Show the event form when we have a generated event
   useEffect(() => {
     if (generatedEvent) {
-      setShowEventForm(true);
       console.log("EventGeneratorContent: Showing event form with generated event:", generatedEvent);
+      setShowEventForm(true);
     }
   }, [generatedEvent]);
 
@@ -74,6 +74,9 @@ export const EventGeneratorContent = ({
       setCurrentModelProvider(selectedModel);
       onModelChange(selectedModel);
     }
+    
+    // Clear prompt here as well to ensure it's cleared in all relevant places
+    setPrompt("");
     
     // Submit the prompt if valid
     if (userPrompt && userPrompt.trim() !== "") {
@@ -106,7 +109,7 @@ export const EventGeneratorContent = ({
       />
 
       {/* Generated Event Data - Show only after we have a generated event */}
-      {generatedEvent && showEventForm && (
+      {generatedEvent && (
         <EventDetailsSection
           generatedEvent={generatedEvent}
           eventTitle={eventTitle || generatedEvent.title || "New Event"}

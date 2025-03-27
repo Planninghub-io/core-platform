@@ -47,7 +47,7 @@ export const usePromptHandler = (
       // Store the prompt before clearing the input
       const promptToSend = currentPrompt;
       
-      // Clear the prompt input
+      // Clear the prompt input - Make sure this line is called
       setPrompt("");
       
       // Add a loading indicator message

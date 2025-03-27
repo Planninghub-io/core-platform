@@ -43,6 +43,10 @@ export const ChatInput = ({
       
       // Add a small delay to prevent double submissions
       setTimeout(() => {
+        // Clear the prompt input immediately here
+        setPrompt("");
+        
+        // Call the provided handlePromptSubmit with the submitted prompt
         handlePromptSubmit(submittedPrompt);
         
         // Reset submission state after a delay
@@ -63,7 +67,13 @@ export const ChatInput = ({
               isGenerating={isGenerating || isSubmitting}
               promptCount={promptCount}
               onPromptChange={setPrompt}
-              onSubmit={(_, submittedPrompt) => submittedPrompt && onSubmit(submittedPrompt)}
+              onSubmit={(_, submittedPrompt) => {
+                if (submittedPrompt) {
+                  onSubmit(submittedPrompt);
+                  // Clear the prompt after submission
+                  setPrompt("");
+                }
+              }}
             />
           </div>
         ) : (
@@ -71,7 +81,9 @@ export const ChatInput = ({
             className="flex items-end gap-2" 
             onSubmit={(e) => {
               e.preventDefault();
-              prompt.trim() && onSubmit(prompt);
+              if (prompt.trim()) {
+                onSubmit(prompt);
+              }
             }}
           >
             <div className="flex-1">
@@ -80,7 +92,11 @@ export const ChatInput = ({
                 prompt={prompt}
                 setPrompt={setPrompt}
                 isGenerating={isGenerating || isSubmitting}
-                onSubmit={() => prompt.trim() && onSubmit(prompt)}
+                onSubmit={() => {
+                  if (prompt.trim()) {
+                    onSubmit(prompt);
+                  }
+                }}
                 shouldShowButton={false}
               />
             </div>
@@ -89,7 +105,11 @@ export const ChatInput = ({
               size="icon"
               disabled={isGenerating || isSubmitting || !prompt.trim()}
               className="h-10 w-10 rounded-full bg-[#242424] hover:bg-[#242424]/90"
-              onClick={() => prompt.trim() && onSubmit(prompt)}
+              onClick={() => {
+                if (prompt.trim()) {
+                  onSubmit(prompt);
+                }
+              }}
             >
               <Send size={18} className="text-white" />
             </Button>
