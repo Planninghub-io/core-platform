@@ -80,7 +80,7 @@ export const ChatInputArea = ({
           type="submit"
           size="icon"
           disabled={isGenerating || !prompt.trim()}
-          className="h-10 w-10 rounded-full bg-[#242424] hover:bg-[#242424]/90"
+          className="h-10 w-10 rounded-full bg-[#8B5CF6] hover:bg-[#8B5CF6]/90"
         >
           <Send size={18} className="text-white" />
         </Button>

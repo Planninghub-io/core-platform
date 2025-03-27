@@ -1,6 +1,6 @@
 
 import React from "react";
-import { Check, ChevronDown, Settings } from "lucide-react";
+import { Check, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,9 +38,9 @@ export const ModelDropdown = ({
               <Button 
                 variant="outline" 
                 size="icon" 
-                className="h-10 w-10 border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
+                className="h-8 w-8 border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
               >
-                <Settings size={18} />
+                <Settings size={16} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
