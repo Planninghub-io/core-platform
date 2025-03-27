@@ -1,4 +1,3 @@
-
 import { ChatInputField } from "./ChatInputField";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
@@ -35,7 +34,6 @@ export const ChatInputArea = ({
   const inputRef = useRef<HTMLInputElement>(null);
 
   React.useEffect(() => {
-    // Focus the input field when the component mounts or after generation completes
     if (inputRef.current && !isGenerating) {
       inputRef.current.focus();
     }
@@ -48,14 +46,12 @@ export const ChatInputArea = ({
 
     const trimmedPrompt = prompt.trim();
     
-    // Don't submit if the prompt is empty or we're already generating
     if (!trimmedPrompt || isGenerating) {
       return;
     }
 
     console.log("ChatInputArea: handleSubmit called with prompt:", trimmedPrompt);
     
-    // Call the provided handlePromptSubmit with the current prompt
     handlePromptSubmit(trimmedPrompt);
   };
 
@@ -67,7 +63,7 @@ export const ChatInputArea = ({
         </div>
       )}
       
-      <form onSubmit={submitPrompt} className="flex items-end gap-2">
+      <form onSubmit={submitPrompt} className="flex items-center gap-2">
         <ChatInputField
           ref={inputRef}
           prompt={prompt}
@@ -75,19 +71,22 @@ export const ChatInputArea = ({
           isGenerating={isGenerating}
           onSubmit={submitPrompt}
           shouldShowButton={false}
+          className="flex-1"
         />
-        <Button
-          type="submit"
-          size="icon"
-          disabled={isGenerating || !prompt.trim()}
-          className="h-10 w-10 rounded-full bg-[#8B5CF6] hover:bg-[#8B5CF6]/90"
-        >
-          <Send size={18} className="text-white" />
-        </Button>
-        <ModelDropdown 
-          modelProvider={modelProvider}
-          onModelChange={onModelChange}
-        />
+        <div className="flex items-center gap-2">
+          <Button
+            type="submit"
+            size="icon"
+            disabled={isGenerating || !prompt.trim()}
+            className="h-10 w-10 rounded-full bg-[#8B5CF6] hover:bg-[#8B5CF6]/90"
+          >
+            <Send size={18} className="text-white" />
+          </Button>
+          <ModelDropdown 
+            modelProvider={modelProvider}
+            onModelChange={onModelChange}
+          />
+        </div>
       </form>
       
       {promptCount === 1 && (

@@ -83,7 +83,7 @@ export const ChatInput = ({
           </div>
         ) : (
           <form 
-            className="flex items-end gap-2" 
+            className="flex items-center gap-2" 
             onSubmit={(e) => {
               e.preventDefault();
               if (prompt.trim()) {
@@ -105,25 +105,27 @@ export const ChatInput = ({
                 shouldShowButton={false}
               />
             </div>
-            <Button
-              type="submit"
-              size="icon"
-              disabled={isGenerating || isSubmitting || !prompt.trim()}
-              className="h-10 w-10 rounded-full bg-[#8B5CF6] hover:bg-[#8B5CF6]/90"
-              onClick={() => {
-                if (prompt.trim()) {
-                  onSubmit(prompt);
-                }
-              }}
-            >
-              <Send size={18} className="text-white" />
-            </Button>
-            {modelProvider && onModelChange && (
-              <ModelDropdown
-                modelProvider={modelProvider}
-                onModelChange={onModelChange}
-              />
-            )}
+            <div className="flex items-center gap-2">
+              <Button
+                type="submit"
+                size="icon"
+                disabled={isGenerating || isSubmitting || !prompt.trim()}
+                className="h-10 w-10 rounded-full bg-[#8B5CF6] hover:bg-[#8B5CF6]/90"
+                onClick={() => {
+                  if (prompt.trim()) {
+                    onSubmit(prompt);
+                  }
+                }}
+              >
+                <Send size={18} className="text-white" />
+              </Button>
+              {modelProvider && onModelChange && (
+                <ModelDropdown
+                  modelProvider={modelProvider}
+                  onModelChange={onModelChange}
+                />
+              )}
+            </div>
           </form>
         )}
       </div>
