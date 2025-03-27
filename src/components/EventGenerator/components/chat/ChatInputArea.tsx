@@ -3,6 +3,7 @@ import { ChatInputField } from "./ChatInputField";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import React, { FormEvent, useRef } from "react";
+import { ModelDropdown } from "./ModelDropdown";
 
 interface ChatInputAreaProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
@@ -14,6 +15,8 @@ interface ChatInputAreaProps {
   generatedEvent: any | null;
   hasMissingFields?: boolean;
   requiredFieldsCollected?: boolean;
+  modelProvider: 'openai' | 'anthropic';
+  onModelChange: (model: 'openai' | 'anthropic') => void;
 }
 
 export const ChatInputArea = ({
@@ -25,7 +28,9 @@ export const ChatInputArea = ({
   handlePromptSubmit,
   generatedEvent,
   hasMissingFields = false,
-  requiredFieldsCollected = false
+  requiredFieldsCollected = false,
+  modelProvider,
+  onModelChange
 }: ChatInputAreaProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -70,6 +75,10 @@ export const ChatInputArea = ({
           isGenerating={isGenerating}
           onSubmit={submitPrompt}
           shouldShowButton={false}
+        />
+        <ModelDropdown 
+          modelProvider={modelProvider}
+          onModelChange={onModelChange}
         />
         <Button
           type="submit"

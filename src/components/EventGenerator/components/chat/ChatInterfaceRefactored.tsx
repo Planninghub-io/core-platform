@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { ChatContainer } from "./ChatContainer";
-import { ModelSelector } from "./ModelSelector";
 import { usePromptHandler } from "./PromptHandler";
 
 interface ChatInterfaceProps {
@@ -50,11 +49,6 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
 
   return (
     <div className="w-full min-h-[400px] flex flex-col">
-      <ModelSelector 
-        modelProvider={modelProvider}
-        onModelChange={handleModelChange}
-      />
-      
       <ChatContainer 
         chatMessages={props.chatMessages}
         prompt={props.prompt}
@@ -66,6 +60,8 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         generatedEvent={props.generatedEvent}
         requiredFieldsCollected={requiredFieldsCollected}
         hasMissingFields={hasMissingFields}
+        modelProvider={modelProvider}
+        onModelChange={handleModelChange}
       />
     </div>
   );

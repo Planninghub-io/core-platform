@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { EventGeneratorForm } from "../EventGeneratorForm";
 import { ChatInputField } from "./chat/ChatInputField";
+import { ModelDropdown } from "./chat/ModelDropdown";
 import { useRef, useEffect, useState } from "react";
 
 interface ChatInputProps {
@@ -13,6 +14,8 @@ interface ChatInputProps {
   promptCount: number;
   handlePromptSubmit: (prompt: string) => void;
   generatedEvent: any | null;
+  modelProvider?: 'openai' | 'anthropic';
+  onModelChange?: (model: 'openai' | 'anthropic') => void;
 }
 
 export const ChatInput = ({ 
@@ -22,7 +25,9 @@ export const ChatInput = ({
   isGenerating, 
   promptCount, 
   handlePromptSubmit,
-  generatedEvent
+  generatedEvent,
+  modelProvider = 'openai',
+  onModelChange
 }: ChatInputProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -100,6 +105,12 @@ export const ChatInput = ({
                 shouldShowButton={false}
               />
             </div>
+            {modelProvider && onModelChange && (
+              <ModelDropdown
+                modelProvider={modelProvider}
+                onModelChange={onModelChange}
+              />
+            )}
             <Button
               type="submit"
               size="icon"

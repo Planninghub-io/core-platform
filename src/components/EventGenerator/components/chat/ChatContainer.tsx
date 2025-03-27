@@ -14,6 +14,8 @@ interface ChatContainerProps {
   generatedEvent: any | null;
   hasMissingFields?: boolean;
   requiredFieldsCollected?: boolean;
+  modelProvider: 'openai' | 'anthropic';
+  onModelChange: (model: 'openai' | 'anthropic') => void;
 }
 
 export const ChatContainer = ({
@@ -26,7 +28,9 @@ export const ChatContainer = ({
   welcomeMessage,
   generatedEvent,
   hasMissingFields = false,
-  requiredFieldsCollected = false
+  requiredFieldsCollected = false,
+  modelProvider,
+  onModelChange
 }: ChatContainerProps) => {
   console.log("ChatContainer: Rendering with isGenerating =", isGenerating);
   console.log("ChatContainer: Chat messages:", chatMessages);
@@ -59,6 +63,8 @@ export const ChatContainer = ({
         generatedEvent={generatedEvent}
         hasMissingFields={hasMissingFields}
         requiredFieldsCollected={requiredFieldsCollected}
+        modelProvider={modelProvider}
+        onModelChange={onModelChange}
       />
     </div>
   );
