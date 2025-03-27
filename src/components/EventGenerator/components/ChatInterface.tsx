@@ -2,7 +2,7 @@
 import { useRef, useState } from "react";
 import { ChatMessages } from "./chat/ChatMessages";
 import { ChatInput } from "./ChatInput";
-import { Paper } from "./ui/Paper";
+import { Card } from "@/components/ui/card"; // Replace Paper with Card from shadcn/ui
 import { ChatInterfaceRefactored } from "./chat/ChatInterfaceRefactored";
 
 interface ChatInterfaceProps {
@@ -24,10 +24,10 @@ interface ChatInterfaceProps {
 export const ChatInterface = (props: ChatInterfaceProps) => {
   // Enhanced chat interface with all required functionality
   return (
-    <Paper className="flex flex-col h-full w-full overflow-hidden">
+    <Card className="flex flex-col h-full w-full overflow-hidden">
       <ChatInterfaceRefactored 
         {...props}
       />
-    </Paper>
+    </Card>
   );
 };
