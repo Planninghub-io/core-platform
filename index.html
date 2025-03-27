@@ -7,52 +7,65 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Event Generator</title>
     
-    <!-- Facebook Pixel Code - Completely reworked to eliminate preload warnings -->
+    <!-- Facebook Pixel Code - Fully deferred implementation -->
     <script>
-      // Don't create any network requests until user interaction
+      // Create a stub function that just queues commands without making network requests
       window.fbq = function() {
-        // Create a queue to store calls until the script is actually loaded
+        // Store commands in _fbq array for later execution
         (window._fbq = window._fbq || []).push(arguments);
       };
       
-      // Function to actually load the Facebook Pixel script
+      // Flag to track if we've already loaded the pixel
+      window._fbPixelLoaded = false;
+      
+      // Function to load Facebook Pixel only when needed
       function loadFbPixel() {
-        // Don't load multiple times
+        // Prevent multiple loads
         if (window._fbPixelLoaded) return;
         window._fbPixelLoaded = true;
         
-        // Create and append the script element
+        // Log loading in development
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Loading Facebook Pixel on user interaction or timeout');
+        }
+        
+        // Create and load the script
         const script = document.createElement('script');
         script.src = 'https://connect.facebook.net/en_US/fbevents.js';
         script.async = true;
         
-        // When script loads, initialize properly
+        // Initialize properly when loaded
         script.onload = function() {
-          // Re-initialize fbq now that the script is loaded
           window.fbq('init', '9151671744940732');
           window.fbq('track', 'PageView');
         };
         
-        // Append the script to the DOM - this is when the network request happens
+        // Append to document (this is when the network request happens)
         document.head.appendChild(script);
       }
       
-      // Create a no-op function that we can use to delay loading
-      function setupDelayedLoading() {
-        // Only load on deliberate user interaction or after a significant delay
-        document.addEventListener('click', loadFbPixel, { once: true });
-        document.addEventListener('scroll', loadFbPixel, { once: true });
+      // Only attach event listeners when DOM is ready
+      function setupDeferredLoading() {
+        // Use passive listeners to not block rendering
+        document.addEventListener('click', function() {
+          requestIdleCallback ? requestIdleCallback(loadFbPixel) : setTimeout(loadFbPixel, 1);
+        }, { once: true, passive: true });
         
-        // Wait 15 seconds before loading if no user interaction
-        // This is a very generous delay to ensure no preload warnings
-        setTimeout(loadFbPixel, 15000);
+        document.addEventListener('scroll', function() {
+          requestIdleCallback ? requestIdleCallback(loadFbPixel) : setTimeout(loadFbPixel, 1);
+        }, { once: true, passive: true });
+        
+        // Extremely generous timeout - only load if user stays on page for 30s without interaction
+        setTimeout(loadFbPixel, 30000);
       }
       
-      // Attach the delayed loading function
+      // Defer even the event listener setup
       if (document.readyState === 'complete') {
-        setupDelayedLoading();
+        setTimeout(setupDeferredLoading, 1000);
       } else {
-        window.addEventListener('load', setupDelayedLoading);
+        window.addEventListener('load', function() {
+          setTimeout(setupDeferredLoading, 1000);
+        });
       }
     </script>
     <!-- End Facebook Pixel Code -->

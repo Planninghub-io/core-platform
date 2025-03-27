@@ -31,11 +31,23 @@ export const usePromptSubmission = (
   const [missingFields, setMissingFields] = useState<string[]>([]);
   const [previouslyRequestedFields, setPreviouslyRequestedFields] = useState<string[]>([]);
   const [lastApiCallId, setLastApiCallId] = useState<string | null>(null);
+  const [hasInitiated, setHasInitiated] = useState(false);
 
   /**
-   * Handle prompt submission
+   * Handle prompt submission - only when explicitly called with a non-empty prompt
    */
   const handlePromptSubmit = async (prompt: string, modelProvider: 'openai' | 'anthropic' = 'openai') => {
+    // Skip empty prompts or automatic calls
+    if (!prompt || prompt.trim() === '') {
+      console.log("usePromptSubmission: Empty prompt, ignoring request");
+      return;
+    }
+    
+    // Mark as having been initiated by user action
+    if (!hasInitiated) {
+      setHasInitiated(true);
+    }
+    
     console.log("usePromptSubmission: handlePromptSubmit called with model:", modelProvider);
     console.log("usePromptSubmission: Prompt received:", prompt);
     

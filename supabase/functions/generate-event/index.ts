@@ -3,8 +3,19 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { processRequest } from './eventProcessors.ts';
 import { handleOptionsRequest } from './responseUtils.ts';
 
-// Cache storage for frequent requests
+// Extended cache storage for frequent requests (10 minute TTL)
 const responseCache = new Map();
+
+// Periodic cleanup to prevent memory leaks
+setInterval(() => {
+  const now = Date.now();
+  for (const [key, value] of responseCache.entries()) {
+    // Remove entries older than 10 minutes
+    if (now - value.timestamp > 600000) {
+      responseCache.delete(key);
+    }
+  }
+}, 300000); // Run cleanup every 5 minutes
 
 // Main handler function
 serve(async (req) => {
@@ -17,12 +28,25 @@ serve(async (req) => {
     const body = await req.json();
     const { prompt, additionalInfo, modelProvider } = body;
     
+    // Skip empty prompts entirely
+    if (!prompt || prompt.trim() === '') {
+      return new Response(JSON.stringify({ error: 'Empty prompt provided' }), {
+        status: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization'
+        }
+      });
+    }
+    
     // Generate a cache key based on the request
     const cacheKey = `${prompt}-${JSON.stringify(additionalInfo || {})}-${modelProvider || 'openai'}`;
     
-    // Check if we have a cached response (valid for 5 minutes)
+    // Check if we have a cached response (valid for 10 minutes)
     const cachedResponse = responseCache.get(cacheKey);
-    if (cachedResponse && (Date.now() - cachedResponse.timestamp) < 300000) {
+    if (cachedResponse && (Date.now() - cachedResponse.timestamp) < 600000) {
       console.log(`Returning cached response for prompt: ${prompt}`);
       return new Response(JSON.stringify(cachedResponse.data), {
         status: 200,
@@ -31,7 +55,7 @@ serve(async (req) => {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'POST, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Cache-Control': 'max-age=300' // Cache for 5 minutes
+          'Cache-Control': 'max-age=600' // Cache for 10 minutes
         }
       });
     }
@@ -58,7 +82,7 @@ serve(async (req) => {
             'Access-Control-Allow-Origin': '*',
             'Access-Control-Allow-Methods': 'POST, OPTIONS',
             'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-            'Cache-Control': 'max-age=300' // Cache for 5 minutes
+            'Cache-Control': 'max-age=600' // Cache for 10 minutes
           }
         });
       } catch (e) {

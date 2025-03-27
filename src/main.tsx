@@ -8,25 +8,57 @@ import './index.css';
 const rootElement = document.getElementById('root');
 if (!rootElement) throw new Error('Failed to find the root element');
 
-// Create a function to initialize tracking if needed
-const initializeTracking = () => {
-  // Only run in production environment
-  if (process.env.NODE_ENV !== 'production') return;
-  
-  // This is a hook for any additional tracking initialization
-  // We're now relying on the Facebook pixel implementation in index.html
-  // which avoids making any network requests until user interaction
+// Create tracking flags to avoid duplicate initialization
+const trackingState = {
+  initialized: false,
+  pendingEvents: []
 };
 
-// Defer non-critical operations
-const deferredInit = () => {
-  // Initialize tracking on user interaction, but only in production
-  if (process.env.NODE_ENV === 'production') {
-    // We need more than one event to ensure tracking is initialized
-    // if the user interacts in different ways
-    document.addEventListener('click', initializeTracking, { once: true });
-    document.addEventListener('scroll', initializeTracking, { once: true });
+// Only initialize tracking on deliberate user interaction
+const initializeTracking = () => {
+  // Skip if already initialized or not in production
+  if (trackingState.initialized || process.env.NODE_ENV !== 'production') return;
+  
+  // Mark as initialized to prevent duplicate calls
+  trackingState.initialized = true;
+  
+  // Any additional tracking initialization can go here
+  // We're primarily relying on the deferred Facebook Pixel in index.html
+  
+  // Process any pending events that were captured before initialization
+  while (trackingState.pendingEvents.length > 0) {
+    const event = trackingState.pendingEvents.shift();
+    if (event && typeof event === 'function') {
+      try {
+        event();
+      } catch (e) {
+        // Silently fail individual events rather than breaking the app
+      }
+    }
   }
+};
+
+// Set up the delayed initialization only in production
+const setupDeferredTracking = () => {
+  if (process.env.NODE_ENV !== 'production') return;
+  
+  // Use passive listeners to not impact performance
+  document.addEventListener('click', function() {
+    // Use requestIdleCallback for even better performance when available
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(initializeTracking);
+    } else {
+      setTimeout(initializeTracking, 50);
+    }
+  }, { once: true, passive: true });
+  
+  document.addEventListener('scroll', function() {
+    if (window.requestIdleCallback) {
+      window.requestIdleCallback(initializeTracking);
+    } else {
+      setTimeout(initializeTracking, 50);
+    }
+  }, { once: true, passive: true });
 };
 
 // Create and render the app
@@ -37,9 +69,11 @@ root.render(
   </BrowserRouter>
 );
 
-// Wait for the app to be fully rendered before attaching additional listeners
+// Defer tracking setup until after app has rendered
 if (document.readyState === 'complete') {
-  deferredInit();
+  setTimeout(setupDeferredTracking, 1000);
 } else {
-  window.addEventListener('load', deferredInit, { once: true });
+  window.addEventListener('load', function() {
+    setTimeout(setupDeferredTracking, 1000);
+  });
 }
