@@ -1,7 +1,7 @@
 
 import { ChatContainer } from "./chat/ChatContainer";
 import { AIModelSelector } from "../components/AIModelSelector";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { checkPromptForRequiredFields, trackPendingInformation } from "@/hooks/event-generation/utils/promptPreChecker";
 
 interface ChatInterfaceProps {
@@ -30,17 +30,21 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
     originalPrompt?: string;
   }>({});
   
-  // Handle model change
-  const handleModelChange = (model: 'openai' | 'anthropic') => {
+  // Handle model change with debounce to prevent unnecessary API calls
+  const handleModelChange = useCallback((model: 'openai' | 'anthropic') => {
+    if (model === modelProvider) return; // Skip if same model
+    
     console.log("ChatInterface: Model changed from", modelProvider, "to", model);
     setModelProvider(model);
     if (props.onModelChange) {
       props.onModelChange(model);
     }
-  };
+  }, [modelProvider, props.onModelChange]);
 
-  // Create a new wrapper for the submit handler to ensure proper logging and debouncing
-  const handleSubmit = (userPrompt: string) => {
+  // Create a new wrapper for the submit handler with optimized checks
+  const handleSubmit = useCallback((userPrompt: string) => {
+    if (!userPrompt || userPrompt.trim() === '') return;
+    
     console.log("ChatInterface: Submit button clicked with prompt:", userPrompt);
     
     // Check for duplicate submissions
@@ -143,17 +147,20 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
     // Update last submission reference
     lastSubmissionRef.current = { prompt: userPrompt, timestamp: now };
     
-    if (props.handlePromptSubmit && userPrompt) {
+    if (props.handlePromptSubmit) {
       console.log("ChatInterface: Calling parent handlePromptSubmit with model:", modelProvider);
       // Pass the current userPrompt and modelProvider to the handler
       props.handlePromptSubmit(userPrompt, modelProvider);
     } else {
       console.error("ChatInterface: handlePromptSubmit prop is undefined or prompt is empty");
     }
-  };
+  }, [pendingInfo, modelProvider, props.setChatMessages, props.setSelectedDate, props.setLocation, props.setPrompt, props.handlePromptSubmit]);
 
+  // Avoid excessive logging
   useEffect(() => {
-    console.log("ChatInterface: Current model provider:", modelProvider);
+    if (process.env.NODE_ENV === 'development') {
+      console.log("ChatInterface: Current model provider:", modelProvider);
+    }
   }, [modelProvider]);
 
   return (

@@ -7,18 +7,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Event Generator</title>
     
-    <!-- Facebook Pixel Code -->
+    <!-- Facebook Pixel Code - Modified for performance -->
     <script>
-      !function(f,b,e,v,n,t,s)
-      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
-      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
-      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
-      n.queue=[];t=b.createElement(e);t.async=!0;
-      t.src=v;s=b.getElementsByTagName(e)[0];
-      s.parentNode.insertBefore(t,s)}(window, document,'script',
-      'https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', '9151671744940732');
-      fbq('track', 'PageView');
+      // Only load Facebook Pixel when actually needed (on user interaction)
+      function loadFbPixel() {
+        if (window.fbPixelLoaded) return;
+        
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', '9151671744940732');
+        fbq('track', 'PageView');
+        
+        window.fbPixelLoaded = true;
+      }
+      
+      // Defer Facebook Pixel loading
+      document.addEventListener('DOMContentLoaded', function() {
+        // Add event listeners to track actual user engagement
+        document.addEventListener('click', loadFbPixel, { once: true });
+        document.addEventListener('scroll', loadFbPixel, { once: true });
+        // Only load after 5 seconds if no interaction
+        setTimeout(loadFbPixel, 5000);
+      });
     </script>
     <!-- End Facebook Pixel Code -->
   </head>
