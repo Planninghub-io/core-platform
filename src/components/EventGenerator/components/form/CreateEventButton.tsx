@@ -1,40 +1,33 @@
 
-import React from "react";
+import React from 'react';
 import { Button } from "@/components/ui/button";
+import { CalendarPlus } from "lucide-react";
 
 interface CreateEventButtonProps {
   isCreating: boolean;
   eventTitle: string;
   location: string;
   handleCreateEvent: () => void;
+  className?: string;
 }
 
-export const CreateEventButton: React.FC<CreateEventButtonProps> = ({
+export const CreateEventButton = ({
   isCreating,
   eventTitle,
   location,
-  handleCreateEvent
-}) => {
-  const isDisabled = isCreating || 
-    eventTitle === 'Enter Event Name' || 
-    !eventTitle.trim() ||
-    !location.trim();
-
-  const onClick = () => {
-    console.log("CreateEventButton: Create button clicked");
-    console.log("CreateEventButton: isDisabled:", isDisabled);
-    if (!isDisabled) {
-      handleCreateEvent();
-    }
-  };
-
+  handleCreateEvent,
+  className = ""
+}: CreateEventButtonProps) => {
+  const isMissingRequiredFields = !eventTitle || !location;
+  
   return (
-    <Button 
-      onClick={onClick}
-      disabled={isDisabled}
-      className="w-full"
+    <Button
+      onClick={handleCreateEvent}
+      disabled={isMissingRequiredFields || isCreating}
+      className={`w-full gap-2 ${className}`}
     >
-      {isCreating ? 'Creating Event...' : 'Create This Event'}
+      <CalendarPlus size={16} />
+      {isCreating ? "Creating Event..." : "Create This Event"}
     </Button>
   );
 };

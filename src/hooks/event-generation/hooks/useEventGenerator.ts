@@ -84,6 +84,18 @@ export const useEventGenerator = () => {
     setShowMissingInfoDialog(false);
   };
 
+  // Wrapper for coreGenerateEvent that handles the modelProvider parameter
+  const generateEventWrapper = (prompt: string, modelProvider?: 'openai' | 'anthropic', additionalInfo?: Record<string, string>) => {
+    // Convert modelProvider to additionalInfo if provided
+    const combinedInfo: Record<string, string> = {
+      ...(additionalInfo || {}),
+      // Add model preference if provided
+      ...(modelProvider ? { modelPreference: modelProvider } : {})
+    };
+    
+    return coreGenerateEvent(prompt, combinedInfo);
+  };
+
   // Adapter for handleCreateEvent to match expected API
   const handleCreateEventAdapter = () => {
     return handleCreateEvent(generatedEvent);
@@ -102,7 +114,9 @@ export const useEventGenerator = () => {
     createdEventId: null,
     eventTitle,
     setEventTitle,
-    handlePromptSubmit,
+    handlePromptSubmit: (prompt: string, modelProvider?: 'openai' | 'anthropic') => {
+      return generateEventWrapper(prompt, modelProvider);
+    },
     handleCreateEvent: handleCreateEventAdapter,
     selectedDate,
     setSelectedDate,
@@ -120,7 +134,7 @@ export const useEventGenerator = () => {
     setWaitingForBudget,
     isResubmitting,
     setIsResubmitting,
-    generateEvent: coreGenerateEvent,
+    generateEvent: generateEventWrapper,
     missingFields,
     regenerateEventWithUpdatedInfo
   };

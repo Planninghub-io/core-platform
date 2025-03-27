@@ -29,6 +29,17 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
     description?: string;
     originalPrompt?: string;
   }>({});
+  const [requiredFieldsCollected, setRequiredFieldsCollected] = useState(false);
+  
+  // Check if we have all the required fields
+  useEffect(() => {
+    // Check if we have date and location
+    if (pendingInfo.date && pendingInfo.location) {
+      setRequiredFieldsCollected(true);
+    } else {
+      setRequiredFieldsCollected(false);
+    }
+  }, [pendingInfo]);
   
   // Handle model change with debounce to prevent unnecessary API calls
   const handleModelChange = useCallback((model: 'openai' | 'anthropic') => {
@@ -89,6 +100,15 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
         console.log("ChatInterface: All required info collected, proceeding with request");
         console.log("ChatInterface: Complete prompt:", completePrompt);
         
+        // Set the required fields as collected
+        setRequiredFieldsCollected(true);
+        
+        // Add AI message indicating we're generating the event
+        props.setChatMessages(prev => [...prev, { 
+          type: 'ai', 
+          content: "I have all the required details. Let me generate the event for you to review and create."
+        }]);
+        
         // Call the handler with the complete prompt
         lastSubmissionRef.current = { prompt: completePrompt, timestamp: now };
         props.handlePromptSubmit(completePrompt, modelProvider);
@@ -144,6 +164,15 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
       props.setLocation(extractedInfo.location);
     }
     
+    // Set the required fields as collected
+    setRequiredFieldsCollected(true);
+    
+    // Add AI message indicating we're generating the event
+    props.setChatMessages(prev => [...prev, { 
+      type: 'ai', 
+      content: "I have all the required details. Let me generate the event for you to review and create."
+    }]);
+    
     // Update last submission reference
     lastSubmissionRef.current = { prompt: userPrompt, timestamp: now };
     
@@ -158,7 +187,7 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
 
   // Avoid excessive logging
   useEffect(() => {
-    if (process.env.NODE_ENV === 'development') {
+    if (window.location.hostname !== 'localhost') {
       console.log("ChatInterface: Current model provider:", modelProvider);
     }
   }, [modelProvider]);
@@ -180,6 +209,8 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
         handlePromptSubmit={handleSubmit}
         welcomeMessage={props.welcomeMessage}
         generatedEvent={props.generatedEvent}
+        requiredFieldsCollected={requiredFieldsCollected}
+        hasMissingFields={!pendingInfo.date || !pendingInfo.location}
       />
     </div>
   );

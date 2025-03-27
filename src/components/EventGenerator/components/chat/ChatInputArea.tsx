@@ -12,6 +12,8 @@ interface ChatInputAreaProps {
   promptCount: number;
   handlePromptSubmit: (prompt: string) => void;
   generatedEvent: any | null;
+  hasMissingFields?: boolean;
+  requiredFieldsCollected?: boolean;
 }
 
 export const ChatInputArea = ({
@@ -21,7 +23,9 @@ export const ChatInputArea = ({
   isGenerating,
   promptCount,
   handlePromptSubmit,
-  generatedEvent
+  generatedEvent,
+  hasMissingFields = false,
+  requiredFieldsCollected = false
 }: ChatInputAreaProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -52,6 +56,12 @@ export const ChatInputArea = ({
 
   return (
     <div className="border-t border-gray-200 p-4">
+      {requiredFieldsCollected && !generatedEvent && !isGenerating && (
+        <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md">
+          I have all the required details. Let me generate the event for you to review and create.
+        </div>
+      )}
+      
       <form onSubmit={submitPrompt} className="flex items-end gap-2">
         <ChatInputField
           ref={inputRef}

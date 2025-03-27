@@ -14,10 +14,13 @@ const trackingState = {
   pendingEvents: []
 };
 
+// Detect if we're in production or not
+const isProduction = window.location.hostname !== 'localhost';
+
 // Only initialize tracking on deliberate user interaction
 const initializeTracking = () => {
   // Skip if already initialized or not in production
-  if (trackingState.initialized || process.env.NODE_ENV !== 'production') return;
+  if (trackingState.initialized || !isProduction) return;
   
   // Mark as initialized to prevent duplicate calls
   trackingState.initialized = true;
@@ -40,7 +43,7 @@ const initializeTracking = () => {
 
 // Set up the delayed initialization only in production
 const setupDeferredTracking = () => {
-  if (process.env.NODE_ENV !== 'production') return;
+  if (!isProduction) return;
   
   // Use passive listeners to not impact performance
   document.addEventListener('click', function() {

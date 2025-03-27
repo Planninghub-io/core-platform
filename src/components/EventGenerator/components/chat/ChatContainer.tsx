@@ -12,6 +12,8 @@ interface ChatContainerProps {
   handlePromptSubmit: (prompt: string) => void;
   welcomeMessage: string;
   generatedEvent: any | null;
+  hasMissingFields?: boolean;
+  requiredFieldsCollected?: boolean;
 }
 
 export const ChatContainer = ({
@@ -22,7 +24,9 @@ export const ChatContainer = ({
   promptCount,
   handlePromptSubmit,
   welcomeMessage,
-  generatedEvent
+  generatedEvent,
+  hasMissingFields = false,
+  requiredFieldsCollected = false
 }: ChatContainerProps) => {
   console.log("ChatContainer: Rendering with isGenerating =", isGenerating);
   console.log("ChatContainer: Chat messages:", chatMessages);
@@ -52,7 +56,9 @@ export const ChatContainer = ({
         isGenerating={isGenerating} 
         promptCount={promptCount} 
         handlePromptSubmit={handlePromptSubmit}
-        generatedEvent={generatedEvent} 
+        generatedEvent={generatedEvent}
+        hasMissingFields={hasMissingFields}
+        requiredFieldsCollected={requiredFieldsCollected}
       />
     </div>
   );
