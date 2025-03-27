@@ -37,7 +37,7 @@ export const generateEventWithAPI = async (
       };
       
       // Check if we have a stored original prompt to use
-      if ('originalPrompt' in updatedInfo && updatedInfo.originalPrompt) {
+      if ('originalPrompt' in updatedInfo && typeof updatedInfo.originalPrompt === 'string' && updatedInfo.originalPrompt) {
         // Use the original prompt with the new date info
         console.log(`generateEventWithAPI [${apiCallId}]: Using stored original prompt with date info`);
         const fullPrompt = updatedInfo.originalPrompt;
