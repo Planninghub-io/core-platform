@@ -10,19 +10,22 @@ if (!rootElement) throw new Error('Failed to find the root element');
 
 // Create a function to initialize tracking if needed
 const initializeTracking = () => {
-  // This function would be called only when needed
-  // You can add any initialization code for tracking/analytics here
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Tracking initialized on user interaction');
-  }
+  // Only run in production environment
+  if (process.env.NODE_ENV !== 'production') return;
+  
+  // This is a hook for any additional tracking initialization
+  // We're now relying on the Facebook pixel implementation in index.html
+  // which avoids making any network requests until user interaction
 };
 
 // Defer non-critical operations
 const deferredInit = () => {
-  // Only add event listeners in production to avoid development console noise
+  // Initialize tracking on user interaction, but only in production
   if (process.env.NODE_ENV === 'production') {
-    // Initialize tracking on user interaction to avoid unnecessary network requests
+    // We need more than one event to ensure tracking is initialized
+    // if the user interacts in different ways
     document.addEventListener('click', initializeTracking, { once: true });
+    document.addEventListener('scroll', initializeTracking, { once: true });
   }
 };
 
