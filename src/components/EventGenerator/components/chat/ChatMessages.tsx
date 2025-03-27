@@ -36,7 +36,8 @@ export const ChatMessages = ({
     "• Expected number of attendees\n" +
     "• Budget (if applicable)\n" +
     "• Any other special requirements\n\n" +
-    "The more details you share, the better I can help you plan your perfect event!" : "";
+    "The more details you share, the better I can help you plan your perfect event!\n\n" +
+    "💡 *As you type, I'll suggest completions for common event types, locations, and dates. Press Tab to use a suggestion.*" : "";
 
   return (
     <div className="p-4 h-[400px] overflow-y-auto">
