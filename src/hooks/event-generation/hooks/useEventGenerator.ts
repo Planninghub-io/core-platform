@@ -1,6 +1,5 @@
 
 import { useState } from "react";
-import { ChatMessage } from "../types";
 import { useEventGeneratorCore } from "./useEventGeneratorCore";
 import { useEventCreationHandler } from "./useEventCreationHandler";
 import { useMissingInfoHandler } from "./useMissingInfoHandler";
@@ -93,7 +92,7 @@ export const useEventGenerator = () => {
       ...(modelProvider ? { modelPreference: modelProvider } : {})
     };
     
-    return coreGenerateEvent(prompt, combinedInfo);
+    return coreGenerateEvent(prompt, combinedInfo || {});
   };
 
   // Adapter for handleCreateEvent to match expected API
@@ -115,7 +114,7 @@ export const useEventGenerator = () => {
     eventTitle,
     setEventTitle,
     handlePromptSubmit: (prompt: string, modelProvider?: 'openai' | 'anthropic') => {
-      return generateEventWrapper(prompt, modelProvider);
+      return handlePromptSubmit(prompt, modelProvider);
     },
     handleCreateEvent: handleCreateEventAdapter,
     selectedDate,
