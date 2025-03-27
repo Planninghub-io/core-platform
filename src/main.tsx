@@ -12,13 +12,18 @@ if (!rootElement) throw new Error('Failed to find the root element');
 const initializeTracking = () => {
   // This function would be called only when needed
   // You can add any initialization code for tracking/analytics here
-  console.log('Tracking initialized on user interaction');
+  if (process.env.NODE_ENV === 'development') {
+    console.log('Tracking initialized on user interaction');
+  }
 };
 
 // Defer non-critical operations
 const deferredInit = () => {
-  // Initialize tracking on user interaction to avoid unnecessary network requests
-  document.addEventListener('click', initializeTracking, { once: true });
+  // Only add event listeners in production to avoid development console noise
+  if (process.env.NODE_ENV === 'production') {
+    // Initialize tracking on user interaction to avoid unnecessary network requests
+    document.addEventListener('click', initializeTracking, { once: true });
+  }
 };
 
 // Create and render the app
@@ -33,5 +38,5 @@ root.render(
 if (document.readyState === 'complete') {
   deferredInit();
 } else {
-  window.addEventListener('load', deferredInit);
+  window.addEventListener('load', deferredInit, { once: true });
 }
