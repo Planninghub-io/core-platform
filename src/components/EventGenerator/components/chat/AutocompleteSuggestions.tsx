@@ -15,12 +15,13 @@ export const AutocompleteSuggestions: React.FC<AutocompleteSuggestionsProps> = (
   onSuggestionSelect,
 }) => {
   const suggestionsRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(showSuggestions);
 
   // Close suggestions when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (suggestionsRef.current && !suggestionsRef.current.contains(event.target as Node)) {
-        // This will be called from the parent component
+        setIsVisible(false);
       }
     };
 
@@ -30,7 +31,12 @@ export const AutocompleteSuggestions: React.FC<AutocompleteSuggestionsProps> = (
     };
   }, []);
 
-  if (!showSuggestions || suggestions.length === 0) {
+  // Update visibility when props change
+  useEffect(() => {
+    setIsVisible(showSuggestions);
+  }, [showSuggestions]);
+
+  if (!isVisible || suggestions.length === 0) {
     return null;
   }
 

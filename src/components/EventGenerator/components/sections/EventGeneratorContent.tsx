@@ -42,87 +42,61 @@ export const EventGeneratorContent = ({
   promptCount
 }: EventGeneratorContentProps) => {
   const { prompt, setPrompt, isGenerating, handlePromptSubmit } = useEventGeneration();
-  const [currentModelProvider, setCurrentModelProvider] = useState<'openai' | 'anthropic'>(modelProvider);
-
-  // Using an empty string as the welcome message to let ChatMessages component use its enhanced version
-  const welcomeMessage = chatMessages.length === 0 ? "" : "";
-
-  // Effect to track model changes
-  useEffect(() => {
-    console.log("EventGeneratorContent: Model provider changed to:", currentModelProvider);
-  }, [currentModelProvider]);
+  const [showEventDetails, setShowEventDetails] = useState(false);
   
-  // Debug event data
+  // Show event details when an event is generated
   useEffect(() => {
     if (generatedEvent) {
-      console.log("EventGeneratorContent: Generated event available:", generatedEvent);
+      setShowEventDetails(true);
+      
+      // Pre-populate event title if not already set
+      if (!eventTitle && generatedEvent.title) {
+        setEventTitle(generatedEvent.title);
+      }
     }
-  }, [generatedEvent]);
+  }, [generatedEvent, eventTitle, setEventTitle]);
 
-  // Handle prompt submission with the selected model
-  const handleSubmit = (userPrompt: string, selectedModel?: 'openai' | 'anthropic') => {
-    console.log("EventGeneratorContent: handleSubmit called with prompt:", userPrompt);
-    console.log("EventGeneratorContent: handleSubmit called with model:", selectedModel || currentModelProvider);
-    
-    // Use the model selected in the UI component if provided, otherwise fall back to the state
-    const modelToUse = selectedModel || currentModelProvider;
-    
-    // Update the current model if different
-    if (selectedModel && selectedModel !== currentModelProvider) {
-      setCurrentModelProvider(selectedModel);
-      onModelChange(selectedModel);
-    }
-    
-    // Clear prompt here as well to ensure it's cleared in all relevant places
-    setPrompt("");
-    
-    // Submit the prompt if valid
-    if (userPrompt && userPrompt.trim() !== "") {
-      handlePromptSubmit(userPrompt, modelToUse);
-    } else {
-      console.error("EventGeneratorContent: Empty prompt submitted");
-    }
-  };
+  // Using an empty string as the welcome message to let ChatMessages component use its enhanced version
+  const welcomeMessage = "";
 
   return (
-    <>
-      <ChatInterface
-        chatMessages={chatMessages}
-        setChatMessages={setChatMessages}
-        prompt={prompt}
-        setPrompt={setPrompt}
-        isGenerating={isGenerating}
-        promptCount={promptCount}
-        handlePromptSubmit={handleSubmit}
-        welcomeMessage={welcomeMessage}
-        generatedEvent={generatedEvent}
-        modelProvider={currentModelProvider}
-        onModelChange={(model) => {
-          setCurrentModelProvider(model);
-          onModelChange(model);
-          console.log("EventGeneratorContent: Model changed to:", model);
-        }}
-        setSelectedDate={setSelectedDate}
-        setLocation={setLocation}
-      />
-
-      {/* Generated Event Data - Show only after we have a generated event */}
-      {generatedEvent && (
-        <EventDetailsSection
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="flex flex-col">
+        <ChatInterface
+          chatMessages={chatMessages}
+          setChatMessages={setChatMessages}
+          prompt={prompt}
+          setPrompt={setPrompt}
+          isGenerating={isGenerating}
+          promptCount={promptCount}
+          handlePromptSubmit={handlePromptSubmit}
+          welcomeMessage={welcomeMessage}
           generatedEvent={generatedEvent}
-          eventTitle={eventTitle || generatedEvent.title || "New Event"}
-          setEventTitle={setEventTitle}
-          selectedDate={selectedDate || generatedEvent.date}
           setSelectedDate={setSelectedDate}
-          location={location || generatedEvent.location}
           setLocation={setLocation}
-          hasMissingDate={hasMissingDate}
-          hasMissingLocation={hasMissingLocation}
-          isCreating={false}
-          handleCreateEvent={handleCreateEvent}
-          prompt={latestPrompt}
+          modelProvider={modelProvider}
+          onModelChange={onModelChange}
         />
+      </div>
+      
+      {showEventDetails && generatedEvent && (
+        <div className="flex flex-col">
+          <EventDetailsSection
+            generatedEvent={generatedEvent}
+            eventTitle={eventTitle}
+            setEventTitle={setEventTitle}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            location={location}
+            setLocation={setLocation}
+            hasMissingDate={hasMissingDate}
+            hasMissingLocation={hasMissingLocation}
+            isCreating={false}
+            handleCreateEvent={handleCreateEvent}
+            prompt={latestPrompt}
+          />
+        </div>
       )}
-    </>
+    </div>
   );
 };

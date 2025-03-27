@@ -1,32 +1,48 @@
 
 /**
- * Utilities for analyzing user responses
+ * Utility functions for analyzing responses to see if they contain requested information
  */
 
+type ExtractorFunction = (text: string) => string | null;
+
 /**
- * Check if a prompt response already contains requested information
- * @param promptText User's response text to analyze
- * @param requestedFields Array of fields that were requested
- * @returns Object with boolean indicating if all requested fields were provided
+ * Check if a response contains information that was specifically requested
+ * @param responseText The text to analyze
+ * @param requestedFields Array of field names that were requested
+ * @param extractors Object mapping field names to extractor functions
+ * @returns Object with extracted information and missing fields
  */
 export const checkIfResponseContainsRequestedInfo = (
-  promptText: string,
+  responseText: string,
   requestedFields: string[],
-  extractFunctions: Record<string, (text: string) => string | null>
-): { containsAllInfo: boolean; extractedInfo: Record<string, string | null> } => {
+  extractors: Record<string, ExtractorFunction>
+): {
+  extractedInfo: Record<string, string | null>;
+  stillMissingFields: string[];
+  hasAllRequestedInfo: boolean;
+} => {
   const extractedInfo: Record<string, string | null> = {};
+  const stillMissingFields: string[] = [];
   
-  // Only check fields that were requested
+  // Try to extract each requested field
   for (const field of requestedFields) {
-    if (extractFunctions[field]) {
-      extractedInfo[field] = extractFunctions[field](promptText);
+    if (extractors[field]) {
+      const extractedValue = extractors[field](responseText);
+      
+      extractedInfo[field] = extractedValue;
+      
+      if (!extractedValue) {
+        stillMissingFields.push(field);
+      }
+    } else {
+      // If we don't have an extractor for this field, consider it missing
+      stillMissingFields.push(field);
     }
   }
   
-  // Check if we found all requested fields
-  const containsAllInfo = requestedFields.every(field => 
-    extractedInfo[field] !== null && extractedInfo[field] !== undefined
-  );
-  
-  return { containsAllInfo, extractedInfo };
+  return {
+    extractedInfo,
+    stillMissingFields,
+    hasAllRequestedInfo: stillMissingFields.length === 0
+  };
 };

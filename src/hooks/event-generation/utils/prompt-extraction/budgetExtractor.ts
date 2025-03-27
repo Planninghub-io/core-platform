@@ -1,91 +1,40 @@
 
 /**
- * Budget extraction utilities
+ * Utility functions for extracting budget information from user prompts
  */
 
-// Budget patterns to match in prompts
-const budgetPatterns = [
-  // Standard budget format with dollar sign
-  /(?:budget(?:\s+of)?\s+)?\$?(\d+(?:,\d+)*(?:\.\d+)?)(?:\s+(?:dollars|USD))?/i,
-  
-  // Budget ranges
-  /(?:budget(?:\s+of)?\s+)?\$?(\d+(?:,\d+)*(?:\.\d+)?)\s*-\s*\$?(\d+(?:,\d+)*(?:\.\d+)?)/i,
-  
-  // Budget with K or M abbreviation
-  /(?:budget(?:\s+of)?\s+)?\$?(\d+(?:\.\d+)?)\s*[KkMm]\b/i
-];
-
 /**
- * Check for special budget mentions like "free event"
- */
-export const checkSpecialBudgetMentions = (promptText: string): string | null => {
-  if (promptText.includes('free event') || 
-      promptText.includes('no budget') ||
-      promptText.includes('zero budget')) {
-    return 'Free';
-  }
-  return null;
-};
-
-/**
- * Parse budget range (e.g., "$100-$200")
- */
-export const parseBudgetRange = (promptText: string): string | null => {
-  const rangeMatch = promptText.match(/(?:budget(?:\s+of)?\s+)?\$?(\d+(?:,\d+)*(?:\.\d+)?)\s*-\s*\$?(\d+(?:,\d+)*(?:\.\d+)?)/i);
-  if (rangeMatch) {
-    const min = rangeMatch[1].replace(/,/g, '');
-    const max = rangeMatch[2].replace(/,/g, '');
-    return `$${min}-$${max}`;
-  }
-  return null;
-};
-
-/**
- * Parse budget with K or M abbreviation
- */
-export const parseBudgetAbbreviation = (promptText: string): string | null => {
-  const abbreviationMatch = promptText.match(/(?:budget(?:\s+of)?\s+)?\$?(\d+(?:\.\d+)?)\s*([KkMm])\b/i);
-  if (abbreviationMatch) {
-    const num = parseFloat(abbreviationMatch[1]);
-    const unit = abbreviationMatch[2].toLowerCase();
-    
-    if (unit === 'k') {
-      return `$${num * 1000}`;
-    } else if (unit === 'm') {
-      return `$${num * 1000000}`;
-    }
-  }
-  return null;
-};
-
-/**
- * Extract budget information from prompt text
+ * Extract budget from a user prompt
  * @param promptText The user prompt to analyze
- * @returns Formatted budget string or null if not found
+ * @returns The extracted budget string or null if not found
  */
 export const extractBudgetFromPrompt = (promptText: string): string | null => {
-  // Normalize the prompt
-  const normalizedPrompt = promptText.toLowerCase().trim();
-  
-  // Check for special budget mentions first
-  const specialBudget = checkSpecialBudgetMentions(normalizedPrompt);
-  if (specialBudget) return specialBudget;
+  // Check for currency symbols with amounts
+  const currencyPattern = /(\$\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d{1,3}(?:,\d{3})*(?:\.\d{2})?\s*(?:dollars|USD))/i;
+  const currencyMatch = promptText.match(currencyPattern);
+  if (currencyMatch) {
+    return currencyMatch[1];
+  }
   
   // Check for budget range
-  const budgetRange = parseBudgetRange(normalizedPrompt);
-  if (budgetRange) return budgetRange;
+  const budgetRangePattern = /budget(?:\s+of)?\s+(\$\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d{1,3}(?:,\d{3})*(?:\.\d{2})?\s*(?:dollars|USD))(?:\s*-\s*|\s+to\s+)(\$\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d{1,3}(?:,\d{3})*(?:\.\d{2})?\s*(?:dollars|USD))/i;
+  const budgetRangeMatch = promptText.match(budgetRangePattern);
+  if (budgetRangeMatch) {
+    return `${budgetRangeMatch[1]} - ${budgetRangeMatch[2]}`;
+  }
   
-  // Check for K or M abbreviations
-  const abbreviationBudget = parseBudgetAbbreviation(normalizedPrompt);
-  if (abbreviationBudget) return abbreviationBudget;
+  // Check for budget amounts with "budget" keyword
+  const budgetKeywordPattern = /budget(?:\s+of)?\s+(\$\d{1,3}(?:,\d{3})*(?:\.\d{2})?|\d{1,3}(?:,\d{3})*(?:\.\d{2})?\s*(?:dollars|USD))/i;
+  const budgetKeywordMatch = promptText.match(budgetKeywordPattern);
+  if (budgetKeywordMatch) {
+    return budgetKeywordMatch[1];
+  }
   
-  // Try other patterns
-  for (const pattern of budgetPatterns) {
-    const match = normalizedPrompt.match(pattern);
-    if (match && !match[0].includes('-') && !match[0].toLowerCase().match(/[km]\b/)) {
-      const amount = match[1].replace(/,/g, '');
-      return `$${amount}`;
-    }
+  // Check for terms indicating free event
+  const freePattern = /\b(free|no cost|zero budget)\b/i;
+  const freeMatch = promptText.match(freePattern);
+  if (freeMatch) {
+    return "Free";
   }
   
   return null;

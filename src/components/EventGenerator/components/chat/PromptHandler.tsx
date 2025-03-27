@@ -90,7 +90,14 @@ export const usePromptHandler = ({
         
         // Call the handler with the complete prompt
         lastSubmissionRef.current = { prompt: completePrompt, timestamp: now };
-        handlePromptSubmit(completePrompt, modelProvider);
+        
+        // Force a small delay to ensure the message appears before API call
+        setTimeout(() => {
+          handlePromptSubmit(completePrompt, modelProvider);
+        }, 100);
+        
+        // Clear the input for better UX
+        setPrompt("");
         
         // Clear pending info since we're done collecting
         setPendingInfo({});
@@ -152,12 +159,18 @@ export const usePromptHandler = ({
       content: "I have all the required details. Let me generate the event for you to review and create."
     }]);
     
+    // Clear the input for better UX
+    setPrompt("");
+    
     // Update last submission reference
     lastSubmissionRef.current = { prompt: userPrompt, timestamp: now };
     
-    // Call the parent handlePromptSubmit with the model provider
-    console.log("PromptHandler: Calling parent handlePromptSubmit with model:", modelProvider);
-    handlePromptSubmit(userPrompt, modelProvider);
+    // Force a small delay to ensure the message appears before API call
+    setTimeout(() => {
+      // Call the parent handlePromptSubmit with the model provider
+      console.log("PromptHandler: Calling parent handlePromptSubmit with model:", modelProvider);
+      handlePromptSubmit(userPrompt, modelProvider);
+    }, 100);
   }, [pendingInfo, modelProvider, setChatMessages, setSelectedDate, setLocation, setPrompt, handlePromptSubmit]);
 
   return {
