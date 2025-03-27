@@ -30,17 +30,17 @@ export const generateEventWithAPI = async (
       const currentYear = new Date().getFullYear();
       const dateText = `${dateMatch[0]}, ${currentYear}`;
       
-      // Add the date to combinedInfo
-      const updatedInfo = { 
+      // Create a properly typed updatedInfo object
+      const updatedInfo: Record<string, string> = { 
         ...combinedInfo,
         date: dateText 
       };
       
       // Check if we have a stored original prompt to use
-      if ('originalPrompt' in updatedInfo && typeof updatedInfo.originalPrompt === 'string' && updatedInfo.originalPrompt) {
+      if ('originalPrompt' in combinedInfo && typeof combinedInfo.originalPrompt === 'string' && combinedInfo.originalPrompt) {
         // Use the original prompt with the new date info
         console.log(`generateEventWithAPI [${apiCallId}]: Using stored original prompt with date info`);
-        const fullPrompt = updatedInfo.originalPrompt;
+        const fullPrompt = combinedInfo.originalPrompt;
         
         // Generate the event with the original prompt and date info
         const response = await generateEventAPI({
