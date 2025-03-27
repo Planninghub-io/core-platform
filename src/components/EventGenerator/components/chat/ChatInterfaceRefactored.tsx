@@ -1,0 +1,72 @@
+
+import { useState } from "react";
+import { ChatContainer } from "./ChatContainer";
+import { ModelSelector } from "./ModelSelector";
+import { usePromptHandler } from "./PromptHandler";
+
+interface ChatInterfaceProps {
+  chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
+  prompt: string;
+  setPrompt: (prompt: string) => void;
+  isGenerating: boolean;
+  promptCount: number;
+  handlePromptSubmit: (prompt: string, modelProvider?: 'openai' | 'anthropic') => void;
+  welcomeMessage: string;
+  generatedEvent: any | null;
+  modelProvider?: 'openai' | 'anthropic';
+  onModelChange?: (model: 'openai' | 'anthropic') => void;
+  setChatMessages: React.Dispatch<React.SetStateAction<Array<{ type: 'user' | 'ai', content: string, id?: string }>>>;
+  setSelectedDate?: (date: string) => void;
+  setLocation?: (location: string) => void;
+}
+
+export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
+  const [modelProvider, setModelProvider] = useState<'openai' | 'anthropic'>(props.modelProvider || 'openai');
+  
+  // Use the prompt handler hook
+  const {
+    handleSubmit,
+    pendingInfo,
+    requiredFieldsCollected,
+    hasMissingFields
+  } = usePromptHandler({
+    setChatMessages: props.setChatMessages,
+    setSelectedDate: props.setSelectedDate,
+    setLocation: props.setLocation,
+    setPrompt: props.setPrompt,
+    handlePromptSubmit: props.handlePromptSubmit,
+    modelProvider
+  });
+
+  // Handle model change
+  const handleModelChange = (model: 'openai' | 'anthropic') => {
+    if (model === modelProvider) return;
+    
+    setModelProvider(model);
+    if (props.onModelChange) {
+      props.onModelChange(model);
+    }
+  };
+
+  return (
+    <div className="w-full min-h-[400px] flex flex-col">
+      <ModelSelector 
+        modelProvider={modelProvider}
+        onModelChange={handleModelChange}
+      />
+      
+      <ChatContainer 
+        chatMessages={props.chatMessages}
+        prompt={props.prompt}
+        setPrompt={props.setPrompt}
+        isGenerating={props.isGenerating}
+        promptCount={props.promptCount}
+        handlePromptSubmit={handleSubmit}
+        welcomeMessage={props.welcomeMessage}
+        generatedEvent={props.generatedEvent}
+        requiredFieldsCollected={requiredFieldsCollected}
+        hasMissingFields={hasMissingFields}
+      />
+    </div>
+  );
+};
