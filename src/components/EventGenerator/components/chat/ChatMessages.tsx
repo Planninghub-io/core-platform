@@ -30,7 +30,7 @@ export const ChatMessages = ({
 
   // Simplified welcome message for event creation
   const enhancedWelcomeMessage = 
-    "👋 Welcome to Your Personal Event Planner!\n" +
+    "👋 Welcome to Your AI Event Planner!\n" +
     "Just tell me about your event, and I'll help you bring it to life!\n\n" +
     "Some tips to get started:\n" +
     "✨ Describe the type of event\n" +
