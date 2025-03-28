@@ -39,7 +39,7 @@ export const ChatMessages = ({
     "Start typing and use our autocomplete suggestions to quickly add details! The more information you share, the better I can help you plan your perfect event!" : "";
 
   return (
-    <div className="p-4 h-[200px] overflow-y-auto">
+    <div className="p-4 h-[300px] overflow-y-auto">
       {/* Show welcome message if no messages yet */}
       {chatMessages.length === 0 && enhancedWelcomeMessage && (
         <ChatMessage
