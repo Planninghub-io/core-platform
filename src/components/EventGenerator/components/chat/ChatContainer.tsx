@@ -1,4 +1,3 @@
-
 import { ChatMessages } from "./ChatMessages";
 import { ChatInputArea } from "./ChatInputArea";
 import { useEffect } from "react";
@@ -39,7 +38,6 @@ export const ChatContainer = ({
   console.log("ChatContainer: Chat messages:", chatMessages);
   
   useEffect(() => {
-    // Scroll chat to bottom when messages update or during generation
     const messagesEndRef = document.getElementById("messages-end-ref");
     if (messagesEndRef) {
       messagesEndRef.scrollIntoView({ behavior: 'smooth' });
@@ -56,21 +54,19 @@ export const ChatContainer = ({
         />
         <div id="messages-end-ref" className="h-0" />
       </div>
-      <div className="mt-auto">
-        <ChatInputArea 
-          chatMessages={chatMessages} 
-          prompt={prompt} 
-          setPrompt={setPrompt} 
-          isGenerating={isGenerating} 
-          promptCount={promptCount} 
-          handlePromptSubmit={handlePromptSubmit}
-          generatedEvent={generatedEvent}
-          hasMissingFields={hasMissingFields}
-          requiredFieldsCollected={requiredFieldsCollected}
-          modelProvider={modelProvider}
-          onModelChange={onModelChange}
-        />
-      </div>
+      <ChatInputArea 
+        chatMessages={chatMessages} 
+        prompt={prompt} 
+        setPrompt={setPrompt} 
+        isGenerating={isGenerating} 
+        promptCount={promptCount} 
+        handlePromptSubmit={handlePromptSubmit}
+        generatedEvent={generatedEvent}
+        hasMissingFields={hasMissingFields}
+        requiredFieldsCollected={requiredFieldsCollected}
+        modelProvider={modelProvider}
+        onModelChange={onModelChange}
+      />
     </div>
   );
 };
