@@ -59,7 +59,7 @@ export const ChatInputArea = ({
   };
 
   return (
-    <div className="border-t border-gray-200 p-4">
+    <div className="border-t border-gray-200 px-4 py-2"> {/* Reduced vertical padding */}
       {requiredFieldsCollected && !generatedEvent && !isGenerating && (
         <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md">
           I have all the required details. Let me generate the event for you to review and create.
