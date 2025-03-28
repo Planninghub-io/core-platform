@@ -60,11 +60,7 @@ export const ChatInputArea = ({
 
   return (
     <div className="px-4 py-3 bg-white w-full rounded-b-xl">
-      {requiredFieldsCollected && !generatedEvent && !isGenerating && (
-        <div className="mb-2 p-2 bg-green-50 text-green-700 rounded-md text-sm">
-          I have all the required details. Let me generate the event for you to review and create.
-        </div>
-      )}
+      {/* Removed the redundant green message */}
       
       <form onSubmit={submitPrompt} className="flex items-center gap-2 w-full">
         <ChatInputField
@@ -103,3 +99,4 @@ export const ChatInputArea = ({
     </div>
   );
 };
+
