@@ -39,7 +39,7 @@ export const ChatMessages = ({
     "✨ Let me know your estimated budget";
 
   return (
-    <div className={`p-4 overflow-y-auto w-full flex flex-col`}>
+    <div className="p-4 overflow-y-auto w-full flex flex-col">
       {/* Show welcome message if no messages yet */}
       {chatMessages.length === 0 && (
         <ChatMessage
@@ -48,6 +48,7 @@ export const ChatMessages = ({
           type="ai"
           isLoading={false}
           isWelcomeMessage={true}
+          disableTyping={true}
         />
       )}
 
@@ -58,6 +59,7 @@ export const ChatMessages = ({
           message={message.content} 
           type={message.type} 
           isLoading={index === chatMessages.length - 1 && message.type === 'ai' && isGenerating}
+          disableTyping={true}
         />
       ))}
       

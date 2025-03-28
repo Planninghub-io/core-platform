@@ -10,9 +10,16 @@ interface ChatMessageProps {
   type: 'user' | 'ai';
   isLoading?: boolean;
   isWelcomeMessage?: boolean;
+  disableTyping?: boolean;
 }
 
-export const ChatMessage = ({ message, type, isLoading = false, isWelcomeMessage = false }: ChatMessageProps) => {
+export const ChatMessage = ({ 
+  message, 
+  type, 
+  isLoading = false, 
+  isWelcomeMessage = false,
+  disableTyping = false
+}: ChatMessageProps) => {
   const [copied, setCopied] = useState(false);
   const [displayedMessage, setDisplayedMessage] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -23,30 +30,36 @@ export const ChatMessage = ({ message, type, isLoading = false, isWelcomeMessage
     console.log(`Rendering message type: ${type}, loading: ${isLoading}, content: ${message.substring(0, 30)}...`);
   }, [message, type, isLoading]);
 
-  // Auto-typing effect for AI messages
+  // Auto-typing effect for AI messages (if not disabled)
   useEffect(() => {
     if (type === 'ai' && !isLoading && message && message.length > 0) {
-      // Start typing animation for AI messages
-      setIsTyping(true);
-      setDisplayedMessage('');
-      
-      let index = 0;
-      const typingInterval = setInterval(() => {
-        if (index < message.length) {
-          setDisplayedMessage(prev => prev + message.charAt(index));
-          index++;
-        } else {
-          clearInterval(typingInterval);
-          setIsTyping(false);
-        }
-      }, 20); // Adjust typing speed here
-      
-      return () => clearInterval(typingInterval);
+      if (disableTyping) {
+        // If typing is disabled, show message immediately
+        setDisplayedMessage(message);
+        setIsTyping(false);
+      } else {
+        // Start typing animation for AI messages
+        setIsTyping(true);
+        setDisplayedMessage('');
+        
+        let index = 0;
+        const typingInterval = setInterval(() => {
+          if (index < message.length) {
+            setDisplayedMessage(prev => prev + message.charAt(index));
+            index++;
+          } else {
+            clearInterval(typingInterval);
+            setIsTyping(false);
+          }
+        }, 20); // Adjust typing speed here
+        
+        return () => clearInterval(typingInterval);
+      }
     } else if (type === 'user') {
       // For user messages, show immediately
       setDisplayedMessage(message);
     }
-  }, [message, type, isLoading]);
+  }, [message, type, isLoading, disableTyping]);
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(message);
@@ -108,14 +121,14 @@ export const ChatMessage = ({ message, type, isLoading = false, isWelcomeMessage
             ) : (
               <div className="whitespace-pre-wrap break-words" 
                 dangerouslySetInnerHTML={{ 
-                  __html: (type === 'ai' ? displayedMessage : message)
+                  __html: (disableTyping || type === 'user' ? message : displayedMessage)
                           .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                           .replace(/\n/g, '<br />') 
                 }}
               />
             )}
             
-            {type === 'ai' && !isLoading && !isTyping && !isWelcomeMessage && (
+            {type === 'ai' && !isLoading && (!isTyping || disableTyping) && !isWelcomeMessage && (
               <div className="mt-3 flex items-center gap-1 text-gray-500">
                 <Button 
                   variant="ghost" 
