@@ -1,7 +1,7 @@
 
 import { Input } from "@/components/ui/input";
 import React, { FormEvent, forwardRef, useState, useEffect } from "react";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AutocompleteSuggestions } from "./AutocompleteSuggestions";
 import { generateSuggestions } from "./suggestionData";
@@ -34,7 +34,9 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+    const [isListening, setIsListening] = useState(false);
     const isMobile = useIsMobile();
+    const recognitionRef = useRef<SpeechRecognition | null>(null);
 
     useEffect(() => {
       if (isGenerating) {
@@ -106,6 +108,75 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
       }
     };
 
+    const toggleListening = () => {
+      if (isGenerating) return;
+
+      if (!isListening) {
+        startListening();
+      } else {
+        stopListening();
+      }
+    };
+
+    const startListening = () => {
+      if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+        console.error('Speech recognition not supported in this browser');
+        return;
+      }
+
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognitionRef.current = new SpeechRecognition();
+        
+        recognitionRef.current.continuous = false;
+        recognitionRef.current.interimResults = true;
+        recognitionRef.current.lang = 'en-US';
+
+        recognitionRef.current.onstart = () => {
+          console.log('Voice recognition started');
+          setIsListening(true);
+        };
+
+        recognitionRef.current.onresult = (event) => {
+          const transcript = Array.from(event.results)
+            .map(result => result[0].transcript)
+            .join('');
+          
+          setPrompt(transcript);
+        };
+
+        recognitionRef.current.onerror = (event) => {
+          console.error('Speech recognition error', event.error);
+          stopListening();
+        };
+
+        recognitionRef.current.onend = () => {
+          console.log('Voice recognition ended');
+          setIsListening(false);
+        };
+
+        recognitionRef.current.start();
+      } catch (error) {
+        console.error('Error starting speech recognition:', error);
+      }
+    };
+
+    const stopListening = () => {
+      if (recognitionRef.current) {
+        recognitionRef.current.stop();
+        setIsListening(false);
+      }
+    };
+
+    // Cleanup speech recognition on unmount
+    useEffect(() => {
+      return () => {
+        if (recognitionRef.current) {
+          recognitionRef.current.stop();
+        }
+      };
+    }, []);
+
     return (
       <div className={`relative flex-1 ${className}`}>
         <Input
@@ -115,7 +186,7 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="rounded-full pr-10 h-11"
+          className="rounded-full pr-20 h-11" // Extended right padding for both icons
           disabled={isGenerating}
           onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
         />
@@ -127,16 +198,30 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
           onSuggestionSelect={handleSuggestionSelect}
         />
         
-        {prompt && !isGenerating && (
+        <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
+          {/* Microphone button */}
           <button
             type="button"
-            onClick={clearInput}
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-            aria-label="Clear input"
+            onClick={toggleListening}
+            disabled={isGenerating}
+            className={`text-gray-400 hover:text-gray-600 ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
+            aria-label={isListening ? "Stop recording" : "Start voice input"}
           >
-            <RotateCcw size={16} />
+            {isListening ? <MicOff size={18} className="text-red-500" /> : <Mic size={18} />}
           </button>
-        )}
+          
+          {/* Clear button - only show when there's text */}
+          {prompt && !isGenerating && (
+            <button
+              type="button"
+              onClick={clearInput}
+              className="text-gray-400 hover:text-gray-600"
+              aria-label="Clear input"
+            >
+              <RotateCcw size={16} />
+            </button>
+          )}
+        </div>
 
         {shouldShowButton && (
           <Button
@@ -167,5 +252,13 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
     );
   }
 );
+
+// Add TypeScript declarations for the Web Speech API since they're not included in the standard lib
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
 
 ChatInputField.displayName = "ChatInputField";
