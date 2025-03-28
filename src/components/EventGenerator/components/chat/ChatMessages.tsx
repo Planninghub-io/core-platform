@@ -47,31 +47,34 @@ export const ChatMessages = ({
     "✨ Share your preferred date and time\n" +
     "✨ Mention the location or venue style\n" +
     "✨ Let me know your estimated budget\n\n" +
-    "TIP: You can use the 'AI Planner' button at the top to talk to our AI agent directly - perfect for planning on the go!";
+    "TIP: You can use the microphone icon at the top right to talk to our AI agent directly - perfect for planning on the go!";
 
   return (
     <div className="p-4 overflow-y-auto w-full flex flex-col">
       {/* Show welcome message if no messages yet */}
       {chatMessages.length === 0 && (
         <div className="w-full">
-          {/* Add AI Planner button above the welcome message */}
-          <div className="flex justify-end mb-2">
-            <VoiceInputButton
-              isGenerating={isGenerating}
-              onTranscriptReceived={handleTranscriptReceived}
-              showLabel={true}
-              className="transform-none"
-            />
+          {/* Position AI Planner button at the top right of welcome message */}
+          <div className="flex justify-between items-start mb-2">
+            <div className="flex-1">
+              <ChatMessage
+                key="welcome"
+                message={enhancedWelcomeMessage}
+                type="ai"
+                isLoading={false}
+                isWelcomeMessage={true}
+                disableTyping={true}
+              />
+            </div>
+            <div className="ml-2 pt-1">
+              <VoiceInputButton
+                isGenerating={isGenerating}
+                onTranscriptReceived={handleTranscriptReceived}
+                showLabel={false}
+                className="transform-none"
+              />
+            </div>
           </div>
-          
-          <ChatMessage
-            key="welcome"
-            message={enhancedWelcomeMessage}
-            type="ai"
-            isLoading={false}
-            isWelcomeMessage={true}
-            disableTyping={true}
-          />
         </div>
       )}
 
