@@ -3,17 +3,12 @@ import React from 'react';
 import { AutocompleteSuggestions } from './AutocompleteSuggestions';
 import { generateSuggestions } from './suggestionData';
 
-interface SuggestionManagerProps {
-  prompt: string;
-  setPrompt: (prompt: string) => void;
-  isGenerating: boolean;
-}
-
-export const SuggestionManager: React.FC<SuggestionManagerProps> = ({
-  prompt,
-  setPrompt,
-  isGenerating
-}) => {
+// Custom hook for managing suggestions
+export function useSuggestionManager(
+  prompt: string,
+  setPrompt: (prompt: string) => void,
+  isGenerating: boolean
+) {
   const [suggestions, setSuggestions] = React.useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = React.useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = React.useState(-1);
@@ -90,7 +85,7 @@ export const SuggestionManager: React.FC<SuggestionManagerProps> = ({
     handleSuggestionSelect,
     handleKeyNavigation,
     showSuggestionsOnFocus,
-    SuggestionsComponent: (
+    suggestionsElement: (
       <AutocompleteSuggestions
         suggestions={suggestions}
         showSuggestions={showSuggestions}
@@ -99,4 +94,4 @@ export const SuggestionManager: React.FC<SuggestionManagerProps> = ({
       />
     )
   };
-};
+}

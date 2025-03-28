@@ -20,8 +20,10 @@ export function useSpeechRecognition({
     }
 
     try {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      recognitionRef.current = new SpeechRecognition();
+      // Fix the type issue by using the defined TypeScript interfaces
+      const SpeechRecognitionConstructor = (window as any).SpeechRecognition || 
+                                          (window as any).webkitSpeechRecognition;
+      recognitionRef.current = new SpeechRecognitionConstructor();
       
       recognitionRef.current.continuous = false;
       recognitionRef.current.interimResults = true;

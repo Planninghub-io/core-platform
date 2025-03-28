@@ -1,10 +1,11 @@
+
 import { Input } from "@/components/ui/input";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { VoiceInputButton } from "./VoiceInputButton";
 import { ClearInputButton } from "./ClearInputButton";
-import { SuggestionManager } from "./SuggestionManager";
+import { useSuggestionManager } from "./SuggestionManager";
 
 interface ChatInputFieldProps {
   prompt: string;
@@ -35,12 +36,12 @@ export const ChatInputField = React.forwardRef<HTMLInputElement, ChatInputFieldP
     const {
       handleKeyNavigation,
       showSuggestionsOnFocus,
-      SuggestionsComponent
-    } = SuggestionManager({
+      suggestionsElement
+    } = useSuggestionManager(
       prompt,
       setPrompt,
       isGenerating
-    });
+    );
 
     const clearInput = () => {
       setPrompt("");
@@ -75,7 +76,7 @@ export const ChatInputField = React.forwardRef<HTMLInputElement, ChatInputFieldP
           onFocus={showSuggestionsOnFocus}
         />
         
-        {SuggestionsComponent}
+        {suggestionsElement}
         
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
           {/* Microphone button */}
