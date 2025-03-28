@@ -1,3 +1,4 @@
+
 import { ChatMessage } from "../../ChatMessage";
 import { useEffect, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -27,22 +28,15 @@ export const ChatMessages = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isGenerating]);
 
-  // Enhanced welcome message for event creation
+  // Simplified welcome message for event creation
   const enhancedWelcomeMessage = 
-    "👋 Welcome to Your Personal Event Planner!\n\n" +
-    "I'm here to help you create the perfect event. Whether it's a:\n" +
-    "• Birthday Party 🎂\n" +
-    "• Business Conference 💼\n" +
-    "• Wedding Celebration 💍\n" +
-    "• Networking Mixer 🤝\n" +
-    "• Or any other special occasion 🎉\n\n" +
-    "**Just tell me about your event, and I'll help you bring it to life!**\n\n" +
+    "👋 Welcome to Your Personal Event Planner!\n" +
+    "Just tell me about your event, and I'll help you bring it to life!\n\n" +
     "Some tips to get started:\n" +
     "✨ Describe the type of event\n" +
     "✨ Share your preferred date and time\n" +
     "✨ Mention the location or venue style\n" +
-    "✨ Let me know your estimated budget\n\n" +
-    "I'm excited to help you plan an unforgettable event! 🚀";
+    "✨ Let me know your estimated budget";
 
   return (
     <div className={`p-4 ${isMobile ? 'h-[250px]' : 'h-[300px]'} overflow-y-auto w-full`}>
