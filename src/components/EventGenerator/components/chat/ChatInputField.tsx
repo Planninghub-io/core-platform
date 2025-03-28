@@ -64,10 +64,10 @@ export const ChatInputField = React.forwardRef<HTMLInputElement, ChatInputFieldP
 
     // Handle transcript received from voice assistant
     const handleTranscriptReceived = (transcript: string) => {
-      setPrompt(prevPrompt => {
-        const newPrompt = prevPrompt ? `${prevPrompt} ${transcript}` : transcript;
-        return newPrompt;
-      });
+      // We need to directly set the prompt rather than using a callback function
+      // since setPrompt expects a string value
+      const newPrompt = prompt ? `${prompt} ${transcript}` : transcript;
+      setPrompt(newPrompt);
     };
 
     return (

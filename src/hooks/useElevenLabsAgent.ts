@@ -24,15 +24,22 @@ export function useElevenLabsAgent({ onMessageReceived, agentId = 'B6KmBRX9XAvn2
       setConversationActive(false);
     },
     onMessage: (message) => {
-      // Handle both tentative and final messages from the agent
-      if (message.type === 'agent_response') {
+      // Handle messages from the agent
+      if ('message' in message && 'source' in message) {
+        // For ElevenLabs agent responses
+        if (message.source === 'agent') {
+          console.log('Agent response:', message.message);
+          onMessageReceived(message.message);
+        }
+      } else if ('type' in message && message.type === 'agent_response' && 'content' in message) {
+        // Alternative message format
         console.log('Agent response:', message.content);
         onMessageReceived(message.content);
       }
     },
     onError: (err) => {
       console.error('ElevenLabs agent error:', err);
-      setError(`Error: ${err.message || 'Unknown error'}`);
+      setError(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
       setConversationActive(false);
     }
   });
