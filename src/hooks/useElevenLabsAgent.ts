@@ -18,7 +18,7 @@ interface AgentResponseMessage {
   content: string;
 }
 
-type AgentMessage = AgentMessageWithSource | AgentResponseMessage;
+type AgentMessage = AgentMessageWithSource | AgentResponseMessage | any;
 
 export function useElevenLabsAgent({ onMessageReceived, agentId = 'B6KmBRX9XAvn2ksmI3DG' }: UseElevenLabsAgentProps) {
   const [isConnected, setIsConnected] = useState(false);
@@ -36,7 +36,7 @@ export function useElevenLabsAgent({ onMessageReceived, agentId = 'B6KmBRX9XAvn2
       setIsConnected(false);
       setConversationActive(false);
     },
-    onMessage: (message: any) => {
+    onMessage: (message: AgentMessage) => {
       // Handle messages from the agent
       if ('message' in message && 'source' in message) {
         // For ElevenLabs agent responses

@@ -5,6 +5,7 @@ import { Send } from "lucide-react";
 import React, { FormEvent, useRef } from "react";
 import { ModelDropdown } from "./ModelDropdown";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { VoiceInputButton } from "./VoiceInputButton";
 
 interface ChatInputAreaProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
@@ -58,9 +59,24 @@ export const ChatInputArea = ({
     handlePromptSubmit(trimmedPrompt);
   };
 
+  // Handle transcript received from voice assistant
+  const handleTranscriptReceived = (transcript: string) => {
+    // We need to directly set the prompt rather than using a callback function
+    const newPrompt = prompt ? `${prompt} ${transcript}` : transcript;
+    setPrompt(newPrompt);
+  };
+
   return (
     <div className="px-4 py-3 bg-white w-full rounded-b-xl">
-      {/* Removed the redundant green message */}
+      {/* Add the Call AI Planner button above the input field */}
+      <div className="flex justify-center mb-3">
+        <VoiceInputButton
+          isGenerating={isGenerating}
+          onTranscriptReceived={handleTranscriptReceived}
+          showLabel={true}
+          className="w-full md:w-auto"
+        />
+      </div>
       
       <form onSubmit={submitPrompt} className="flex items-center gap-2 w-full">
         <ChatInputField
@@ -99,4 +115,3 @@ export const ChatInputArea = ({
     </div>
   );
 };
-

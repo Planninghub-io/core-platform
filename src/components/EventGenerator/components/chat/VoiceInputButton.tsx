@@ -8,11 +8,15 @@ import { toast } from 'sonner';
 interface VoiceInputButtonProps {
   isGenerating: boolean;
   onTranscriptReceived: (transcript: string) => void;
+  className?: string;
+  showLabel?: boolean;
 }
 
 export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
   isGenerating,
-  onTranscriptReceived
+  onTranscriptReceived,
+  className = '',
+  showLabel = false
 }) => {
   const [showMicPermissionToast, setShowMicPermissionToast] = useState(false);
 
@@ -50,6 +54,8 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
         const success = await startConversation();
         if (!success) {
           toast.error("Could not connect to voice assistant");
+        } else {
+          toast.success("AI Planner Agent activated");
         }
       } catch (err) {
         console.error("Microphone permission error:", err);
@@ -58,24 +64,62 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
       }
     } else {
       await endConversation();
+      toast.info("AI Planner Agent deactivated");
     }
   };
 
+  const buttonColorClass = conversationActive
+    ? isSpeaking 
+      ? "bg-green-500 hover:bg-green-600" 
+      : "bg-red-500 hover:bg-red-600"
+    : "bg-purple-500 hover:bg-purple-600";
+
   return (
-    <button
-      type="button"
-      onClick={toggleConversation}
-      disabled={isGenerating}
-      className={`text-gray-400 hover:text-gray-600 transition-colors ${isGenerating ? 'opacity-50 cursor-not-allowed' : ''}`}
-      aria-label={conversationActive ? "Stop voice assistant" : "Start voice assistant"}
-    >
-      {conversationActive ? (
-        isSpeaking ? 
-          <Volume2 size={18} className="text-green-500 animate-pulse" /> :
-          <MicOff size={18} className="text-red-500" />
-      ) : (
-        <Mic size={18} />
+    <div className={`inline-flex ${className}`}>
+      {showLabel && (
+        <Button
+          onClick={toggleConversation}
+          disabled={isGenerating}
+          className={`${buttonColorClass} text-white transition-colors rounded-full gap-2`}
+          aria-label={conversationActive ? "Stop AI Planner" : "Call AI Planner"}
+        >
+          {conversationActive ? (
+            isSpeaking ? (
+              <>
+                <Volume2 size={18} className="animate-pulse" />
+                {showLabel && <span>AI is Speaking...</span>}
+              </>
+            ) : (
+              <>
+                <MicOff size={18} />
+                {showLabel && <span>Stop AI Planner</span>}
+              </>
+            )
+          ) : (
+            <>
+              <Mic size={18} />
+              {showLabel && <span>Call AI Planner</span>}
+            </>
+          )}
+        </Button>
       )}
-    </button>
+      {!showLabel && (
+        <button
+          type="button"
+          onClick={toggleConversation}
+          disabled={isGenerating}
+          className={`${isGenerating ? 'opacity-50 cursor-not-allowed' : ''} text-gray-400 hover:text-gray-600 transition-colors`}
+          aria-label={conversationActive ? "Stop voice assistant" : "Start voice assistant"}
+        >
+          {conversationActive ? (
+            isSpeaking ? 
+              <Volume2 size={18} className="text-green-500 animate-pulse" /> :
+              <MicOff size={18} className="text-red-500" />
+          ) : (
+            <Mic size={18} />
+          )}
+        </button>
+      )}
+    </div>
   );
 };
