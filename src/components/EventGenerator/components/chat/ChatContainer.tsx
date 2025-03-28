@@ -11,6 +11,7 @@ interface ChatContainerProps {
   generatedEvent: any | null;
   hasMissingFields?: boolean;
   requiredFieldsCollected?: boolean;
+  onTranscriptReceived?: (transcript: string) => void;
 }
 
 export const ChatContainer = ({
@@ -20,7 +21,8 @@ export const ChatContainer = ({
   welcomeMessage,
   generatedEvent,
   hasMissingFields = false,
-  requiredFieldsCollected = false
+  requiredFieldsCollected = false,
+  onTranscriptReceived
 }: ChatContainerProps) => {
   const isMobile = useIsMobile();
   
@@ -41,6 +43,7 @@ export const ChatContainer = ({
           chatMessages={chatMessages} 
           isGenerating={isGenerating} 
           welcomeMessage={welcomeMessage} 
+          onTranscriptReceived={onTranscriptReceived}
         />
         <div id="messages-end-ref" className="h-0" />
       </div>

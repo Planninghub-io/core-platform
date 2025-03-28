@@ -23,6 +23,7 @@ interface ChatInterfaceProps {
   eventTitle?: string;
   setEventTitle?: (title: string) => void;
   handleCreateEvent?: () => void;
+  onTranscriptReceived?: (transcript: string) => void;
 }
 
 export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
@@ -85,6 +86,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
           generatedEvent={props.generatedEvent}
           requiredFieldsCollected={requiredFieldsCollected}
           hasMissingFields={hasMissingFields}
+          onTranscriptReceived={props.onTranscriptReceived}
         />
       </div>
       <div className="rounded-b-xl border-x border-b border-gray-200 bg-white">
