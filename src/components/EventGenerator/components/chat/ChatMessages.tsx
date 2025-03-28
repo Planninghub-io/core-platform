@@ -38,16 +38,15 @@ export const ChatMessages = ({
     }
   };
 
-  // Simplified welcome message for event creation
+  // Updated welcome message with new content
   const enhancedWelcomeMessage = 
     "👋 Welcome to Your AI Event Planner!\n" +
-    "Just tell me about your event, and I'll help you bring it to life!\n\n" +
+    "Just share the details in the chat or talk to me clicking the microphone icon and I'll help you bring it to life!\n\n" +
     "Some tips to get started:\n" +
     "✨ Describe the type of event\n" +
     "✨ Share your preferred date and time\n" +
     "✨ Mention the location or venue style\n" +
-    "✨ Let me know your estimated budget\n\n" +
-    "TIP: You can use the microphone icon at the top right to talk to our AI agent directly - perfect for planning on the go!";
+    "✨ Let me know your estimated budget";
 
   return (
     <div className="p-4 overflow-y-auto w-full flex flex-col">
