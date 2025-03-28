@@ -33,10 +33,10 @@ export const ChatMessages = ({
   // Updated welcome message
   const enhancedWelcomeMessage = 
     "👋 Welcome to Your AI Event Planner!\n" +
-    "Just type in the event details in the chat or talk to me clicking on the microphone icon and I'll help you bring it to life!";
+    "Just type in the event details in the chat and I'll help you bring it to life!";
 
   return (
-    <div className="p-4 overflow-y-auto w-full flex flex-col">
+    <div className="p-4 overflow-y-auto flex-1 w-full flex flex-col min-h-[60vh]">
       {/* Show welcome message if no messages yet */}
       {chatMessages.length === 0 && (
         <div className="w-full">
@@ -76,4 +76,3 @@ export const ChatMessages = ({
     </div>
   );
 };
-

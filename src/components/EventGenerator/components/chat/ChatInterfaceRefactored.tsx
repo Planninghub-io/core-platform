@@ -76,7 +76,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
   }, [props.generatedEvent, props.isGenerating]);
 
   return (
-    <div className="w-full min-h-[400px] flex flex-col">
+    <div className="w-full min-h-[70vh] flex flex-col">
       <div className="flex-grow overflow-hidden rounded-t-xl">
         <ChatContainer 
           chatMessages={props.chatMessages}

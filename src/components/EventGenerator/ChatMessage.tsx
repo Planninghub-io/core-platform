@@ -1,4 +1,3 @@
-
 import { cn } from "@/lib/utils";
 import { Copy, ThumbsUp, ThumbsDown, RotateCcw, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -92,16 +91,18 @@ export const ChatMessage = ({
   return (
     <div 
       className={cn(
-        "w-full mb-6 px-4", // Added px-4 to ensure full message visibility
-        type === 'user' ? "flex justify-end" : "flex justify-start"
+        "w-full mb-6 px-4", 
+        type === 'user' ? "flex justify-end" : "flex justify-start",
+        isWelcomeMessage && "flex justify-center"
       )}
     >
       <div
         className={cn(
-          "max-w-[85%] rounded-lg px-5 py-4 shadow-sm",
+          "rounded-lg px-5 py-4 shadow-sm",
           type === 'user' 
-            ? "bg-[#242424] text-white rounded-2xl" 
-            : "bg-gray-100 text-gray-900 rounded-2xl border border-gray-200"
+            ? "bg-[#242424] text-white rounded-2xl max-w-[85%]" 
+            : "bg-gray-100 text-gray-900 rounded-2xl border border-gray-200 max-w-[85%]",
+          isWelcomeMessage && "w-full max-w-full"
         )}
       >
         <div className="flex items-start gap-3">

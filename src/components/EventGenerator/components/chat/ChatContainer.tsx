@@ -37,8 +37,8 @@ export const ChatContainer = ({
   }, [chatMessages, isGenerating]);
   
   return (
-    <div className="bg-white rounded-t-xl shadow-md overflow-hidden border border-gray-200 flex flex-col h-full w-full">
-      <div className="flex-grow overflow-auto">
+    <div className="bg-white rounded-t-xl shadow-md overflow-hidden border border-gray-200 flex flex-col h-full w-full min-h-[65vh]">
+      <div className="flex-grow overflow-auto flex flex-col">
         <ChatMessages 
           chatMessages={chatMessages} 
           isGenerating={isGenerating} 
