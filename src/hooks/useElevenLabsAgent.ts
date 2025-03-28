@@ -7,6 +7,19 @@ interface UseElevenLabsAgentProps {
   agentId?: string;
 }
 
+// Define types for the different message formats
+interface AgentMessageWithSource {
+  message: string;
+  source: string;
+}
+
+interface AgentResponseMessage {
+  type: string;
+  content: string;
+}
+
+type AgentMessage = AgentMessageWithSource | AgentResponseMessage;
+
 export function useElevenLabsAgent({ onMessageReceived, agentId = 'B6KmBRX9XAvn2ksmI3DG' }: UseElevenLabsAgentProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [conversationActive, setConversationActive] = useState(false);
@@ -23,7 +36,7 @@ export function useElevenLabsAgent({ onMessageReceived, agentId = 'B6KmBRX9XAvn2
       setIsConnected(false);
       setConversationActive(false);
     },
-    onMessage: (message) => {
+    onMessage: (message: any) => {
       // Handle messages from the agent
       if ('message' in message && 'source' in message) {
         // For ElevenLabs agent responses
@@ -37,9 +50,9 @@ export function useElevenLabsAgent({ onMessageReceived, agentId = 'B6KmBRX9XAvn2
         onMessageReceived(message.content);
       }
     },
-    onError: (err) => {
+    onError: (err: any) => {
       console.error('ElevenLabs agent error:', err);
-      setError(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setError(`Error: ${err && typeof err === 'object' && 'message' in err ? err.message : 'Unknown error'}`);
       setConversationActive(false);
     }
   });
