@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { Mic, MicOff, Volume2 } from 'lucide-react';
 import { useElevenLabsAgent } from '@/hooks/useElevenLabsAgent';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -81,7 +81,7 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
           onClick={toggleConversation}
           disabled={isGenerating}
           className={`${buttonColorClass} text-white transition-colors rounded-full gap-2`}
-          aria-label={conversationActive ? "Stop AI Planner" : "Call AI Planner"}
+          aria-label={conversationActive ? "Stop AI Planner" : "AI Planner"}
         >
           {conversationActive ? (
             isSpeaking ? (
@@ -98,7 +98,7 @@ export const VoiceInputButton: React.FC<VoiceInputButtonProps> = ({
           ) : (
             <>
               <Mic size={18} />
-              {showLabel && <span>Call AI Planner</span>}
+              {showLabel && <span>AI Planner</span>}
             </>
           )}
         </Button>

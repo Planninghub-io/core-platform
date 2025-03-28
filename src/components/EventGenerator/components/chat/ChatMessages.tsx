@@ -2,17 +2,20 @@
 import { ChatMessage } from "../../ChatMessage";
 import { useEffect, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { VoiceInputButton } from "./VoiceInputButton";
 
 interface ChatMessagesProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
   isGenerating: boolean;
   welcomeMessage: string;
+  onTranscriptReceived?: (transcript: string) => void;
 }
 
 export const ChatMessages = ({ 
   chatMessages, 
   isGenerating, 
-  welcomeMessage 
+  welcomeMessage,
+  onTranscriptReceived 
 }: ChatMessagesProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
@@ -28,6 +31,13 @@ export const ChatMessages = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isGenerating]);
 
+  // Handle transcript received
+  const handleTranscriptReceived = (transcript: string) => {
+    if (onTranscriptReceived) {
+      onTranscriptReceived(transcript);
+    }
+  };
+
   // Simplified welcome message for event creation
   const enhancedWelcomeMessage = 
     "👋 Welcome to Your AI Event Planner!\n" +
@@ -36,20 +46,33 @@ export const ChatMessages = ({
     "✨ Describe the type of event\n" +
     "✨ Share your preferred date and time\n" +
     "✨ Mention the location or venue style\n" +
-    "✨ Let me know your estimated budget";
+    "✨ Let me know your estimated budget\n\n" +
+    "TIP: You can use the 'AI Planner' button at the top to talk to our AI agent directly - perfect for planning on the go!";
 
   return (
     <div className="p-4 overflow-y-auto w-full flex flex-col">
       {/* Show welcome message if no messages yet */}
       {chatMessages.length === 0 && (
-        <ChatMessage
-          key="welcome"
-          message={enhancedWelcomeMessage}
-          type="ai"
-          isLoading={false}
-          isWelcomeMessage={true}
-          disableTyping={true}
-        />
+        <div className="w-full">
+          {/* Add AI Planner button above the welcome message */}
+          <div className="flex justify-end mb-2">
+            <VoiceInputButton
+              isGenerating={isGenerating}
+              onTranscriptReceived={handleTranscriptReceived}
+              showLabel={true}
+              className="transform-none"
+            />
+          </div>
+          
+          <ChatMessage
+            key="welcome"
+            message={enhancedWelcomeMessage}
+            type="ai"
+            isLoading={false}
+            isWelcomeMessage={true}
+            disableTyping={true}
+          />
+        </div>
       )}
 
       {/* Render chat messages */}

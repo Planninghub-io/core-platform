@@ -23,6 +23,12 @@ interface ChatInterfaceProps {
 }
 
 export const ChatInterface = (props: ChatInterfaceProps) => {
+  const handleTranscriptReceived = (transcript: string) => {
+    // Update the prompt with the transcript
+    const newPrompt = props.prompt ? `${props.prompt} ${transcript}` : transcript;
+    props.setPrompt(newPrompt);
+  };
+  
   // Simply pass all props to the enhanced chat interface
   console.log("ChatInterface: Rendering with generatedEvent:", props.generatedEvent);
   
@@ -30,6 +36,7 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
     <div className="flex flex-col h-full w-full overflow-hidden">
       <ChatInterfaceRefactored 
         {...props}
+        onTranscriptReceived={handleTranscriptReceived}
       />
     </div>
   );
