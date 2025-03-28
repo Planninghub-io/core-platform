@@ -1,9 +1,11 @@
+
 import { Input } from "@/components/ui/input";
 import React, { FormEvent, forwardRef, useState, useEffect } from "react";
 import { RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AutocompleteSuggestions } from "./AutocompleteSuggestions";
 import { generateSuggestions } from "./suggestionData";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatInputFieldProps {
   prompt: string;
@@ -32,6 +34,7 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+    const isMobile = useIsMobile();
 
     useEffect(() => {
       if (isGenerating) {
@@ -108,11 +111,11 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
         <Input
           ref={ref}
           type="text"
-          placeholder="Ask about planning an event..."
+          placeholder={isMobile ? "Ask about an event..." : "Ask about planning an event..."}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="pr-10 py-6 rounded-full"
+          className={`${isMobile ? 'py-4' : 'py-6'} rounded-full pr-10`}
           disabled={isGenerating}
           onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
         />
@@ -129,6 +132,7 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
             type="button"
             onClick={clearInput}
             className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            aria-label="Clear input"
           >
             <RotateCcw size={16} />
           </button>
@@ -141,6 +145,7 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
             disabled={isGenerating || !prompt.trim()}
             className="absolute right-2 top-1/2 transform -translate-y-1/2 h-8 w-8 rounded-full bg-[#242424] hover:bg-[#242424]/90"
             onClick={() => onSubmit()}
+            aria-label="Send"
           >
             <span className="sr-only">Send</span>
             <svg

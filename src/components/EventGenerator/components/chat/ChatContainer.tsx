@@ -2,6 +2,7 @@
 import { ChatMessages } from "./ChatMessages";
 import { ChatInputArea } from "./ChatInputArea";
 import { useEffect } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatContainerProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
@@ -32,6 +33,8 @@ export const ChatContainer = ({
   modelProvider,
   onModelChange
 }: ChatContainerProps) => {
+  const isMobile = useIsMobile();
+  
   console.log("ChatContainer: Rendering with isGenerating =", isGenerating);
   console.log("ChatContainer: Chat messages:", chatMessages);
   

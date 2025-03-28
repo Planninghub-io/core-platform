@@ -5,6 +5,7 @@ import { EventGeneratorForm } from "../EventGeneratorForm";
 import { ChatInputField } from "./chat/ChatInputField";
 import { ModelDropdown } from "./chat/ModelDropdown";
 import { useRef, useEffect, useState } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatInputProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -31,6 +32,7 @@ export const ChatInput = ({
 }: ChatInputProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMobile = useIsMobile();
   
   // Focus the input field after generation completes
   useEffect(() => {
@@ -63,7 +65,7 @@ export const ChatInput = ({
   };
   
   return (
-    <div className="border-t border-gray-200 p-4 bg-gray-50">
+    <div className="border-t border-gray-200 p-4 bg-gray-50 w-full">
       <div className="w-full">
         {chatMessages.length === 0 ? (
           <div className="w-full">
@@ -83,7 +85,7 @@ export const ChatInput = ({
           </div>
         ) : (
           <form 
-            className="flex items-center gap-2" 
+            className="flex items-center gap-2 w-full" 
             onSubmit={(e) => {
               e.preventDefault();
               if (prompt.trim()) {
@@ -111,6 +113,7 @@ export const ChatInput = ({
                 size="icon"
                 disabled={isGenerating || isSubmitting || !prompt.trim()}
                 className="h-10 w-10 rounded-full bg-[#8B5CF6] hover:bg-[#8B5CF6]/90"
+                aria-label="Send message"
                 onClick={() => {
                   if (prompt.trim()) {
                     onSubmit(prompt);
@@ -119,7 +122,7 @@ export const ChatInput = ({
               >
                 <Send size={18} className="text-white" />
               </Button>
-              {modelProvider && onModelChange && (
+              {!isMobile && modelProvider && onModelChange && (
                 <ModelDropdown
                   modelProvider={modelProvider}
                   onModelChange={onModelChange}

@@ -1,6 +1,7 @@
 
 import { ChatMessage } from "../../ChatMessage";
 import { useEffect, useRef } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatMessagesProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -14,6 +15,7 @@ export const ChatMessages = ({
   welcomeMessage 
 }: ChatMessagesProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   // Debug logging
   useEffect(() => {
@@ -39,7 +41,7 @@ export const ChatMessages = ({
     "Start typing and use our autocomplete suggestions to quickly add details! The more information you share, the better I can help you plan your perfect event!" : "";
 
   return (
-    <div className="p-4 h-[300px] overflow-y-auto">
+    <div className={`p-4 ${isMobile ? 'h-[250px]' : 'h-[300px]'} overflow-y-auto w-full`}>
       {/* Show welcome message if no messages yet */}
       {chatMessages.length === 0 && enhancedWelcomeMessage && (
         <ChatMessage
