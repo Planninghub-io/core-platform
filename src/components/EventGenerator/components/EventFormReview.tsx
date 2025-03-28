@@ -36,6 +36,9 @@ export const EventFormReview: React.FC<EventFormReviewProps> = ({
     setTitle(newTitle);
   };
 
+  // Debug event object
+  console.log("EventFormReview: Rendering with event:", event);
+
   return (
     <div className="space-y-4">
       <DialogHeader>
@@ -51,7 +54,7 @@ export const EventFormReview: React.FC<EventFormReviewProps> = ({
           <div className="rounded-md overflow-hidden h-48">
             <img
               src={event.imageUrl}
-              alt={event.title}
+              alt={title || event.title || "Event"}
               className="w-full h-full object-cover"
             />
           </div>

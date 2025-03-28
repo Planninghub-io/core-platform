@@ -56,15 +56,23 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
 
   // Show event form when all requirements are met
   useEffect(() => {
-    if (props.generatedEvent && requiredFieldsCollected && !hasMissingFields) {
+    console.log("ChatInterfaceRefactored: Checking if we should show event form", {
+      generatedEvent: props.generatedEvent,
+      requiredFieldsCollected,
+      hasMissingFields,
+      isGenerating: props.isGenerating
+    });
+    
+    if (props.generatedEvent && !props.isGenerating) {
       // Wait a short moment to allow the user to read the last message
       const timer = setTimeout(() => {
+        console.log("ChatInterfaceRefactored: Opening event form dialog");
         setShowEventForm(true);
       }, 1000);
       
       return () => clearTimeout(timer);
     }
-  }, [props.generatedEvent, requiredFieldsCollected, hasMissingFields]);
+  }, [props.generatedEvent, props.isGenerating]);
 
   return (
     <div className="w-full min-h-[400px] flex flex-col">
@@ -98,18 +106,20 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
       {/* Event Form Review Dialog */}
       <Dialog open={showEventForm} onOpenChange={setShowEventForm}>
         <DialogContent className="sm:max-w-2xl">
-          <EventFormReview 
-            event={props.generatedEvent}
-            eventTitle={props.eventTitle || ''}
-            setEventTitle={props.setEventTitle}
-            onClose={() => setShowEventForm(false)}
-            onSubmit={() => {
-              if (props.handleCreateEvent) {
-                props.handleCreateEvent();
-              }
-              setShowEventForm(false);
-            }}
-          />
+          {props.generatedEvent && (
+            <EventFormReview 
+              event={props.generatedEvent}
+              eventTitle={props.eventTitle || ''}
+              setEventTitle={props.setEventTitle}
+              onClose={() => setShowEventForm(false)}
+              onSubmit={() => {
+                if (props.handleCreateEvent) {
+                  props.handleCreateEvent();
+                }
+                setShowEventForm(false);
+              }}
+            />
+          )}
         </DialogContent>
       </Dialog>
     </div>

@@ -47,12 +47,15 @@ export const EventGeneratorContent = ({
   // Show event details when an event is generated
   useEffect(() => {
     if (generatedEvent) {
-      setShowEventDetails(true);
+      console.log("EventGeneratorContent: Generated event received:", generatedEvent);
       
       // Pre-populate event title if not already set
       if (!eventTitle && generatedEvent.title) {
         setEventTitle(generatedEvent.title);
       }
+      
+      // Don't need to set this flag anymore as the dialog will be shown directly from ChatInterfaceRefactored
+      // setShowEventDetails(true);
     }
   }, [generatedEvent, eventTitle, setEventTitle]);
 
@@ -83,7 +86,7 @@ export const EventGeneratorContent = ({
         />
       </div>
       
-      {/* Only show event details section when an event is generated */}
+      {/* Only show event details section when an event is generated and we want to display it below the chat */}
       {showEventDetails && generatedEvent && (
         <div className="w-full">
           <EventDetailsSection
