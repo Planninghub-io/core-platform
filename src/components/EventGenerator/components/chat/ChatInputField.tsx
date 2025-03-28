@@ -1,6 +1,6 @@
 
 import { Input } from "@/components/ui/input";
-import React, { FormEvent, forwardRef, useState, useEffect } from "react";
+import React, { FormEvent, forwardRef, useState, useEffect, useRef } from "react";
 import { RotateCcw, Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AutocompleteSuggestions } from "./AutocompleteSuggestions";
