@@ -1,6 +1,6 @@
 
 import { Input } from "@/components/ui/input";
-import React, { FormEvent, forwardRef, useState, useEffect, useRef } from "react";
+import React from "react";
 import { RotateCcw, Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AutocompleteSuggestions } from "./AutocompleteSuggestions";
@@ -11,7 +11,7 @@ interface ChatInputFieldProps {
   prompt: string;
   setPrompt: (prompt: string) => void;
   isGenerating: boolean;
-  onSubmit: (e?: FormEvent) => void;
+  onSubmit: (e?: React.FormEvent) => void;
   shouldShowButton?: boolean;
   className?: string;
   generatedEvent?: any;
@@ -19,7 +19,7 @@ interface ChatInputFieldProps {
   handlePromptSubmit?: (prompt: string) => void;
 }
 
-export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
+export const ChatInputField = React.forwardRef<HTMLInputElement, ChatInputFieldProps>(
   ({ 
     prompt, 
     setPrompt, 
@@ -31,14 +31,14 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
     chatMessages,
     handlePromptSubmit 
   }, ref) => {
-    const [suggestions, setSuggestions] = useState<string[]>([]);
-    const [showSuggestions, setShowSuggestions] = useState(false);
-    const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
-    const [isListening, setIsListening] = useState(false);
+    const [suggestions, setSuggestions] = React.useState<string[]>([]);
+    const [showSuggestions, setShowSuggestions] = React.useState(false);
+    const [selectedSuggestionIndex, setSelectedSuggestionIndex] = React.useState(-1);
+    const [isListening, setIsListening] = React.useState(false);
     const isMobile = useIsMobile();
-    const recognitionRef = useRef<SpeechRecognition | null>(null);
+    const recognitionRef = React.useRef<SpeechRecognition | null>(null);
 
-    useEffect(() => {
+    React.useEffect(() => {
       if (isGenerating) {
         setSuggestions([]);
         setShowSuggestions(false);
@@ -169,7 +169,7 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
     };
 
     // Cleanup speech recognition on unmount
-    useEffect(() => {
+    React.useEffect(() => {
       return () => {
         if (recognitionRef.current) {
           recognitionRef.current.stop();
