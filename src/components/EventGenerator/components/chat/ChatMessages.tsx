@@ -41,7 +41,7 @@ export const ChatMessages = ({
   // Updated welcome message with new content
   const enhancedWelcomeMessage = 
     "👋 Welcome to Your AI Event Planner!\n" +
-    "Just share the details in the chat or talk to me clicking the microphone icon and I'll help you bring it to life!\n\n" +
+    "Just type in the event details in the chat or talk to me clicking on the microphone icon and I'll help you bring it to life!\n\n" +
     "Some tips to get started:\n" +
     "✨ Describe the type of event\n" +
     "✨ Share your preferred date and time\n" +
@@ -53,27 +53,14 @@ export const ChatMessages = ({
       {/* Show welcome message if no messages yet */}
       {chatMessages.length === 0 && (
         <div className="w-full">
-          {/* Position AI Planner button at the top right of welcome message */}
-          <div className="flex justify-between items-start mb-2">
-            <div className="flex-1">
-              <ChatMessage
-                key="welcome"
-                message={enhancedWelcomeMessage}
-                type="ai"
-                isLoading={false}
-                isWelcomeMessage={true}
-                disableTyping={true}
-              />
-            </div>
-            <div className="ml-2 pt-1">
-              <VoiceInputButton
-                isGenerating={isGenerating}
-                onTranscriptReceived={handleTranscriptReceived}
-                showLabel={false}
-                className="transform-none"
-              />
-            </div>
-          </div>
+          <ChatMessage
+            key="welcome"
+            message={enhancedWelcomeMessage}
+            type="ai"
+            isLoading={false}
+            isWelcomeMessage={true}
+            disableTyping={true}
+          />
         </div>
       )}
 

@@ -2,6 +2,7 @@
 import { ChatMessages } from "./ChatMessages";
 import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { VoiceInputButton } from "./VoiceInputButton";
 
 interface ChatContainerProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
@@ -39,12 +40,23 @@ export const ChatContainer = ({
   return (
     <div className="bg-white rounded-t-xl shadow-md overflow-hidden border border-gray-200 flex flex-col h-full w-full">
       <div className="flex-grow overflow-auto">
-        <ChatMessages 
-          chatMessages={chatMessages} 
-          isGenerating={isGenerating} 
-          welcomeMessage={welcomeMessage} 
-          onTranscriptReceived={onTranscriptReceived}
-        />
+        <div className="relative">
+          <ChatMessages 
+            chatMessages={chatMessages} 
+            isGenerating={isGenerating} 
+            welcomeMessage={welcomeMessage} 
+            onTranscriptReceived={onTranscriptReceived}
+          />
+          {/* Position the voice input button in the top-right corner */}
+          <div className="absolute top-4 right-4">
+            <VoiceInputButton
+              isGenerating={isGenerating}
+              onTranscriptReceived={onTranscriptReceived}
+              showLabel={false}
+              className="transform-none"
+            />
+          </div>
+        </div>
         <div id="messages-end-ref" className="h-0" />
       </div>
     </div>
