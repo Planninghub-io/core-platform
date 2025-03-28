@@ -39,7 +39,7 @@ export const ChatMessages = ({
     "✨ Let me know your estimated budget";
 
   return (
-    <div className={`p-4 ${isMobile ? 'h-[250px]' : 'h-[300px]'} overflow-y-auto w-full`}>
+    <div className={`p-4 overflow-y-auto w-full flex flex-col`}>
       {/* Show welcome message if no messages yet */}
       {chatMessages.length === 0 && (
         <ChatMessage

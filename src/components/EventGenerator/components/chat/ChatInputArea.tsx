@@ -59,9 +59,9 @@ export const ChatInputArea = ({
   };
 
   return (
-    <div className="border-t border-gray-200 px-4 py-2"> {/* Reduced vertical padding */}
+    <div className="border-t border-gray-200 px-4 py-2 bg-white w-full">
       {requiredFieldsCollected && !generatedEvent && !isGenerating && (
-        <div className="mb-4 p-3 bg-green-50 text-green-700 rounded-md">
+        <div className="mb-2 p-2 bg-green-50 text-green-700 rounded-md text-sm">
           I have all the required details. Let me generate the event for you to review and create.
         </div>
       )}
@@ -96,7 +96,7 @@ export const ChatInputArea = ({
       </form>
       
       {promptCount === 1 && (
-        <p className="text-sm text-gray-500 mt-2 text-center">
+        <p className="text-xs text-gray-500 mt-1 text-center">
           You have used your free prompt. Sign up to generate more events!
         </p>
       )}

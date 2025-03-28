@@ -115,7 +115,7 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          className={`${isMobile ? 'py-0' : 'py-0'} rounded-full pr-10 h-12`} // Reduced padding, added fixed height
+          className="rounded-full pr-10 h-11"
           disabled={isGenerating}
           onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
         />

@@ -48,7 +48,7 @@ export const ChatContainer = ({
   
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 flex flex-col h-full w-full">
-      <div className="flex-grow overflow-hidden">
+      <div className="flex-grow overflow-auto">
         <ChatMessages 
           chatMessages={chatMessages} 
           isGenerating={isGenerating} 
@@ -56,19 +56,21 @@ export const ChatContainer = ({
         />
         <div id="messages-end-ref" className="h-0" />
       </div>
-      <ChatInputArea 
-        chatMessages={chatMessages} 
-        prompt={prompt} 
-        setPrompt={setPrompt} 
-        isGenerating={isGenerating} 
-        promptCount={promptCount} 
-        handlePromptSubmit={handlePromptSubmit}
-        generatedEvent={generatedEvent}
-        hasMissingFields={hasMissingFields}
-        requiredFieldsCollected={requiredFieldsCollected}
-        modelProvider={modelProvider}
-        onModelChange={onModelChange}
-      />
+      <div className="mt-auto">
+        <ChatInputArea 
+          chatMessages={chatMessages} 
+          prompt={prompt} 
+          setPrompt={setPrompt} 
+          isGenerating={isGenerating} 
+          promptCount={promptCount} 
+          handlePromptSubmit={handlePromptSubmit}
+          generatedEvent={generatedEvent}
+          hasMissingFields={hasMissingFields}
+          requiredFieldsCollected={requiredFieldsCollected}
+          modelProvider={modelProvider}
+          onModelChange={onModelChange}
+        />
+      </div>
     </div>
   );
 };
