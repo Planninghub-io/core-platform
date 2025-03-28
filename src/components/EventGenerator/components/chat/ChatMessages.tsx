@@ -1,4 +1,3 @@
-
 import { ChatMessage } from "../../ChatMessage";
 import { useEffect, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -28,22 +27,27 @@ export const ChatMessages = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isGenerating]);
 
-  // Enhanced welcome message with more details and formatting
-  const enhancedWelcomeMessage = welcomeMessage ? 
-    "Hi there! 👋 I'm your event planning assistant.\n\n" +
-    "**Please provide details about the event you'd like to create:**\n" +
-    "• Event type (party, meeting, conference, etc.)\n" +
-    "• Date & time\n" +
-    "• Location\n" +
-    "• Expected number of attendees\n" +
-    "• Budget (if applicable)\n" +
-    "• Any other special requirements\n\n" +
-    "Start typing and use our autocomplete suggestions to quickly add details! The more information you share, the better I can help you plan your perfect event!" : "";
+  // Enhanced welcome message for event creation
+  const enhancedWelcomeMessage = 
+    "👋 Welcome to Your Personal Event Planner!\n\n" +
+    "I'm here to help you create the perfect event. Whether it's a:\n" +
+    "• Birthday Party 🎂\n" +
+    "• Business Conference 💼\n" +
+    "• Wedding Celebration 💍\n" +
+    "• Networking Mixer 🤝\n" +
+    "• Or any other special occasion 🎉\n\n" +
+    "**Just tell me about your event, and I'll help you bring it to life!**\n\n" +
+    "Some tips to get started:\n" +
+    "✨ Describe the type of event\n" +
+    "✨ Share your preferred date and time\n" +
+    "✨ Mention the location or venue style\n" +
+    "✨ Let me know your estimated budget\n\n" +
+    "I'm excited to help you plan an unforgettable event! 🚀";
 
   return (
     <div className={`p-4 ${isMobile ? 'h-[250px]' : 'h-[300px]'} overflow-y-auto w-full`}>
       {/* Show welcome message if no messages yet */}
-      {chatMessages.length === 0 && enhancedWelcomeMessage && (
+      {chatMessages.length === 0 && (
         <ChatMessage
           key="welcome"
           message={enhancedWelcomeMessage}
