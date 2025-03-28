@@ -17,6 +17,9 @@ interface ChatInterfaceProps {
   setLocation?: (location: string) => void;
   modelProvider?: 'openai' | 'anthropic';
   onModelChange?: (model: 'openai' | 'anthropic') => void;
+  eventTitle?: string;
+  setEventTitle?: (title: string) => void;
+  handleCreateEvent?: () => void;
 }
 
 export const ChatInterface = (props: ChatInterfaceProps) => {

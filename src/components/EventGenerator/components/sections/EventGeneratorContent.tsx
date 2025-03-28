@@ -77,6 +77,9 @@ export const EventGeneratorContent = ({
           setLocation={setLocation}
           modelProvider={modelProvider}
           onModelChange={onModelChange}
+          eventTitle={eventTitle}
+          setEventTitle={setEventTitle}
+          handleCreateEvent={handleCreateEvent}
         />
       </div>
       

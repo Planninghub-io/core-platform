@@ -1,8 +1,10 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChatContainer } from "./ChatContainer";
 import { ChatInputArea } from "./ChatInputArea";
 import { usePromptHandler } from "./PromptHandler";
+import { EventFormReview } from "../EventFormReview";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface ChatInterfaceProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -18,10 +20,14 @@ interface ChatInterfaceProps {
   setChatMessages: React.Dispatch<React.SetStateAction<Array<{ type: 'user' | 'ai', content: string, id?: string }>>>;
   setSelectedDate?: (date: string) => void;
   setLocation?: (location: string) => void;
+  eventTitle?: string;
+  setEventTitle?: (title: string) => void;
+  handleCreateEvent?: () => void;
 }
 
 export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
   const [modelProvider, setModelProvider] = useState<'openai' | 'anthropic'>(props.modelProvider || 'openai');
+  const [showEventForm, setShowEventForm] = useState(false);
   
   // Use the prompt handler hook
   const {
@@ -47,6 +53,18 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
       props.onModelChange(model);
     }
   };
+
+  // Show event form when all requirements are met
+  useEffect(() => {
+    if (props.generatedEvent && requiredFieldsCollected && !hasMissingFields) {
+      // Wait a short moment to allow the user to read the last message
+      const timer = setTimeout(() => {
+        setShowEventForm(true);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [props.generatedEvent, requiredFieldsCollected, hasMissingFields]);
 
   return (
     <div className="w-full min-h-[400px] flex flex-col">
@@ -76,6 +94,24 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
           onModelChange={handleModelChange}
         />
       </div>
+
+      {/* Event Form Review Dialog */}
+      <Dialog open={showEventForm} onOpenChange={setShowEventForm}>
+        <DialogContent className="sm:max-w-2xl">
+          <EventFormReview 
+            event={props.generatedEvent}
+            eventTitle={props.eventTitle || ''}
+            setEventTitle={props.setEventTitle}
+            onClose={() => setShowEventForm(false)}
+            onSubmit={() => {
+              if (props.handleCreateEvent) {
+                props.handleCreateEvent();
+              }
+              setShowEventForm(false);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
