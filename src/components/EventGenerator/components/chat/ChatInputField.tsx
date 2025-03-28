@@ -115,7 +115,7 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="py-4 rounded-full pr-10" // Simplified height
+          className={`${isMobile ? 'py-4' : 'py-6'} rounded-full pr-10`}
           disabled={isGenerating}
           onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
         />
@@ -169,4 +169,3 @@ export const ChatInputField = forwardRef<HTMLInputElement, ChatInputFieldProps>(
 );
 
 ChatInputField.displayName = "ChatInputField";
-
