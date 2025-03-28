@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { ChatContainer } from "./ChatContainer";
+import { ChatInputArea } from "./ChatInputArea";
 import { usePromptHandler } from "./PromptHandler";
 
 interface ChatInterfaceProps {
@@ -49,20 +50,32 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
 
   return (
     <div className="w-full min-h-[400px] flex flex-col">
-      <ChatContainer 
-        chatMessages={props.chatMessages}
-        prompt={props.prompt}
-        setPrompt={props.setPrompt}
-        isGenerating={props.isGenerating}
-        promptCount={props.promptCount}
-        handlePromptSubmit={handleSubmit}
-        welcomeMessage={props.welcomeMessage}
-        generatedEvent={props.generatedEvent}
-        requiredFieldsCollected={requiredFieldsCollected}
-        hasMissingFields={hasMissingFields}
-        modelProvider={modelProvider}
-        onModelChange={handleModelChange}
-      />
+      <div className="flex-grow overflow-hidden rounded-t-xl">
+        <ChatContainer 
+          chatMessages={props.chatMessages}
+          isGenerating={props.isGenerating}
+          promptCount={props.promptCount}
+          welcomeMessage={props.welcomeMessage}
+          generatedEvent={props.generatedEvent}
+          requiredFieldsCollected={requiredFieldsCollected}
+          hasMissingFields={hasMissingFields}
+        />
+      </div>
+      <div className="rounded-b-xl border-x border-b border-gray-200 bg-white">
+        <ChatInputArea 
+          chatMessages={props.chatMessages} 
+          prompt={props.prompt} 
+          setPrompt={props.setPrompt} 
+          isGenerating={props.isGenerating} 
+          promptCount={props.promptCount} 
+          handlePromptSubmit={handleSubmit}
+          generatedEvent={props.generatedEvent}
+          hasMissingFields={hasMissingFields}
+          requiredFieldsCollected={requiredFieldsCollected}
+          modelProvider={modelProvider}
+          onModelChange={handleModelChange}
+        />
+      </div>
     </div>
   );
 };

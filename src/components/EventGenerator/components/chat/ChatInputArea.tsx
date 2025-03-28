@@ -59,7 +59,7 @@ export const ChatInputArea = ({
   };
 
   return (
-    <div className="border-t border-gray-200 px-4 py-2 bg-white w-full">
+    <div className="px-4 py-3 bg-white w-full rounded-b-xl">
       {requiredFieldsCollected && !generatedEvent && !isGenerating && (
         <div className="mb-2 p-2 bg-green-50 text-green-700 rounded-md text-sm">
           I have all the required details. Let me generate the event for you to review and create.

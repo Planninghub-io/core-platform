@@ -1,7 +1,5 @@
 
 import { useRef, useState } from "react";
-import { ChatMessages } from "./chat/ChatMessages";
-import { ChatInput } from "./ChatInput";
 import { Card } from "@/components/ui/card";
 import { ChatInterfaceRefactored } from "./chat/ChatInterfaceRefactored";
 
@@ -24,10 +22,10 @@ interface ChatInterfaceProps {
 export const ChatInterface = (props: ChatInterfaceProps) => {
   // Enhanced chat interface with all required functionality
   return (
-    <Card className="flex flex-col h-full w-full overflow-hidden">
+    <div className="flex flex-col h-full w-full overflow-hidden">
       <ChatInterfaceRefactored 
         {...props}
       />
-    </Card>
+    </div>
   );
 };

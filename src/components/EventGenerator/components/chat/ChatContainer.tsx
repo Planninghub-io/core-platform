@@ -1,37 +1,26 @@
 
 import { ChatMessages } from "./ChatMessages";
-import { ChatInputArea } from "./ChatInputArea";
 import { useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatContainerProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
-  prompt: string;
-  setPrompt: (prompt: string) => void;
   isGenerating: boolean;
   promptCount: number;
-  handlePromptSubmit: (prompt: string) => void;
   welcomeMessage: string;
   generatedEvent: any | null;
   hasMissingFields?: boolean;
   requiredFieldsCollected?: boolean;
-  modelProvider: 'openai' | 'anthropic';
-  onModelChange: (model: 'openai' | 'anthropic') => void;
 }
 
 export const ChatContainer = ({
   chatMessages,
-  prompt,
-  setPrompt,
   isGenerating,
   promptCount,
-  handlePromptSubmit,
   welcomeMessage,
   generatedEvent,
   hasMissingFields = false,
-  requiredFieldsCollected = false,
-  modelProvider,
-  onModelChange
+  requiredFieldsCollected = false
 }: ChatContainerProps) => {
   const isMobile = useIsMobile();
   
@@ -46,7 +35,7 @@ export const ChatContainer = ({
   }, [chatMessages, isGenerating]);
   
   return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-200 flex flex-col h-full w-full">
+    <div className="bg-white rounded-t-xl shadow-md overflow-hidden border border-gray-200 flex flex-col h-full w-full">
       <div className="flex-grow overflow-auto">
         <ChatMessages 
           chatMessages={chatMessages} 
@@ -55,19 +44,6 @@ export const ChatContainer = ({
         />
         <div id="messages-end-ref" className="h-0" />
       </div>
-      <ChatInputArea 
-        chatMessages={chatMessages} 
-        prompt={prompt} 
-        setPrompt={setPrompt} 
-        isGenerating={isGenerating} 
-        promptCount={promptCount} 
-        handlePromptSubmit={handlePromptSubmit}
-        generatedEvent={generatedEvent}
-        hasMissingFields={hasMissingFields}
-        requiredFieldsCollected={requiredFieldsCollected}
-        modelProvider={modelProvider}
-        onModelChange={onModelChange}
-      />
     </div>
   );
 };
