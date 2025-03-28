@@ -62,6 +62,14 @@ export const ChatInputField = React.forwardRef<HTMLInputElement, ChatInputFieldP
       }
     };
 
+    // Handle transcript received from voice assistant
+    const handleTranscriptReceived = (transcript: string) => {
+      setPrompt(prevPrompt => {
+        const newPrompt = prevPrompt ? `${prevPrompt} ${transcript}` : transcript;
+        return newPrompt;
+      });
+    };
+
     return (
       <div className={`relative flex-1 ${className}`}>
         <Input
@@ -82,7 +90,7 @@ export const ChatInputField = React.forwardRef<HTMLInputElement, ChatInputFieldP
           {/* Microphone button */}
           <VoiceInputButton 
             isGenerating={isGenerating}
-            onTranscriptReceived={setPrompt}
+            onTranscriptReceived={handleTranscriptReceived}
           />
           
           {/* Clear button - only show when there's text */}
