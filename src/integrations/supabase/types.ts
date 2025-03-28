@@ -470,6 +470,7 @@ export type Database = {
           last_name: string | null
           middle_name: string | null
           name_suffix: string | null
+          stripe_account_id: string | null
           user_type: string | null
         }
         Insert: {
@@ -483,6 +484,7 @@ export type Database = {
           last_name?: string | null
           middle_name?: string | null
           name_suffix?: string | null
+          stripe_account_id?: string | null
           user_type?: string | null
         }
         Update: {
@@ -496,6 +498,7 @@ export type Database = {
           last_name?: string | null
           middle_name?: string | null
           name_suffix?: string | null
+          stripe_account_id?: string | null
           user_type?: string | null
         }
         Relationships: []
