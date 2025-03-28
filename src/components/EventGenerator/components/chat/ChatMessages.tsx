@@ -2,7 +2,6 @@
 import { ChatMessage } from "../../ChatMessage";
 import { useEffect, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { VoiceInputButton } from "./VoiceInputButton";
 
 interface ChatMessagesProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -31,22 +30,10 @@ export const ChatMessages = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isGenerating]);
 
-  // Handle transcript received
-  const handleTranscriptReceived = (transcript: string) => {
-    if (onTranscriptReceived) {
-      onTranscriptReceived(transcript);
-    }
-  };
-
-  // Updated welcome message with new content
+  // Updated welcome message
   const enhancedWelcomeMessage = 
     "👋 Welcome to Your AI Event Planner!\n" +
-    "Just type in the event details in the chat or talk to me clicking on the microphone icon and I'll help you bring it to life!\n\n" +
-    "Some tips to get started:\n" +
-    "✨ Describe the type of event\n" +
-    "✨ Share your preferred date and time\n" +
-    "✨ Mention the location or venue style\n" +
-    "✨ Let me know your estimated budget";
+    "Just type in the event details in the chat or talk to me clicking on the microphone icon and I'll help you bring it to life!";
 
   return (
     <div className="p-4 overflow-y-auto w-full flex flex-col">
@@ -89,3 +76,4 @@ export const ChatMessages = ({
     </div>
   );
 };
+
