@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { APP_URL } from "@/integrations/supabase/client";
 
 export const useStripeAccount = () => {
   const [hasStripeAccount, setHasStripeAccount] = useState<boolean | null>(null);
@@ -44,17 +43,27 @@ export const useStripeAccount = () => {
 
   const connectStripeAccount = async () => {
     try {
-      // Get the current origin for URL construction
-      const origin = window.location.origin;
-      
       // Get the current path to redirect back after Stripe connect
       const currentPath = window.location.pathname;
       
       // Store the current path in localStorage for redirect after Stripe connect
       localStorage.setItem('stripeConnectReturnPath', currentPath);
       
-      // Call the Stripe Connect edge function directly, not in a new tab
-      window.location.href = `${origin}/api/stripe-connect`;
+      console.log("Initiating Stripe Connect process");
+      
+      // Call the Stripe Connect edge function directly using Supabase invoke
+      const { data, error } = await supabase.functions.invoke('stripe-connect');
+      
+      if (error) {
+        throw new Error(`Error invoking Stripe Connect function: ${error.message}`);
+      }
+      
+      if (data?.url) {
+        console.log("Redirecting to Stripe Connect URL:", data.url);
+        window.location.href = data.url;
+      } else {
+        throw new Error("No redirect URL returned from Stripe Connect function");
+      }
     } catch (error) {
       console.error("Error initiating Stripe connect:", error);
       toast({
