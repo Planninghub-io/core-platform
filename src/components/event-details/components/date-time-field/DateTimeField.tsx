@@ -1,8 +1,12 @@
 
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Check, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { DateTimeReadOnlyField } from "./DateTimeReadOnlyField";
-import { EditableDateTimeField } from "./EditableDateTimeField";
+import { formatDate, formatTime } from "../../utils/dateTimeFormatters";
 
 interface DateTimeFieldProps {
   label: string;
@@ -28,13 +32,13 @@ export const DateTimeField = ({
   onEditClick
 }: DateTimeFieldProps) => {
   const [isFieldEditing, setIsFieldEditing] = useState(false);
-  const [tempDateValue, setTempDateValue] = useState(dateValue);
-  const [tempTimeValue, setTempTimeValue] = useState(timeValue);
+  const [tempDateValue, setTempDateValue] = useState(dateValue || "");
+  const [tempTimeValue, setTempTimeValue] = useState(timeValue || "");
   
   // Update local state when props change
   useEffect(() => {
-    setTempDateValue(dateValue);
-    setTempTimeValue(timeValue);
+    setTempDateValue(dateValue || "");
+    setTempTimeValue(timeValue || "");
   }, [dateValue, timeValue]);
   
   const handleFieldClick = () => {
@@ -51,53 +55,78 @@ export const DateTimeField = ({
   };
 
   const handleCancelField = () => {
-    setTempDateValue(dateValue);
-    setTempTimeValue(timeValue);
+    setTempDateValue(dateValue || "");
+    setTempTimeValue(timeValue || "");
     setIsFieldEditing(false);
   };
 
-  const handleDateChange = (value: string) => {
-    if (isFieldEditing) {
-      setTempDateValue(value);
-    } else {
-      onDateChange(value);
-    }
-  };
+  // Split the label to extract main prefix (Start/End)
+  const labelPrefix = label.split(" ")[0]; // This will get "Start" or "End"
 
-  const handleTimeChange = (value: string) => {
-    if (isFieldEditing) {
-      setTempTimeValue(value);
-    } else {
-      onTimeChange(value);
-    }
-  };
+  if (!isEditing && !isFieldEditing) {
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-1">
+          <Label htmlFor={`${id}-date`}>{label}</Label>
+        </div>
+        <DateTimeReadOnlyField 
+          dateValue={dateValue || ""} 
+          timeValue={timeValue || ""} 
+          handleFieldClick={handleFieldClick} 
+        />
+      </div>
+    );
+  }
 
   return (
     <div>
       <div className="flex items-center justify-between mb-1">
         <Label htmlFor={`${id}-date`}>{label}</Label>
       </div>
-      
-      {(isEditing || isFieldEditing) ? (
-        <EditableDateTimeField
-          id={id}
-          dateValue={dateValue}
-          timeValue={timeValue}
-          tempDateValue={tempDateValue}
-          tempTimeValue={tempTimeValue}
-          isFieldEditing={isFieldEditing}
-          onDateChange={handleDateChange}
-          onTimeChange={handleTimeChange}
-          onSave={isFieldEditing ? handleSaveField : undefined}
-          onCancel={isFieldEditing ? handleCancelField : undefined}
-        />
-      ) : (
-        <DateTimeReadOnlyField
-          dateValue={dateValue}
-          timeValue={timeValue}
-          handleFieldClick={handleFieldClick}
-        />
-      )}
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <Input
+            id={`${id}-date`}
+            type="date"
+            value={isFieldEditing ? tempDateValue : (dateValue || "")}
+            onChange={(e) => isFieldEditing ? setTempDateValue(e.target.value) : onDateChange(e.target.value)}
+            required
+            className="rounded-r-none"
+          />
+        </div>
+        <div className="relative">
+          <div className="relative">
+            <Input
+              id={`${id}-time`}
+              type="time"
+              value={isFieldEditing ? tempTimeValue : (timeValue || "")}
+              onChange={(e) => isFieldEditing ? setTempTimeValue(e.target.value) : onTimeChange(e.target.value)}
+              required
+              className="rounded-l-none border-l-0"
+            />
+            {isFieldEditing && (
+              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex space-x-1">
+                <Button
+                  size="sm"
+                  onClick={handleCancelField}
+                  className="h-7 w-7 p-0"
+                  variant="ghost"
+                >
+                  <X className="h-3 w-3 text-gray-500" />
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={handleSaveField}
+                  className="h-7 w-7 p-0"
+                  variant="ghost"
+                >
+                  <Check className="h-3 w-3 text-green-500" />
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

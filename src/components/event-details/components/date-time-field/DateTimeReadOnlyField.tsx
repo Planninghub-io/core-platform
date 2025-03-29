@@ -19,7 +19,7 @@ export const DateTimeReadOnlyField = ({
           className="flex h-10 w-full rounded-l-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background border-r-0 cursor-pointer hover:bg-gray-100"
           onClick={handleFieldClick}
         >
-          <span>{formatDate(dateValue)}</span>
+          <span>{formatDate(dateValue || "")}</span>
         </div>
       </div>
       <div>
@@ -27,7 +27,7 @@ export const DateTimeReadOnlyField = ({
           className="flex h-10 w-full rounded-r-md border border-input bg-gray-50 px-3 py-2 text-base ring-offset-background cursor-pointer hover:bg-gray-100"
           onClick={handleFieldClick}
         >
-          <span>{formatTime(timeValue)}</span>
+          <span>{formatTime(timeValue || "")}</span>
         </div>
       </div>
     </div>
