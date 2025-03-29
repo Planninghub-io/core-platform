@@ -12,6 +12,6 @@ export const ReadOnlyField = ({
     onClick={handleFieldClick}
   >
     {prefix && <span className="mr-1">{prefix}</span>}
-    {value !== null && value !== undefined ? value.toString() : placeholder}
+    {value !== null && value !== undefined ? String(value) : placeholder}
   </div>
 );
