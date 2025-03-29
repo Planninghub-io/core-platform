@@ -1,3 +1,4 @@
+
 import { FormField } from "./components/FormField";
 import { DateTimeField } from "./components/DateTimeField";
 import { DeleteEventDialog } from "./components/DeleteEventDialog";
@@ -43,6 +44,16 @@ export const EventInfo = ({
       : combineDateTime(formatDateOnly(currentValue), value, currentValue);
     
     onFieldChange(field, newDateTime);
+  };
+
+  // Safely format the budget value
+  const getBudgetValue = () => {
+    if (event.budget) {
+      return formatCurrency(event.budget);
+    } else if (event.estimated_budget) {
+      return event.estimated_budget;
+    }
+    return null;
   };
 
   return (
@@ -140,7 +151,7 @@ export const EventInfo = ({
         <FormField
           id="budget"
           label="Estimated Budget"
-          value={event.budget ? formatCurrency(event.budget) : event.estimated_budget}
+          value={getBudgetValue()}
           placeholder="No budget specified"
           isEditing={isEditing}
           onChange={(value) => {

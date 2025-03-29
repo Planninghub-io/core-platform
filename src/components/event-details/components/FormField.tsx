@@ -76,7 +76,7 @@ export const FormField = ({
       onClick={handleFieldClick}
     >
       {prefix && <span className="mr-1">{prefix}</span>}
-      {value !== null ? value.toString() : placeholder}
+      {value !== null && value !== undefined ? value.toString() : placeholder}
     </div>
   );
 
@@ -162,7 +162,7 @@ export const FormField = ({
           <Input
             id={id}
             type={type}
-            value={isFieldEditing ? tempValue || '' : value || ''}
+            value={isFieldEditing ? tempValue ?? '' : value ?? ''}
             onChange={(e) => handleChange(type === "number" ? parseInt(e.target.value) : e.target.value)}
             required={id === "title"}
             className="pl-8"
@@ -196,7 +196,7 @@ export const FormField = ({
         <Input
           id={id}
           type={type}
-          value={isFieldEditing ? tempValue || '' : value || ''}
+          value={isFieldEditing ? tempValue ?? '' : value ?? ''}
           onChange={(e) => handleChange(type === "number" ? parseInt(e.target.value) : e.target.value)}
           required={id === "title"}
         />

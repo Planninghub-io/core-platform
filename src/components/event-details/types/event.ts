@@ -10,9 +10,10 @@ export interface Event {
   expected_attendees: number | null;
   image_url: string | null;
   status?: string;
+  budget?: number | string | null;
+  estimated_budget?: string | null;
+  // Additional properties
   user_profiles?: {
     email: string | null;
   } | null;
-  budget?: number | null;
-  estimated_budget?: string | null;
 }
