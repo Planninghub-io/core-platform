@@ -47,9 +47,10 @@ const EventTicketing: React.FC = () => {
       });
       checkStripeAccount(); // Refresh status
     } else if (stripeError) {
+      const errorMessage = stripeError ? decodeURIComponent(stripeError) : "Connection failed for unknown reason";
       toast({
         title: "Connection Failed",
-        description: decodeURIComponent(stripeError),
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -57,6 +58,28 @@ const EventTicketing: React.FC = () => {
 
   const handleBack = () => {
     navigate(`/event/${eventId}`);
+  };
+
+  const handleConnectStripe = () => {
+    try {
+      if (typeof connectStripeAccount === 'function') {
+        connectStripeAccount();
+      } else {
+        console.error("connectStripeAccount is not a function");
+        toast({
+          title: "Error",
+          description: "Could not initiate payment account connection. Please try again later.",
+          variant: "destructive",
+        });
+      }
+    } catch (err) {
+      console.error("Error connecting to Stripe:", err);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred. Please try again later.",
+        variant: "destructive",
+      });
+    }
   };
 
   // Show loading state if any data is still loading
@@ -71,8 +94,8 @@ const EventTicketing: React.FC = () => {
 
   return (
     <div className="container py-8">
-      {!hasStripeAccount && (
-        <PaymentAccountAlert onSetupAccount={connectStripeAccount} />
+      {hasStripeAccount === false && (
+        <PaymentAccountAlert onSetupAccount={handleConnectStripe} />
       )}
       
       <TicketFormManager 
@@ -82,7 +105,7 @@ const EventTicketing: React.FC = () => {
         {(showAddForm, setShowAddForm) => (
           <>
             <EventTicketingHeader 
-              eventTitle={event.title} 
+              eventTitle={event.title || "Untitled Event"} 
               onBack={handleBack}
               onAddTicket={() => {
                 if (!hasStripeAccount) {
@@ -95,10 +118,10 @@ const EventTicketing: React.FC = () => {
                 }
                 setShowAddForm(true);
               }}
-              hasTickets={tickets.length > 0}
+              hasTickets={tickets && tickets.length > 0}
             />
 
-            {tickets.length > 0 ? (
+            {tickets && tickets.length > 0 ? (
               <TicketsList 
                 tickets={tickets} 
                 onDelete={deleteTicket}

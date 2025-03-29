@@ -15,6 +15,13 @@ interface PaymentAccountAlertProps {
 export const PaymentAccountAlert: React.FC<PaymentAccountAlertProps> = ({ 
   onSetupAccount 
 }) => {
+  const handleSetupClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (typeof onSetupAccount === 'function') {
+      onSetupAccount();
+    }
+  };
+
   return (
     <Alert className="mb-6 border-orange-200 bg-orange-50">
       <CreditCard className="h-4 w-4 text-orange-500" />
@@ -26,7 +33,7 @@ export const PaymentAccountAlert: React.FC<PaymentAccountAlertProps> = ({
         </p>
         <Button 
           variant="outline" 
-          onClick={onSetupAccount}
+          onClick={handleSetupClick}
           className="border-orange-300 bg-white text-orange-700 hover:bg-orange-100 hover:text-orange-800"
         >
           Set Up Payment Account

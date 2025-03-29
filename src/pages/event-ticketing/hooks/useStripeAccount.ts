@@ -51,18 +51,20 @@ export const useStripeAccount = () => {
       
       console.log("Initiating Stripe Connect process");
       
-      // Call the Stripe Connect edge function directly using Supabase invoke
+      // Call the Stripe Connect edge function using Supabase invoke
       const { data, error } = await supabase.functions.invoke('stripe-connect');
       
       if (error) {
         throw new Error(`Error invoking Stripe Connect function: ${error.message}`);
       }
       
-      if (data?.url) {
+      // Safely check if data and data.url exist before redirecting
+      if (data && typeof data === 'object' && 'url' in data && data.url) {
         console.log("Redirecting to Stripe Connect URL:", data.url);
         window.location.href = data.url;
       } else {
-        throw new Error("No redirect URL returned from Stripe Connect function");
+        console.error("Invalid response from Stripe Connect function:", data);
+        throw new Error("No valid redirect URL returned from Stripe Connect function");
       }
     } catch (error) {
       console.error("Error initiating Stripe connect:", error);

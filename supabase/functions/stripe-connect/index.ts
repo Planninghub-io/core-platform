@@ -23,7 +23,8 @@ serve(async (req) => {
       hasCode: !!code, 
       hasError: !!error, 
       url: req.url,
-      method: req.method
+      method: req.method,
+      origin: url.origin
     });
     
     // Handle errors from Stripe OAuth redirect
@@ -37,6 +38,11 @@ serve(async (req) => {
       try {
         const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
         const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+        
+        if (!supabaseUrl || !supabaseServiceKey) {
+          throw new Error("Missing Supabase credentials");
+        }
+        
         const supabase = createClient(supabaseUrl, supabaseServiceKey);
         
         console.log("Exchanging code for access token");
@@ -118,8 +124,11 @@ serve(async (req) => {
         
         console.log("User profile updated with Stripe account ID");
         
+        // Get return path from state or use default
+        const returnPath = localStorage.getItem('stripeConnectReturnPath') || '/event-ticketing';
+        
         // Redirect back to the application with success message
-        return Response.redirect(`${url.origin}/event-ticketing?stripe_success=true`);
+        return Response.redirect(`${url.origin}${returnPath}?stripe_success=true`);
       } catch (error) {
         console.error("Stripe Connect error:", error);
         return Response.redirect(`${url.origin}/event-ticketing?stripe_error=${encodeURIComponent(error.message)}`);
@@ -135,9 +144,13 @@ serve(async (req) => {
     
     // Get the origin from the request
     const origin = url.origin;
+    // Define a redirect URI that matches what you've set in your Stripe Connect settings
     const redirectUri = `${origin}/api/stripe-connect`;
     
-    console.log("Generating Stripe Connect authorization URL", { redirectUri });
+    console.log("Generating Stripe Connect authorization URL", { 
+      redirectUri,
+      clientId: stripeClientId.substring(0, 5) + '...' // Log partial client ID for security
+    });
     
     const stripeConnectUrl = new URL("https://connect.stripe.com/oauth/authorize");
     stripeConnectUrl.searchParams.append("client_id", stripeClientId);
@@ -147,7 +160,7 @@ serve(async (req) => {
     
     console.log("Stripe Connect URL generated:", stripeConnectUrl.toString());
     
-    // Return the URL instead of redirecting, so the frontend can handle the redirect
+    // Return the URL as a JSON response instead of redirecting
     return new Response(
       JSON.stringify({ url: stripeConnectUrl.toString() }),
       {
