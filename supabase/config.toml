@@ -10,7 +10,7 @@ verify_jwt = true
 [functions.custom-email]
 verify_jwt = false
 
-[functions.generate-checklist]
+[functions.checklist]
 verify_jwt = true
 
 [functions.event-ai-assistant]
@@ -18,3 +18,7 @@ verify_jwt = false
 
 [functions.generate-event]
 verify_jwt = false
+
+[functions.stripe-connect]
+verify_jwt = false
+

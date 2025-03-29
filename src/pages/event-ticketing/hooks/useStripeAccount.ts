@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { APP_URL } from "@/integrations/supabase/client";
 
 export const useStripeAccount = () => {
   const [hasStripeAccount, setHasStripeAccount] = useState<boolean | null>(null);
@@ -41,9 +42,27 @@ export const useStripeAccount = () => {
     }
   };
 
-  const connectStripeAccount = () => {
-    // Redirect to Supabase Edge Function that will handle Stripe Connect OAuth
-    window.open('/api/stripe-connect', '_blank');
+  const connectStripeAccount = async () => {
+    try {
+      // Get the current origin for URL construction
+      const origin = window.location.origin;
+      
+      // Get the current path to redirect back after Stripe connect
+      const currentPath = window.location.pathname;
+      
+      // Store the current path in localStorage for redirect after Stripe connect
+      localStorage.setItem('stripeConnectReturnPath', currentPath);
+      
+      // Call the Stripe Connect edge function directly, not in a new tab
+      window.location.href = `${origin}/api/stripe-connect`;
+    } catch (error) {
+      console.error("Error initiating Stripe connect:", error);
+      toast({
+        title: "Connection Error",
+        description: "Failed to start payment account connection. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   useEffect(() => {
