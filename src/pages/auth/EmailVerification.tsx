@@ -16,7 +16,8 @@ const verificationSchema = z.object({
   code: z.string().length(5, "Verification code must be 5 digits"),
 });
 
-type VerificationStatus = 'verifying' | 'success' | 'error' | 'waiting';
+// Updated type to include all possible statuses
+type VerificationStatus = 'waiting' | 'verifying' | 'success' | 'error';
 
 const EmailVerification = () => {
   const [searchParams] = useSearchParams();
