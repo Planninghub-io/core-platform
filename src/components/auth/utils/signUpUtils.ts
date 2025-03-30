@@ -8,12 +8,9 @@ type CompanyType = Database["public"]["Enums"]["company_type"];
 export interface SignUpData {
   email: string;
   password: string;
-  firstName: string;
-  lastName: string;
   companyName?: string;
   businessPhone?: string;
   role?: string;
-  acceptedTerms: boolean;
 }
 
 export const handleUserSignUp = async (
@@ -22,16 +19,7 @@ export const handleUserSignUp = async (
   toast: any,
   redirectCallback: () => void
 ) => {
-  const { email, password, firstName, lastName, companyName, businessPhone, role, acceptedTerms } = formData;
-
-  if (!acceptedTerms) {
-    toast({
-      title: "Terms Required",
-      description: "You must accept the Terms of Service to continue",
-      variant: "destructive",
-    });
-    return false;
-  }
+  const { email, password, companyName, businessPhone, role } = formData;
 
   if (password.length < 6) {
     toast({
@@ -57,9 +45,6 @@ export const handleUserSignUp = async (
       password,
       options: {
         data: {
-          first_name: firstName,
-          last_name: lastName,
-          accepted_terms: acceptedTerms,
           role: role || (isBusiness ? 'business_admin' : 'user'),
           is_business: isBusiness,
         },
@@ -87,7 +72,7 @@ export const handleUserSignUp = async (
         .insert([{
           name: companyName,
           type: 'vendor' as CompanyType,
-          business_email: email, // Use the same email
+          business_email: email,
           business_phone: businessPhone
         }])
         .select()
@@ -125,11 +110,10 @@ export const handleUserSignUp = async (
     // Send welcome email
     try {
       await supabase.functions.invoke('welcome-email', {
-        body: { email, firstName, lastName, isBusiness }
+        body: { email, isBusiness }
       });
     } catch (emailError) {
       console.error("Welcome email could not be sent:", emailError);
-      // We don't want to fail the signup if just the welcome email fails
     }
     
     redirectCallback();
