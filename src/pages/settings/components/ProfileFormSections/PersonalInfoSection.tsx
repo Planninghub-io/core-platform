@@ -1,9 +1,8 @@
 
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { User, Mail, Phone, Calendar } from "lucide-react";
 import { UseFormReturn } from "react-hook-form";
 import { ProfileFormValues } from "../../hooks/useProfileForm";
+import { FormField } from "./FormField";
+import { User, Calendar } from "lucide-react";
 
 interface PersonalInfoSectionProps {
   form: UseFormReturn<ProfileFormValues>;
@@ -14,98 +13,42 @@ export const PersonalInfoSection = ({ form }: PersonalInfoSectionProps) => {
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-2">
         <FormField
-          control={form.control}
+          form={form}
           name="first_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-[#333333] font-medium">First Name *</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    {...field}
-                    placeholder="Enter your first name"
-                    className="border-purple-100 pl-9 focus-visible:ring-[#8b73f4]/20"
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="First Name"
+          placeholder="Enter your first name"
+          icon={User}
+          required={true}
         />
         <FormField
-          control={form.control}
+          form={form}
           name="middle_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-[#333333] font-medium">Middle Name</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder="Enter your middle name"
-                  className="border-purple-100 focus-visible:ring-[#8b73f4]/20"
-                />
-              </FormControl>
-            </FormItem>
-          )}
+          label="Middle Name"
+          placeholder="Enter your middle name"
         />
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <FormField
-          control={form.control}
+          form={form}
           name="last_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-[#333333] font-medium">Last Name *</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    {...field}
-                    placeholder="Enter your last name"
-                    className="border-purple-100 pl-9 focus-visible:ring-[#8b73f4]/20"
-                  />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
+          label="Last Name"
+          placeholder="Enter your last name"
+          icon={User}
+          required={true}
         />
         <FormField
-          control={form.control}
+          form={form}
           name="name_suffix"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-[#333333] font-medium">Suffix</FormLabel>
-              <FormControl>
-                <Input
-                  {...field}
-                  placeholder="Enter name suffix (e.g., Jr., Sr.)"
-                  className="border-purple-100 focus-visible:ring-[#8b73f4]/20"
-                />
-              </FormControl>
-            </FormItem>
-          )}
+          label="Suffix"
+          placeholder="Enter name suffix (e.g., Jr., Sr.)"
         />
       </div>
       <FormField
-        control={form.control}
+        form={form}
         name="dob"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-[#333333] font-medium">Date of Birth</FormLabel>
-            <FormControl>
-              <div className="relative">
-                <Calendar className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  type="date"
-                  {...field}
-                  className="border-purple-100 pl-9 focus-visible:ring-[#8b73f4]/20"
-                />
-              </div>
-            </FormControl>
-          </FormItem>
-        )}
+        label="Date of Birth"
+        type="date"
+        icon={Calendar}
       />
     </div>
   );
