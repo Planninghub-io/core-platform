@@ -1,8 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-
-type VerificationStatus = 'waiting' | 'verifying' | 'success' | 'error';
+import { VerificationStatus } from "./useEmailVerification";
 
 type VerificationFooterProps = {
   status: VerificationStatus;
@@ -30,7 +29,7 @@ export const VerificationFooter = ({ status, email, onResendVerification }: Veri
             </Button>
           )}
         </div>
-      ) : status === 'waiting' && (
+      ) : status === 'waiting' ? (
         <div className="flex flex-col gap-2 w-full">
           <Button onClick={onResendVerification} disabled={!email}>
             Resend Code
@@ -39,7 +38,7 @@ export const VerificationFooter = ({ status, email, onResendVerification }: Veri
             Return to Sign In
           </Button>
         </div>
-      )}
+      ) : null}
     </>
   );
 };

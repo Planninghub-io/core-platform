@@ -5,6 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 
+// Update the type to include all possible states
 export type VerificationStatus = 'waiting' | 'verifying' | 'success' | 'error';
 
 const verificationSchema = z.object({

@@ -3,7 +3,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { VerificationForm } from "@/components/auth/email-verification/VerificationForm";
 import { VerificationHeader } from "@/components/auth/email-verification/VerificationHeader";
 import { VerificationFooter } from "@/components/auth/email-verification/VerificationFooter";
-import { useEmailVerification } from "@/components/auth/email-verification/useEmailVerification";
+import { useEmailVerification, VerificationStatus } from "@/components/auth/email-verification/useEmailVerification";
 
 const EmailVerification = () => {
   const { status, email, handleCodeVerification, resendVerification } = useEmailVerification();
@@ -15,7 +15,7 @@ const EmailVerification = () => {
           <VerificationHeader status={status} email={email} />
         </CardHeader>
         <CardContent>
-          {status === 'waiting' && email && (
+          {(status === 'waiting' || status === 'verifying') && email && (
             <VerificationForm 
               onSubmit={handleCodeVerification} 
               isSubmitting={status === 'verifying'} 

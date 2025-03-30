@@ -1,8 +1,7 @@
 
 import { Mail, CheckCircle } from "lucide-react";
 import { CardTitle, CardDescription } from "@/components/ui/card";
-
-type VerificationStatus = 'waiting' | 'verifying' | 'success' | 'error';
+import { VerificationStatus } from "./useEmailVerification";
 
 type VerificationHeaderProps = {
   status: VerificationStatus;
