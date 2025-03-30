@@ -27,7 +27,14 @@ export const EventContent = ({
     return (
       <div className="space-y-6">
         <h1 className="text-3xl font-bold">{event.title}</h1>
-        <EventDashboard event={event} />
+        <EventDashboard 
+          event={{
+            id: event.id,
+            title: event.title,
+            budget: typeof event.budget === 'string' ? parseFloat(event.budget) : event.budget,
+            category: event.category
+          }} 
+        />
       </div>
     );
   }

@@ -19,13 +19,16 @@ const MFAChallenge = () => {
     const getMFAData = async () => {
       try {
         // Get current MFA factors
-        const { data: { factors }, error: factorError } = await supabase.auth.mfa.listFactors();
+        const { data, error: factorError } = await supabase.auth.mfa.listFactors();
         
         if (factorError) {
           throw factorError;
         }
         
-        if (!factors || factors.length === 0) {
+        // Check if there are any verified TOTP factors
+        const verifiedFactors = data.totp.filter(factor => factor.status === 'verified');
+        
+        if (!verifiedFactors || verifiedFactors.length === 0) {
           // No MFA set up
           toast({
             title: "No MFA Setup",
@@ -36,7 +39,7 @@ const MFAChallenge = () => {
         }
         
         // Get the first verified factor
-        const verifiedFactor = factors.find(factor => factor.status === 'verified');
+        const verifiedFactor = verifiedFactors[0];
         
         if (!verifiedFactor) {
           toast({

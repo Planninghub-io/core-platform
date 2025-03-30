@@ -1,5 +1,6 @@
 
 import { supabase, APP_URL } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 export interface SignInData {
   email: string;
@@ -58,7 +59,9 @@ export const handleUserSignIn = async (
     
     if (!mfaError && mfaData.currentLevel === 'aal1' && mfaData.nextLevel === 'aal2') {
       // User has MFA enabled but needs to complete the second factor
-      navigate('/auth/mfa-challenge');
+      // We need to use the redirectCallback instead of direct navigation here
+      localStorage.setItem('authRedirectPath', '/auth/mfa-challenge');
+      redirectCallback();
       return false;
     }
 
