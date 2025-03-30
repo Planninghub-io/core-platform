@@ -6,90 +6,153 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Mail, CheckCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+
+const verificationSchema = z.object({
+  code: z.string().length(5, "Verification code must be 5 digits"),
+});
 
 const EmailVerification = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [status, setStatus] = useState<'verifying' | 'success' | 'error'>('verifying');
+  const [status, setStatus] = useState<'verifying' | 'success' | 'error' | 'waiting'>('waiting');
   const [email, setEmail] = useState<string | null>(null);
+  
+  const form = useForm<z.infer<typeof verificationSchema>>({
+    resolver: zodResolver(verificationSchema),
+    defaultValues: {
+      code: "",
+    },
+  });
 
   useEffect(() => {
     // First check if this is a redirect with a token
     const token = searchParams.get('token');
     const type = searchParams.get('type');
     
-    const verifyToken = async () => {
-      if (token && type) {
-        try {
-          setStatus('verifying');
-          
-          const { data, error } = await supabase.auth.verifyOtp({
-            token_hash: token,
-            type: type as any,
-          });
-          
-          if (error) {
-            console.error("Email verification error:", error);
-            setStatus('error');
-            toast({
-              title: "Verification Failed",
-              description: error.message,
-              variant: "destructive",
-            });
-            return;
-          }
-          
-          // Successfully verified
-          setStatus('success');
-          setEmail(data.user?.email || null);
-          
-          toast({
-            title: "Email Verified",
-            description: "Your email has been successfully verified.",
-          });
-          
-          // Redirect after a short delay
-          setTimeout(() => {
-            navigate('/');
-          }, 3000);
-        } catch (error: any) {
-          console.error("Verification error:", error);
-          setStatus('error');
-          toast({
-            title: "Verification Error",
-            description: error.message || "An unexpected error occurred",
-            variant: "destructive",
-          });
-        }
-      } else {
-        // No token provided, just show verification instructions
-        setStatus('verifying');
-        
-        // Try to get current user's email
-        const { data } = await supabase.auth.getUser();
-        if (data && data.user) {
-          setEmail(data.user.email);
-        }
+    if (token && type) {
+      handleTokenVerification(token, type);
+    } else {
+      // No token provided, just show verification instructions
+      setStatus('waiting');
+      
+      // Try to get current user's email
+      getUserEmail();
+    }
+  }, [searchParams]);
+
+  const getUserEmail = async () => {
+    const { data } = await supabase.auth.getUser();
+    if (data && data.user) {
+      setEmail(data.user.email);
+    }
+  };
+
+  const handleTokenVerification = async (token: string, type: string) => {
+    try {
+      setStatus('verifying');
+      
+      const { data, error } = await supabase.auth.verifyOtp({
+        token_hash: token,
+        type: type as any,
+      });
+      
+      if (error) {
+        console.error("Email verification error:", error);
+        setStatus('error');
+        toast({
+          title: "Verification Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
       }
-    };
+      
+      // Successfully verified
+      setStatus('success');
+      setEmail(data.user?.email || null);
+      
+      toast({
+        title: "Email Verified",
+        description: "Your email has been successfully verified.",
+      });
+      
+      // Redirect after a short delay
+      setTimeout(() => {
+        navigate('/');
+      }, 3000);
+    } catch (error: any) {
+      console.error("Verification error:", error);
+      setStatus('error');
+      toast({
+        title: "Verification Error",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCodeVerification = async (values: z.infer<typeof verificationSchema>) => {
+    if (!email) return;
     
-    verifyToken();
-  }, [searchParams, toast, navigate]);
+    try {
+      setStatus('verifying');
+      
+      // Verify the OTP code
+      const { data, error } = await supabase.functions.invoke('verify-code', {
+        body: { email, code: values.code }
+      });
+      
+      if (error) {
+        setStatus('error');
+        toast({
+          title: "Verification Failed",
+          description: error.message || "Invalid verification code",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Successfully verified
+      setStatus('success');
+      
+      toast({
+        title: "Email Verified",
+        description: "Your email has been successfully verified.",
+      });
+      
+      // Redirect after a short delay
+      setTimeout(() => {
+        navigate('/');
+      }, 2000);
+    } catch (error: any) {
+      setStatus('error');
+      toast({
+        title: "Verification Error",
+        description: error.message || "An unexpected error occurred",
+        variant: "destructive",
+      });
+    }
+  };
 
   const resendVerification = async () => {
     if (!email) return;
     
     try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email,
+      // Re-send the welcome email with a new verification code
+      const { error } = await supabase.functions.invoke('welcome-email', {
+        body: { email }
       });
       
       if (error) {
         toast({
           title: "Error",
-          description: error.message,
+          description: error.message || "Failed to resend verification email",
           variant: "destructive",
         });
         return;
@@ -97,7 +160,7 @@ const EmailVerification = () => {
       
       toast({
         title: "Verification Email Sent",
-        description: "Check your inbox for the verification link",
+        description: "Check your inbox for the verification code",
       });
     } catch (error: any) {
       toast({
@@ -128,20 +191,60 @@ const EmailVerification = () => {
               ? 'Email Verified!' 
               : status === 'error' 
                 ? 'Verification Failed' 
-                : 'Check Your Email'}
+                : status === 'verifying'
+                  ? 'Verifying...'
+                  : 'Verify Your Email'}
           </CardTitle>
           <CardDescription className="text-center">
             {status === 'success' 
               ? 'Your email has been successfully verified. You will be redirected shortly.' 
               : status === 'error'
-                ? 'We were unable to verify your email. The link may have expired or been used already.'
-                : `We've sent a verification link to ${email || 'your email'}. Please check your inbox and click the link to verify your account.`}
+                ? 'We were unable to verify your email. The code may be invalid or expired.'
+                : status === 'verifying'
+                  ? 'Please wait while we verify your email...'
+                  : `We've sent a verification code to ${email || 'your email'}. Please enter the 5-digit code below to verify your account.`}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {status === 'verifying' && (
+          {status === 'waiting' && email && (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleCodeVerification)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="code"
+                  render={({ field }) => (
+                    <FormItem className="mx-auto max-w-[250px]">
+                      <FormLabel className="text-center block">Verification Code</FormLabel>
+                      <FormControl>
+                        <InputOTP maxLength={5} {...field}>
+                          <InputOTPGroup>
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                            <InputOTPSlot index={3} />
+                            <InputOTPSlot index={4} />
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </FormControl>
+                      <FormDescription className="text-center">
+                        Enter the 5-digit code sent to your email
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex justify-center">
+                  <Button type="submit" disabled={status === 'verifying'}>
+                    {status === 'verifying' ? 'Verifying...' : 'Verify Email'}
+                  </Button>
+                </div>
+              </form>
+            </Form>
+          )}
+          
+          {status === 'waiting' && !email && (
             <div className="text-center text-sm text-gray-500 mt-4">
-              <p>If you don't see the email, check your spam folder or request a new verification link.</p>
+              <p>Looking for your account information...</p>
             </div>
           )}
         </CardContent>
@@ -161,10 +264,10 @@ const EmailVerification = () => {
                 </Button>
               )}
             </div>
-          ) : (
+          ) : status === 'waiting' && (
             <div className="flex flex-col gap-2 w-full">
               <Button onClick={resendVerification} disabled={!email}>
-                Resend Verification
+                Resend Code
               </Button>
               <Button variant="outline" onClick={() => navigate('/auth')}>
                 Return to Sign In

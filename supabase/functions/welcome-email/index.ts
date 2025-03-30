@@ -9,10 +9,15 @@ const corsHeaders = {
 
 interface WelcomeEmailRequest {
   email: string;
-  firstName: string;
-  lastName: string;
-  isBusiness: boolean;
+  firstName?: string;
+  lastName?: string;
+  isBusiness?: boolean;
 }
+
+// Function to generate a random 5-digit code
+const generateVerificationCode = (): string => {
+  return Math.floor(10000 + Math.random() * 90000).toString();
+};
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -34,20 +39,52 @@ serve(async (req) => {
       );
     }
 
+    // Generate a verification code
+    const verificationCode = generateVerificationCode();
+    
+    // Create a Supabase client with the service role key
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') || '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '',
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    );
+    
+    // Store the verification code in user metadata
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      (await supabaseAdmin.auth.admin.listUsers()).users.find(u => u.email === email)?.id || '',
+      {
+        user_metadata: { 
+          verification_code: verificationCode,
+          verification_code_expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutes
+        }
+      }
+    );
+    
+    if (updateError) {
+      console.error("Error storing verification code:", updateError);
+      throw updateError;
+    }
+    
     // Here you'd normally use a service like Resend, SendGrid, etc.
-    // For this example, we'll just log that we would send an email
-    console.log(`Sending welcome email to ${email} (${firstName} ${lastName})`);
+    // For this example, we'll just log the verification code
+    console.log(`Sending verification email to ${email} with code: ${verificationCode}`);
     console.log(`Account type: ${isBusiness ? 'Business' : 'Individual User'}`);
     
     // In a real implementation, you'd send an actual email like this:
     // const { data, error } = await resend.emails.send({
-    //   from: 'EventIt <welcome@eventit.com>',
+    //   from: 'EventIt <verify@eventit.com>',
     //   to: [email],
-    //   subject: 'Welcome to EventIt!',
+    //   subject: 'Verify Your Email - EventIt',
     //   html: `
-    //     <h1>Welcome to EventIt, ${firstName}!</h1>
-    //     <p>Thank you for joining our platform. We're excited to help you ${isBusiness ? 'grow your business' : 'manage your events'}.</p>
-    //     <p>If you have any questions, feel free to reply to this email.</p>
+    //     <h1>Verify Your Email</h1>
+    //     <p>Thank you for signing up! Please enter the following verification code to complete your registration:</p>
+    //     <h2 style="letter-spacing: 5px; font-size: 32px; background-color: #f5f5f5; padding: 10px; text-align: center;">${verificationCode}</h2>
+    //     <p>This code will expire in 30 minutes.</p>
     //     <p>Best regards,<br>The EventIt Team</p>
     //   `,
     // });
@@ -55,7 +92,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         success: true, 
-        message: `Welcome email would be sent to ${email}` 
+        message: `Verification email sent to ${email}` 
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
