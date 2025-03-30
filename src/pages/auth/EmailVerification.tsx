@@ -43,8 +43,14 @@ const EmailVerification = () => {
       // No token provided, just show verification instructions
       setStatus('waiting');
       
-      // Try to get current user's email
-      getUserEmail();
+      // Try to get email from URL parameters first
+      const emailParam = searchParams.get('email');
+      if (emailParam) {
+        setEmail(emailParam);
+      } else {
+        // If no email in URL, try to get current user's email
+        getUserEmail();
+      }
     }
   }, [searchParams]);
 

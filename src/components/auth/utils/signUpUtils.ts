@@ -66,7 +66,9 @@ export const handleUserSignUp = async (
       console.error("Welcome email could not be sent:", emailError);
     }
     
-    redirectCallback();
+    // Instead of calling the redirectCallback, now navigate to email verification page
+    // redirectCallback();
+    window.location.href = "/auth/email-verification?email=" + encodeURIComponent(email);
     return true;
   } catch (error: any) {
     toast({
