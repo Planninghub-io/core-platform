@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { User, Mail, Eye, EyeOff } from "lucide-react";
 import BusinessDetailsForm from "./BusinessDetailsForm";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 interface SignUpFormProps {
   onSubmit: (data: {
@@ -32,7 +32,8 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
   const [businessPhone, setBusinessPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [role, setRole] = useState(isBusiness ? "business_admin" : "user");
+  const [accountType, setAccountType] = useState("individual");
+  const [role, setRole] = useState("user");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,14 +42,17 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
       return; // Don't submit if terms not accepted
     }
     
+    // Set appropriate role based on account type
+    const selectedRole = accountType === "company" ? "business_admin" : "user";
+    
     onSubmit({
       email,
       password,
       firstName,
       lastName,
-      companyName,
-      businessPhone,
-      role,
+      companyName: accountType === "company" ? companyName : undefined,
+      businessPhone: accountType === "company" ? businessPhone : undefined,
+      role: selectedRole,
       acceptedTerms
     });
   };
@@ -70,7 +74,6 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
               onChange={(e) => setFirstName(e.target.value)}
               placeholder="John"
               className="pl-9"
-              required
             />
           </div>
         </div>
@@ -84,7 +87,6 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
               onChange={(e) => setLastName(e.target.value)}
               placeholder="Doe"
               className="pl-9"
-              required
             />
           </div>
         </div>
@@ -106,7 +108,24 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
         </div>
       </div>
 
-      {isBusiness && (
+      <div className="space-y-2">
+        <RadioGroup 
+          value={accountType} 
+          onValueChange={setAccountType}
+          className="flex space-x-4"
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="individual" id="individual" />
+            <Label htmlFor="individual">Individual</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="company" id="company" />
+            <Label htmlFor="company">Company</Label>
+          </div>
+        </RadioGroup>
+      </div>
+
+      {accountType === "company" && (
         <BusinessDetailsForm
           companyName={companyName}
           businessEmail={email}  
@@ -116,29 +135,6 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
           onBusinessPhoneChange={setBusinessPhone}
         />
       )}
-      
-      <div className="space-y-2">
-        <Label htmlFor="role">Account Type</Label>
-        <Select 
-          value={role} 
-          onValueChange={setRole}
-        >
-          <SelectTrigger id="role">
-            <SelectValue placeholder="Select role" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="user">Regular User</SelectItem>
-            {isBusiness ? (
-              <>
-                <SelectItem value="business_admin">Business Admin</SelectItem>
-                <SelectItem value="business_user">Business User</SelectItem>
-              </>
-            ) : (
-              <SelectItem value="organizer">Event Organizer</SelectItem>
-            )}
-          </SelectContent>
-        </Select>
-      </div>
       
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>

@@ -8,7 +8,9 @@ const UserProfileSettings = () => {
   if (!userProfile) {
     return (
       <div className="p-6 rounded-lg bg-gradient-to-r from-violet-50/80 to-fuchsia-50/80 border border-purple-100">
-        Loading profile...
+        <div className="flex justify-center items-center h-40">
+          <p className="text-purple-800">Loading profile...</p>
+        </div>
       </div>
     );
   }
@@ -16,6 +18,7 @@ const UserProfileSettings = () => {
   return (
     <div className="space-y-6">
       <div className="p-6 rounded-lg bg-gradient-to-r from-violet-50/80 to-fuchsia-50/80 border border-purple-100">
+        <h2 className="text-xl font-semibold mb-6 text-purple-900">Personal Information</h2>
         <ProfileForm userProfile={userProfile} refreshUserProfile={refreshUserProfile} />
       </div>
     </div>
