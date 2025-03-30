@@ -24,16 +24,7 @@ export const handleUserSignUp = async (
   toast: any,
   redirectCallback: () => void
 ) => {
-  const { email, password, firstName, lastName, acceptedTerms } = formData;
-
-  if (!acceptedTerms) {
-    toast({
-      title: "Terms Required",
-      description: "You must accept the Terms of Service to continue",
-      variant: "destructive",
-    });
-    return false;
-  }
+  const { email, password } = formData;
 
   try {
     // Sign up the user
@@ -42,10 +33,7 @@ export const handleUserSignUp = async (
       password,
       options: {
         data: {
-          first_name: firstName,
-          last_name: lastName,
           is_business: isBusiness,
-          accepted_terms: acceptedTerms,
           role: formData.role || (isBusiness ? "business_admin" : "user")
         },
       },
@@ -65,7 +53,7 @@ export const handleUserSignUp = async (
       // Try to send welcome email
       try {
         await supabase.functions.invoke('welcome-email', {
-          body: { email, firstName, lastName, isBusiness }
+          body: { email, isBusiness }
         });
       } catch (emailError) {
         console.error("Welcome email could not be sent:", emailError);
