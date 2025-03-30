@@ -34,8 +34,7 @@ export const handleUserSignUp = async (
           role: role || (isBusiness ? 'business_admin' : 'user'),
           is_business: isBusiness,
           needs_profile_setup: true // Mark user as needing profile setup
-        },
-        emailRedirectTo: `${APP_URL}/auth/email-verification`
+        }
       }
     });
 
@@ -57,17 +56,23 @@ export const handleUserSignUp = async (
       description: "Please check your email to verify your account.",
     });
     
-    // Send welcome email
+    // Send welcome email with verification code
     try {
       await supabase.functions.invoke('welcome-email', {
         body: { email, isBusiness }
       });
+      
+      console.log("Verification email sent to:", email);
     } catch (emailError) {
       console.error("Welcome email could not be sent:", emailError);
+      toast({
+        title: "Warning",
+        description: "Account created, but verification email could not be sent. Please contact support.",
+        variant: "destructive",
+      });
     }
     
-    // Instead of calling the redirectCallback, now navigate to email verification page
-    // redirectCallback();
+    // Navigate to email verification page with email parameter
     window.location.href = "/auth/email-verification?email=" + encodeURIComponent(email);
     return true;
   } catch (error: any) {
