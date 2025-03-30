@@ -1,8 +1,9 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { SignUpData } from "./signUpUtils";
-import { SignInData, handleUserSignIn, handleGoogleSignIn } from "./signInUtils";
+import { SignInData, handleUserSignIn, handleGoogleSignIn, handleAppleSignIn } from "./signInUtils";
 import { sendPasswordResetOTP, setNewPassword as otpSetNewPassword } from "./otpUtils";
+import { setupMFA, verifyMFA } from "./mfaUtils";
 
 export type { SignUpData, SignInData };
 
@@ -10,7 +11,10 @@ export type { SignUpData, SignInData };
 export { 
   handleUserSignIn,
   handleGoogleSignIn,
-  sendPasswordResetOTP
+  handleAppleSignIn,
+  sendPasswordResetOTP,
+  setupMFA,
+  verifyMFA
 };
 
 // Handle user sign up
@@ -20,7 +24,16 @@ export const handleUserSignUp = async (
   toast: any,
   redirectCallback: () => void
 ) => {
-  const { email, password, firstName, lastName } = formData;
+  const { email, password, firstName, lastName, acceptedTerms } = formData;
+
+  if (!acceptedTerms) {
+    toast({
+      title: "Terms Required",
+      description: "You must accept the Terms of Service to continue",
+      variant: "destructive",
+    });
+    return false;
+  }
 
   try {
     // Sign up the user
@@ -32,6 +45,8 @@ export const handleUserSignUp = async (
           first_name: firstName,
           last_name: lastName,
           is_business: isBusiness,
+          accepted_terms: acceptedTerms,
+          role: formData.role || (isBusiness ? "business_admin" : "user")
         },
       },
     });
@@ -46,6 +61,17 @@ export const handleUserSignUp = async (
         title: "Check your email",
         description: "We've sent you a confirmation link to verify your email",
       });
+      
+      // Try to send welcome email
+      try {
+        await supabase.functions.invoke('welcome-email', {
+          body: { email, firstName, lastName, isBusiness }
+        });
+      } catch (emailError) {
+        console.error("Welcome email could not be sent:", emailError);
+        // Don't fail the signup if welcome email fails
+      }
+      
       return false;
     }
 

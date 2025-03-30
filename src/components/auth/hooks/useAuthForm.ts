@@ -5,7 +5,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { 
   handleUserSignUp, 
   handleUserSignIn, 
-  handleGoogleSignIn, 
+  handleGoogleSignIn,
+  handleAppleSignIn,
   SignUpData, 
   SignInData 
 } from "../utils/authUtils";
@@ -74,6 +75,19 @@ export const useAuthForm = ({ type }: UseAuthFormProps) => {
       setIsLoading(false);
     }
   };
+  
+  const signInWithApple = async () => {
+    setIsLoading(true);
+    try {
+      const success = await handleAppleSignIn(isBusiness, toast);
+      // We don't call handleRedirect here as the OAuth process will handle the redirect
+      if (!success) {
+        setIsLoading(false);
+      }
+    } catch (error) {
+      setIsLoading(false);
+    }
+  };
 
   const toggleAuthMode = () => {
     setIsSignUp(!isSignUp);
@@ -87,6 +101,7 @@ export const useAuthForm = ({ type }: UseAuthFormProps) => {
     signUp,
     signIn,
     signInWithGoogle,
+    signInWithApple,
     toggleAuthMode
   };
 };

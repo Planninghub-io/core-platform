@@ -12,6 +12,8 @@ export interface SignUpData {
   lastName: string;
   companyName?: string;
   businessPhone?: string;
+  role?: string;
+  acceptedTerms: boolean;
 }
 
 export const handleUserSignUp = async (
@@ -20,7 +22,16 @@ export const handleUserSignUp = async (
   toast: any,
   redirectCallback: () => void
 ) => {
-  const { email, password, firstName, lastName, companyName, businessPhone } = formData;
+  const { email, password, firstName, lastName, companyName, businessPhone, role, acceptedTerms } = formData;
+
+  if (!acceptedTerms) {
+    toast({
+      title: "Terms Required",
+      description: "You must accept the Terms of Service to continue",
+      variant: "destructive",
+    });
+    return false;
+  }
 
   if (password.length < 6) {
     toast({
@@ -48,8 +59,11 @@ export const handleUserSignUp = async (
         data: {
           first_name: firstName,
           last_name: lastName,
+          accepted_terms: acceptedTerms,
+          role: role || (isBusiness ? 'business_admin' : 'user'),
+          is_business: isBusiness,
         },
-        emailRedirectTo: APP_URL
+        emailRedirectTo: `${APP_URL}/auth/email-verification`
       }
     });
 
@@ -104,9 +118,19 @@ export const handleUserSignUp = async (
     }
 
     toast({
-      title: "Success!",
-      description: "Check your email to confirm your account.",
+      title: "Account Created!",
+      description: "Please check your email to verify your account.",
     });
+    
+    // Send welcome email
+    try {
+      await supabase.functions.invoke('welcome-email', {
+        body: { email, firstName, lastName, isBusiness }
+      });
+    } catch (emailError) {
+      console.error("Welcome email could not be sent:", emailError);
+      // We don't want to fail the signup if just the welcome email fails
+    }
     
     redirectCallback();
     return true;

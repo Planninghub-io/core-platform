@@ -5,6 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, Mail, Eye, EyeOff } from "lucide-react";
 import BusinessDetailsForm from "./BusinessDetailsForm";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface SignUpFormProps {
   onSubmit: (data: {
@@ -14,6 +16,8 @@ interface SignUpFormProps {
     lastName: string;
     companyName?: string;
     businessPhone?: string;
+    role?: string;
+    acceptedTerms: boolean;
   }) => void;
   isLoading: boolean;
   isBusiness: boolean;
@@ -27,9 +31,16 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
   const [companyName, setCompanyName] = useState("");
   const [businessPhone, setBusinessPhone] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [role, setRole] = useState(isBusiness ? "business_admin" : "user");
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!acceptedTerms) {
+      return; // Don't submit if terms not accepted
+    }
+    
     onSubmit({
       email,
       password,
@@ -37,6 +48,8 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
       lastName,
       companyName,
       businessPhone,
+      role,
+      acceptedTerms
     });
   };
 
@@ -105,6 +118,29 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
       )}
       
       <div className="space-y-2">
+        <Label htmlFor="role">Account Type</Label>
+        <Select 
+          value={role} 
+          onValueChange={setRole}
+        >
+          <SelectTrigger id="role">
+            <SelectValue placeholder="Select role" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="user">Regular User</SelectItem>
+            {isBusiness ? (
+              <>
+                <SelectItem value="business_admin">Business Admin</SelectItem>
+                <SelectItem value="business_user">Business User</SelectItem>
+              </>
+            ) : (
+              <SelectItem value="organizer">Event Organizer</SelectItem>
+            )}
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
         <div className="relative">
           <Input
@@ -129,7 +165,23 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
           </button>
         </div>
       </div>
-      <Button type="submit" disabled={isLoading} className="w-full">
+      
+      <div className="flex items-center space-x-2">
+        <Checkbox 
+          id="terms" 
+          checked={acceptedTerms}
+          onCheckedChange={(checked) => setAcceptedTerms(checked === true)}
+          required
+        />
+        <label
+          htmlFor="terms"
+          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+        >
+          I agree to the Terms of Service and Privacy Policy
+        </label>
+      </div>
+      
+      <Button type="submit" disabled={isLoading || !acceptedTerms} className="w-full">
         {isLoading ? 'Loading...' : 'Sign Up'}
       </Button>
     </form>

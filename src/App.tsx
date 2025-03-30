@@ -14,6 +14,10 @@ import OAuthCallback from '@/pages/auth/OAuthCallback';
 import PasswordReset from '@/pages/auth/PasswordReset';
 import ResetPassword from '@/pages/auth/ResetPassword';
 import MFASetup from '@/pages/auth/MFASetup';
+import MFAChallenge from '@/pages/auth/MFAChallenge';
+import EmailVerification from '@/pages/auth/EmailVerification';
+import Terms from '@/pages/Terms';
+import Privacy from '@/pages/Privacy';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import SettingsLayout from '@/pages/settings/SettingsLayout';
 import UserProfileSettings from '@/pages/settings/UserProfileSettings';
@@ -55,12 +59,17 @@ function App() {
           <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route path="/auth/password-reset" element={<PasswordReset />} />
           <Route path="/auth/new-password" element={<ResetPassword />} />
+          <Route path="/auth/email-verification" element={<EmailVerification />} />
+          <Route path="/auth/mfa-setup" element={<MFASetup />} />
+          <Route path="/auth/mfa-challenge" element={<MFAChallenge />} />
+          
+          {/* Legal pages */}
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
           
           {/* IMPORTANT: Make these routes top-level routes for proper handling of reset password links */}
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/new-password" element={<ResetPassword />} />
-          
-          <Route path="/auth/mfa-setup" element={<MFASetup />} />
 
           {/* Settings routes */}
           <Route path="/settings" element={<SettingsLayout />}>
