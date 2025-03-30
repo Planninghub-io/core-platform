@@ -16,11 +16,13 @@ const verificationSchema = z.object({
   code: z.string().length(5, "Verification code must be 5 digits"),
 });
 
+type VerificationStatus = 'verifying' | 'success' | 'error' | 'waiting';
+
 const EmailVerification = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [status, setStatus] = useState<'verifying' | 'success' | 'error' | 'waiting'>('waiting');
+  const [status, setStatus] = useState<VerificationStatus>('waiting');
   const [email, setEmail] = useState<string | null>(null);
   
   const form = useForm<z.infer<typeof verificationSchema>>({
