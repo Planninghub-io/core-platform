@@ -34,7 +34,8 @@ export const handleUserSignUp = async (
       options: {
         data: {
           is_business: isBusiness,
-          role: formData.role || (isBusiness ? "business_admin" : "user")
+          role: formData.role || (isBusiness ? "business_admin" : "user"),
+          needs_profile_setup: true // Mark that the user needs to set up their profile
         },
       },
     });
@@ -91,3 +92,9 @@ export const handleUserSignUp = async (
 
 // Set new password (using the implementation from otpUtils to avoid duplication)
 export const setNewPassword = otpSetNewPassword;
+
+// Check if user needs profile setup
+export const checkProfileSetup = async () => {
+  const { data: { user } } = await supabase.auth.getUser();
+  return user?.user_metadata?.needs_profile_setup === true;
+};

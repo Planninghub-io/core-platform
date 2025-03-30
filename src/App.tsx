@@ -29,6 +29,7 @@ import Venues from '@/pages/marketplace/Venues';
 import Vendors from '@/pages/marketplace/Vendors';
 import VenueRecommendations from "./pages/marketplace/VenueRecommendations";
 import EventManagement from './pages/event-management/EventManagement';
+import ProfileSetup from './pages/ProfileSetup';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,6 +63,7 @@ function App() {
           <Route path="/auth/email-verification" element={<EmailVerification />} />
           <Route path="/auth/mfa-setup" element={<MFASetup />} />
           <Route path="/auth/mfa-challenge" element={<MFAChallenge />} />
+          <Route path="/profile-setup" element={<ProfileSetup />} />
           
           {/* Legal pages */}
           <Route path="/terms" element={<Terms />} />

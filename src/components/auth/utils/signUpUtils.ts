@@ -1,15 +1,10 @@
 
 import { supabase, APP_URL } from "@/integrations/supabase/client";
 import { Database } from "@/integrations/supabase/types";
-import { toast } from "@/hooks/use-toast";
-
-type CompanyType = Database["public"]["Enums"]["company_type"];
 
 export interface SignUpData {
   email: string;
   password: string;
-  companyName?: string;
-  businessPhone?: string;
   role?: string;
 }
 
@@ -19,21 +14,12 @@ export const handleUserSignUp = async (
   toast: any,
   redirectCallback: () => void
 ) => {
-  const { email, password, companyName, businessPhone, role } = formData;
+  const { email, password, role } = formData;
 
   if (password.length < 6) {
     toast({
       title: "Error",
       description: "Password must be at least 6 characters long",
-      variant: "destructive",
-    });
-    return false;
-  }
-
-  if (isBusiness && (!companyName || !businessPhone)) {
-    toast({
-      title: "Error",
-      description: "Please fill in all business details",
       variant: "destructive",
     });
     return false;
@@ -47,6 +33,7 @@ export const handleUserSignUp = async (
         data: {
           role: role || (isBusiness ? 'business_admin' : 'user'),
           is_business: isBusiness,
+          needs_profile_setup: true // Mark user as needing profile setup
         },
         emailRedirectTo: `${APP_URL}/auth/email-verification`
       }
@@ -63,43 +50,6 @@ export const handleUserSignUp = async (
         throw authError;
       }
       return false;
-    }
-
-    if (isBusiness && authData.user) {
-      // Create company
-      const { data: companyData, error: companyError } = await supabase
-        .from('companies')
-        .insert([{
-          name: companyName,
-          type: 'vendor' as CompanyType,
-          business_email: email,
-          business_phone: businessPhone
-        }])
-        .select()
-        .single();
-
-      if (companyError) throw companyError;
-
-      if (companyData) {
-        // Create user role for the company
-        const { error: roleError } = await supabase
-          .from('user_roles')
-          .insert([{
-            user_id: authData.user.id,
-            company_id: companyData.id,
-            role: 'admin'
-          }]);
-
-        if (roleError) throw roleError;
-      }
-
-      // Update user profile type
-      const { error: profileError } = await supabase
-        .from('user_profiles')
-        .update({ user_type: 'business' })
-        .eq('id', authData.user.id);
-
-      if (profileError) throw profileError;
     }
 
     toast({
