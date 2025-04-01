@@ -39,6 +39,9 @@ export const useAuthForm = ({ type }: UseAuthFormProps) => {
   }, [redirectPath]);
 
   const handleRedirect = async () => {
+    // For sign up, we don't do any direct redirection as it will be handled
+    // in the handleUserSignUp function to go to verification page
+    
     // If we have event data, navigate back to create event page with the data
     if (eventData) {
       navigate(redirectPath, { state: { eventData } });
@@ -50,6 +53,8 @@ export const useAuthForm = ({ type }: UseAuthFormProps) => {
   const signUp = async (formData: SignUpData) => {
     setIsLoading(true);
     try {
+      // Don't pass handleRedirect here as the redirect is handled internally
+      // in the handleUserSignUp function
       await handleSignUp(formData, isBusiness, toast, handleRedirect);
     } finally {
       setIsLoading(false);

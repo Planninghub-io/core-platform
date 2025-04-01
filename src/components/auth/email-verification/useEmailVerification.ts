@@ -27,14 +27,17 @@ export const useEmailVerification = () => {
     const emailParam = queryParams.get('email');
     
     if (emailParam) {
+      console.log("Email found in URL:", emailParam);
       setEmail(emailParam);
     } else {
       // Try to get email from session if not in URL
       const checkSession = async () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user?.email) {
+          console.log("Email found in session:", session.user.email);
           setEmail(session.user.email);
         } else {
+          console.log("No email found, redirecting to auth page");
           // If no email found, redirect to auth page
           navigate('/auth', { replace: true });
         }
@@ -53,11 +56,15 @@ export const useEmailVerification = () => {
         throw new Error("Email address not found. Please try again.");
       }
       
+      console.log("Verifying code for email:", email);
+      
       const result = verificationSchema.safeParse(formData);
       
       if (!result.success) {
         throw new Error(result.error.errors[0].message);
       }
+      
+      console.log("Calling verify-code edge function");
       
       // Call the verify-code edge function
       const { data, error } = await supabase.functions.invoke('verify-code', {
@@ -68,8 +75,11 @@ export const useEmailVerification = () => {
       });
       
       if (error) {
+        console.error("Verification edge function error:", error);
         throw new Error(error.message || "Failed to verify email");
       }
+      
+      console.log("Verification response:", data);
       
       // Update user metadata to mark email as verified
       await supabase.auth.updateUser({
@@ -110,12 +120,15 @@ export const useEmailVerification = () => {
       
       setIsResending(true);
       
+      console.log("Resending verification code to:", email);
+      
       // Resend the verification code
       const { error } = await supabase.functions.invoke('welcome-email', {
         body: { email }
       });
       
       if (error) {
+        console.error("Error resending code:", error);
         throw error;
       }
       

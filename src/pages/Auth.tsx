@@ -18,23 +18,32 @@ const Auth = () => {
         const { data } = await supabase.auth.getSession();
         
         if (data.session) {
+          console.log("Session exists, checking email verification status");
+          
           // Check if the user email is verified
           const emailVerified = data.session.user.user_metadata.email_verified === true;
           
           if (!emailVerified) {
             // If email is not verified, redirect to verification page
+            console.log("Email not verified, redirecting to verification page");
             const email = data.session.user.email;
             navigate(`/auth/email-verification?email=${encodeURIComponent(email)}`, { replace: true });
             return;
           }
           
+          console.log("Email verified, checking if profile setup is needed");
+          
           // Check if user needs to complete profile setup
           const needsProfileSetup = await checkProfileSetup();
           if (needsProfileSetup) {
+            console.log("Profile setup needed, redirecting to profile setup");
             navigate('/profile-setup', { replace: true });
           } else {
+            console.log("Profile setup not needed, redirecting to home");
             navigate('/', { replace: true });
           }
+        } else {
+          console.log("No session found, showing auth form");
         }
       } catch (error) {
         console.error("Error checking authentication:", error);
