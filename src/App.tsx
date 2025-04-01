@@ -56,7 +56,7 @@ function App() {
           <Route path="/create-event" element={<CreateEvent />} />
 
           {/* Auth routes */}
-          <Route path="/auth/*" element={<Auth />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/auth/callback" element={<OAuthCallback />} />
           <Route path="/auth/password-reset" element={<PasswordReset />} />
           <Route path="/auth/new-password" element={<ResetPassword />} />

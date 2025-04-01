@@ -68,7 +68,6 @@ export const handleUserSignUp = async (
       });
       
       // Navigate to email verification page with email parameter
-      // Important: We're manually redirecting instead of using the redirectCallback
       window.location.href = "/auth/email-verification?email=" + encodeURIComponent(email);
       return true;
     } catch (emailError) {
