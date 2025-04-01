@@ -6,74 +6,8 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Event Generator</title>
-    
-    <!-- Facebook Pixel Code - Simplified implementation -->
-    <script>
-      // Define Facebook Pixel ID
-      window.fbPixelId = '9151671744940732';
-      
-      // Create a stub function for fbq
-      window.fbq = function() {
-        (window._fbq = window._fbq || []).push(arguments);
-      };
-      
-      // On user interaction or visibility, load the pixel if needed
-      function loadFbPixelOnDemand() {
-        // Only load once
-        if (window._fbPixelLoaded) return;
-        window._fbPixelLoaded = true;
-        
-        console.log("Loading Facebook Pixel on demand");
-        // Load the script - but DO NOT use preload
-        const script = document.createElement('script');
-        script.src = 'https://connect.facebook.net/en_US/fbevents.js';
-        script.async = true;
-        script.onload = function() {
-          window.fbq('init', window.fbPixelId);
-          window.fbq('track', 'PageView');
-        };
-        document.head.appendChild(script);
-      }
-      
-      // Defer loading until user interaction or page becomes visible
-      if (document.readyState === 'complete') {
-        // Add event listeners for interaction
-        document.addEventListener('click', loadFbPixelOnDemand, { once: true, passive: true });
-        document.addEventListener('scroll', loadFbPixelOnDemand, { once: true, passive: true });
-        // Use visibility API to load when page becomes visible
-        if (document.visibilityState === 'visible') {
-          setTimeout(loadFbPixelOnDemand, 2000);
-        } else {
-          document.addEventListener('visibilitychange', function() {
-            if (document.visibilityState === 'visible') {
-              setTimeout(loadFbPixelOnDemand, 2000);
-            }
-          }, { once: true });
-        }
-      } else {
-        window.addEventListener('load', function() {
-          document.addEventListener('click', loadFbPixelOnDemand, { once: true, passive: true });
-          document.addEventListener('scroll', loadFbPixelOnDemand, { once: true, passive: true });
-          if (document.visibilityState === 'visible') {
-            setTimeout(loadFbPixelOnDemand, 2000);
-          } else {
-            document.addEventListener('visibilitychange', function() {
-              if (document.visibilityState === 'visible') {
-                setTimeout(loadFbPixelOnDemand, 2000);
-              }
-            }, { once: true });
-          }
-        });
-      }
-    </script>
-    <!-- End Facebook Pixel Code -->
   </head>
   <body>
-    <noscript>
-      <img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=9151671744940732&ev=PageView&noscript=1" alt="Facebook Pixel"/>
-    </noscript>
-    
     <div id="root"></div>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
