@@ -7,70 +7,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Event Generator</title>
     
-    <!-- Facebook Pixel Code - Revised implementation -->
+    <!-- Facebook Pixel Code - Simplified implementation -->
     <script>
-      // Define a single source of truth for Facebook Pixel
+      // Define Facebook Pixel ID
       window.fbPixelId = '9151671744940732';
       
-      // Create a stub function that just queues commands without making network requests
+      // Create a stub function for fbq
       window.fbq = function() {
-        // Store commands in _fbq array for later execution
         (window._fbq = window._fbq || []).push(arguments);
       };
       
-      // Flag to track if we've already loaded the pixel
-      window._fbPixelLoaded = false;
-      
-      // Function to load Facebook Pixel only when needed
-      function loadFbPixel() {
-        // Prevent multiple loads
+      // On user interaction or visibility, load the pixel if needed
+      function loadFbPixelOnDemand() {
+        // Only load once
         if (window._fbPixelLoaded) return;
         window._fbPixelLoaded = true;
         
-        // Create and load the script
+        console.log("Loading Facebook Pixel on demand");
+        // Load the script - but DO NOT use preload
         const script = document.createElement('script');
         script.src = 'https://connect.facebook.net/en_US/fbevents.js';
         script.async = true;
-        
-        // Initialize properly when loaded
         script.onload = function() {
           window.fbq('init', window.fbPixelId);
           window.fbq('track', 'PageView');
         };
-        
-        // Append to document (this is when the network request happens)
         document.head.appendChild(script);
       }
       
-      // Only attach event listeners when DOM is ready
-      function setupDeferredLoading() {
-        // Use passive listeners to not block rendering
-        document.addEventListener('click', function() {
-          if (window.requestIdleCallback) {
-            window.requestIdleCallback(loadFbPixel);
-          } else {
-            setTimeout(loadFbPixel, 1);
-          }
-        }, { once: true, passive: true });
-        
-        document.addEventListener('scroll', function() {
-          if (window.requestIdleCallback) {
-            window.requestIdleCallback(loadFbPixel);
-          } else {
-            setTimeout(loadFbPixel, 1);
-          }
-        }, { once: true, passive: true });
-        
-        // Load after 30 seconds if no interaction
-        setTimeout(loadFbPixel, 30000);
-      }
-      
-      // Defer the event listener setup
+      // Defer loading until user interaction or page becomes visible
       if (document.readyState === 'complete') {
-        setTimeout(setupDeferredLoading, 1000);
+        // Add event listeners for interaction
+        document.addEventListener('click', loadFbPixelOnDemand, { once: true, passive: true });
+        document.addEventListener('scroll', loadFbPixelOnDemand, { once: true, passive: true });
+        // Use visibility API to load when page becomes visible
+        if (document.visibilityState === 'visible') {
+          setTimeout(loadFbPixelOnDemand, 2000);
+        } else {
+          document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+              setTimeout(loadFbPixelOnDemand, 2000);
+            }
+          }, { once: true });
+        }
       } else {
         window.addEventListener('load', function() {
-          setTimeout(setupDeferredLoading, 1000);
+          document.addEventListener('click', loadFbPixelOnDemand, { once: true, passive: true });
+          document.addEventListener('scroll', loadFbPixelOnDemand, { once: true, passive: true });
+          if (document.visibilityState === 'visible') {
+            setTimeout(loadFbPixelOnDemand, 2000);
+          } else {
+            document.addEventListener('visibilitychange', function() {
+              if (document.visibilityState === 'visible') {
+                setTimeout(loadFbPixelOnDemand, 2000);
+              }
+            }, { once: true });
+          }
         });
       }
     </script>
