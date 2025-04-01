@@ -15,6 +15,7 @@ const verificationSchema = z.object({
 export const useEmailVerification = () => {
   const [status, setStatus] = useState<VerificationStatus>('waiting');
   const [email, setEmail] = useState<string | null>(null);
+  const [isResending, setIsResending] = useState(false);
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
@@ -95,7 +96,7 @@ export const useEmailVerification = () => {
         throw new Error("Email address not found. Please try again.");
       }
       
-      setStatus('waiting');
+      setIsResending(true);
       
       // Resend the verification code
       const { error } = await supabase.functions.invoke('welcome-email', {
@@ -110,6 +111,9 @@ export const useEmailVerification = () => {
         title: "Verification Code Sent",
         description: `A new verification code has been sent to ${email}.`
       });
+      
+      // Reset to waiting state
+      setStatus('waiting');
     } catch (error: any) {
       console.error("Error resending verification:", error);
       
@@ -118,12 +122,15 @@ export const useEmailVerification = () => {
         description: error.message || "Failed to send verification code. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsResending(false);
     }
   };
 
   return {
     status,
     email,
+    isResending,
     handleCodeVerification,
     resendVerification
   };

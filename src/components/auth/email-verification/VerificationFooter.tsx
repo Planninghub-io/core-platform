@@ -7,9 +7,15 @@ type VerificationFooterProps = {
   status: VerificationStatus;
   email: string | null;
   onResendVerification: () => Promise<void>;
+  isResending?: boolean;
 };
 
-export const VerificationFooter = ({ status, email, onResendVerification }: VerificationFooterProps) => {
+export const VerificationFooter = ({ 
+  status, 
+  email, 
+  onResendVerification,
+  isResending = false
+}: VerificationFooterProps) => {
   const navigate = useNavigate();
   
   return (
@@ -24,15 +30,15 @@ export const VerificationFooter = ({ status, email, onResendVerification }: Veri
             Return to Sign In
           </Button>
           {email && (
-            <Button onClick={onResendVerification}>
-              Resend Verification
+            <Button onClick={onResendVerification} disabled={isResending}>
+              {isResending ? 'Sending...' : 'Resend Verification'}
             </Button>
           )}
         </div>
       ) : status === 'waiting' ? (
         <div className="flex flex-col gap-2 w-full">
-          <Button onClick={onResendVerification} disabled={!email}>
-            Resend Code
+          <Button onClick={onResendVerification} disabled={!email || isResending}>
+            {isResending ? 'Sending...' : 'Resend Code'}
           </Button>
           <Button variant="outline" onClick={() => navigate('/auth')}>
             Return to Sign In

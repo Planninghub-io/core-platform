@@ -1,5 +1,5 @@
 
-import { Mail, CheckCircle } from "lucide-react";
+import { Mail, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { CardTitle, CardDescription } from "@/components/ui/card";
 import { VerificationStatus } from "./useEmailVerification";
 
@@ -15,6 +15,14 @@ export const VerificationHeader = ({ status, email }: VerificationHeaderProps) =
         {status === 'success' ? (
           <div className="flex justify-center">
             <CheckCircle className="h-16 w-16 text-green-500" />
+          </div>
+        ) : status === 'error' ? (
+          <div className="flex justify-center">
+            <XCircle className="h-16 w-16 text-red-500" />
+          </div>
+        ) : status === 'verifying' ? (
+          <div className="flex justify-center">
+            <Loader2 className="h-16 w-16 text-blue-500 animate-spin" />
           </div>
         ) : (
           <div className="flex justify-center">

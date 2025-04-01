@@ -1,6 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.48.1";
+import { Resend } from "npm:resend@2.0.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -13,6 +14,9 @@ interface WelcomeEmailRequest {
   lastName?: string;
   isBusiness?: boolean;
 }
+
+// Initialize Resend with the API key
+const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 // Function to generate a random 6-digit code
 const generateVerificationCode = (): string => {
@@ -83,25 +87,36 @@ serve(async (req) => {
       throw updateError;
     }
     
-    // Here you'd normally use a service like Resend, SendGrid, etc.
-    // For this example, we'll just log the verification code
-    console.log(`Sending verification email to ${email} with code: ${verificationCode}`);
-    console.log(`Account type: ${isBusiness ? 'Business' : 'Individual User'}`);
+    // Prepare user name for email
+    const userName = firstName || user.user_metadata?.first_name || 'there';
     
-    // In a real implementation, you'd send an actual email like this:
-    // const { data, error } = await resend.emails.send({
-    //   from: 'EventIt <verify@eventit.com>',
-    //   to: [email],
-    //   subject: 'Verify Your Email - EventIt',
-    //   html: `
-    //     <h1>Verify Your Email</h1>
-    //     <p>Thank you for signing up! Please enter the following verification code to complete your registration:</p>
-    //     <h2 style="letter-spacing: 5px; font-size: 32px; background-color: #f5f5f5; padding: 10px; text-align: center;">${verificationCode}</h2>
-    //     <p>This code will expire in 30 minutes.</p>
-    //     <p>Best regards,<br>The EventIt Team</p>
-    //   `,
-    // });
-
+    // Send verification email using Resend
+    const { data: emailData, error: emailError } = await resend.emails.send({
+      from: 'EventIt <onboarding@resend.dev>', // Update with your verified domain when available
+      to: [email],
+      subject: 'Verify Your Email - EventIt',
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+          <h1 style="color: #4F46E5; text-align: center;">Welcome to EventIt!</h1>
+          <p>Hi ${userName},</p>
+          <p>Thank you for signing up! Please use the verification code below to verify your email address:</p>
+          <div style="background-color: #f5f5f5; padding: 12px; text-align: center; margin: 20px 0; border-radius: 6px;">
+            <h2 style="letter-spacing: 5px; font-size: 32px; margin: 0;">${verificationCode}</h2>
+          </div>
+          <p>This code will expire in 30 minutes.</p>
+          <p>If you didn't sign up for EventIt, you can safely ignore this email.</p>
+          <p>Best regards,<br>The EventIt Team</p>
+        </div>
+      `,
+    });
+    
+    if (emailError) {
+      console.error("Error sending email:", emailError);
+      throw new Error(`Failed to send email: ${emailError.message}`);
+    }
+    
+    console.log(`Verification email sent to ${email} with code: ${verificationCode}`);
+    
     return new Response(
       JSON.stringify({ 
         success: true, 
@@ -111,7 +126,7 @@ serve(async (req) => {
         status: 200,
       }
     );
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error in welcome-email function:", error);
     
     return new Response(

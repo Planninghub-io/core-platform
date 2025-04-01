@@ -5,6 +5,7 @@ import * as z from "zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 const verificationSchema = z.object({
   code: z.string().length(6, "Verification code must be 6 digits"),
@@ -33,7 +34,7 @@ export const VerificationForm = ({ onSubmit, isSubmitting }: VerificationFormPro
             <FormItem className="mx-auto max-w-[300px]">
               <FormLabel className="text-center block">Verification Code</FormLabel>
               <FormControl>
-                <InputOTP maxLength={6} {...field}>
+                <InputOTP maxLength={6} {...field} disabled={isSubmitting}>
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />
                     <InputOTPSlot index={1} />
@@ -53,7 +54,12 @@ export const VerificationForm = ({ onSubmit, isSubmitting }: VerificationFormPro
         />
         <div className="flex justify-center">
           <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Verifying...' : 'Verify Email'}
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> 
+                Verifying...
+              </>
+            ) : 'Verify Email'}
           </Button>
         </div>
       </form>
