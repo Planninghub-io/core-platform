@@ -14,9 +14,9 @@ interface WelcomeEmailRequest {
   isBusiness?: boolean;
 }
 
-// Function to generate a random 5-digit code
+// Function to generate a random 6-digit code
 const generateVerificationCode = (): string => {
-  return Math.floor(10000 + Math.random() * 90000).toString();
+  return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
 serve(async (req) => {
@@ -54,9 +54,22 @@ serve(async (req) => {
       }
     );
     
+    // Find the user by email
+    const { data: userData, error: userError } = await supabaseAdmin.auth.admin.listUsers();
+    
+    if (userError) {
+      throw userError;
+    }
+    
+    const user = userData.users.find(u => u.email === email);
+    
+    if (!user || !user.id) {
+      throw new Error("User not found");
+    }
+    
     // Store the verification code in user metadata
     const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
-      (await supabaseAdmin.auth.admin.listUsers()).users.find(u => u.email === email)?.id || '',
+      user.id,
       {
         user_metadata: { 
           verification_code: verificationCode,

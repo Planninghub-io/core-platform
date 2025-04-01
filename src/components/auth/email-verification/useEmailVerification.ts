@@ -9,7 +9,7 @@ import { z } from "zod";
 export type VerificationStatus = 'waiting' | 'verifying' | 'success' | 'error';
 
 const verificationSchema = z.object({
-  code: z.string().length(5, "Verification code must be 5 digits")
+  code: z.string().length(6, "Verification code must be 6 digits")
 });
 
 export const useEmailVerification = () => {
@@ -98,9 +98,13 @@ export const useEmailVerification = () => {
       setStatus('waiting');
       
       // Resend the verification code
-      await supabase.functions.invoke('welcome-email', {
+      const { error } = await supabase.functions.invoke('welcome-email', {
         body: { email }
       });
+      
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: "Verification Code Sent",

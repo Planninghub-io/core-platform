@@ -7,7 +7,7 @@ import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp
 import { Button } from "@/components/ui/button";
 
 const verificationSchema = z.object({
-  code: z.string().length(5, "Verification code must be 5 digits"),
+  code: z.string().length(6, "Verification code must be 6 digits"),
 });
 
 type VerificationFormProps = {
@@ -30,21 +30,22 @@ export const VerificationForm = ({ onSubmit, isSubmitting }: VerificationFormPro
           control={form.control}
           name="code"
           render={({ field }) => (
-            <FormItem className="mx-auto max-w-[250px]">
+            <FormItem className="mx-auto max-w-[300px]">
               <FormLabel className="text-center block">Verification Code</FormLabel>
               <FormControl>
-                <InputOTP maxLength={5} {...field}>
+                <InputOTP maxLength={6} {...field}>
                   <InputOTPGroup>
                     <InputOTPSlot index={0} />
                     <InputOTPSlot index={1} />
                     <InputOTPSlot index={2} />
                     <InputOTPSlot index={3} />
                     <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
                   </InputOTPGroup>
                 </InputOTP>
               </FormControl>
               <FormDescription className="text-center">
-                Enter the 5-digit code sent to your email
+                Enter the 6-digit code sent to your email
               </FormDescription>
               <FormMessage />
             </FormItem>

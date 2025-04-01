@@ -38,7 +38,7 @@ export const VerificationHeader = ({ status, email }: VerificationHeaderProps) =
             ? 'We were unable to verify your email. The code may be invalid or expired.'
             : status === 'verifying'
               ? 'Please wait while we verify your email...'
-              : `We've sent a verification code to ${email || 'your email'}. Please enter the 5-digit code below to verify your account.`}
+              : `We've sent a verification code to ${email || 'your email'}. Please enter the 6-digit code below to verify your account.`}
       </CardDescription>
     </>
   );
