@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
 
@@ -35,7 +36,7 @@ serve(async (req) => {
           "recovery": {
             "email_subject": "Reset your account password",
             "email_from_name": "Planning Hub Team",
-            "email_from_email": "onboarding@resend.dev",
+            "email_from_email": "admin@planninghub.io",
             "template_html": `
 <!DOCTYPE html>
 <html>

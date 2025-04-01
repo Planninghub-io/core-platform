@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.48.1";
 import { Resend } from "npm:resend@2.0.0";
@@ -89,9 +90,9 @@ serve(async (req) => {
     // Prepare user name for email
     const userName = firstName || user.user_metadata?.first_name || email.split('@')[0];
     
-    // Send verification email using Resend - using testing domain for now
+    // Send verification email using Resend - now using verified domain
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: 'Planning Hub <onboarding@resend.dev>', // Using Resend's testing domain
+      from: 'Planning Hub <admin@planninghub.io>', // Using verified domain
       to: [email],
       subject: 'Confirm your email on Planning Hub',
       html: `
