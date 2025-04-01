@@ -1,6 +1,5 @@
 
 import { supabase, APP_URL } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
 
 export interface SignInData {
   email: string;

@@ -4,12 +4,14 @@ import { useToast } from "@/hooks/use-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { 
   handleUserSignUp as handleSignUp, 
-  handleUserSignIn, 
+  SignUpData
+} from "../utils/signUpUtils";
+import {
+  handleUserSignIn,
   handleGoogleSignIn,
   handleAppleSignIn,
-  SignUpData, 
-  SignInData 
-} from "../utils/signUpUtils";
+  SignInData
+} from "../utils/signInUtils";
 import { useEventCreation } from "@/hooks/useEventCreation";
 
 interface UseAuthFormProps {
