@@ -7,10 +7,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Event Generator</title>
     
-    <!-- Facebook Pixel Code - Fully deferred implementation -->
+    <!-- Facebook Pixel Code - Revised implementation -->
     <script>
-      // Define process.env for development mode checks
-      window.process = { env: { NODE_ENV: 'production' } };
+      // Define a single source of truth for Facebook Pixel
+      window.fbPixelId = '9151671744940732';
       
       // Create a stub function that just queues commands without making network requests
       window.fbq = function() {
@@ -27,11 +27,6 @@
         if (window._fbPixelLoaded) return;
         window._fbPixelLoaded = true;
         
-        // Log loading in development
-        if (window.process.env.NODE_ENV === 'development') {
-          console.log('Loading Facebook Pixel on user interaction or timeout');
-        }
-        
         // Create and load the script
         const script = document.createElement('script');
         script.src = 'https://connect.facebook.net/en_US/fbevents.js';
@@ -39,7 +34,7 @@
         
         // Initialize properly when loaded
         script.onload = function() {
-          window.fbq('init', '9151671744940732');
+          window.fbq('init', window.fbPixelId);
           window.fbq('track', 'PageView');
         };
         
@@ -51,18 +46,26 @@
       function setupDeferredLoading() {
         // Use passive listeners to not block rendering
         document.addEventListener('click', function() {
-          requestIdleCallback ? requestIdleCallback(loadFbPixel) : setTimeout(loadFbPixel, 1);
+          if (window.requestIdleCallback) {
+            window.requestIdleCallback(loadFbPixel);
+          } else {
+            setTimeout(loadFbPixel, 1);
+          }
         }, { once: true, passive: true });
         
         document.addEventListener('scroll', function() {
-          requestIdleCallback ? requestIdleCallback(loadFbPixel) : setTimeout(loadFbPixel, 1);
+          if (window.requestIdleCallback) {
+            window.requestIdleCallback(loadFbPixel);
+          } else {
+            setTimeout(loadFbPixel, 1);
+          }
         }, { once: true, passive: true });
         
-        // Extremely generous timeout - only load if user stays on page for 30s without interaction
+        // Load after 30 seconds if no interaction
         setTimeout(loadFbPixel, 30000);
       }
       
-      // Defer even the event listener setup
+      // Defer the event listener setup
       if (document.readyState === 'complete') {
         setTimeout(setupDeferredLoading, 1000);
       } else {

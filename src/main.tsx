@@ -25,9 +25,6 @@ const initializeTracking = () => {
   // Mark as initialized to prevent duplicate calls
   trackingState.initialized = true;
   
-  // Any additional tracking initialization can go here
-  // We're primarily relying on the deferred Facebook Pixel in index.html
-  
   // Process any pending events that were captured before initialization
   while (trackingState.pendingEvents.length > 0) {
     const event = trackingState.pendingEvents.shift();
@@ -45,23 +42,9 @@ const initializeTracking = () => {
 const setupDeferredTracking = () => {
   if (!isProduction) return;
   
-  // Use passive listeners to not impact performance
-  document.addEventListener('click', function() {
-    // Use requestIdleCallback for even better performance when available
-    if (window.requestIdleCallback) {
-      window.requestIdleCallback(initializeTracking);
-    } else {
-      setTimeout(initializeTracking, 50);
-    }
-  }, { once: true, passive: true });
-  
-  document.addEventListener('scroll', function() {
-    if (window.requestIdleCallback) {
-      window.requestIdleCallback(initializeTracking);
-    } else {
-      setTimeout(initializeTracking, 50);
-    }
-  }, { once: true, passive: true });
+  // We'll rely on the deferred Facebook Pixel loading in index.html
+  // and avoid adding redundant event listeners here to prevent 
+  // multiple initializations of tracking scripts
 };
 
 // Create and render the app
