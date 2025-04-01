@@ -7,6 +7,7 @@ export default function EmailVerification() {
     status, 
     email, 
     isResending, 
+    isSubmitting,
     handleCodeVerification, 
     resendVerification 
   } = useEmailVerification();
@@ -20,7 +21,10 @@ export default function EmailVerification() {
         
         <CardContent>
           {status === 'waiting' && (
-            <VerificationForm onSubmit={handleCodeVerification} isSubmitting={status === 'verifying'} />
+            <VerificationForm 
+              onSubmit={handleCodeVerification} 
+              isSubmitting={isSubmitting} 
+            />
           )}
         </CardContent>
         

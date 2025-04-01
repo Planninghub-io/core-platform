@@ -16,6 +16,7 @@ export const useEmailVerification = () => {
   const [status, setStatus] = useState<VerificationStatus>('waiting');
   const [email, setEmail] = useState<string | null>(null);
   const [isResending, setIsResending] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
@@ -42,6 +43,7 @@ export const useEmailVerification = () => {
 
   const handleCodeVerification = async (formData: { code: string }) => {
     try {
+      setIsSubmitting(true);
       setStatus('verifying');
       
       if (!email) {
@@ -87,6 +89,8 @@ export const useEmailVerification = () => {
         description: error.message || "Failed to verify your email. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -131,6 +135,7 @@ export const useEmailVerification = () => {
     status,
     email,
     isResending,
+    isSubmitting,
     handleCodeVerification,
     resendVerification
   };
