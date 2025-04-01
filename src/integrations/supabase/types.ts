@@ -640,6 +640,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_current_user: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      delete_user_with_data: {
+        Args: {
+          user_id: string
+        }
+        Returns: undefined
+      }
       has_role: {
         Args: {
           _user_id: string
