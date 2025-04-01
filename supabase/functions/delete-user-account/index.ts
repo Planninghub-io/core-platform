@@ -38,30 +38,71 @@ Deno.serve(async (req) => {
       }
     )
 
-    // Call the RPC function
-    const { error } = await supabaseClient.rpc('delete_current_user')
-
-    if (error) {
-      console.error('Error deleting user:', error)
+    // Parse request body if this is a DELETE request (for admin deletion)
+    if (req.method === 'DELETE') {
+      const { targetEmail, targetUserId } = await req.json();
+      
+      // Check if the current user is a super admin
+      const { data: isSuperAdmin, error: adminCheckError } = await supabaseClient.rpc('is_super_admin');
+      
+      if (adminCheckError || !isSuperAdmin) {
+        return new Response(
+          JSON.stringify({ error: 'Access denied: Only super admins can delete users' }),
+          {
+            status: 403, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        )
+      }
+      
+      // Delete user based on the provided identifier
+      let result;
+      
+      if (targetEmail) {
+        result = await supabaseClient.rpc('admin_delete_user_by_email', { target_email: targetEmail });
+      } else if (targetUserId) {
+        result = await supabaseClient.rpc('admin_delete_user_by_id', { target_user_id: targetUserId });
+      } else {
+        return new Response(
+          JSON.stringify({ error: 'Either email or user ID must be provided' }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        )
+      }
+      
+      if (result.error) {
+        console.error('Error deleting user:', result.error);
+        return new Response(
+          JSON.stringify({ error: result.error.message }),
+          {
+            status: 400,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        )
+      }
+      
+      // Return success response
       return new Response(
-        JSON.stringify({ error: error.message }),
+        JSON.stringify({ success: true }),
         {
-          status: 400,
+          status: 200,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         }
       )
     }
-
-    // Return success response
+    
+    // Return error for unsupported methods
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ error: 'Method not supported' }),
       {
-        status: 200,
+        status: 405,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       }
     )
   } catch (error) {
-    console.error('Unexpected error:', error)
+    console.error('Unexpected error:', error);
     return new Response(
       JSON.stringify({ error: 'An unexpected error occurred' }),
       {
