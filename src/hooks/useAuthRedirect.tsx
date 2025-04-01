@@ -29,6 +29,12 @@ export const useAuthRedirect = ({
         
         // If user is authenticated, check if they need to complete profile setup
         if (session?.user && !skipRedirect) {
+          // Skip redirect if we're on the email verification page
+          if (location.pathname === '/auth/email-verification') {
+            setLoading(false);
+            return;
+          }
+          
           const needsProfileSetup = await checkProfileSetup();
           if (needsProfileSetup && location.pathname !== '/profile-setup') {
             navigate('/profile-setup', { replace: true });
@@ -49,6 +55,11 @@ export const useAuthRedirect = ({
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed", event, session?.user ? "user exists" : "no user");
       setUser(session?.user ?? null);
+      
+      // Skip redirect if we're on the email verification page
+      if (location.pathname === '/auth/email-verification') {
+        return;
+      }
       
       // Check if user needs profile setup after auth state change
       if (session?.user && !skipRedirect) {
@@ -71,6 +82,11 @@ export const useAuthRedirect = ({
 
   // Redirect if no user and not loading
   useEffect(() => {
+    // Skip redirect logic if we're on the email verification page
+    if (location.pathname === '/auth/email-verification') {
+      return;
+    }
+    
     if (!user && !loading && !skipRedirect && location.pathname !== redirectPath) {
       console.log("Redirecting to auth page from", location.pathname);
       navigate(redirectPath, { replace: true });
