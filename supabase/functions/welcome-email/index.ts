@@ -88,24 +88,34 @@ serve(async (req) => {
     }
     
     // Prepare user name for email
-    const userName = firstName || user.user_metadata?.first_name || 'there';
+    const userName = firstName || user.user_metadata?.first_name || email.split('@')[0];
     
-    // Send verification email using Resend
+    // Send verification email using Resend - updated to match the provided template
     const { data: emailData, error: emailError } = await resend.emails.send({
-      from: 'EventIt <onboarding@resend.dev>', // Update with your verified domain when available
+      from: 'Planning Hub <noreply@planninghub.io>',
       to: [email],
-      subject: 'Verify Your Email - EventIt',
+      subject: 'Confirm your email on Planning Hub',
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <h1 style="color: #4F46E5; text-align: center;">Welcome to EventIt!</h1>
-          <p>Hi ${userName},</p>
-          <p>Thank you for signing up! Please use the verification code below to verify your email address:</p>
-          <div style="background-color: #f5f5f5; padding: 12px; text-align: center; margin: 20px 0; border-radius: 6px;">
-            <h2 style="letter-spacing: 5px; font-size: 32px; margin: 0;">${verificationCode}</h2>
+          <h2 style="color: #333; margin-bottom: 20px;">Hello ${userName},</h2>
+          
+          <p style="font-size: 16px; line-height: 1.5; color: #333;">
+            Thanks for signing up for Planning Hub! Please enter the following code in the window where you signed up to confirm your email:
+          </p>
+          
+          <div style="text-align: center; margin: 30px 0; font-size: 40px; font-weight: bold; letter-spacing: 5px; color: #000;">
+            ${verificationCode}
           </div>
-          <p>This code will expire in 30 minutes.</p>
-          <p>If you didn't sign up for EventIt, you can safely ignore this email.</p>
-          <p>Best regards,<br>The EventIt Team</p>
+          
+          <p style="font-size: 16px; line-height: 1.5; color: #333;">
+            If you did not request this email, then please reach out to 
+            <a href="mailto:support@planninghub.io" style="color: #E34B4B;">support@planninghub.io</a>. 
+            If you delete or ignore this email, nothing further will happen.
+          </p>
+          
+          <p style="margin-top: 30px; font-size: 16px; color: #333;">
+            ❤️ Planning Hub
+          </p>
         </div>
       `,
     });
