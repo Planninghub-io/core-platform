@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { 
@@ -18,7 +18,7 @@ interface UseAuthFormProps {
   type?: 'business' | 'user';
 }
 
-export const useAuthForm = ({ type }: UseAuthFormProps) => {
+export function useAuthForm({ type }: UseAuthFormProps) {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(true);
@@ -32,11 +32,11 @@ export const useAuthForm = ({ type }: UseAuthFormProps) => {
   const redirectPath = location.state?.redirectPath || "/";
 
   // Store redirect path for OAuth flow
-  useEffect(() => {
+  useState(() => {
     if (redirectPath && redirectPath !== '/auth') {
       localStorage.setItem('authRedirectPath', redirectPath);
     }
-  }, [redirectPath]);
+  });
 
   const handleRedirect = async () => {
     // For sign up, we don't do any direct redirection as it will be handled
@@ -111,4 +111,4 @@ export const useAuthForm = ({ type }: UseAuthFormProps) => {
     signInWithApple,
     toggleAuthMode
   };
-};
+}
