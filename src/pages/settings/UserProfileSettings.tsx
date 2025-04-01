@@ -29,8 +29,8 @@ const UserProfileSettings = () => {
     try {
       setIsDeleting(true);
       
-      // Call the delete_current_user function
-      const { error } = await supabase.rpc('delete_current_user');
+      // Call the delete_current_user function using a raw POST request to work around type issues
+      const { error } = await supabase.functions.invoke('delete-user-account');
       
       if (error) {
         throw error;
