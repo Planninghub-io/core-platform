@@ -3,13 +3,13 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation, useNavigate } from "react-router-dom";
 import { 
-  handleUserSignUp, 
+  handleUserSignUp as handleSignUp, 
   handleUserSignIn, 
   handleGoogleSignIn,
   handleAppleSignIn,
   SignUpData, 
   SignInData 
-} from "../utils/authUtils";
+} from "../utils/signUpUtils";
 import { useEventCreation } from "@/hooks/useEventCreation";
 
 interface UseAuthFormProps {
@@ -48,7 +48,7 @@ export const useAuthForm = ({ type }: UseAuthFormProps) => {
   const signUp = async (formData: SignUpData) => {
     setIsLoading(true);
     try {
-      await handleUserSignUp(formData, isBusiness, toast, handleRedirect);
+      await handleSignUp(formData, isBusiness, toast, handleRedirect);
     } finally {
       setIsLoading(false);
     }
