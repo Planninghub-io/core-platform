@@ -34,12 +34,15 @@ export const useEmailVerification = () => {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user?.email) {
           setEmail(session.user.email);
+        } else {
+          // If no email found, redirect to auth page
+          navigate('/auth', { replace: true });
         }
       };
       
       checkSession();
     }
-  }, [location]);
+  }, [location, navigate]);
 
   const handleCodeVerification = async (formData: { code: string }) => {
     try {
@@ -68,6 +71,11 @@ export const useEmailVerification = () => {
         throw new Error(error.message || "Failed to verify email");
       }
       
+      // Update user metadata to mark email as verified
+      await supabase.auth.updateUser({
+        data: { email_verified: true }
+      });
+      
       toast({
         title: "Email Verified!",
         description: "Your email has been successfully verified."
@@ -77,7 +85,7 @@ export const useEmailVerification = () => {
       
       // Redirect after a short delay
       setTimeout(() => {
-        navigate('/');
+        navigate('/', { replace: true });
       }, 2000);
       
     } catch (error: any) {

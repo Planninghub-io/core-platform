@@ -1,8 +1,13 @@
 
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { useEmailVerification, VerificationForm, VerificationHeader, VerificationFooter } from "@/components/auth/email-verification";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function EmailVerification() {
+  const navigate = useNavigate();
+  
   const { 
     status, 
     email, 
@@ -11,6 +16,19 @@ export default function EmailVerification() {
     handleCodeVerification, 
     resendVerification 
   } = useEmailVerification();
+  
+  // Check if user already has verified email
+  useEffect(() => {
+    const checkVerificationStatus = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user?.user_metadata?.email_verified === true) {
+        // User is already verified, redirect to home
+        navigate('/', { replace: true });
+      }
+    };
+    
+    checkVerificationStatus();
+  }, [navigate]);
 
   return (
     <div className="container flex items-center justify-center min-h-screen py-12">

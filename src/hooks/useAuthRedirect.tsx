@@ -29,8 +29,19 @@ export const useAuthRedirect = ({
         
         // If user is authenticated, check if they need to complete profile setup
         if (session?.user && !skipRedirect) {
+          // Check if email is verified
+          const emailVerified = session.user.user_metadata.email_verified === true;
+          
           // Skip redirect if we're on the email verification page
           if (location.pathname === '/auth/email-verification') {
+            setLoading(false);
+            return;
+          }
+          
+          // If email is not verified, redirect to verification page
+          if (!emailVerified) {
+            const email = session.user.email;
+            navigate(`/auth/email-verification?email=${encodeURIComponent(email)}`, { replace: true });
             setLoading(false);
             return;
           }
@@ -61,8 +72,18 @@ export const useAuthRedirect = ({
         return;
       }
       
-      // Check if user needs profile setup after auth state change
+      // Check if email is verified for new user session
       if (session?.user && !skipRedirect) {
+        const emailVerified = session.user.user_metadata.email_verified === true;
+        
+        // If email is not verified, redirect to verification page
+        if (!emailVerified) {
+          const email = session.user.email;
+          navigate(`/auth/email-verification?email=${encodeURIComponent(email)}`, { replace: true });
+          return;
+        }
+        
+        // Check if user needs profile setup after auth state change
         const needsProfileSetup = await checkProfileSetup();
         if (needsProfileSetup && location.pathname !== '/profile-setup') {
           navigate('/profile-setup', { replace: true });
