@@ -44,15 +44,19 @@ const UserManagement = () => {
   useState(() => {
     const checkSuperAdmin = async () => {
       try {
-        const { data, error } = await supabase.rpc('is_super_admin');
+        // Use the edge function to check if user is super admin
+        const { data: response, error } = await supabase.functions.invoke('delete-user-account', {
+          method: 'POST',
+          body: { action: 'check_admin' }
+        });
         
         if (error) {
           throw error;
         }
         
-        setIsSuperAdmin(!!data);
+        setIsSuperAdmin(!!response?.isSuperAdmin);
         
-        if (data) {
+        if (response?.isSuperAdmin) {
           setLoading(true);
           
           // Fetch users

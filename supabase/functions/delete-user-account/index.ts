@@ -38,7 +38,43 @@ Deno.serve(async (req) => {
       }
     )
 
-    // Parse request body if this is a DELETE request (for admin deletion)
+    // Handle POST request for checking admin status
+    if (req.method === 'POST') {
+      const { action } = await req.json();
+      
+      if (action === 'check_admin') {
+        // Check if the current user is a super admin
+        const { data: isSuperAdmin, error: adminCheckError } = await supabaseClient.rpc('is_super_admin');
+        
+        if (adminCheckError) {
+          return new Response(
+            JSON.stringify({ error: adminCheckError.message }),
+            {
+              status: 400,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            }
+          )
+        }
+        
+        return new Response(
+          JSON.stringify({ isSuperAdmin }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          }
+        )
+      }
+      
+      return new Response(
+        JSON.stringify({ error: 'Invalid action' }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        }
+      )
+    }
+
+    // Parse request body if this is a DELETE request (for user deletion)
     if (req.method === 'DELETE') {
       const { targetEmail, targetUserId } = await req.json();
       
