@@ -29,6 +29,8 @@ import Marketplace from './pages/marketplace/Marketplace';
 import Venues from './pages/marketplace/Venues';
 import Vendors from './pages/marketplace/Vendors';
 import VenueRecommendations from './pages/marketplace/VenueRecommendations';
+import PasswordReset from './pages/auth/PasswordReset';
+import ResetPassword from './pages/auth/ResetPassword';
 
 function App() {
   const { user } = useAuthRedirect({ skipRedirect: true });
@@ -90,6 +92,8 @@ function App() {
         <Route path="/auth" element={<AuthLayout />}>
           <Route index element={<AuthPage />} />
           <Route path="email-verification" element={<EmailVerificationPage />} />
+          <Route path="password-reset" element={<PasswordReset />} />
+          <Route path="new-password" element={<ResetPassword />} />
         </Route>
         
         <Route path="/profile-setup" element={user ? <ProfileSetup /> : <Navigate to="/auth" replace state={{ redirectPath: '/profile-setup' }} />} />

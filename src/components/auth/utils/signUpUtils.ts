@@ -42,14 +42,20 @@ export const handleUserSignUp = async (
     });
 
     if (authError) {
-      if (authError.message === "User already registered") {
+      console.error("Signup error:", authError.message);
+      
+      if (authError.message.includes("User already registered")) {
         toast({
           title: "Account Exists",
           description: "An account with this email already exists. Please sign in instead.",
           variant: "destructive",
         });
       } else {
-        throw authError;
+        toast({
+          title: "Sign Up Error",
+          description: authError.message,
+          variant: "destructive",
+        });
       }
       return false;
     }
