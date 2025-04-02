@@ -1,16 +1,13 @@
 
-import React, { lazy, Suspense } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import SideNav from "@/components/SideNav";
 import { SidebarProvider } from '@/components/ui/sidebar';
-
-// Use direct import instead of lazy loading for now to diagnose the issue
 import EventGeneratorSection from '@/components/EventGenerator/EventGeneratorSection';
 
 const Index = () => {
   const navigate = useNavigate();
 
-  // Create a handler for manual event creation
   const handleCreateManualEvent = () => {
     navigate('/create-event');
   };

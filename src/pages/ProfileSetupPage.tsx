@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import ProfileSetup from './ProfileSetup';
 
 const ProfileSetupPage = () => {
-  return <Navigate to="/profile-setup" replace />;
+  return <ProfileSetup />;
 };
 
 export default ProfileSetupPage;

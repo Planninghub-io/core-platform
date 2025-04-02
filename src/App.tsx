@@ -21,15 +21,24 @@ import UserManagement from './pages/admin/UserManagement';
 import CampaignHub from './pages/CampaignHub';
 
 function App() {
-  const { user } = useAuthRedirect();
+  const { user } = useAuthRedirect({ skipRedirect: true });
   const { isLoading } = useUserProfile();
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Simulate initialization process
+    // Set initialized after a short delay even if still loading
+    // This prevents the app from getting stuck in a loading state
+    const timer = setTimeout(() => {
+      setIsInitialized(true);
+    }, 2000);
+    
+    // Still try to respect the actual loading state if it finishes quickly
     if (!isLoading) {
+      clearTimeout(timer);
       setIsInitialized(true);
     }
+    
+    return () => clearTimeout(timer);
   }, [isLoading]);
 
   if (!isInitialized) {
