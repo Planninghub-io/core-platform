@@ -1,0 +1,63 @@
+
+import { useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+export const useEventAssistant = (selectedModel: 'openai' | 'anthropic') => {
+  const [message, setMessage] = useState('');
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'assistant', content: 'Hi! I can help you plan campaign events. Tell me what kind of event you want to organize, or just provide a brief description and I can help you flesh out the details.' }
+  ]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleSendMessage = async () => {
+    if (!message.trim()) return;
+    
+    const userMessage = message;
+    setMessage('');
+    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
+    setIsLoading(true);
+    
+    try {
+      // Call the AI assistant edge function
+      const { data, error } = await supabase.functions.invoke('event-ai-assistant', {
+        body: { 
+          question: userMessage,
+          eventContext: {
+            title: '',
+            date: '',
+            end_date: '',
+            description: '',
+            location: '',
+            category: '',
+            expected_attendees: ''
+          },
+          modelProvider: selectedModel
+        }
+      });
+      
+      if (error) throw error;
+      
+      // Add the response to the messages
+      setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
+    } catch (error) {
+      console.error('Error calling AI assistant:', error);
+      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error processing your request. Please try again.' }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return {
+    message,
+    setMessage,
+    messages,
+    setMessages,
+    isLoading,
+    handleSendMessage
+  };
+};

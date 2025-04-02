@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CampaignAIAssistant } from '@/components/campaign/CampaignAIAssistant';
+import { CampaignAIAssistant } from '@/components/campaign/ai-assistant/CampaignAIAssistant';
 import { CampaignHeader } from '@/components/campaign/CampaignHeader';
 import { EventsTabContent } from '@/components/campaign/EventsTabContent';
 import { TabContent } from '@/components/campaign/TabContent';

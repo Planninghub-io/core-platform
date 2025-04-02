@@ -2,86 +2,54 @@
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { supabase } from "@/integrations/supabase/client";
-import { X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
 import { AIModelSelector } from './AIModelSelector';
 import { ChatTab } from './ChatTab';
 import { EventPreview } from './EventPreview';
+import { DialogHeaderContent } from './DialogHeaderContent';
+import { useEventAssistant } from './hooks/useEventAssistant';
 import { useEventExtraction } from './hooks/useEventExtraction';
 
 interface CampaignAIAssistantProps {
   onClose: () => void;
 }
 
-interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-}
-
 export const CampaignAIAssistant = ({ onClose }: CampaignAIAssistantProps) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('chat');
-  const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'assistant', content: 'Hi! I can help you plan campaign events. Tell me what kind of event you want to organize, or just provide a brief description and I can help you flesh out the details.' }
-  ]);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedModel, setSelectedModel] = useState<'openai' | 'anthropic'>('openai');
+  
+  const { 
+    message, 
+    setMessage, 
+    messages, 
+    isLoading, 
+    handleSendMessage 
+  } = useEventAssistant(selectedModel);
+  
+  const { 
+    generatedEvent, 
+    setGeneratedEvent, 
+    extractEventDetails 
+  } = useEventExtraction();
+
+  // Process messages for event extraction after each AI response
+  React.useEffect(() => {
+    if (!generatedEvent && messages.length >= 2) {
+      const eventDetails = extractEventDetails(messages);
+      if (eventDetails) {
+        setGeneratedEvent(eventDetails);
+        setActiveTab('preview');
+      }
+    }
+  }, [messages, generatedEvent, extractEventDetails, setGeneratedEvent]);
+
   const [isCreating, setIsCreating] = useState(false);
   
-  const { generatedEvent, setGeneratedEvent, extractEventDetails } = useEventExtraction();
-
-  const handleSendMessage = async () => {
-    if (!message.trim()) return;
-    
-    const userMessage = message;
-    setMessage('');
-    setMessages(prev => [...prev, { role: 'user', content: userMessage }]);
-    setIsLoading(true);
-    
-    try {
-      // Call the AI assistant edge function
-      const { data, error } = await supabase.functions.invoke('event-ai-assistant', {
-        body: { 
-          question: userMessage,
-          eventContext: generatedEvent || {
-            title: '',
-            date: '',
-            end_date: '',
-            description: '',
-            location: '',
-            category: '',
-            expected_attendees: ''
-          },
-          modelProvider: selectedModel
-        }
-      });
-      
-      if (error) throw error;
-      
-      // Add the response to the messages
-      setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
-      
-      // Try to extract event details from the conversation
-      if (!generatedEvent) {
-        const eventDetails = extractEventDetails([...messages, { role: 'user', content: userMessage }, { role: 'assistant', content: data.response }]);
-        if (eventDetails) {
-          setGeneratedEvent(eventDetails);
-          setActiveTab('preview');
-        }
-      }
-    } catch (error) {
-      console.error('Error calling AI assistant:', error);
-      setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I encountered an error processing your request. Please try again.' }]);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   const createEvent = () => {
     if (!generatedEvent) return;
     
@@ -112,15 +80,7 @@ export const CampaignAIAssistant = ({ onClose }: CampaignAIAssistantProps) => {
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-[900px] sm:h-[650px] p-0">
         <DialogHeader className="p-6 pb-2">
-          <div className="flex justify-between items-center">
-            <DialogTitle className="text-xl">Campaign AI Assistant</DialogTitle>
-            <Button variant="ghost" size="icon" onClick={onClose}>
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-          <DialogDescription>
-            Create campaign events with AI assistance from OpenAI or Claude
-          </DialogDescription>
+          <DialogHeaderContent onClose={onClose} />
         </DialogHeader>
         
         <div className="flex items-center gap-2 px-6 pb-2">
