@@ -1,7 +1,5 @@
 
 import React from "react";
-import SideNav from "@/components/SideNav";
-import { SidebarProvider } from '@/components/ui/sidebar';
 import EventsContent from "./events-hub/components/EventsContent";
 import { useAuth } from "./events-hub/hooks/useAuth";
 import { useEvents } from "./events-hub/hooks/useEvents";
@@ -21,20 +19,15 @@ const EventsHub = () => {
   // Show loading state while authentication is in progress
   if (authLoading) {
     return (
-      <SidebarProvider>
-        <div className="flex min-h-screen bg-gray-50">
-          <SideNav />
-          <main className="flex-1 p-6">
-            <Skeleton className="h-12 w-3/4 mb-4" />
-            <Skeleton className="h-6 w-1/2 mb-8" />
-            <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-              {[...Array(8)].map((_, i) => (
-                <Skeleton key={i} className="h-64 rounded-lg" />
-              ))}
-            </div>
-          </main>
+      <div className="flex-1 p-6">
+        <Skeleton className="h-12 w-3/4 mb-4" />
+        <Skeleton className="h-6 w-1/2 mb-8" />
+        <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          {[...Array(8)].map((_, i) => (
+            <Skeleton key={i} className="h-64 rounded-lg" />
+          ))}
         </div>
-      </SidebarProvider>
+      </div>
     );
   }
 
@@ -44,19 +37,14 @@ const EventsHub = () => {
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen bg-gray-50">
-        <SideNav />
-        <main className="flex-1 p-6">
-          <EventsContent 
-            events={events}
-            loading={eventsLoading}
-            onSearch={handleSearch}
-            onDateRangeChange={setDateRange}
-          />
-        </main>
-      </div>
-    </SidebarProvider>
+    <div className="flex-1 p-6">
+      <EventsContent 
+        events={events}
+        loading={eventsLoading}
+        onSearch={handleSearch}
+        onDateRangeChange={setDateRange}
+      />
+    </div>
   );
 };
 

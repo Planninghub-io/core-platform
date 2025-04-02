@@ -19,6 +19,16 @@ import BillingSettings from '@/pages/settings/BillingSettings';
 import EmailVerificationPage from '@/pages/auth/EmailVerificationPage';
 import UserManagement from './pages/admin/UserManagement';
 import CampaignHub from './pages/CampaignHub';
+import Index from './pages/Index';
+import EventsHub from './pages/EventsHub';
+import CreateEvent from './pages/CreateEvent';
+import Discover from './pages/Discover';
+import NotFound from './pages/NotFound';
+import MarketplaceLayout from './pages/marketplace/MarketplaceLayout';
+import Marketplace from './pages/marketplace/Marketplace';
+import Venues from './pages/marketplace/Venues';
+import Vendors from './pages/marketplace/Vendors';
+import VenueRecommendations from './pages/marketplace/VenueRecommendations';
 
 function App() {
   const { user } = useAuthRedirect({ skipRedirect: true });
@@ -54,23 +64,37 @@ function App() {
       <Toaster />
       <Routes>
         <Route path="/" element={<MainLayout />}>
-          <Route index element={<LandingPage />} />
+          <Route index element={<Index />} />
+          <Route path="landing" element={<LandingPage />} />
           <Route path="pricing" element={<PricingPage />} />
           <Route path="events/:eventId" element={<EventDetailsPage />} />
-          <Route path="create-event" element={user ? <EventCreationPage /> : <Navigate to="/auth" replace state={{ redirectPath: '/create-event' }} />} />
+          <Route path="events-hub" element={<EventsHub />} />
+          <Route path="discover" element={<Discover />} />
+          <Route path="create-event" element={user ? <CreateEvent /> : <Navigate to="/auth" replace state={{ redirectPath: '/create-event' }} />} />
           <Route path="campaign-hub" element={<CampaignHub />} />
+          
+          <Route path="marketplace" element={<MarketplaceLayout />}>
+            <Route index element={<Marketplace />} />
+            <Route path="venues" element={<Venues />} />
+            <Route path="vendors" element={<Vendors />} />
+            <Route path="recommendations" element={<VenueRecommendations />} />
+          </Route>
+          
           <Route path="settings" element={user ? <SettingsLayout /> : <Navigate to="/auth" replace state={{ redirectPath: '/settings' }} />}>
             <Route path="profile" element={<UserProfileSettings />} />
             <Route path="company" element={<CompanySettings />} />
             <Route path="billing" element={<BillingSettings />} />
           </Route>
         </Route>
+        
         <Route path="/auth" element={<AuthLayout />}>
           <Route index element={<AuthPage />} />
           <Route path="email-verification" element={<EmailVerificationPage />} />
         </Route>
+        
         <Route path="/profile-setup" element={user ? <ProfileSetup /> : <Navigate to="/auth" replace state={{ redirectPath: '/profile-setup' }} />} />
         <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </>
   );

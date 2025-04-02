@@ -10,13 +10,13 @@ export function useIsMobile() {
     // Check if window exists (for SSR)
     if (typeof window === 'undefined') return
 
+    // Initial check
+    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    
     // Use a more reliable way to detect changes
     const handleResize = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
     }
-    
-    // Initial check
-    handleResize()
     
     // Add event listener with debounce for performance
     let timeoutId: number | undefined
