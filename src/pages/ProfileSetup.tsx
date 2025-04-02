@@ -87,14 +87,14 @@ const ProfileSetup = () => {
         throw new Error("User not authenticated");
       }
 
-      // Update user_profiles table
+      // Update user_profiles table with correct user_type value
       const { error: profileError } = await supabase
         .from('user_profiles')
         .update({
           first_name: data.first_name,
           last_name: data.last_name,
           dob: data.dob || null,
-          user_type: data.account_type,
+          user_type: data.account_type, // This now matches the constraint in the database
           contact_number: data.contact_number,
           address: data.address,
         })
