@@ -13,6 +13,7 @@ import { Calendar, User, Phone, Building, Home } from "lucide-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import { toast } from "sonner";
 
 const profileSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
@@ -31,7 +32,6 @@ const ProfileSetup = () => {
   const { user, loading } = useAuthRedirect({ skipRedirect: true });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileSchema),
@@ -80,7 +80,9 @@ const ProfileSetup = () => {
   }, [user, loading, navigate]);
 
   const onSubmit = async (data: ProfileFormValues) => {
+    console.log("Form submitted with data:", data);
     setIsSubmitting(true);
+    
     try {
       if (!user) {
         throw new Error("User not authenticated");
@@ -99,7 +101,10 @@ const ProfileSetup = () => {
         })
         .eq('id', user.id);
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Profile update error:", profileError);
+        throw profileError;
+      }
 
       // If company, create a company record
       if (data.account_type === "company" && data.company_name) {
@@ -114,7 +119,10 @@ const ProfileSetup = () => {
           .select()
           .single();
 
-        if (companyError) throw companyError;
+        if (companyError) {
+          console.error("Company creation error:", companyError);
+          throw companyError;
+        }
 
         // Create user role for the company
         if (companyData) {
@@ -126,7 +134,10 @@ const ProfileSetup = () => {
               role: 'admin'
             }]);
 
-          if (roleError) throw roleError;
+          if (roleError) {
+            console.error("Role creation error:", roleError);
+            throw roleError;
+          }
         }
       }
 
@@ -135,10 +146,12 @@ const ProfileSetup = () => {
         data: { needs_profile_setup: false }
       });
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error("User metadata update error:", updateError);
+        throw updateError;
+      }
 
-      toast({
-        title: "Profile set up successfully",
+      toast.success("Profile set up successfully", {
         description: "Your profile has been created successfully.",
       });
 
@@ -146,10 +159,8 @@ const ProfileSetup = () => {
       navigate('/');
     } catch (error: any) {
       console.error('Error setting up profile:', error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: error.message || "Failed to set up profile",
-        variant: "destructive",
       });
     } finally {
       setIsSubmitting(false);
@@ -285,7 +296,6 @@ const ProfileSetup = () => {
                 <div className="space-y-2">
                   <Label>Contact Type</Label>
                   <RadioGroup 
-                    {...form.register("contact_type")}
                     value={form.watch("contact_type")} 
                     onValueChange={(value) => form.setValue("contact_type", value as "business" | "mobile")}
                     className="flex space-x-4"
