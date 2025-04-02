@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthRedirect } from "@/hooks/useAuthRedirect";
@@ -107,37 +106,25 @@ const ProfileSetup = () => {
 
       // If company, create a company record
       if (data.account_type === "company" && data.company_name) {
-        const { data: companyData, error: companyError } = await supabase
-          .from('companies')
-          .insert([{
-            name: data.company_name,
-            type: 'vendor',
-            business_phone: data.contact_type === "business" ? data.contact_number : null,
-            business_email: user.email,
-          }])
-          .select()
-          .single();
-
-        if (companyError) {
-          console.error("Company creation error:", companyError);
-          throw companyError;
-        }
-
-        // Create user role for the company
-        if (companyData) {
-          const { error: roleError } = await supabase
-            .from('user_roles')
-            .insert([{
-              user_id: user.id,
-              company_id: companyData.id,
-              role: 'admin'
-            }]);
-
-          if (roleError) {
-            console.error("Role creation error:", roleError);
-            throw roleError;
+        // Use service role function to handle company creation and role assignment
+        // This avoids RLS issues with the user_roles table
+        const { data: functionData, error: functionError } = await supabase.functions.invoke(
+          'setup-company-profile',
+          {
+            body: {
+              companyName: data.company_name,
+              businessPhone: data.contact_type === "business" ? data.contact_number : null,
+              businessEmail: user.email
+            }
           }
+        );
+
+        if (functionError) {
+          console.error("Company setup error:", functionError);
+          throw functionError;
         }
+
+        console.log("Company setup successful:", functionData);
       }
 
       // Update user metadata to mark profile as set up

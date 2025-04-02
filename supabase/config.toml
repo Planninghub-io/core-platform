@@ -30,3 +30,6 @@ verify_jwt = false
 
 [functions.delete-user-account]
 verify_jwt = true
+
+[functions.setup-company-profile]
+verify_jwt = true
