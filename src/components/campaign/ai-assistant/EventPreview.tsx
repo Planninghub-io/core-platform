@@ -1,19 +1,22 @@
 
 import React from 'react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Ticket, Share2, Link as LinkIcon, Settings, MessageSquare, CalendarPlus } from 'lucide-react';
+import { CalendarPlus, MessageSquare, Settings, Ticket, Link as LinkIcon, Share2 } from 'lucide-react';
 
-interface GeneratedEvent {
+interface EventProps {
   title: string;
   description: string;
-  date: string;
-  location: string;
-  type: string;
+  date?: string;
+  location?: string;
+  type?: string;
+  category?: string;
+  expected_attendees?: string;
+  end_date?: string;
 }
 
 interface EventPreviewProps {
-  event: GeneratedEvent;
+  event: EventProps;
   onBackToChat: () => void;
   onCreateEvent: () => void;
   isCreating: boolean;
@@ -21,7 +24,7 @@ interface EventPreviewProps {
 
 export const EventPreview = ({ event, onBackToChat, onCreateEvent, isCreating }: EventPreviewProps) => {
   return (
-    <div className="flex-1 overflow-y-auto space-y-4 mt-0">
+    <>
       <Card>
         <CardHeader>
           <CardTitle className="text-xl">{event.title}</CardTitle>
@@ -44,10 +47,10 @@ export const EventPreview = ({ event, onBackToChat, onCreateEvent, isCreating }:
                 <p className="text-sm text-gray-600">{event.location}</p>
               </div>
             )}
-            {event.type && (
+            {(event.type || event.category) && (
               <div>
                 <h3 className="text-sm font-medium mb-1">Event Type</h3>
-                <p className="text-sm text-gray-600">{event.type}</p>
+                <p className="text-sm text-gray-600">{event.type || event.category}</p>
               </div>
             )}
           </div>
@@ -89,6 +92,6 @@ export const EventPreview = ({ event, onBackToChat, onCreateEvent, isCreating }:
       <div className="text-sm text-gray-500 italic">
         Continue chatting to refine your event details before creating.
       </div>
-    </div>
+    </>
   );
 };

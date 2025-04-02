@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { AIModelSelector } from './ai-assistant/AIModelSelector';
-import { ChatTab } from './ai-assistant/ChatTab';
-import { EventPreview } from './ai-assistant/EventPreview';
-import { useEventExtraction } from './ai-assistant/hooks/useEventExtraction';
+import { AIModelSelector } from './AIModelSelector';
+import { ChatTab } from './ChatTab';
+import { EventPreview } from './EventPreview';
+import { useEventExtraction } from './hooks/useEventExtraction';
 
 interface CampaignAIAssistantProps {
   onClose: () => void;
