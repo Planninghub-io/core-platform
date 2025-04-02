@@ -51,17 +51,22 @@ export const AIResponseProcessor = ({ message, isLoading = false }: AIResponsePr
         );
       }
       
-      // Process Markdown-style formatting
-      const boldRegex = /\*\*(.*?)\*\*/g;
-      const italicRegex = /\*(.*?)\*/g;
-      const codeRegex = /`(.*?)`/g;
+      // Process text formatting
+      const paragraphs = part.split('\n\n').map((paragraph, pIndex) => {
+        // Process bold text
+        const boldRegex = /\*\*(.*?)\*\*/g;
+        const withBold = paragraph.split(boldRegex).map((text, bIndex) => {
+          return bIndex % 2 === 1 ? <strong key={`bold-${bIndex}`}>{text}</strong> : text;
+        });
+        
+        return (
+          <p key={`p-${pIndex}`} className="mb-2">
+            {withBold}
+          </p>
+        );
+      });
       
-      // Process paragraphs
-      const paragraphs = part.split('\n\n').map((p, i) => 
-        <p key={i} className="mb-2">{p}</p>
-      );
-      
-      return <span key={index}>{paragraphs}</span>;
+      return <React.Fragment key={index}>{paragraphs}</React.Fragment>;
     });
 
     setProcessedContent(<>{withLinks}</>);
