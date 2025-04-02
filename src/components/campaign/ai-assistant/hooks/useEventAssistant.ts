@@ -20,6 +20,7 @@ export const useEventAssistant = (selectedModel: 'openai' | 'anthropic') => {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const [responseMetadata, setResponseMetadata] = useState<ResponseMetadata | null>(null);
+  const [editedEventData, setEditedEventData] = useState<any>(null);
 
   const handleSendMessage = async () => {
     if (!message.trim()) return;
@@ -30,19 +31,22 @@ export const useEventAssistant = (selectedModel: 'openai' | 'anthropic') => {
     setIsLoading(true);
     
     try {
+      // Send edited event data if available
+      const eventContext = editedEventData || {
+        title: '',
+        date: '',
+        end_date: '',
+        description: '',
+        location: '',
+        category: '',
+        expected_attendees: ''
+      };
+      
       // Call the AI assistant edge function
       const { data, error } = await supabase.functions.invoke('event-ai-assistant', {
         body: { 
           question: userMessage,
-          eventContext: {
-            title: '',
-            date: '',
-            end_date: '',
-            description: '',
-            location: '',
-            category: '',
-            expected_attendees: ''
-          },
+          eventContext,
           modelProvider: selectedModel
         }
       });
@@ -74,6 +78,11 @@ export const useEventAssistant = (selectedModel: 'openai' | 'anthropic') => {
       { role: 'assistant', content: 'Hi! I can help you plan campaign events. Tell me what kind of event you want to organize, or just provide a brief description and I can help you flesh out the details.' }
     ]);
     setResponseMetadata(null);
+    setEditedEventData(null);
+  };
+
+  const updateEventData = (newData: any) => {
+    setEditedEventData(newData);
   };
 
   return {
@@ -84,6 +93,8 @@ export const useEventAssistant = (selectedModel: 'openai' | 'anthropic') => {
     isLoading,
     handleSendMessage,
     responseMetadata,
-    clearMessages
+    clearMessages,
+    editedEventData,
+    updateEventData
   };
 };

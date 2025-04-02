@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { CircleDashed } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -12,107 +13,75 @@ interface AIResponseProcessorProps {
 }
 
 export const AIResponseProcessor = ({ message, isLoading = false }: AIResponseProcessorProps) => {
-  // Process and enhance the AI message content
-  const processContent = (content: string): React.ReactNode => {
-    if (!content) return null;
-    
-    // Format links as clickable elements
-    const linkRegex = /(https?:\/\/[^\s]+)/g;
-    const hasLinks = linkRegex.test(content);
-    
-    if (hasLinks) {
-      const parts = content.split(linkRegex);
-      const matches = content.match(linkRegex) || [];
-      
-      return (
-        <>
-          {parts.map((part, i) => {
-            // If this is an even index, it's text content
-            if (i % 2 === 0) {
-              return <span key={i}>{formatText(part)}</span>;
-            } 
-            // If this is an odd index, it's a link
-            const link = matches[Math.floor(i / 2)];
-            return (
-              <a 
-                key={i}
-                href={link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-primary underline"
-              >
-                {link}
-              </a>
-            );
-          })}
-        </>
+  const [processedContent, setProcessedContent] = useState<React.ReactNode>('');
+
+  // Process message content
+  useEffect(() => {
+    if (isLoading && message.role === 'assistant') {
+      setProcessedContent(
+        <div className="flex items-center space-x-2 animate-pulse">
+          <CircleDashed className="h-4 w-4 animate-spin" />
+          <span>Thinking...</span>
+        </div>
       );
+      return;
     }
-    
-    // If no links, just format the text
-    return formatText(content);
-  };
-  
-  // Format text with bold, italics, etc.
-  const formatText = (text: string): React.ReactNode => {
-    // Process markdown-style formatting
-    const parts = [];
-    
-    // Replace **bold** with <strong>
-    const boldRegex = /\*\*(.*?)\*\*/g;
-    let formattedText = text;
-    let match;
-    let lastIndex = 0;
-    let index = 0;
-    
-    while ((match = boldRegex.exec(text)) !== null) {
-      // Add text before the match
-      if (match.index > lastIndex) {
-        parts.push(<span key={`text-${index}`}>{text.substring(lastIndex, match.index)}</span>);
-        index++;
+
+    // Process links
+    const content = message.content || '';
+    if (!content) {
+      setProcessedContent('');
+      return;
+    }
+
+    // Replace URLs with anchor tags
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    const withLinks = content.split(urlRegex).map((part, index) => {
+      if (part.match(urlRegex)) {
+        return (
+          <a 
+            key={index} 
+            href={part} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="text-blue-500 hover:underline"
+          >
+            {part}
+          </a>
+        );
       }
       
-      // Add the bold text
-      parts.push(<strong key={`bold-${index}`}>{match[1]}</strong>);
-      index++;
+      // Process Markdown-style formatting
+      const boldRegex = /\*\*(.*?)\*\*/g;
+      const italicRegex = /\*(.*?)\*/g;
+      const codeRegex = /`(.*?)`/g;
       
-      lastIndex = match.index + match[0].length;
-    }
-    
-    // Add any remaining text
-    if (lastIndex < text.length) {
-      parts.push(<span key={`text-${index}`}>{text.substring(lastIndex)}</span>);
-    }
-    
-    return parts.length > 0 ? parts : formattedText;
-  };
-  
-  // If message is loading, show loading indicator
-  if (isLoading) {
-    return (
-      <div className="flex justify-start">
-        <div className="px-4 py-2 rounded-lg max-w-[80%] bg-muted text-foreground">
-          <div className="flex space-x-2">
-            <div className="w-2 h-2 rounded-full bg-foreground/40 animate-bounce" style={{ animationDelay: '0ms' }}></div>
-            <div className="w-2 h-2 rounded-full bg-foreground/40 animate-bounce" style={{ animationDelay: '150ms' }}></div>
-            <div className="w-2 h-2 rounded-full bg-foreground/40 animate-bounce" style={{ animationDelay: '300ms' }}></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
+      let formattedPart = part;
+      
+      // Process bold text
+      const boldParts = part.split(boldRegex);
+      formattedPart = boldParts.map((text, i) => {
+        return i % 2 === 1 ? <strong key={i}>{text}</strong> : text;
+      });
+      
+      // Handle paragraphs
+      const paragraphs = part.split('\n\n').map((p, i) => 
+        <p key={i} className="mb-2">{p}</p>
+      );
+      
+      return <span key={index}>{paragraphs}</span>;
+    });
+
+    setProcessedContent(<>{withLinks}</>);
+  }, [message.content, isLoading, message.role]);
+
+  const bgColor = message.role === 'user' ? 'bg-gray-100' : 'bg-white';
+  const border = message.role === 'user' ? '' : 'border-l-4 border-primary/20';
+  const padding = message.role === 'user' ? 'py-2 px-3' : 'py-2 px-4';
+
   return (
-    <div className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-      <div 
-        className={`px-4 py-2 rounded-lg max-w-[80%] ${
-          message.role === 'user' 
-            ? 'bg-primary text-primary-foreground' 
-            : 'bg-muted text-foreground'
-        }`}
-      >
-        {processContent(message.content)}
-      </div>
+    <div className={`rounded-md ${bgColor} ${border} ${padding}`}>
+      {processedContent}
     </div>
   );
 };

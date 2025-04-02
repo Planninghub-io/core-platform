@@ -13,5 +13,14 @@ interface ChatMessageProps {
 }
 
 export const ChatMessage = ({ message, isLoading = false }: ChatMessageProps) => {
-  return <AIResponseProcessor message={message} isLoading={isLoading} />;
+  // Add additional styling based on message role
+  const messageClassName = message.role === 'user' 
+    ? 'ml-auto max-w-[85%]' 
+    : 'mr-auto max-w-[85%]';
+
+  return (
+    <div className={`${messageClassName}`}>
+      <AIResponseProcessor message={message} isLoading={isLoading} />
+    </div>
+  );
 };
