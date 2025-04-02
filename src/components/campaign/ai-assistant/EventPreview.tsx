@@ -31,7 +31,7 @@ export const EventPreview = ({ event, onBackToChat, onCreateEvent, isCreating }:
   const [eventData, setEventData] = useState<EventProps>({...event});
 
   // Handle field changes
-  const handleChange = (field: keyof EventProps, value: string) => {
+  const handleChange = (field: string, value: string) => {
     setEventData(prev => ({
       ...prev,
       [field]: value

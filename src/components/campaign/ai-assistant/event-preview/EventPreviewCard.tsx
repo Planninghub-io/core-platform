@@ -8,7 +8,7 @@ interface EventPreviewHeaderProps {
   title: string;
   date?: string;
   editMode: boolean;
-  onTitleChange: (value: string) => void;
+  onTitleChange: (field: string, value: string) => void;
 }
 
 export const EventPreviewCard: React.FC<EventPreviewHeaderProps> = ({
