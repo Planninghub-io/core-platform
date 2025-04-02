@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from "@/components/ui/sonner"
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -39,28 +40,28 @@ function App() {
   }
 
   return (
-    <Router>
+    <>
       <Toaster />
       <Routes>
-        <Route path="/" element={<MainLayout />} >
+        <Route path="/" element={<MainLayout />}>
           <Route index element={<LandingPage />} />
           <Route path="pricing" element={<PricingPage />} />
           <Route path="events/:eventId" element={<EventDetailsPage />} />
           <Route path="create-event" element={user ? <EventCreationPage /> : <Navigate to="/auth" replace state={{ redirectPath: '/create-event' }} />} />
-          <Route path="settings" element={user ? <SettingsLayout /> : <Navigate to="/auth" replace state={{ redirectPath: '/settings' }} />} >
+          <Route path="settings" element={user ? <SettingsLayout /> : <Navigate to="/auth" replace state={{ redirectPath: '/settings' }} />}>
             <Route path="profile" element={<UserProfileSettings />} />
             <Route path="company" element={<CompanySettings />} />
             <Route path="billing" element={<BillingSettings />} />
           </Route>
         </Route>
-        <Route path="/auth" element={<AuthLayout />} >
+        <Route path="/auth" element={<AuthLayout />}>
           <Route index element={<AuthPage />} />
           <Route path="email-verification" element={<EmailVerificationPage />} />
         </Route>
         <Route path="/profile-setup" element={user ? <ProfileSetupPage /> : <Navigate to="/auth" replace state={{ redirectPath: '/profile-setup' }} />} />
         <Route path="/admin/users" element={<UserManagement />} />
       </Routes>
-    </Router>
+    </>
   );
 }
 

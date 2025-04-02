@@ -1,10 +1,12 @@
 
 import React from 'react';
 import { useLocation } from 'react-router-dom';
+import AuthForm from '@/components/auth/AuthForm';
 
 const AuthPage = () => {
   const location = useLocation();
   const redirectPath = location.state?.redirectPath || '/';
+  const type = location.state?.type || 'user';
 
   return (
     <div>
@@ -12,7 +14,7 @@ const AuthPage = () => {
       <p className="text-center text-gray-600 mb-6">
         Enter your email to sign in or create an account
       </p>
-      {/* Auth form will be implemented here */}
+      <AuthForm type={type} />
     </div>
   );
 };
