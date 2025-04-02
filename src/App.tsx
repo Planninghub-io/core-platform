@@ -10,7 +10,7 @@ import EventCreationPage from '@/pages/EventCreationPage';
 import LandingPage from '@/pages/LandingPage';
 import PricingPage from '@/pages/PricingPage';
 import AuthPage from '@/pages/AuthPage';
-import ProfileSetupPage from '@/pages/ProfileSetupPage';
+import ProfileSetup from '@/pages/ProfileSetup';
 import EventDetailsPage from '@/pages/EventDetailsPage';
 import SettingsLayout from '@/pages/settings/SettingsLayout';
 import UserProfileSettings from '@/pages/settings/UserProfileSettings';
@@ -58,7 +58,7 @@ function App() {
           <Route index element={<AuthPage />} />
           <Route path="email-verification" element={<EmailVerificationPage />} />
         </Route>
-        <Route path="/profile-setup" element={user ? <ProfileSetupPage /> : <Navigate to="/auth" replace state={{ redirectPath: '/profile-setup' }} />} />
+        <Route path="/profile-setup" element={user ? <ProfileSetup /> : <Navigate to="/auth" replace state={{ redirectPath: '/profile-setup' }} />} />
         <Route path="/admin/users" element={<UserManagement />} />
       </Routes>
     </>
