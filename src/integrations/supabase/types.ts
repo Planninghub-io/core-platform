@@ -460,6 +460,7 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          address: string | null
           avatar_url: string | null
           contact_number: string | null
           created_at: string
@@ -474,6 +475,7 @@ export type Database = {
           user_type: string | null
         }
         Insert: {
+          address?: string | null
           avatar_url?: string | null
           contact_number?: string | null
           created_at?: string
@@ -488,6 +490,7 @@ export type Database = {
           user_type?: string | null
         }
         Update: {
+          address?: string | null
           avatar_url?: string | null
           contact_number?: string | null
           created_at?: string
