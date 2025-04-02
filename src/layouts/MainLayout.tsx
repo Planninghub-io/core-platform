@@ -6,7 +6,7 @@ import SideNav from '@/components/SideNav';
 
 export const MainLayout = () => {
   return (
-    <SidebarProvider>
+    <SidebarProvider defaultOpen={true}>
       <div className="flex min-h-screen w-full bg-gray-50">
         <SideNav />
         <main className="flex-1">

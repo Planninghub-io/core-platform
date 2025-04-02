@@ -4,13 +4,12 @@ import * as React from "react"
 const MOBILE_BREAKPOINT = 768
 
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean>(() => {
-    // Check if window exists (for SSR)
-    if (typeof window === 'undefined') return false
-    return window.innerWidth < MOBILE_BREAKPOINT
-  })
+  const [isMobile, setIsMobile] = React.useState<boolean>(false)
 
   React.useEffect(() => {
+    // Check if window exists (for SSR)
+    if (typeof window === 'undefined') return
+
     // Use a more reliable way to detect changes
     const handleResize = () => {
       setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
@@ -20,9 +19,9 @@ export function useIsMobile() {
     handleResize()
     
     // Add event listener with debounce for performance
-    let timeoutId: number
+    let timeoutId: number | undefined
     const debouncedResize = () => {
-      clearTimeout(timeoutId)
+      if (timeoutId) clearTimeout(timeoutId)
       timeoutId = window.setTimeout(handleResize, 100)
     }
     
@@ -34,7 +33,7 @@ export function useIsMobile() {
     return () => {
       window.removeEventListener("resize", debouncedResize)
       window.removeEventListener("orientationchange", handleResize)
-      clearTimeout(timeoutId)
+      if (timeoutId) clearTimeout(timeoutId)
     }
   }, [])
 
