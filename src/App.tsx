@@ -18,6 +18,7 @@ import CompanySettings from '@/pages/settings/CompanySettings';
 import BillingSettings from '@/pages/settings/BillingSettings';
 import EmailVerificationPage from '@/pages/auth/EmailVerificationPage';
 import UserManagement from './pages/admin/UserManagement';
+import CampaignHub from './pages/CampaignHub';
 
 function App() {
   const { user } = useAuthRedirect();
@@ -48,6 +49,7 @@ function App() {
           <Route path="pricing" element={<PricingPage />} />
           <Route path="events/:eventId" element={<EventDetailsPage />} />
           <Route path="create-event" element={user ? <EventCreationPage /> : <Navigate to="/auth" replace state={{ redirectPath: '/create-event' }} />} />
+          <Route path="campaign-hub" element={<CampaignHub />} />
           <Route path="settings" element={user ? <SettingsLayout /> : <Navigate to="/auth" replace state={{ redirectPath: '/settings' }} />}>
             <Route path="profile" element={<UserProfileSettings />} />
             <Route path="company" element={<CompanySettings />} />
