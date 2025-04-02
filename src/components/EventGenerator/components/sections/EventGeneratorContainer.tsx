@@ -108,7 +108,7 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
   };
 
   return (
-    <div className="container py-16">
+    <div className="container py-8">
       <div className="mx-auto max-w-4xl">
         <WelcomeHeader show={chatMessages.length === 0} />
 
