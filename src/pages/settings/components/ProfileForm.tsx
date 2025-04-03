@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { UserProfile } from "@/types/user";
 import { Form } from "@/components/ui/form";
 import { useProfileForm } from "../hooks/useProfileForm";
-import { PersonalInfoSection, ContactInfoSection } from "./ProfileFormSections";
+import { PersonalInfoSection } from "./ProfileFormSections/PersonalInfoSection";
+import { ContactInfoSection } from "./ProfileFormSections/ContactInfoSection";
 
 interface ProfileFormProps {
   userProfile: UserProfile;
