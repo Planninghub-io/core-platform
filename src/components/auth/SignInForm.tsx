@@ -1,24 +1,32 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Eye, EyeOff } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface SignInFormProps {
-  onSubmit: (data: { email: string; password: string }) => void;
+  onSubmit: (data: {
+    email: string;
+    password: string;
+  }) => void;
   isLoading: boolean;
+  error?: string | null; // Add error prop
 }
 
-const SignInForm = ({ onSubmit, isLoading }: SignInFormProps) => {
+const SignInForm = ({ onSubmit, isLoading, error }: SignInFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit({ email, password });
+    
+    onSubmit({
+      email,
+      password
+    });
   };
 
   const toggleShowPassword = () => {
@@ -27,6 +35,12 @@ const SignInForm = ({ onSubmit, isLoading }: SignInFormProps) => {
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <div className="relative">
@@ -42,16 +56,9 @@ const SignInForm = ({ onSubmit, isLoading }: SignInFormProps) => {
           />
         </div>
       </div>
+      
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="password">Password</Label>
-          <Link 
-            to="/auth/password-reset" 
-            className="text-sm text-[#8B5CF6] hover:underline"
-          >
-            Forgot password?
-          </Link>
-        </div>
+        <Label htmlFor="password">Password</Label>
         <div className="relative">
           <Input
             id="password"
@@ -74,6 +81,7 @@ const SignInForm = ({ onSubmit, isLoading }: SignInFormProps) => {
           </button>
         </div>
       </div>
+      
       <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading ? 'Loading...' : 'Sign In'}
       </Button>

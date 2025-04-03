@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Eye, EyeOff } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface SignUpFormProps {
   onSubmit: (data: {
@@ -12,9 +13,10 @@ interface SignUpFormProps {
   }) => void;
   isLoading: boolean;
   isBusiness: boolean;
+  error?: string | null; // Add error prop
 }
 
-const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
+const SignUpForm = ({ onSubmit, isLoading, isBusiness, error }: SignUpFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -34,6 +36,12 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness }: SignUpFormProps) => {
 
   return (
     <form className="space-y-4" onSubmit={handleSubmit}>
+      {error && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>
         <div className="relative">
