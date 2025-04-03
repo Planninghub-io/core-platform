@@ -84,7 +84,7 @@ serve(async (req) => {
   
   <p>We've received your request to reset your password. Please click the link below to complete the reset.</p>
   
-  <p><a href="{{ .ActionUrl }}" class="button">Reset My Password</a></p>
+  <p><a href="{{ .ActionUrl }}" target="_blank" class="button">Reset My Password</a></p>
   
   <p>This link is valid for a single use and expires in 24 hours.</p>
   

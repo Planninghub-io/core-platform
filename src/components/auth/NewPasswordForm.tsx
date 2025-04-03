@@ -1,12 +1,13 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
 import { setNewPassword } from "./utils/otpUtils";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const NewPasswordForm = () => {
   const [password, setPassword] = useState("");
@@ -15,27 +16,60 @@ const NewPasswordForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isFormValid, setIsFormValid] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  // Password requirements
+  const [validations, setValidations] = useState({
+    minLength: false,
+    hasUpperCase: false,
+    hasLowerCase: false,
+    hasNumber: false,
+    hasSpecial: false,
+    passwordsMatch: false
+  });
+
+  // Validate password as user types
+  useEffect(() => {
+    const validatePassword = () => {
+      const validationResults = {
+        minLength: password.length >= 8,
+        hasUpperCase: /[A-Z]/.test(password),
+        hasLowerCase: /[a-z]/.test(password),
+        hasNumber: /[0-9]/.test(password),
+        hasSpecial: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/.test(password),
+        passwordsMatch: password === confirmPassword && password !== ""
+      };
+      
+      setValidations(validationResults);
+      
+      const isValid = Object.values(validationResults).every(value => value === true);
+      setIsFormValid(isValid);
+    };
+    
+    validatePassword();
+  }, [password, confirmPassword]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
-      return;
-    }
-    
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters");
+    if (!isFormValid) {
       return;
     }
     
     setIsLoading(true);
     
     try {
-      const redirectCallback = () => navigate("/auth");
+      const redirectCallback = () => {
+        toast({
+          title: "Password Updated Successfully",
+          description: "Your password has been reset. You can now log in with your new password.",
+        });
+        navigate("/"); // Redirect to home page after success
+      };
+      
       await setNewPassword(password, toast, redirectCallback);
     } finally {
       setIsLoading(false);
@@ -59,9 +93,9 @@ const NewPasswordForm = () => {
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         {error && (
-          <div className="rounded-md bg-red-50 p-3 text-sm text-red-500">
-            {error}
-          </div>
+          <Alert variant="destructive">
+            <AlertDescription>{error}</AlertDescription>
+          </Alert>
         )}
         
         <div className="space-y-2">
@@ -114,7 +148,53 @@ const NewPasswordForm = () => {
           </div>
         </div>
         
-        <Button type="submit" disabled={isLoading} className="w-full">
+        <div className="text-sm space-y-1 mt-4 border rounded-md p-3 bg-gray-50">
+          <h3 className="font-medium">Password Requirements:</h3>
+          <ul className="space-y-1">
+            <li className="flex items-center gap-2">
+              {validations.minLength ? 
+                <CheckCircle className="h-4 w-4 text-green-500" /> : 
+                <XCircle className="h-4 w-4 text-red-500" />}
+              At least 8 characters
+            </li>
+            <li className="flex items-center gap-2">
+              {validations.hasUpperCase ? 
+                <CheckCircle className="h-4 w-4 text-green-500" /> : 
+                <XCircle className="h-4 w-4 text-red-500" />}
+              At least one uppercase letter
+            </li>
+            <li className="flex items-center gap-2">
+              {validations.hasLowerCase ? 
+                <CheckCircle className="h-4 w-4 text-green-500" /> : 
+                <XCircle className="h-4 w-4 text-red-500" />}
+              At least one lowercase letter
+            </li>
+            <li className="flex items-center gap-2">
+              {validations.hasNumber ? 
+                <CheckCircle className="h-4 w-4 text-green-500" /> : 
+                <XCircle className="h-4 w-4 text-red-500" />}
+              At least one number
+            </li>
+            <li className="flex items-center gap-2">
+              {validations.hasSpecial ? 
+                <CheckCircle className="h-4 w-4 text-green-500" /> : 
+                <XCircle className="h-4 w-4 text-red-500" />}
+              At least one special character
+            </li>
+            <li className="flex items-center gap-2">
+              {validations.passwordsMatch ? 
+                <CheckCircle className="h-4 w-4 text-green-500" /> : 
+                <XCircle className="h-4 w-4 text-red-500" />}
+              Passwords match
+            </li>
+          </ul>
+        </div>
+        
+        <Button 
+          type="submit" 
+          disabled={isLoading || !isFormValid} 
+          className="w-full mt-6"
+        >
           {isLoading ? 'Updating...' : 'Update Password'}
         </Button>
       </form>
