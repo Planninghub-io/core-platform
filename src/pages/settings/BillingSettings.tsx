@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,8 +67,7 @@ const BillingSettings = () => {
       return;
     }
     
-    // Here you would integrate with Stripe for payment
-    console.log(`Subscribing to ${planId} plan`);
+    navigate(`/pricing?plan=${planId}`);
   };
 
   const handleNavigateToPricing = () => {
