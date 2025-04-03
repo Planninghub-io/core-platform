@@ -18,7 +18,7 @@ export const handleUserSignIn = async (
       description: "Please enter both email and password",
       variant: "destructive",
     });
-    return false;
+    return { success: false, error: "Please enter both email and password" };
   }
   
   try {
@@ -41,7 +41,7 @@ export const handleUserSignIn = async (
           variant: "destructive",
         });
       }
-      return false;
+      return { success: false, error: error.message };
     }
 
     if (data.session === null && data.user) {
@@ -50,7 +50,7 @@ export const handleUserSignIn = async (
         description: "A verification code has been sent to your email.",
       });
       
-      return false;
+      return { success: false, error: "Verification required" };
     }
 
     // Check if MFA is enabled for the user
@@ -61,18 +61,18 @@ export const handleUserSignIn = async (
       // We need to use the redirectCallback instead of direct navigation here
       localStorage.setItem('authRedirectPath', '/auth/mfa-challenge');
       redirectCallback();
-      return false;
+      return { success: false, error: "MFA challenge required" };
     }
 
     redirectCallback();
-    return true;
+    return { success: true, error: null };
   } catch (error: any) {
     toast({
       title: "Sign In Error",
       description: "An unexpected error occurred. Please try again.",
       variant: "destructive",
     });
-    return false;
+    return { success: false, error: "An unexpected error occurred" };
   }
 };
 
@@ -107,11 +107,11 @@ export const handleGoogleSignIn = async (
         description: error.message,
         variant: "destructive",
       });
-      return false;
+      return { success: false, error: error.message };
     }
 
     console.log("Google sign-in initiated:", data);
-    return true;
+    return { success: true, error: null };
   } catch (error: any) {
     console.error("Google sign-in exception:", error);
     toast({
@@ -119,7 +119,7 @@ export const handleGoogleSignIn = async (
       description: "An unexpected error occurred. Please try again.",
       variant: "destructive",
     });
-    return false;
+    return { success: false, error: "An unexpected error occurred" };
   }
 };
 
@@ -151,11 +151,11 @@ export const handleAppleSignIn = async (
         description: error.message,
         variant: "destructive",
       });
-      return false;
+      return { success: false, error: error.message };
     }
 
     console.log("Apple sign-in initiated:", data);
-    return true;
+    return { success: true, error: null };
   } catch (error: any) {
     console.error("Apple sign-in exception:", error);
     toast({
@@ -163,6 +163,6 @@ export const handleAppleSignIn = async (
       description: "An unexpected error occurred. Please try again.",
       variant: "destructive",
     });
-    return false;
+    return { success: false, error: "An unexpected error occurred" };
   }
 };

@@ -50,14 +50,15 @@ export const handleUserSignUp = async (
           description: "An account with this email already exists. Please sign in instead.",
           variant: "destructive",
         });
+        return { success: false, error: "An account with this email already exists. Please sign in instead." };
       } else {
         toast({
           title: "Sign Up Error",
           description: authError.message,
           variant: "destructive",
         });
+        return { success: false, error: authError.message };
       }
-      return false;
     }
 
     // Send welcome email with verification code
@@ -75,7 +76,7 @@ export const handleUserSignUp = async (
       
       // Navigate to email verification page with email parameter
       window.location.href = "/auth/email-verification?email=" + encodeURIComponent(email);
-      return true;
+      return { success: true, error: null };
     } catch (emailError) {
       console.error("Welcome email could not be sent:", emailError);
       toast({
@@ -83,7 +84,7 @@ export const handleUserSignUp = async (
         description: "Account created, but verification email could not be sent. Please contact support.",
         variant: "destructive",
       });
-      return false;
+      return { success: false, error: "Account created, but verification email could not be sent." };
     }
   } catch (error: any) {
     toast({
@@ -91,6 +92,6 @@ export const handleUserSignUp = async (
       description: error.message,
       variant: "destructive",
     });
-    return false;
+    return { success: false, error: error.message };
   }
 };

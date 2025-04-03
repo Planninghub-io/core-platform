@@ -16,7 +16,7 @@ interface UseAuthFormProps {
 export const useAuthForm = ({ type = 'user' }: UseAuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
-  const [error, setError] = useState<string | null>(null); // Add error state
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
   const isBusiness = type === 'business';
@@ -26,16 +26,15 @@ export const useAuthForm = ({ type = 'user' }: UseAuthFormProps) => {
     setError(null); // Reset error state
 
     try {
-      const success = await handleUserSignUp(
+      const result = await handleUserSignUp(
         data,
         isBusiness,
         toast,
         () => navigate('/')
       );
 
-      if (!success) {
-        // Error handling now done within handleUserSignUp function
-        // which will set toast notifications
+      if (!result.success) {
+        setError(result.error || "Failed to sign up");
       }
     } catch (err: any) {
       setError(err.message || "Failed to sign up");
@@ -50,14 +49,14 @@ export const useAuthForm = ({ type = 'user' }: UseAuthFormProps) => {
     setError(null); // Reset error state
 
     try {
-      const success = await handleUserSignIn(
+      const result = await handleUserSignIn(
         data,
         toast,
         () => navigate('/')
       );
 
-      if (!success) {
-        // Error should be handled by the handleUserSignIn function
+      if (!result) {
+        // Error should be handled by the handleUserSignIn function through toast
       }
     } catch (err: any) {
       setError(err.message || "Failed to sign in");
@@ -104,7 +103,7 @@ export const useAuthForm = ({ type = 'user' }: UseAuthFormProps) => {
     isLoading,
     isSignUp,
     isBusiness,
-    error, // Export error state
+    error,
     signUp,
     signIn,
     signInWithGoogle,
