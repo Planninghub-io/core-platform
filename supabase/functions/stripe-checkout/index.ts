@@ -15,6 +15,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Stripe checkout function called");
+    
     // Get the supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
@@ -42,6 +44,8 @@ serve(async (req) => {
       throw new Error("Plan ID is required");
     }
     
+    console.log("Processing checkout for plan:", planId);
+    
     // Get the current user from the auth header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
@@ -56,18 +60,21 @@ serve(async (req) => {
     }
     
     const user = userData.user;
+    console.log("User identified:", user.email);
     
     // Define prices for plans
     const planPrices = {
-      basic: { amount: 0, name: "Basic Plan" },
-      professional: { amount: 2900, name: "Professional Plan" },
-      enterprise: { amount: 9900, name: "Enterprise Plan" }
+      basic: { amount: 0, name: "Basic Plan", productId: "prod_basic" },
+      professional: { amount: 2900, name: "Professional Plan", productId: "prod_professional" },
+      enterprise: { amount: 9900, name: "Enterprise Plan", productId: "prod_enterprise" }
     };
     
     const selectedPlan = planPrices[planId as keyof typeof planPrices];
     if (!selectedPlan) {
       throw new Error("Invalid plan ID");
     }
+    
+    console.log("Selected plan:", selectedPlan);
     
     // For free plans, just update the user's subscription status in the database
     if (selectedPlan.amount === 0) {
@@ -99,8 +106,11 @@ serve(async (req) => {
     
     let customerId = profileData?.stripe_customer_id;
     
+    console.log("Existing customer ID:", customerId);
+    
     // If no customer ID exists, create a new Stripe customer
     if (!customerId) {
+      console.log("Creating new customer for:", user.email);
       const customer = await stripe.customers.create({
         email: user.email,
         name: user.user_metadata?.full_name,
@@ -110,6 +120,7 @@ serve(async (req) => {
       });
       
       customerId = customer.id;
+      console.log("Created new customer:", customerId);
       
       // Save the customer ID to the user's profile
       await supabase
@@ -119,8 +130,8 @@ serve(async (req) => {
     }
     
     // Get the origin to set success and cancel URLs
-    const url = new URL(req.url);
-    const origin = url.origin.replace('.supabase.co/functions/v1/stripe-checkout', '');
+    const origin = req.headers.get('origin') || 'https://app.yourplatform.com';
+    console.log("Using origin for redirect URLs:", origin);
     
     // Create a Stripe checkout session
     const session = await stripe.checkout.sessions.create({
@@ -132,6 +143,9 @@ serve(async (req) => {
             currency: "usd",
             product_data: {
               name: selectedPlan.name,
+              metadata: {
+                product_id: selectedPlan.productId
+              }
             },
             unit_amount: selectedPlan.amount,
             recurring: {
@@ -145,6 +159,9 @@ serve(async (req) => {
       success_url: `${origin}/checkout-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/settings/billing?payment_cancelled=true`,
     });
+    
+    console.log("Created checkout session:", session.id);
+    console.log("Checkout URL:", session.url);
     
     return new Response(
       JSON.stringify({ url: session.url }),

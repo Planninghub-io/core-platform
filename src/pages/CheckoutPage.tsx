@@ -70,18 +70,23 @@ const CheckoutPage = () => {
         return;
       }
       
-      // Call Stripe Connect edge function to create checkout session
+      // Call Stripe Checkout edge function to create checkout session
       const { data, error } = await supabase.functions.invoke('stripe-checkout', {
         body: { planId: plan.id }
       });
+      
+      console.log("Stripe checkout response:", data, error);
       
       if (error) {
         throw new Error(`Error initiating checkout: ${error.message}`);
       }
       
-      // Redirect to Stripe checkout URL
+      // Redirect to Stripe checkout URL in a new tab
       if (data && data.url) {
-        window.location.href = data.url;
+        window.open(data.url, '_blank');
+        toast.info("Completing your payment in a new tab", {
+          description: "Return to this page after completing payment"
+        });
       } else {
         throw new Error("No checkout URL returned");
       }

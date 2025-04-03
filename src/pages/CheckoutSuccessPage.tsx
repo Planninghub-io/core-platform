@@ -16,17 +16,21 @@ const CheckoutSuccessPage = () => {
   useEffect(() => {
     const verifyPayment = async () => {
       if (!sessionId) {
+        toast.error('Missing session information');
         navigate('/settings/billing');
         return;
       }
 
       try {
         setLoading(true);
+        console.log("Verifying payment session:", sessionId);
         
         // Verify the checkout session with our backend
         const { data, error } = await supabase.functions.invoke('verify-subscription', {
           body: { sessionId }
         });
+        
+        console.log("Verification response:", data, error);
         
         if (error) {
           throw new Error(error.message);

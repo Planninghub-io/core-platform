@@ -15,6 +15,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Verify subscription function called");
+    
     // Get the supabase client
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
@@ -42,6 +44,8 @@ serve(async (req) => {
       throw new Error("Session ID is required");
     }
     
+    console.log("Verifying session:", sessionId);
+    
     // Get the current user from the auth header
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
@@ -56,6 +60,7 @@ serve(async (req) => {
     }
     
     const user = userData.user;
+    console.log("User identified:", user.email);
     
     // Retrieve the checkout session from Stripe
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
@@ -66,15 +71,20 @@ serve(async (req) => {
       throw new Error("Payment has not been completed");
     }
     
+    console.log("Session payment status:", session.payment_status);
+    
     // Map Stripe products to our plan IDs
     // In a production application, you'd store these mappings in a database
-    const productToPlanMapping: Record<string, string> = {
+    const productToPlanMapping = {
+      "prod_basic": "basic",
       "prod_professional": "professional",
       "prod_enterprise": "enterprise"
     };
     
     // Determine which plan the user subscribed to
     const subscription = session.subscription as Stripe.Subscription;
+    console.log("Subscription details:", subscription.id);
+    
     const items = subscription.items.data;
     
     if (items.length === 0) {
@@ -83,7 +93,9 @@ serve(async (req) => {
     
     // Extract the product ID from the subscription
     const productId = items[0].price.product as string;
-    const planId = productToPlanMapping[productId] || "professional"; // Default to professional
+    const planId = productToPlanMapping[productId as keyof typeof productToPlanMapping] || "professional"; // Default to professional
+    
+    console.log("Mapped product to plan:", productId, planId);
     
     // Update the user's subscription details in the database
     const { error: updateError } = await supabase
@@ -99,6 +111,8 @@ serve(async (req) => {
     if (updateError) {
       throw new Error(`Failed to update subscription: ${updateError.message}`);
     }
+    
+    console.log("Successfully updated user subscription details");
     
     return new Response(
       JSON.stringify({ success: true }),
