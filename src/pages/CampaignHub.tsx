@@ -1,14 +1,14 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CampaignAIAssistant } from '@/components/campaign/ai-assistant/CampaignAIAssistant';
 import { CampaignHeader } from '@/components/campaign/CampaignHeader';
 import { EventsTabContent } from '@/components/campaign/EventsTabContent';
 import { TabContent } from '@/components/campaign/TabContent';
 
 const CampaignHub = () => {
-  // Set showAIAssistant to true by default to show the chat interface immediately
-  const [showAIAssistant, setShowAIAssistant] = useState(true);
+  // We no longer need to show the AI assistant at the bottom
+  // since it's integrated into the hero section
+  const [showAIAssistant, setShowAIAssistant] = useState(false);
   
   return (
     <div className="container py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -51,12 +51,7 @@ const CampaignHub = () => {
         </TabsContent>
       </Tabs>
 
-      {showAIAssistant && (
-        <CampaignAIAssistant 
-          onClose={() => setShowAIAssistant(false)} 
-          displayInline={true}
-        />
-      )}
+      {/* We've removed the AI Assistant from here as it's now in the hero section */}
     </div>
   );
 };
