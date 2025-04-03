@@ -7,12 +7,16 @@ import { toast } from 'sonner';
 import { useEventAssistant } from './hooks/useEventAssistant';
 import { AIAssistantDialogContent } from './dialog-content/AIAssistantDialogContent';
 import { EventHandler } from './event-handling/EventHandler';
+import { Card, CardContent } from "@/components/ui/card";
+import { X } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 interface CampaignAIAssistantProps {
   onClose: () => void;
+  displayInline?: boolean;
 }
 
-export const CampaignAIAssistant = ({ onClose }: CampaignAIAssistantProps) => {
+export const CampaignAIAssistant = ({ onClose, displayInline = false }: CampaignAIAssistantProps) => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('chat');
   const [selectedModel, setSelectedModel] = useState<'openai' | 'anthropic'>('openai');
@@ -43,6 +47,52 @@ export const CampaignAIAssistant = ({ onClose }: CampaignAIAssistantProps) => {
     onClose();
   };
 
+  // Render the assistant inline instead of in a dialog if requested
+  if (displayInline) {
+    return (
+      <Card className="mt-6 mb-8 shadow-lg">
+        <CardContent className="p-0 relative">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            className="absolute top-2 right-2 z-10" 
+            onClick={onClose}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          
+          <EventHandler messages={messages} setActiveTab={setActiveTab}>
+            {({ generatedEvent, setGeneratedEvent, isCreating, createEvent, handleBackToChat }) => (
+              <div className="h-[550px] relative">
+                <div className="p-4 pb-0">
+                  <AIModelSelector 
+                    selectedModel={selectedModel} 
+                    onModelChange={setSelectedModel} 
+                  />
+                </div>
+                <TabsContainer 
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  messages={messages}
+                  message={message}
+                  setMessage={setMessage}
+                  handleSendMessage={handleSendMessage}
+                  isLoading={isLoading}
+                  suggestedPrompts={suggestedPrompts}
+                  generatedEvent={generatedEvent}
+                  onBackToChat={handleBackToChat}
+                  onCreateEvent={createEvent}
+                  isCreating={isCreating}
+                />
+              </div>
+            )}
+          </EventHandler>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Original dialog implementation for non-inline display
   return (
     <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
       <EventHandler messages={messages} setActiveTab={setActiveTab}>
@@ -72,3 +122,7 @@ export const CampaignAIAssistant = ({ onClose }: CampaignAIAssistantProps) => {
     </Dialog>
   );
 };
+
+// Import the required components for the inline version
+import { AIModelSelector } from './AIModelSelector';
+import { TabsContainer } from './tabs/TabsContainer';

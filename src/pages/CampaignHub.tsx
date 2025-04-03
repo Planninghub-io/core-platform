@@ -7,11 +7,15 @@ import { EventsTabContent } from '@/components/campaign/EventsTabContent';
 import { TabContent } from '@/components/campaign/TabContent';
 
 const CampaignHub = () => {
-  const [showAIAssistant, setShowAIAssistant] = useState(false);
+  // Set showAIAssistant to true by default to show the chat interface immediately
+  const [showAIAssistant, setShowAIAssistant] = useState(true);
   
   return (
     <div className="container py-8 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <CampaignHeader onOpenAIAssistant={() => setShowAIAssistant(true)} />
+      <CampaignHeader 
+        onOpenAIAssistant={() => setShowAIAssistant(true)} 
+        showAIAssistant={showAIAssistant}
+      />
 
       <Tabs defaultValue="events" className="w-full">
         <TabsList className="grid w-full grid-cols-4 mb-8">
@@ -48,7 +52,10 @@ const CampaignHub = () => {
       </Tabs>
 
       {showAIAssistant && (
-        <CampaignAIAssistant onClose={() => setShowAIAssistant(false)} />
+        <CampaignAIAssistant 
+          onClose={() => setShowAIAssistant(false)} 
+          displayInline={true}
+        />
       )}
     </div>
   );

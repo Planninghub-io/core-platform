@@ -1,14 +1,15 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { MessageSquare } from 'lucide-react';
+import { MessageSquare, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface CampaignHeaderProps {
   onOpenAIAssistant: () => void;
+  showAIAssistant?: boolean;
 }
 
-export const CampaignHeader = ({ onOpenAIAssistant }: CampaignHeaderProps) => {
+export const CampaignHeader = ({ onOpenAIAssistant, showAIAssistant = false }: CampaignHeaderProps) => {
   const navigate = useNavigate();
   
   return (
@@ -18,10 +19,12 @@ export const CampaignHeader = ({ onOpenAIAssistant }: CampaignHeaderProps) => {
         <p className="text-lg text-gray-600 mt-1">Organize, engage, and mobilize your supporters</p>
       </div>
       <div className="flex gap-3">
-        <Button onClick={onOpenAIAssistant}>
-          <MessageSquare className="w-4 h-4 mr-2" />
-          AI Assistant
-        </Button>
+        {!showAIAssistant ? (
+          <Button onClick={onOpenAIAssistant}>
+            <MessageSquare className="w-4 h-4 mr-2" />
+            AI Assistant
+          </Button>
+        ) : null}
       </div>
     </div>
   );
