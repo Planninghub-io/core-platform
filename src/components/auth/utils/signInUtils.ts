@@ -77,8 +77,8 @@ export const handleUserSignIn = async (
 };
 
 export const handleGoogleSignIn = async (
-  isBusiness: boolean = false,
-  toast: any
+  toast: any,
+  redirectCallback?: () => void
 ) => {
   try {
     const redirectUrl = `${APP_URL}/auth/callback`;
@@ -124,8 +124,8 @@ export const handleGoogleSignIn = async (
 };
 
 export const handleAppleSignIn = async (
-  isBusiness: boolean = false,
-  toast: any
+  toast: any,
+  redirectCallback?: () => void
 ) => {
   try {
     const redirectUrl = `${APP_URL}/auth/callback`;
