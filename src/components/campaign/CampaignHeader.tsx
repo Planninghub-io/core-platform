@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Settings, MessageSquare } from 'lucide-react';
+import { MessageSquare } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface CampaignHeaderProps {
@@ -18,10 +18,6 @@ export const CampaignHeader = ({ onOpenAIAssistant }: CampaignHeaderProps) => {
         <p className="text-lg text-gray-600 mt-1">Organize, engage, and mobilize your supporters</p>
       </div>
       <div className="flex gap-3">
-        <Button variant="outline" onClick={() => navigate('/settings')}>
-          <Settings className="w-4 h-4 mr-2" />
-          Settings
-        </Button>
         <Button onClick={onOpenAIAssistant}>
           <MessageSquare className="w-4 h-4 mr-2" />
           AI Assistant
