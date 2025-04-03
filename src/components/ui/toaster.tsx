@@ -24,7 +24,7 @@ export function Toaster() {
               )}
             </div>
             {action}
-            {closable && <ToastClose />}
+            {closable !== false && <ToastClose />}
           </Toast>
         )
       })}

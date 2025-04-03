@@ -1,4 +1,3 @@
-
 import * as React from "react"
 
 import type {
@@ -14,7 +13,7 @@ type ToasterToast = ToastProps & {
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
-  closable?: boolean
+  closable?: boolean  // Ensure this property is properly typed
 }
 
 const actionTypes = {
