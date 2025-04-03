@@ -67,7 +67,7 @@ const BillingSettings = () => {
       return;
     }
     
-    navigate(`/pricing?plan=${planId}`);
+    navigate(`/checkout?plan=${planId}`);
   };
 
   const handleNavigateToPricing = () => {

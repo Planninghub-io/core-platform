@@ -31,6 +31,8 @@ import Vendors from './pages/marketplace/Vendors';
 import VenueRecommendations from './pages/marketplace/VenueRecommendations';
 import PasswordReset from './pages/auth/PasswordReset';
 import ResetPassword from './pages/auth/ResetPassword';
+import CheckoutPage from './pages/CheckoutPage';
+import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
 
 function App() {
   const { user } = useAuthRedirect({ skipRedirect: true });
@@ -69,6 +71,8 @@ function App() {
           <Route index element={<Index />} />
           <Route path="landing" element={<LandingPage />} />
           <Route path="pricing" element={<PricingPage />} />
+          <Route path="checkout" element={user ? <CheckoutPage /> : <Navigate to="/auth" replace state={{ redirectPath: '/settings/billing' }} />} />
+          <Route path="checkout-success" element={user ? <CheckoutSuccessPage /> : <Navigate to="/auth" replace state={{ redirectPath: '/settings/billing' }} />} />
           <Route path="events/:eventId" element={<EventDetailsPage />} />
           <Route path="events-hub" element={<EventsHub />} />
           <Route path="discover" element={<Discover />} />
