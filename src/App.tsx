@@ -10,7 +10,7 @@ import EventCreationPage from '@/pages/EventCreationPage';
 import LandingPage from '@/pages/LandingPage';
 import PricingPage from '@/pages/PricingPage';
 import AuthPage from '@/pages/AuthPage';
-import ProfileSetup from '@/pages/ProfileSetup';
+import ProfileSetupPage from '@/pages/ProfileSetupPage';
 import EventDetailsPage from '@/pages/EventDetailsPage';
 import SettingsLayout from '@/pages/settings/SettingsLayout';
 import UserProfileSettings from '@/pages/settings/UserProfileSettings';
@@ -96,7 +96,7 @@ function App() {
           <Route path="new-password" element={<ResetPassword />} />
         </Route>
         
-        <Route path="/profile-setup" element={user ? <ProfileSetup /> : <Navigate to="/auth" replace state={{ redirectPath: '/profile-setup' }} />} />
+        <Route path="/profile-setup" element={user ? <ProfileSetupPage /> : <Navigate to="/auth" replace state={{ redirectPath: '/profile-setup' }} />} />
         <Route path="/admin/users" element={<UserManagement />} />
         <Route path="*" element={<NotFound />} />
       </Routes>

@@ -36,6 +36,14 @@ export const useProfileForm = (userProfile: UserProfile, refreshUserProfile: () 
   const onSubmit = async (data: ProfileFormValues) => {
     setIsSubmitting(true);
     try {
+      // Get session first
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user.id;
+      
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+      
       const { error } = await supabase
         .from('user_profiles')
         .update({
@@ -46,7 +54,7 @@ export const useProfileForm = (userProfile: UserProfile, refreshUserProfile: () 
           contact_number: data.contact_number || null,
           dob: data.dob || null,
         })
-        .eq('id', supabase.auth.getSession().then(({ data }) => data.session?.user.id));
+        .eq('id', userId);
 
       if (error) throw error;
 
