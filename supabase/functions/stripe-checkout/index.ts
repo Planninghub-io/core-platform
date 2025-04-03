@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 import Stripe from "https://esm.sh/stripe@14.21.0";
@@ -22,6 +21,7 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
     
     if (!supabaseUrl || !supabaseServiceKey) {
+      console.error("Missing Supabase credentials");
       throw new Error("Missing Supabase credentials");
     }
     
@@ -30,7 +30,8 @@ serve(async (req) => {
     // Initialize Stripe
     const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY");
     if (!stripeSecretKey) {
-      throw new Error("Missing Stripe secret key");
+      console.error("CRITICAL: No Stripe secret key found in environment");
+      throw new Error("Missing Stripe secret key. Please configure in environment.");
     }
     
     const stripe = new Stripe(stripeSecretKey, {
@@ -168,10 +169,13 @@ serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("Stripe checkout error:", error);
+    console.error("Stripe checkout function error:", error);
     
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message, 
+        details: error.toString() 
+      }),
       { 
         status: 400, 
         headers: { ...corsHeaders, "Content-Type": "application/json" } 
