@@ -43,20 +43,6 @@ const OAuthCallback = () => {
         if (code) {
           console.log("Found authorization code, exchanging for session");
           
-          // Get the code verifier that was stored during the sign-in initiation
-          const codeVerifier = localStorage.getItem('pkce_code_verifier');
-          if (!codeVerifier) {
-            console.error("No code verifier found");
-            setError("Authentication failed: Missing code verifier");
-            toast({
-              title: "Authentication Error",
-              description: "Missing authentication data. Please try again.",
-              variant: "destructive",
-            });
-            setLoading(false);
-            return;
-          }
-          
           // Exchange the code for a session
           const { data, error } = await supabase.auth.exchangeCodeForSession(code);
           
@@ -73,9 +59,6 @@ const OAuthCallback = () => {
           }
           
           console.log("Successfully exchanged code for session");
-          
-          // Clean up the code verifier
-          localStorage.removeItem('pkce_code_verifier');
           
           if (data.session) {
             toast({
@@ -144,9 +127,7 @@ const OAuthCallback = () => {
       }
     };
 
-    // Wait a moment before processing the callback to ensure all URL parameters are available
-    const timer = setTimeout(handleCallback, 800);
-    return () => clearTimeout(timer);
+    handleCallback();
   }, [navigate, toast, location]);
 
   return (

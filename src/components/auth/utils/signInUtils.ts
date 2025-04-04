@@ -1,4 +1,3 @@
-
 import { supabase, SUPABASE_URL, APP_URL } from "@/integrations/supabase/client";
 
 export interface SignInData {
@@ -91,16 +90,14 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    // Use the configured Google OAuth provider
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${APP_URL}/auth/callback`,
         queryParams: {
           access_type: 'offline',
-          prompt: 'consent select_account'
-        },
-        skipBrowserRedirect: false // Force a full browser redirect, not iframe
+          prompt: 'consent'
+        }
       }
     });
     
@@ -115,7 +112,6 @@ export const handleGoogleSignIn = async (
     }
     
     console.log("Google sign-in initiated successfully");
-    // The page will reload due to the redirect, so we don't need to handle post-redirect logic here
     return { success: true, error: null };
   } catch (error: any) {
     console.error("Google sign-in exception:", error);
