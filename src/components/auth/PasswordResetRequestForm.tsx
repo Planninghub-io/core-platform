@@ -37,13 +37,15 @@ const PasswordResetRequestForm = () => {
     
     try {
       // Call the password reset function from otpUtils
-      await sendPasswordResetOTP(email, toast);
+      const result = await sendPasswordResetOTP(email, toast);
       
-      // Show additional information to help the user understand what to do next
-      toast({
-        title: "Reset Email Sent",
-        description: "A password reset link has been sent to your email. Please check your inbox and click the link to reset your password.",
-      });
+      if (result.success) {
+        // Show additional information to help the user understand what to do next
+        toast({
+          title: "Reset Email Sent",
+          description: "A password reset link has been sent to your email. Please check your inbox and click the link to reset your password.",
+        });
+      }
     } finally {
       setIsLoading(false);
     }

@@ -47,7 +47,7 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
-    // Use the APP_URL constant for redirects in all environments
+    // Ensure we use the fully qualified URL to the new-password page
     const redirectTo = `${APP_URL}/auth/new-password`;
     
     console.log("Password reset requested for:", email);
@@ -65,7 +65,7 @@ export const sendPasswordResetOTP = async (
         description: error.message,
         variant: "destructive",
       });
-      return false;
+      return { success: false, error: error.message };
     }
 
     toast({
@@ -73,7 +73,7 @@ export const sendPasswordResetOTP = async (
       description: "Check your email for a password reset link.",
     });
     
-    return true;
+    return { success: true, error: null };
   } catch (error: any) {
     console.error("Password reset exception:", error);
     toast({
@@ -81,7 +81,7 @@ export const sendPasswordResetOTP = async (
       description: "An unexpected error occurred. Please try again.",
       variant: "destructive",
     });
-    return false;
+    return { success: false, error: "An unexpected error occurred" };
   }
 };
 
@@ -104,7 +104,7 @@ export const setNewPassword = async (
         description: error.message,
         variant: "destructive",
       });
-      return false;
+      return { success: false, error: error.message };
     }
 
     toast({
@@ -113,7 +113,7 @@ export const setNewPassword = async (
     });
     
     redirectCallback();
-    return true;
+    return { success: true, error: null };
   } catch (error: any) {
     console.error("Password update exception:", error);
     toast({
@@ -121,6 +121,6 @@ export const setNewPassword = async (
       description: "An unexpected error occurred. Please try again.",
       variant: "destructive",
     });
-    return false;
+    return { success: false, error: "An unexpected error occurred" };
   }
 };

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Eye, EyeOff, CheckCircle, XCircle } from "lucide-react";
-import { setNewPassword } from "./utils/otpUtils";
+import { setNewPassword } from "./utils/authUtils";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const NewPasswordForm = () => {
@@ -67,10 +67,17 @@ const NewPasswordForm = () => {
           title: "Password Updated Successfully",
           description: "Your password has been reset. You can now log in with your new password.",
         });
-        navigate("/"); // Redirect to home page after success
+        navigate("/auth"); // Redirect to login page after success
       };
       
-      await setNewPassword(password, toast, redirectCallback);
+      const result = await setNewPassword(password, toast, redirectCallback);
+      
+      if (!result.success) {
+        setError(result.error);
+      }
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred");
+      console.error("Password update error:", err);
     } finally {
       setIsLoading(false);
     }
