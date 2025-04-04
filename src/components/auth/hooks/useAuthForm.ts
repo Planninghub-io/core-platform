@@ -71,11 +71,11 @@ export const useAuthForm = ({ type = 'user' }: UseAuthFormProps) => {
     setError(null); // Reset error state
 
     try {
-      await handleGoogleSignIn(toast, () => navigate('/'));
+      await handleGoogleSignIn(toast);
+      // No need to handle navigation here as it's handled by OAuth redirect
     } catch (err: any) {
       setError(err.message || "Failed to sign in with Google");
       console.error("Google signin error:", err.message);
-    } finally {
       setIsLoading(false);
     }
   };
@@ -85,11 +85,11 @@ export const useAuthForm = ({ type = 'user' }: UseAuthFormProps) => {
     setError(null); // Reset error state
 
     try {
-      await handleAppleSignIn(toast, () => navigate('/'));
+      await handleAppleSignIn(toast);
+      // No need to handle navigation here as it's handled by OAuth redirect
     } catch (err: any) {
       setError(err.message || "Failed to sign in with Apple");
       console.error("Apple signin error:", err.message);
-    } finally {
       setIsLoading(false);
     }
   };

@@ -82,22 +82,21 @@ export const handleUserSignIn = async (
 };
 
 export const handleGoogleSignIn = async (
-  toast: any,
-  redirectCallback?: () => void
+  toast: any
 ): Promise<SignInResult> => {
   try {
-    const redirectUrl = `${APP_URL}/auth/callback`;
-    console.log("Google sign-in with redirect URL:", redirectUrl);
-    
-    const currentPath = localStorage.getItem('authRedirectPath') || '/';
-    if (!currentPath || currentPath === '/auth') {
+    // Store current path before redirect if not already on auth page
+    const currentPath = window.location.pathname;
+    if (currentPath !== '/auth') {
+      localStorage.setItem('authRedirectPath', currentPath);
+    } else {
       localStorage.setItem('authRedirectPath', '/');
     }
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: redirectUrl,
+        redirectTo: `${APP_URL}/auth/callback`,
         queryParams: {
           access_type: 'offline',
           prompt: 'select_account'
@@ -129,22 +128,21 @@ export const handleGoogleSignIn = async (
 };
 
 export const handleAppleSignIn = async (
-  toast: any,
-  redirectCallback?: () => void
+  toast: any
 ): Promise<SignInResult> => {
   try {
-    const redirectUrl = `${APP_URL}/auth/callback`;
-    console.log("Apple sign-in with redirect URL:", redirectUrl);
-    
-    const currentPath = localStorage.getItem('authRedirectPath') || '/';
-    if (!currentPath || currentPath === '/auth') {
+    // Store current path before redirect if not already on auth page
+    const currentPath = window.location.pathname;
+    if (currentPath !== '/auth') {
+      localStorage.setItem('authRedirectPath', currentPath);
+    } else {
       localStorage.setItem('authRedirectPath', '/');
     }
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'apple',
       options: {
-        redirectTo: redirectUrl,
+        redirectTo: `${APP_URL}/auth/callback`,
         scopes: 'name email'
       }
     });

@@ -21,7 +21,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
     signInWithGoogle,
     signInWithApple,
     toggleAuthMode,
-    error // Make sure we get the error state
+    error
   } = useAuthForm({ type });
 
   return (
@@ -34,13 +34,13 @@ const AuthForm = ({ type }: AuthFormProps) => {
           onSubmit={signUp}
           isLoading={isLoading}
           isBusiness={isBusiness}
-          error={error} // Pass error to SignUpForm
+          error={error}
         />
       ) : (
         <SignInForm
           onSubmit={signIn}
           isLoading={isLoading}
-          error={error} // Pass error to SignInForm
+          error={error}
         />
       )}
       
