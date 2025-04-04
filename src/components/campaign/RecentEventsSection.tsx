@@ -37,7 +37,7 @@ export const RecentEventsSection = () => {
                 <span className="text-xs font-medium px-2 py-1 rounded-full bg-green-100 text-green-800">
                   {20 + item * 5} Attendees
                 </span>
-                <Button variant="outline" size="sm">
+                <Button variant="outline" size="sm" onClick={() => navigate(`/events/sample-${item}`)}>
                   Manage
                 </Button>
               </div>

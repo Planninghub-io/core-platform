@@ -32,13 +32,13 @@ const EventCard = ({
 
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent triggering the card click
-    navigate(`/event/${id}?edit=true`);
+    navigate(`/events/${id}?edit=true`);
   };
 
   return (
     <div 
       className="group relative overflow-hidden rounded-xl bg-white shadow-lg transition-all duration-300 hover:shadow-xl cursor-pointer"
-      onClick={() => navigate(`/event/${id}`)}
+      onClick={() => navigate(`/events/${id}`)}
     >
       <EventCardEditButton onClick={handleEdit} />
       <EventCardImage imageUrl={imageUrl} title={title} />

@@ -103,7 +103,7 @@ export const EventHeader = ({
   };
 
   const handleManageEvent = () => {
-    navigate(`/event/${id}/manage`);
+    navigate(`/events/${id}/manage`);
   };
 
   return (

@@ -5,7 +5,7 @@ import { useEventData } from "@/hooks/useEventData";
 import { useToast } from "@/components/ui/use-toast";
 
 export const useEventDetails = () => {
-  const { id } = useParams();
+  const { eventId: id } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const isEditing = searchParams.get('edit') === 'true';
@@ -74,7 +74,7 @@ export const useEventDetails = () => {
       handleSaveChanges();
     }
     setEditingField(null);
-    navigate(isEditing ? `/event/${id}` : `/event/${id}?edit=true`);
+    navigate(isEditing ? `/events/${id}` : `/events/${id}?edit=true`);
   };
 
   // Handle field-level editing

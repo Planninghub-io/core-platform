@@ -12,6 +12,7 @@ import PricingPage from '@/pages/PricingPage';
 import AuthPage from '@/pages/AuthPage';
 import ProfileSetupPage from '@/pages/ProfileSetupPage';
 import EventDetailsPage from '@/pages/EventDetailsPage';
+import EventDetails from '@/pages/EventDetails';
 import SettingsLayout from '@/pages/settings/SettingsLayout';
 import UserProfileSettings from '@/pages/settings/UserProfileSettings';
 import CompanySettings from '@/pages/settings/CompanySettings';
@@ -33,6 +34,7 @@ import PasswordReset from './pages/auth/PasswordReset';
 import ResetPassword from './pages/auth/ResetPassword';
 import CheckoutPage from './pages/CheckoutPage';
 import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
+import EventManagement from './pages/event-management/EventManagement';
 
 function App() {
   const { user } = useAuthRedirect({ skipRedirect: true });
@@ -73,7 +75,13 @@ function App() {
           <Route path="pricing" element={<PricingPage />} />
           <Route path="checkout" element={user ? <CheckoutPage /> : <Navigate to="/auth" replace state={{ redirectPath: '/settings/billing' }} />} />
           <Route path="checkout-success" element={user ? <CheckoutSuccessPage /> : <Navigate to="/auth" replace state={{ redirectPath: '/settings/billing' }} />} />
+          
+          {/* Event routes */}
           <Route path="events/:eventId" element={<EventDetailsPage />} />
+          <Route path="event/:id" element={<Navigate to="/events/:id" replace />} />
+          <Route path="event/:id/edit" element={<Navigate to="/events/:id?edit=true" replace />} />
+          <Route path="events/:eventId/manage" element={<EventManagement />} />
+          
           <Route path="events-hub" element={<EventsHub />} />
           <Route path="discover" element={<Discover />} />
           <Route path="create-event" element={user ? <CreateEvent /> : <Navigate to="/auth" replace state={{ redirectPath: '/create-event' }} />} />

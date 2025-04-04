@@ -19,7 +19,7 @@ const EventManagement: React.FC = () => {
     return (
       <div className="container py-8">
         <div className="flex items-center space-x-4 mb-6">
-          <Button variant="outline" size="icon" onClick={() => navigate(`/event/${id}`)}>
+          <Button variant="outline" size="icon" onClick={() => navigate(`/events/${id}`)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-2xl font-bold">Loading event management...</h1>
@@ -51,7 +51,7 @@ const EventManagement: React.FC = () => {
         <Button 
           variant="outline" 
           size="icon" 
-          onClick={() => navigate(`/event/${id}`)}
+          onClick={() => navigate(`/events/${id}`)}
           className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
         >
           <ArrowLeft className="h-5 w-5" />

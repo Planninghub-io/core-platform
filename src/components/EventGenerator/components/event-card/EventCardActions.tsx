@@ -30,7 +30,7 @@ export const EventCardActions: React.FC<EventCardActionsProps> = ({
     <>
       {eventId ? (
         <Button 
-          onClick={() => navigate(`/event/${eventId}/edit`)}
+          onClick={() => navigate(`/events/${eventId}/edit`)}
           className="flex-1 gap-2"
           variant="outline"
         >
