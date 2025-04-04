@@ -14,6 +14,7 @@ export const useAuthRedirect = ({
   redirectPath = "/auth",
   skipRedirect = false
 }: UseAuthRedirectProps = {}) => {
+  // Only create these hooks if we're in a component within a Router context
   const navigate = useNavigate();
   const location = useLocation();
   const [user, setUser] = useState<User | null>(null);
