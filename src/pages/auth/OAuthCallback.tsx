@@ -15,15 +15,14 @@ const OAuthCallback = () => {
     const handleCallback = async () => {
       try {
         console.log("OAuth callback triggered, processing authentication");
-        console.log("Current URL:", window.location.href);
         
-        // Improved error detection from URL parameters
+        // Get code from URL parameters
         const urlParams = new URLSearchParams(window.location.search);
-        const hashParams = new URLSearchParams(location.hash.substring(1));
+        const code = urlParams.get('code');
         
-        // Check URL parameters for errors
-        const errorParam = urlParams.get('error') || hashParams.get('error');
-        const errorDescriptionParam = urlParams.get('error_description') || hashParams.get('error_description');
+        // Check for error parameters
+        const errorParam = urlParams.get('error');
+        const errorDescriptionParam = urlParams.get('error_description');
         
         if (errorParam || errorDescriptionParam) {
           const errorMessage = errorDescriptionParam || errorParam || 'Unknown error';
@@ -38,16 +37,66 @@ const OAuthCallback = () => {
           return;
         }
         
-        // For OAuth providers like Google, we need to exchange the code for a session
-        const code = urlParams.get('code');
         if (code) {
           console.log("Found authorization code, exchanging for session");
           
-          // Exchange the code for a session
-          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          try {
+            // Exchange the code for a session
+            const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+            
+            if (error) {
+              console.error("Error exchanging code for session:", error);
+              setError(error.message);
+              toast({
+                title: "Authentication Error",
+                description: error.message,
+                variant: "destructive",
+              });
+              setLoading(false);
+              return;
+            }
+            
+            console.log("Successfully exchanged code for session");
+            
+            if (data.session) {
+              toast({
+                title: "Authentication Successful",
+                description: "You have been successfully signed in.",
+              });
+              
+              // Get redirect path from localStorage or default to home
+              const redirectPath = localStorage.getItem('authRedirectPath') || '/';
+              localStorage.removeItem('authRedirectPath'); // Clean up
+              
+              setTimeout(() => {
+                navigate(redirectPath);
+              }, 500);
+              return;
+            } else {
+              console.error("No session returned after code exchange");
+              setError("Failed to retrieve session");
+              toast({
+                title: "Authentication Error",
+                description: "Failed to retrieve session. Please try again.",
+                variant: "destructive",
+              });
+            }
+          } catch (exchangeError: any) {
+            console.error("Error during code exchange:", exchangeError);
+            setError(exchangeError.message || "Failed to process authentication");
+            toast({
+              title: "Authentication Error",
+              description: "Failed to process authentication. Please try again.",
+              variant: "destructive",
+            });
+          }
+        } else {
+          console.error("No code found in URL");
+          // If no code is present, check if we already have a session
+          const { data, error } = await supabase.auth.getSession();
           
           if (error) {
-            console.error("Error exchanging code for session:", error);
+            console.error("Error getting session:", error);
             setError(error.message);
             toast({
               title: "Authentication Error",
@@ -58,61 +107,22 @@ const OAuthCallback = () => {
             return;
           }
           
-          console.log("Successfully exchanged code for session");
-          
           if (data.session) {
             toast({
               title: "Authentication Successful",
-              description: "You have been successfully signed in with Google.",
+              description: "You have been successfully signed in.",
             });
             
-            // Check if there's a redirect path stored in localStorage
             const redirectPath = localStorage.getItem('authRedirectPath') || '/';
-            localStorage.removeItem('authRedirectPath'); // Clean up
+            localStorage.removeItem('authRedirectPath');
             
-            // Delay the navigation slightly to ensure toast is visible
             setTimeout(() => {
               navigate(redirectPath);
             }, 500);
-            return;
+          } else {
+            console.log("No session found and no code parameter, redirecting to auth page");
+            navigate("/auth");
           }
-        }
-        
-        // If we don't have a code, check if we have a session directly
-        const { data, error } = await supabase.auth.getSession();
-        
-        if (error) {
-          console.error("Error getting session:", error);
-          setError(error.message);
-          toast({
-            title: "Authentication Error",
-            description: error.message,
-            variant: "destructive",
-          });
-          setLoading(false);
-          return;
-        }
-
-        console.log("Session data:", data.session ? "Session exists" : "No session");
-        
-        if (data.session) {
-          toast({
-            title: "Authentication Successful",
-            description: "You have been successfully signed in.",
-          });
-          
-          // Check if there's a redirect path stored in localStorage
-          const redirectPath = localStorage.getItem('authRedirectPath') || '/';
-          localStorage.removeItem('authRedirectPath'); // Clean up
-          
-          // Delay the navigation slightly to ensure toast is visible
-          setTimeout(() => {
-            navigate(redirectPath);
-          }, 500);
-        } else {
-          // If no session, redirect to auth page
-          console.log("No session found, redirecting to auth page");
-          navigate("/auth");
         }
       } catch (err: any) {
         console.error("Unexpected error during callback:", err);

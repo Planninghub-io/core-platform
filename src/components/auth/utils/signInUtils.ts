@@ -83,6 +83,7 @@ export const handleGoogleSignIn = async (
   try {
     console.log("Starting Google sign-in process");
     
+    // Store the current path for redirecting after authentication
     const currentPath = window.location.pathname;
     if (currentPath !== '/auth') {
       localStorage.setItem('authRedirectPath', currentPath);
@@ -90,14 +91,12 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
+    // Simplified Google sign-in with correct redirect URL
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${APP_URL}/auth/callback`,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent'
-        }
+        redirectTo: `${APP_URL}/auth/callback`, // Use the correct redirect URL
+        scopes: 'email profile'
       }
     });
     
