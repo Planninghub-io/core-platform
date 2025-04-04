@@ -48,6 +48,7 @@ export const sendPasswordResetOTP = async (
 ) => {
   try {
     // Ensure we use the fully qualified URL to the new-password page
+    // This should be the URL of your application, not Lovable platform
     const redirectTo = `${APP_URL}/auth/new-password`;
     
     console.log("Password reset requested for:", email);
