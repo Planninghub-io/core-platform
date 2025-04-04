@@ -80,7 +80,7 @@ const OAuthCallback = () => {
           if (data.session) {
             toast({
               title: "Authentication Successful",
-              description: "You have been successfully signed in.",
+              description: "You have been successfully signed in with Google.",
             });
             
             // Check if there's a redirect path stored in localStorage

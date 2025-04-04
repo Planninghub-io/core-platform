@@ -91,9 +91,8 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    // Force full browser navigation instead of iframe by using signInWithOAuth
-    // with skipBrowserRedirect set to false (default)
-    const { error } = await supabase.auth.signInWithOAuth({
+    // Use the configured Google OAuth provider
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${APP_URL}/auth/callback`,
@@ -101,7 +100,7 @@ export const handleGoogleSignIn = async (
           access_type: 'offline',
           prompt: 'consent select_account'
         },
-        skipBrowserRedirect: false
+        skipBrowserRedirect: false // Force a full browser redirect, not iframe
       }
     });
     
@@ -115,7 +114,8 @@ export const handleGoogleSignIn = async (
       return { success: false, error: error.message };
     }
     
-    // This code will not be reached immediately due to the redirect
+    console.log("Google sign-in initiated successfully");
+    // The page will reload due to the redirect, so we don't need to handle post-redirect logic here
     return { success: true, error: null };
   } catch (error: any) {
     console.error("Google sign-in exception:", error);
