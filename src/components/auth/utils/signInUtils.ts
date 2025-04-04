@@ -1,3 +1,4 @@
+
 import { supabase, SUPABASE_URL, APP_URL } from "@/integrations/supabase/client";
 
 export interface SignInData {
@@ -90,29 +91,31 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    const provider = 'google';
-    const redirectTo = encodeURIComponent(`${APP_URL}/auth/callback`);
+    // Force full browser navigation instead of iframe by using signInWithOAuth
+    // with skipBrowserRedirect set to false (default)
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${APP_URL}/auth/callback`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent select_account'
+        },
+        skipBrowserRedirect: false
+      }
+    });
     
-    const generateCodeVerifier = () => {
-      const array = new Uint8Array(32);
-      window.crypto.getRandomValues(array);
-      return btoa(String.fromCharCode.apply(null, [...array]))
-        .replace(/\+/g, '-')
-        .replace(/\//g, '_')
-        .replace(/=+$/, '');
-    };
+    if (error) {
+      console.error("Google sign-in error:", error);
+      toast({
+        title: "Google Sign In Error",
+        description: error.message,
+        variant: "destructive",
+      });
+      return { success: false, error: error.message };
+    }
     
-    const codeVerifier = generateCodeVerifier();
-    
-    localStorage.setItem('pkce_code_verifier', codeVerifier);
-    
-    const supabaseAuthUrl = `${SUPABASE_URL}/auth/v1`;
-    const authUrl = `${supabaseAuthUrl}/authorize?provider=${provider}&redirect_to=${redirectTo}&code_challenge=${encodeURIComponent(codeVerifier)}&code_challenge_method=plain&access_type=offline&prompt=consent%20select_account`;
-    
-    console.log("Redirecting to:", authUrl);
-    
-    window.location.href = authUrl;
-    
+    // This code will not be reached immediately due to the redirect
     return { success: true, error: null };
   } catch (error: any) {
     console.error("Google sign-in exception:", error);
