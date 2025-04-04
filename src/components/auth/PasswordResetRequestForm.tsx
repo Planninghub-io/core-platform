@@ -1,17 +1,12 @@
 
-import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Mail } from "lucide-react";
-import { sendPasswordResetOTP } from "./utils/otpUtils";
+import { usePasswordReset } from "./hooks/usePasswordReset";
+import { EmailInput } from "./components/EmailInput";
 import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 const PasswordResetRequestForm = () => {
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const { email, setEmail, isLoading, handleResetRequest } = usePasswordReset();
 
   // Call the custom-email function to set up email templates on component mount
   useEffect(() => {
@@ -33,22 +28,7 @@ const PasswordResetRequestForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    
-    try {
-      // Call the password reset function from otpUtils
-      const result = await sendPasswordResetOTP(email, toast);
-      
-      if (result.success) {
-        // Show additional information to help the user understand what to do next
-        toast({
-          title: "Reset Email Sent",
-          description: "A password reset link has been sent to your email. Please check your inbox and click the link to reset your password.",
-        });
-      }
-    } finally {
-      setIsLoading(false);
-    }
+    await handleResetRequest();
   };
 
   return (
@@ -59,21 +39,12 @@ const PasswordResetRequestForm = () => {
       </p>
 
       <form className="space-y-4" onSubmit={handleSubmit}>
-        <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
-          <div className="relative">
-            <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="pl-9"
-              required
-            />
-          </div>
-        </div>
+        <EmailInput
+          id="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Enter your email"
+        />
         
         <Button type="submit" disabled={isLoading} className="w-full">
           {isLoading ? 'Sending...' : 'Send Reset Link'}
