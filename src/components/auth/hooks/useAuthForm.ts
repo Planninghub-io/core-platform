@@ -55,8 +55,8 @@ export const useAuthForm = ({ type = 'user' }: UseAuthFormProps) => {
         () => navigate('/')
       );
 
-      if (!result) {
-        // Error should be handled by the handleUserSignIn function through toast
+      if (!result.success) {
+        setError(result.error || "Failed to sign in");
       }
     } catch (err: any) {
       setError(err.message || "Failed to sign in");

@@ -6,11 +6,16 @@ export interface SignInData {
   password: string;
 }
 
+export interface SignInResult {
+  success: boolean;
+  error: string | null;
+}
+
 export const handleUserSignIn = async (
   formData: SignInData,
   toast: any,
   redirectCallback: () => void
-) => {
+): Promise<SignInResult> => {
   const { email, password } = formData;
   if (!email || !password) {
     toast({
@@ -79,7 +84,7 @@ export const handleUserSignIn = async (
 export const handleGoogleSignIn = async (
   toast: any,
   redirectCallback?: () => void
-) => {
+): Promise<SignInResult> => {
   try {
     const redirectUrl = `${APP_URL}/auth/callback`;
     console.log("Google sign-in with redirect URL:", redirectUrl);
@@ -126,7 +131,7 @@ export const handleGoogleSignIn = async (
 export const handleAppleSignIn = async (
   toast: any,
   redirectCallback?: () => void
-) => {
+): Promise<SignInResult> => {
   try {
     const redirectUrl = `${APP_URL}/auth/callback`;
     console.log("Apple sign-in with redirect URL:", redirectUrl);

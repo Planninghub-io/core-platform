@@ -1,6 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { SignUpData } from "./signUpUtils";
+import { SignUpData, handleUserSignUp } from "./signUpUtils";
 import { SignInData, handleUserSignIn, handleGoogleSignIn, handleAppleSignIn } from "./signInUtils";
 import { sendPasswordResetOTP, setNewPassword as otpSetNewPassword } from "./otpUtils";
 import { setupMFA, verifyMFA } from "./mfaUtils";
@@ -9,6 +9,7 @@ export type { SignUpData, SignInData };
 
 // Re-export the functions from their respective files
 export { 
+  handleUserSignUp,
   handleUserSignIn,
   handleGoogleSignIn,
   handleAppleSignIn,
@@ -16,9 +17,6 @@ export {
   setupMFA,
   verifyMFA
 };
-
-// Handle user sign up - use the implementation from signUpUtils
-export { handleUserSignUp } from "./signUpUtils";
 
 // Set new password (using the implementation from otpUtils to avoid duplication)
 export const setNewPassword = otpSetNewPassword;

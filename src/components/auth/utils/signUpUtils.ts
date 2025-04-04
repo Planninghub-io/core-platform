@@ -8,12 +8,17 @@ export interface SignUpData {
   role?: string;
 }
 
+export interface SignUpResult {
+  success: boolean;
+  error: string | null;
+}
+
 export const handleUserSignUp = async (
   formData: SignUpData,
   isBusiness: boolean,
   toast: any,
   redirectCallback: () => void
-) => {
+): Promise<SignUpResult> => {
   const { email, password, role } = formData;
 
   if (password.length < 6) {
@@ -22,7 +27,7 @@ export const handleUserSignUp = async (
       description: "Password must be at least 6 characters long",
       variant: "destructive",
     });
-    return false;
+    return { success: false, error: "Password must be at least 6 characters long" };
   }
 
   try {
