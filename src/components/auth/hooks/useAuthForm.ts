@@ -71,8 +71,13 @@ export const useAuthForm = ({ type = 'user' }: UseAuthFormProps) => {
     setError(null); // Reset error state
 
     try {
-      await handleGoogleSignIn(toast);
-      // No need to handle navigation here as it's handled by OAuth redirect
+      const result = await handleGoogleSignIn(toast);
+      
+      if (!result.success) {
+        setError(result.error || "Failed to sign in with Google");
+        setIsLoading(false);
+      }
+      // Don't set loading to false on success as we're being redirected away
     } catch (err: any) {
       setError(err.message || "Failed to sign in with Google");
       console.error("Google signin error:", err.message);

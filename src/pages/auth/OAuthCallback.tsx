@@ -88,7 +88,7 @@ const OAuthCallback = () => {
     };
 
     // Wait a short moment to ensure the auth state is processed
-    const timer = setTimeout(handleCallback, 100);
+    const timer = setTimeout(handleCallback, 300);
     return () => clearTimeout(timer);
   }, [navigate, toast, location]);
 
