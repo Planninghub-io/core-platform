@@ -87,7 +87,7 @@ export const handleGoogleSignIn = async (
   try {
     console.log("Starting Google sign-in process");
     
-    // Store current path before redirect if not already on auth page
+    // Store current path before redirect
     const currentPath = window.location.pathname;
     if (currentPath !== '/auth') {
       localStorage.setItem('authRedirectPath', currentPath);
@@ -95,11 +95,12 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    // Use the full redirect flow to avoid X-Frame-Options issues
+    // Force a full page navigation instead of iframe to avoid X-Frame-Options issues
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
         redirectTo: `${APP_URL}/auth/callback`,
+        skipBrowserRedirect: false, // Ensure browser redirect happens
         queryParams: {
           access_type: 'offline',
           prompt: 'consent select_account'
@@ -118,6 +119,7 @@ export const handleGoogleSignIn = async (
     }
 
     console.log("Google sign-in initiated:", data);
+    // If we get here, we should be redirecting to Google
     return { success: true, error: null };
   } catch (error: any) {
     console.error("Google sign-in exception:", error);

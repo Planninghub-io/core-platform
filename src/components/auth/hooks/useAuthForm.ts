@@ -71,6 +71,8 @@ export const useAuthForm = ({ type = 'user' }: UseAuthFormProps) => {
     setError(null); // Reset error state
 
     try {
+      // Simply initiate the Google sign-in flow - this will redirect the browser
+      // to Google's authentication page
       const result = await handleGoogleSignIn(toast);
       
       if (!result.success) {
