@@ -95,31 +95,35 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    // Force a full page navigation instead of iframe to avoid X-Frame-Options issues
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${APP_URL}/auth/callback`,
-        skipBrowserRedirect: false, // Ensure browser redirect happens
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent select_account'
-        }
-      }
-    });
+    // Instead of using the Supabase SDK for Google sign-in, we'll construct the URL manually
+    // and perform a direct browser redirect to avoid iframe issues
+    const provider = 'google';
+    const redirectTo = encodeURIComponent(`${APP_URL}/auth/callback`);
     
-    if (error) {
-      console.error("Google sign-in error:", error);
-      toast({
-        title: "Google Sign In Error",
-        description: error.message,
-        variant: "destructive",
-      });
-      return { success: false, error: error.message };
-    }
-
-    console.log("Google sign-in initiated:", data);
-    // If we get here, we should be redirecting to Google
+    // Generate a random code verifier for PKCE
+    const generateCodeVerifier = () => {
+      const array = new Uint8Array(32);
+      window.crypto.getRandomValues(array);
+      return btoa(String.fromCharCode.apply(null, [...array]))
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_')
+        .replace(/=+$/, '');
+    };
+    
+    const codeVerifier = generateCodeVerifier();
+    
+    // Store the code verifier in localStorage to use it during callback
+    localStorage.setItem('pkce_code_verifier', codeVerifier);
+    
+    // Create authorization URL with all required parameters
+    const authUrl = `${supabase.auth.baseUrl}/authorize?provider=${provider}&redirect_to=${redirectTo}&code_challenge=${encodeURIComponent(codeVerifier)}&code_challenge_method=plain&access_type=offline&prompt=consent%20select_account`;
+    
+    console.log("Redirecting to:", authUrl);
+    
+    // Perform a full page redirect
+    window.location.href = authUrl;
+    
+    // We won't reach this point due to the redirect
     return { success: true, error: null };
   } catch (error: any) {
     console.error("Google sign-in exception:", error);

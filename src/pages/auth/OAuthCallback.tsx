@@ -38,7 +38,64 @@ const OAuthCallback = () => {
           return;
         }
         
-        // Get the auth session
+        // For OAuth providers like Google, we need to exchange the code for a session
+        const code = urlParams.get('code');
+        if (code) {
+          console.log("Found authorization code, exchanging for session");
+          
+          // Get the code verifier that was stored during the sign-in initiation
+          const codeVerifier = localStorage.getItem('pkce_code_verifier');
+          if (!codeVerifier) {
+            console.error("No code verifier found");
+            setError("Authentication failed: Missing code verifier");
+            toast({
+              title: "Authentication Error",
+              description: "Missing authentication data. Please try again.",
+              variant: "destructive",
+            });
+            setLoading(false);
+            return;
+          }
+          
+          // Exchange the code for a session
+          const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+          
+          if (error) {
+            console.error("Error exchanging code for session:", error);
+            setError(error.message);
+            toast({
+              title: "Authentication Error",
+              description: error.message,
+              variant: "destructive",
+            });
+            setLoading(false);
+            return;
+          }
+          
+          console.log("Successfully exchanged code for session");
+          
+          // Clean up the code verifier
+          localStorage.removeItem('pkce_code_verifier');
+          
+          if (data.session) {
+            toast({
+              title: "Authentication Successful",
+              description: "You have been successfully signed in.",
+            });
+            
+            // Check if there's a redirect path stored in localStorage
+            const redirectPath = localStorage.getItem('authRedirectPath') || '/';
+            localStorage.removeItem('authRedirectPath'); // Clean up
+            
+            // Delay the navigation slightly to ensure toast is visible
+            setTimeout(() => {
+              navigate(redirectPath);
+            }, 500);
+            return;
+          }
+        }
+        
+        // If we don't have a code, check if we have a session directly
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -87,8 +144,8 @@ const OAuthCallback = () => {
       }
     };
 
-    // Increase the timeout to ensure proper handling of the callback
-    const timer = setTimeout(handleCallback, 500);
+    // Wait a moment before processing the callback to ensure all URL parameters are available
+    const timer = setTimeout(handleCallback, 800);
     return () => clearTimeout(timer);
   }, [navigate, toast, location]);
 

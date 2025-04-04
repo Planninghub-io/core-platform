@@ -71,15 +71,11 @@ export const useAuthForm = ({ type = 'user' }: UseAuthFormProps) => {
     setError(null); // Reset error state
 
     try {
-      // Simply initiate the Google sign-in flow - this will redirect the browser
-      // to Google's authentication page
-      const result = await handleGoogleSignIn(toast);
+      // This will now trigger a full browser redirect to Google auth
+      // The page will reload completely, so we don't need to handle post-redirect logic here
+      await handleGoogleSignIn(toast);
       
-      if (!result.success) {
-        setError(result.error || "Failed to sign in with Google");
-        setIsLoading(false);
-      }
-      // Don't set loading to false on success as we're being redirected away
+      // Note: we don't set isLoading to false because the page will reload
     } catch (err: any) {
       setError(err.message || "Failed to sign in with Google");
       console.error("Google signin error:", err.message);
