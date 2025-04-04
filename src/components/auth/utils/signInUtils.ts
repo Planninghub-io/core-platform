@@ -116,7 +116,9 @@ export const handleGoogleSignIn = async (
     localStorage.setItem('pkce_code_verifier', codeVerifier);
     
     // Create authorization URL with all required parameters
-    const authUrl = `${supabase.auth.baseUrl}/authorize?provider=${provider}&redirect_to=${redirectTo}&code_challenge=${encodeURIComponent(codeVerifier)}&code_challenge_method=plain&access_type=offline&prompt=consent%20select_account`;
+    // Fix: Don't use supabase.auth.baseUrl which doesn't exist
+    const supabaseAuthUrl = `${SUPABASE_URL}/auth/v1`;
+    const authUrl = `${supabaseAuthUrl}/authorize?provider=${provider}&redirect_to=${redirectTo}&code_challenge=${encodeURIComponent(codeVerifier)}&code_challenge_method=plain&access_type=offline&prompt=consent%20select_account`;
     
     console.log("Redirecting to:", authUrl);
     
