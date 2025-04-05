@@ -1,4 +1,5 @@
 
+import { Provider } from "@supabase/supabase-js";
 import { supabase, APP_URL, configureOAuthRedirect } from "@/integrations/supabase/client";
 
 export interface SignInData {
@@ -92,10 +93,13 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    // Simplified Google sign-in with correct redirect URL
-    const { data, error } = await supabase.auth.signInWithOAuth(
-      configureOAuthRedirect('google')
-    );
+    // Use the correct Provider type for Google
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google' as Provider,
+      options: {
+        redirectTo: `${APP_URL}/auth/callback`
+      }
+    });
     
     if (error) {
       console.error("Google sign-in error:", error);
@@ -131,9 +135,12 @@ export const handleAppleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    const { data, error } = await supabase.auth.signInWithOAuth(
-      configureOAuthRedirect('apple')
-    );
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple' as Provider,
+      options: {
+        redirectTo: `${APP_URL}/auth/callback`
+      }
+    });
     
     if (error) {
       console.error("Apple sign-in error:", error);

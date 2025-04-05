@@ -1,5 +1,5 @@
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient, Provider } from '@supabase/supabase-js';
 import type { Database } from './types';
 
 export const SUPABASE_URL = "https://asexlqsjachwhabzvzwk.supabase.co";
@@ -69,7 +69,7 @@ export async function safeQuery<T>(queryFn: () => Promise<{ data: T | null; erro
 // Configuration for OAuth providers
 export const configureOAuthRedirect = (provider: string) => {
   return {
-    provider,
+    provider: provider as Provider,
     options: {
       redirectTo: `${APP_URL}/auth/callback`
     }
