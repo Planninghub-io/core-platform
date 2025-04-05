@@ -139,6 +139,8 @@ export const handleAppleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
+    console.log("Attempting to sign in with Apple...");
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'apple' as Provider,
       options: {
@@ -148,11 +150,21 @@ export const handleAppleSignIn = async (
     
     if (error) {
       console.error("Apple sign-in error:", error);
-      toast({
-        title: "Apple Sign In Error",
-        description: error.message,
-        variant: "destructive",
-      });
+      
+      // Check if the error is related to disabled provider
+      if (error.message.includes("provider is not enabled")) {
+        toast({
+          title: "Apple Sign In Not Available",
+          description: "Apple sign-in is not currently enabled. Please use another sign-in method.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "Apple Sign In Error",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
       return { success: false, error: error.message };
     }
 

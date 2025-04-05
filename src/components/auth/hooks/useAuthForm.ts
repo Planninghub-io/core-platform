@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -7,6 +6,7 @@ import {
   handleUserSignIn,
   handleGoogleSignIn,
   handleAppleSignIn,
+  SignInResult
 } from "../utils/authUtils";
 
 interface UseAuthFormProps {
@@ -71,11 +71,7 @@ export const useAuthForm = ({ type = 'user' }: UseAuthFormProps) => {
     setError(null); // Reset error state
 
     try {
-      // This will now trigger a full browser redirect to Google auth
-      // The page will reload completely, so we don't need to handle post-redirect logic here
       await handleGoogleSignIn(toast);
-      
-      // Note: we don't set isLoading to false because the page will reload
     } catch (err: any) {
       setError(err.message || "Failed to sign in with Google");
       console.error("Google signin error:", err.message);
@@ -83,17 +79,19 @@ export const useAuthForm = ({ type = 'user' }: UseAuthFormProps) => {
     }
   };
 
-  const signInWithApple = async () => {
+  const signInWithApple = async (): Promise<SignInResult> => {
     setIsLoading(true);
     setError(null); // Reset error state
 
     try {
-      await handleAppleSignIn(toast);
-      // No need to handle navigation here as it's handled by OAuth redirect
+      const result = await handleAppleSignIn(toast);
+      setIsLoading(false);
+      return result;
     } catch (err: any) {
       setError(err.message || "Failed to sign in with Apple");
       console.error("Apple signin error:", err.message);
       setIsLoading(false);
+      return { success: false, error: err.message || "Failed to sign in with Apple" };
     }
   };
 

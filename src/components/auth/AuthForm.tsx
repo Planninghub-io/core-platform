@@ -6,6 +6,7 @@ import { useAuthForm } from "./hooks/useAuthForm";
 import { Separator } from "@/components/ui/separator";
 import { ArrowRight, Apple } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useState } from "react";
 
 interface AuthFormProps {
   type?: 'business' | 'user';
@@ -23,6 +24,15 @@ const AuthForm = ({ type }: AuthFormProps) => {
     toggleAuthMode,
     error
   } = useAuthForm({ type });
+  
+  const [appleButtonDisabled, setAppleButtonDisabled] = useState(false);
+
+  const handleAppleSignIn = async () => {
+    const result = await signInWithApple();
+    if (!result.success && result.error?.includes("provider is not enabled")) {
+      setAppleButtonDisabled(true);
+    }
+  };
 
   return (
     <div className="rounded-xl bg-white p-8 shadow-lg">
@@ -87,10 +97,11 @@ const AuthForm = ({ type }: AuthFormProps) => {
           
           <Button
             type="button"
-            onClick={signInWithApple}
+            onClick={handleAppleSignIn}
             variant="outline"
             className="w-full"
-            disabled={isLoading}
+            disabled={isLoading || appleButtonDisabled}
+            title={appleButtonDisabled ? "Apple sign-in is not currently enabled" : "Sign in with Apple"}
           >
             <Apple className="mr-2 h-4 w-4" />
             Apple
