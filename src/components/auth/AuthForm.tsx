@@ -29,7 +29,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
 
   const handleAppleSignIn = async () => {
     const result = await signInWithApple();
-    if (!result.success && result.error?.includes("provider is not enabled")) {
+    if (!result.success && result.providerDisabled) {
       setAppleButtonDisabled(true);
     }
   };

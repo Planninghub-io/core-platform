@@ -10,6 +10,7 @@ export interface SignInData {
 export interface SignInResult {
   success: boolean;
   error: string | null;
+  providerDisabled?: boolean;
 }
 
 export const handleUserSignIn = async (
@@ -158,6 +159,7 @@ export const handleAppleSignIn = async (
           description: "Apple sign-in is not currently enabled. Please use another sign-in method.",
           variant: "destructive",
         });
+        return { success: false, error: error.message, providerDisabled: true };
       } else {
         toast({
           title: "Apple Sign In Error",
