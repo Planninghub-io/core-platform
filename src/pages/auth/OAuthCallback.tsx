@@ -15,6 +15,7 @@ const OAuthCallback = () => {
     const handleCallback = async () => {
       try {
         console.log("OAuth callback triggered, processing authentication");
+        console.log("Current URL:", window.location.href);
         
         // Get code from URL parameters
         const urlParams = new URLSearchParams(window.location.search);

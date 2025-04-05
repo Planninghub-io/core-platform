@@ -1,4 +1,3 @@
-
 import { createClient, Provider } from '@supabase/supabase-js';
 import type { Database } from './types';
 
@@ -15,7 +14,6 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce', // Using PKCE flow for security
-    // Set the callback URL globally (this is the updated format for the latest Supabase version)
     storageKey: 'supabase-auth',
     storage: {
       getItem: (key) => {

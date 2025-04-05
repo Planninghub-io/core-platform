@@ -93,11 +93,15 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    // Use the correct Provider type for Google
+    // Use the correct Provider type for Google and simplify the configuration
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google' as Provider,
       options: {
-        redirectTo: `${APP_URL}/auth/callback`
+        redirectTo: window.location.origin + '/auth/callback',
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent'
+        }
       }
     });
     
@@ -138,7 +142,7 @@ export const handleAppleSignIn = async (
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'apple' as Provider,
       options: {
-        redirectTo: `${APP_URL}/auth/callback`
+        redirectTo: window.location.origin + '/auth/callback'
       }
     });
     
