@@ -1,11 +1,11 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { SignUpData, handleUserSignUp } from "./signUpUtils";
-import { SignInData, handleUserSignIn, handleGoogleSignIn, handleAppleSignIn } from "./signInUtils";
+import { SignInData, handleUserSignIn, handleGoogleSignIn, handleAppleSignIn, SignInResult } from "./signInUtils";
 import { sendPasswordResetOTP, setNewPassword as otpSetNewPassword } from "./otpUtils";
 import { setupMFA, verifyMFA } from "./mfaUtils";
 
-export type { SignUpData, SignInData };
+export type { SignUpData, SignInData, SignInResult };
 
 // Re-export the functions from their respective files
 export { 
