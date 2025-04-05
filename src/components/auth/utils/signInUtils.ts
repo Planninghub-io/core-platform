@@ -1,4 +1,5 @@
-import { supabase, SUPABASE_URL, APP_URL } from "@/integrations/supabase/client";
+
+import { supabase, APP_URL, configureOAuthRedirect } from "@/integrations/supabase/client";
 
 export interface SignInData {
   email: string;
@@ -92,13 +93,9 @@ export const handleGoogleSignIn = async (
     }
     
     // Simplified Google sign-in with correct redirect URL
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${APP_URL}/auth/callback`, // Use the correct redirect URL
-        scopes: 'email profile'
-      }
-    });
+    const { data, error } = await supabase.auth.signInWithOAuth(
+      configureOAuthRedirect('google')
+    );
     
     if (error) {
       console.error("Google sign-in error:", error);
@@ -134,13 +131,9 @@ export const handleAppleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'apple',
-      options: {
-        redirectTo: `${APP_URL}/auth/callback`,
-        scopes: 'name email'
-      }
-    });
+    const { data, error } = await supabase.auth.signInWithOAuth(
+      configureOAuthRedirect('apple')
+    );
     
     if (error) {
       console.error("Apple sign-in error:", error);

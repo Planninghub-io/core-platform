@@ -37,6 +37,10 @@ export function useSendInvitations(eventId: string, contacts: Contact[]) {
       // Create the invitation
       const invitation = await createInvitation(eventId, selectedTemplate);
 
+      if (!invitation || !invitation.id) {
+        throw new Error("Failed to create invitation");
+      }
+
       // Prepare recipients array for permanent contacts
       let recipients = permanentContactIds.map(contactId => ({
         invitation_id: invitation.id,
@@ -68,13 +72,19 @@ export function useSendInvitations(eventId: string, contacts: Contact[]) {
         const addedContacts = await createTempContacts(tempContactsToAdd);
         
         // Add new permanent contacts to recipients
-        if (addedContacts) {
-          const newRecipients = addedContacts.map(contact => ({
-            invitation_id: invitation.id,
-            contact_id: contact.id,
-            delivery_method: deliveryMethod,
-            status: 'pending'
-          }));
+        if (addedContacts && addedContacts.length > 0) {
+          const newRecipients = addedContacts.map(contact => {
+            if (!contact || !contact.id) {
+              throw new Error("Added contact missing ID");
+            }
+            
+            return {
+              invitation_id: invitation.id,
+              contact_id: contact.id,
+              delivery_method: deliveryMethod,
+              status: 'pending'
+            };
+          });
           
           recipients = [...recipients, ...newRecipients];
         }
@@ -91,11 +101,11 @@ export function useSendInvitations(eventId: string, contacts: Contact[]) {
         title: "Success",
         description: "Invitations sent successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending invitations:", error);
       toast({
         title: "Error",
-        description: "Failed to send invitations. Please try again.",
+        description: error.message || "Failed to send invitations. Please try again.",
         variant: "destructive",
       });
     } finally {

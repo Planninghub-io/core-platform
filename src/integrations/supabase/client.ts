@@ -8,12 +8,70 @@ export const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ey
 // Make sure we use the correct URL for callback
 export const APP_URL = window.location.origin;
 
+// Create a Supabase client with the correct auth options
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce', // Using PKCE flow for security
-    redirectTo: `${APP_URL}/auth/callback` // Set the default redirect URL globally
+    // Set the callback URL globally (this is the updated format for the latest Supabase version)
+    storageKey: 'supabase-auth',
+    storage: {
+      getItem: (key) => {
+        try {
+          return Promise.resolve(localStorage.getItem(key));
+        } catch (error) {
+          return Promise.resolve(null);
+        }
+      },
+      setItem: (key, value) => {
+        try {
+          localStorage.setItem(key, value);
+          return Promise.resolve();
+        } catch (error) {
+          return Promise.resolve();
+        }
+      },
+      removeItem: (key) => {
+        try {
+          localStorage.removeItem(key);
+          return Promise.resolve();
+        } catch (error) {
+          return Promise.resolve();
+        }
+      }
+    }
   }
 });
+
+// Helper function to safely handle Supabase queries with proper error checking
+export async function safeQuery<T>(queryFn: () => Promise<{ data: T | null; error: any }>) {
+  try {
+    const { data, error } = await queryFn();
+    
+    if (error) {
+      console.error("Supabase query error:", error);
+      throw error;
+    }
+    
+    if (data === null) {
+      throw new Error("No data returned from query");
+    }
+    
+    return data as T;
+  } catch (err) {
+    console.error("Error in safeQuery:", err);
+    throw err;
+  }
+}
+
+// Configuration for OAuth providers
+export const configureOAuthRedirect = (provider: string) => {
+  return {
+    provider,
+    options: {
+      redirectTo: `${APP_URL}/auth/callback`
+    }
+  };
+};

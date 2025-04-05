@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import debounce from "lodash/debounce";
+import { ensureUUID } from "@/utils/supabaseHelpers";
 
 interface Event {
   id: string;
@@ -30,6 +31,11 @@ export const useEventData = (eventId: string) => {
   }, [eventId]);
 
   const fetchEventDetails = async () => {
+    if (!eventId) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       const { data, error } = await supabase
         .from('events')
@@ -39,12 +45,18 @@ export const useEventData = (eventId: string) => {
             email
           )
         `)
-        .eq('id', eventId)
+        .eq('id', ensureUUID(eventId))
         .single();
 
       if (error) throw error;
-      setEvent(data);
-    } catch (error) {
+      
+      if (data) {
+        setEvent(data as Event);
+      } else {
+        console.warn('No event found with ID:', eventId);
+        setEvent(null);
+      }
+    } catch (error: any) {
       console.error('Error fetching event details:', error);
       toast({
         title: "Error",
@@ -62,16 +74,25 @@ export const useEventData = (eventId: string) => {
   };
 
   // Non-debounced version for immediate saves
-  const saveChanges = async (updates: Partial<Event>) => {
+  const saveChanges = async (updates: Record<string, any>) => {
+    if (!eventId || !event) {
+      toast({
+        title: "Error",
+        description: "No event to update",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
     try {
       const { error } = await supabase
         .from('events')
         .update(updates)
-        .eq('id', eventId);
+        .eq('id', ensureUUID(eventId));
 
       if (error) throw error;
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving changes:', error);
       toast({
         title: "Error",
@@ -83,29 +104,33 @@ export const useEventData = (eventId: string) => {
   };
 
   // Debounced version for auto-save during typing
-  const debouncedSave = debounce(async (updates: Partial<Event>) => {
+  const debouncedSave = debounce(async (updates: Record<string, any>) => {
+    if (!eventId) return;
+    
     try {
       const { error } = await supabase
         .from('events')
         .update(updates)
-        .eq('id', eventId);
+        .eq('id', ensureUUID(eventId));
 
       if (error) throw error;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error auto-saving changes:', error);
     }
   }, 1000);
 
   const handleDelete = async () => {
+    if (!eventId) return false;
+    
     if (!window.confirm('Are you sure you want to delete this event? This action cannot be undone.')) {
-      return;
+      return false;
     }
 
     try {
       const { error } = await supabase
         .from('events')
         .delete()
-        .eq('id', eventId);
+        .eq('id', ensureUUID(eventId));
 
       if (error) throw error;
 
@@ -113,7 +138,7 @@ export const useEventData = (eventId: string) => {
         description: "Event deleted successfully",
       });
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting event:', error);
       toast({
         title: "Error",

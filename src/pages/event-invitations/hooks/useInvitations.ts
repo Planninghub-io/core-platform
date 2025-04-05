@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { type Invitation, type Event } from "../types";
+import { ensureUUID } from "@/utils/supabaseHelpers";
 
 export const useInvitations = (eventId: string) => {
   const { toast } = useToast();
@@ -15,20 +16,27 @@ export const useInvitations = (eventId: string) => {
   const [isThemeDialogOpen, setIsThemeDialogOpen] = useState(false);
 
   useEffect(() => {
-    fetchEventDetails();
-    fetchInvitations();
+    if (eventId) {
+      fetchEventDetails();
+      fetchInvitations();
+    }
   }, [eventId]);
 
   const fetchEventDetails = async () => {
+    if (!eventId) return;
+    
     try {
       const { data, error } = await supabase
         .from('events')
         .select('id, title, description, date, location')
-        .eq('id', eventId)
+        .eq('id', ensureUUID(eventId))
         .single();
 
       if (error) throw error;
-      setEventDetails(data);
+      
+      if (data) {
+        setEventDetails(data as Event);
+      }
     } catch (error) {
       console.error('Error fetching event details:', error);
       toast({
@@ -40,6 +48,8 @@ export const useInvitations = (eventId: string) => {
   };
 
   const fetchInvitations = async () => {
+    if (!eventId) return;
+    
     try {
       setLoading(true);
       
@@ -65,23 +75,39 @@ export const useInvitations = (eventId: string) => {
             template_html
           )
         `)
-        .eq('event_id', eventId);
+        .eq('event_id', ensureUUID(eventId));
 
       if (error) throw error;
       
-      // Cast data to the correct type with proper rsvp_status handling
-      const typedInvitations = (data || []).map(inv => ({
-        ...inv,
-        invitation_recipients: inv.invitation_recipients.map(recipient => ({
-          ...recipient,
-          // Transform string rsvp_status to the union type or null
-          rsvp_status: (recipient.rsvp_status === 'accepted' || 
-                        recipient.rsvp_status === 'declined' || 
-                        recipient.rsvp_status === 'maybe') 
-                        ? recipient.rsvp_status 
-                        : null
-        }))
-      })) as Invitation[];
+      if (!data) {
+        setInvitations([]);
+        return;
+      }
+      
+      // Transform and validate the data
+      const typedInvitations = data.map(inv => {
+        // Ensure we have properly typed data
+        const recipients = Array.isArray(inv.invitation_recipients) 
+          ? inv.invitation_recipients.map(recipient => ({
+              ...recipient,
+              rsvp_status: (recipient.rsvp_status === 'accepted' || 
+                            recipient.rsvp_status === 'declined' || 
+                            recipient.rsvp_status === 'maybe') 
+                            ? recipient.rsvp_status 
+                            : null
+            }))
+          : [];
+          
+        return {
+          ...inv,
+          invitation_recipients: recipients,
+          invitation_templates: inv.invitation_templates || {
+            name: 'Unknown Template',
+            description: null,
+            template_html: ''
+          }
+        } as Invitation;
+      });
       
       setInvitations(typedInvitations);
     } catch (error) {
@@ -98,7 +124,7 @@ export const useInvitations = (eventId: string) => {
 
   const handleEditInvitation = (invitation: Invitation) => {
     setEditingInvitation(invitation);
-    setThemeDescription(invitation.invitation_templates.description || "");
+    setThemeDescription(invitation.invitation_templates?.description || "");
     setIsThemeDialogOpen(true);
   };
 
@@ -117,38 +143,48 @@ export const useInvitations = (eventId: string) => {
       );
 
       if (generationError) throw generationError;
+      
+      if (!generatedTemplate || !generatedTemplate.template) {
+        throw new Error("Failed to generate template");
+      }
 
       if (editingInvitation) {
+        // Update existing template
         const { error: templateError } = await supabase
           .from('invitation_templates')
           .update({
             description: customTheme || 'Elegant and Professional Theme',
             template_html: generatedTemplate.template
           })
-          .eq('id', editingInvitation.template_id);
+          .eq('id', ensureUUID(editingInvitation.template_id));
 
         if (templateError) throw templateError;
       } else {
+        // Create new template and invitation
         const { data: templateData, error: templateError } = await supabase
           .from('invitation_templates')
-          .insert({
+          .insert([{
             name: `${eventDetails.title} Invitation`,
             description: customTheme || 'Elegant and Professional Theme',
             event_type: 'custom',
             template_html: generatedTemplate.template
-          })
+          }])
           .select()
           .single();
 
         if (templateError) throw templateError;
+        
+        if (!templateData) {
+          throw new Error("Failed to create template");
+        }
 
         const { error: invitationError } = await supabase
           .from('invitations')
-          .insert({
+          .insert([{
             event_id: eventId,
             template_id: templateData.id,
             status: 'draft'
-          });
+          }]);
 
         if (invitationError) throw invitationError;
       }
@@ -160,11 +196,11 @@ export const useInvitations = (eventId: string) => {
       toast({
         description: editingInvitation ? "Invitation updated successfully" : "Invitation created successfully",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error with invitation:', error);
       toast({
         title: "Error",
-        description: editingInvitation ? "Failed to update invitation" : "Failed to generate invitation",
+        description: error.message || (editingInvitation ? "Failed to update invitation" : "Failed to generate invitation"),
         variant: "destructive",
       });
     } finally {

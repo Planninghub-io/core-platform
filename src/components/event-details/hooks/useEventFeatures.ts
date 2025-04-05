@@ -28,10 +28,10 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
           .limit(1);
         
         if (invitationsError) {
-          throw invitationsError;
+          console.error("Error checking invitations:", invitationsError);
+        } else {
+          setHasInvites(invitationsData && invitationsData.length > 0);
         }
-        
-        setHasInvites(invitationsData && invitationsData.length > 0);
         
         // Check if event has ticketing
         const { data: ticketingData, error: ticketingError } = await supabase
@@ -41,10 +41,10 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
           .limit(1);
         
         if (ticketingError) {
-          throw ticketingError;
+          console.error("Error checking tickets:", ticketingError);
+        } else {
+          setHasTicketing(ticketingData && ticketingData.length > 0);
         }
-        
-        setHasTicketing(ticketingData && ticketingData.length > 0);
       } catch (error) {
         console.error('Error checking event features:', error);
       } finally {
@@ -70,7 +70,14 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
         .eq('id', eventId)
         .single();
         
-      if (eventError) throw eventError;
+      if (eventError) {
+        console.error("Error fetching event:", eventError);
+        throw eventError;
+      }
+      
+      if (!eventData) {
+        throw new Error("No event data found");
+      }
       
       // Generate invitation template using the edge function
       const { data: generatedTemplate, error: generationError } = await supabase.functions.invoke(
@@ -83,7 +90,14 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
         }
       );
 
-      if (generationError) throw generationError;
+      if (generationError) {
+        console.error("Error generating template:", generationError);
+        throw generationError;
+      }
+
+      if (!generatedTemplate || !generatedTemplate.template) {
+        throw new Error("No template generated");
+      }
 
       // Create a new template record
       const { data: templateData, error: templateError } = await supabase
@@ -97,18 +111,29 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
         .select()
         .single();
 
-      if (templateError) throw templateError;
+      if (templateError) {
+        console.error("Error creating template:", templateError);
+        throw templateError;
+      }
+
+      if (!templateData || !templateData.id) {
+        throw new Error("Template creation failed");
+      }
 
       // Create the invitation using the template
-      const { error: invitationError } = await supabase
+      const { data: invitationData, error: invitationError } = await supabase
         .from('invitations')
         .insert({
           event_id: eventId,
           template_id: templateData.id,
           status: 'draft'
-        });
+        })
+        .select();
 
-      if (invitationError) throw invitationError;
+      if (invitationError) {
+        console.error("Error creating invitation:", invitationError);
+        throw invitationError;
+      }
       
       // Update state to indicate invitation was created
       setHasInvites(true);
@@ -120,11 +145,11 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
       // Redirect to invitation page
       navigate(`/event/${eventId}/invitations`);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating invitation:', error);
       toast({
         title: "Error",
-        description: "Failed to create invitation. Please try again.",
+        description: error.message || "Failed to create invitation. Please try again.",
         variant: "destructive",
       });
     }

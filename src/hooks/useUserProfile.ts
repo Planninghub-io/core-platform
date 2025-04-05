@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile, Company } from "@/types/user";
+import { ensureUUID } from "@/utils/supabaseHelpers";
 
 export function useUserProfile() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -28,7 +29,7 @@ export function useUserProfile() {
       const { data: profileData, error: profileError } = await supabase
         .from('user_profiles')
         .select('*')
-        .eq('id', user.id)
+        .eq('id', ensureUUID(user.id))
         .single();
 
       if (profileError) {
@@ -37,12 +38,19 @@ export function useUserProfile() {
         return;
       }
 
+      if (!profileData) {
+        console.error('No profile data found');
+        setIsLoading(false);
+        return;
+      }
+
       // Format the date properly before setting it in state
       const formattedProfile = {
+        id: user.id,
+        email: user.email || '',
         ...profileData,
-        email: user.email,
         dob: profileData.dob || null // Ensure dob is properly handled
-      };
+      } as UserProfile;
 
       console.log('Fetched profile:', formattedProfile); // Debug log
       setUserProfile(formattedProfile);
@@ -61,7 +69,7 @@ export function useUserProfile() {
             website_url
           )
         `)
-        .eq('user_id', user.id);
+        .eq('user_id', ensureUUID(user.id));
 
       if (rolesError) {
         console.error('User roles fetch error:', rolesError);
@@ -71,15 +79,14 @@ export function useUserProfile() {
 
       if (userRoles && userRoles.length > 0) {
         const userCompanies: Company[] = userRoles
-          .map(role => role.companies)
-          .filter(company => company !== null)
-          .map(company => ({
-            id: company.id,
-            name: company.name,
-            logo_url: company.logo_url || undefined,
-            business_email: company.business_email || undefined,
-            business_phone: company.business_phone || undefined,
-            website_url: company.website_url || undefined
+          .filter(role => role.companies)
+          .map(role => ({
+            id: role.companies?.id || '',
+            name: role.companies?.name || '',
+            logo_url: role.companies?.logo_url,
+            business_email: role.companies?.business_email,
+            business_phone: role.companies?.business_phone,
+            website_url: role.companies?.website_url
           }));
 
         setCompanies(userCompanies);

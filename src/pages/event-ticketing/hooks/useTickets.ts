@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Ticket } from "../types";
+import { ensureUUID } from "@/utils/supabaseHelpers";
 
 export const useTickets = (eventId: string | undefined) => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
@@ -17,12 +18,17 @@ export const useTickets = (eventId: string | undefined) => {
         const { data: ticketsData, error: ticketsError } = await supabase
           .from("ticket_types")
           .select("*")
-          .eq("event_id", eventId)
+          .eq("event_id", ensureUUID(eventId))
           .order("created_at", { ascending: false });
 
         if (ticketsError) throw ticketsError;
-        setTickets(ticketsData || []);
-      } catch (error) {
+        
+        if (ticketsData) {
+          setTickets(ticketsData as Ticket[]);
+        } else {
+          setTickets([]);
+        }
+      } catch (error: any) {
         console.error("Error fetching tickets:", error);
         toast({
           title: "Error",
@@ -38,26 +44,38 @@ export const useTickets = (eventId: string | undefined) => {
   }, [eventId, toast]);
 
   const addTicket = async (newTicket: Omit<Ticket, "id" | "created_at" | "updated_at">) => {
+    if (!eventId) return false;
+    
     try {
+      const ticketToInsert = {
+        name: newTicket.name,
+        description: newTicket.description,
+        price: newTicket.price,
+        quantity: newTicket.quantity,
+        is_unlimited: newTicket.is_unlimited,
+        status: newTicket.status,
+        booking_fee: newTicket.booking_fee,
+        event_id: eventId
+      };
+      
       const { data, error } = await supabase
         .from("ticket_types")
-        .insert({
-          ...newTicket,
-          event_id: eventId
-        })
+        .insert([ticketToInsert])
         .select()
         .single();
 
       if (error) throw error;
-
-      setTickets([data, ...tickets]);
+      
+      if (data) {
+        setTickets(prevTickets => [data as Ticket, ...prevTickets]);
+      }
       
       toast({
         description: "Ticket added successfully",
       });
       
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding ticket:", error);
       toast({
         title: "Error",
@@ -75,7 +93,7 @@ export const useTickets = (eventId: string | undefined) => {
       const { error } = await supabase
         .from("ticket_types")
         .delete()
-        .eq("id", ticketId);
+        .eq("id", ensureUUID(ticketId));
 
       if (error) throw error;
 
@@ -86,7 +104,7 @@ export const useTickets = (eventId: string | undefined) => {
       });
       
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting ticket:", error);
       toast({
         title: "Error",
@@ -99,18 +117,20 @@ export const useTickets = (eventId: string | undefined) => {
 
   const updateTicket = async (updatedTicket: Ticket) => {
     try {
+      const ticketToUpdate = {
+        name: updatedTicket.name,
+        description: updatedTicket.description,
+        price: updatedTicket.price,
+        quantity: updatedTicket.quantity,
+        is_unlimited: updatedTicket.is_unlimited,
+        status: updatedTicket.status,
+        booking_fee: updatedTicket.booking_fee
+      };
+      
       const { error } = await supabase
         .from("ticket_types")
-        .update({
-          name: updatedTicket.name,
-          description: updatedTicket.description,
-          price: updatedTicket.price,
-          quantity: updatedTicket.quantity,
-          is_unlimited: updatedTicket.is_unlimited,
-          status: updatedTicket.status,
-          booking_fee: updatedTicket.booking_fee
-        })
-        .eq("id", updatedTicket.id);
+        .update(ticketToUpdate)
+        .eq("id", ensureUUID(updatedTicket.id));
 
       if (error) throw error;
 
@@ -123,7 +143,7 @@ export const useTickets = (eventId: string | undefined) => {
       });
       
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating ticket:", error);
       toast({
         title: "Error",
