@@ -38,3 +38,8 @@ verify_jwt = true
 enabled = true
 client_id = "env(GOOGLE_CLIENT_ID)"
 client_secret = "env(GOOGLE_CLIENT_SECRET)"
+
+[auth.external.apple]
+enabled = true
+client_id = "env(APPLE_CLIENT_ID)"
+secret = "env(APPLE_SECRET_KEY)"
