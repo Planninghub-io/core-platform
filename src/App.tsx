@@ -1,5 +1,5 @@
-
-import React, { useState, useEffect } from 'react';
+import * as React from 'react';
+import { useState, useEffect } from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { Toaster } from "@/components/ui/sonner"
 import { useAuthRedirect } from '@/hooks/useAuthRedirect';
@@ -42,13 +42,10 @@ function App() {
   const [isInitialized, setIsInitialized] = useState(false);
 
   useEffect(() => {
-    // Set initialized after a short delay even if still loading
-    // This prevents the app from getting stuck in a loading state
     const timer = setTimeout(() => {
       setIsInitialized(true);
     }, 2000);
     
-    // Still try to respect the actual loading state if it finishes quickly
     if (!isLoading) {
       clearTimeout(timer);
       setIsInitialized(true);
@@ -76,7 +73,6 @@ function App() {
           <Route path="checkout" element={user ? <CheckoutPage /> : <Navigate to="/auth" replace state={{ redirectPath: '/settings/billing' }} />} />
           <Route path="checkout-success" element={user ? <CheckoutSuccessPage /> : <Navigate to="/auth" replace state={{ redirectPath: '/settings/billing' }} />} />
           
-          {/* Event routes */}
           <Route path="events/:eventId" element={<EventDetailsPage />} />
           <Route path="event/:id" element={<Navigate to="/events/:id" replace />} />
           <Route path="event/:id/edit" element={<Navigate to="/events/:id?edit=true" replace />} />
