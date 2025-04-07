@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Bot, LayoutDashboard, ListChecks } from "lucide-react";
 import { useState } from "react";
@@ -103,6 +102,7 @@ export const EventHeader = ({
   };
 
   const handleManageEvent = () => {
+    console.log("Navigating to manage event page with ID:", id);
     navigate(`/events/${id}/manage`);
   };
 

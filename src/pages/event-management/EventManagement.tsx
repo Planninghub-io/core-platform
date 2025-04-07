@@ -10,16 +10,19 @@ import { Checklist } from "./components/checklist";
 import { EventPlanner } from "./components/EventPlanner";
 
 const EventManagement: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const { eventId } = useParams<{ eventId: string }>();
   const navigate = useNavigate();
-  const { event, loading } = useEventData(id || "");
+  const { event, loading } = useEventData(eventId || "");
   const [activeTab, setActiveTab] = useState("team");
+
+  console.log("EventManagement: Rendering with eventId =", eventId);
+  console.log("EventManagement: Event data =", event);
 
   if (loading) {
     return (
       <div className="container py-8">
         <div className="flex items-center space-x-4 mb-6">
-          <Button variant="outline" size="icon" onClick={() => navigate(`/events/${id}`)}>
+          <Button variant="outline" size="icon" onClick={() => navigate(`/events/${eventId}`)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-2xl font-bold">Loading event management...</h1>
@@ -51,7 +54,7 @@ const EventManagement: React.FC = () => {
         <Button 
           variant="outline" 
           size="icon" 
-          onClick={() => navigate(`/events/${id}`)}
+          onClick={() => navigate(`/events/${eventId}`)}
           className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
         >
           <ArrowLeft className="h-5 w-5" />
@@ -67,15 +70,15 @@ const EventManagement: React.FC = () => {
         </TabsList>
         
         <TabsContent value="team" className="mt-6">
-          <TeamManagement eventId={id || ""} />
+          <TeamManagement eventId={eventId || ""} />
         </TabsContent>
         
         <TabsContent value="checklist" className="mt-6">
-          <Checklist eventId={id || ""} event={event} />
+          <Checklist eventId={eventId || ""} event={event} />
         </TabsContent>
         
         <TabsContent value="planner" className="mt-6">
-          <EventPlanner eventId={id || ""} event={event} />
+          <EventPlanner eventId={eventId || ""} event={event} />
         </TabsContent>
       </Tabs>
     </div>
