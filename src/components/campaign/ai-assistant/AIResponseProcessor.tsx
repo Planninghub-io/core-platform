@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { CircleDashed } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -34,25 +35,35 @@ export const AIResponseProcessor = ({ message, isLoading = false }: AIResponsePr
       return;
     }
 
-    // Replace URLs with anchor tags
+    // Improved URL regex for better link detection
     const urlRegex = /(https?:\/\/[^\s]+)/g;
+    
     const withLinks = content.split(urlRegex).map((part, index) => {
       if (part.match(urlRegex)) {
+        // Ensure the URL is properly formatted for href
+        const url = part.trim();
         return (
           <a 
             key={index} 
-            href={part} 
+            href={url} 
             target="_blank" 
             rel="noopener noreferrer" 
-            className="text-blue-500 hover:underline"
+            className="text-blue-500 hover:underline inline-flex items-center gap-1"
+            onClick={(e) => {
+              // Prevent the link from being handled by React Router
+              e.stopPropagation();
+            }}
           >
-            {part}
+            {url.length > 50 ? `${url.substring(0, 47)}...` : url}
+            <ExternalLink className="h-3 w-3 inline" />
           </a>
         );
       }
       
       // Process text formatting
       const paragraphs = part.split('\n\n').map((paragraph, pIndex) => {
+        if (!paragraph.trim()) return null;
+        
         // Process bold text
         const boldRegex = /\*\*(.*?)\*\*/g;
         const withBold = paragraph.split(boldRegex).map((text, bIndex) => {
@@ -64,7 +75,7 @@ export const AIResponseProcessor = ({ message, isLoading = false }: AIResponsePr
             {withBold}
           </p>
         );
-      });
+      }).filter(Boolean);
       
       return <React.Fragment key={index}>{paragraphs}</React.Fragment>;
     });
