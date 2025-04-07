@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
@@ -66,16 +67,22 @@ export const useAuthForm = ({ type = 'user' }: UseAuthFormProps) => {
     }
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (): Promise<SignInResult> => {
     setIsLoading(true);
     setError(null); // Reset error state
 
     try {
-      await handleGoogleSignIn(toast);
+      const result = await handleGoogleSignIn(toast);
+      if (!result.success) {
+        setError(result.error || "Failed to sign in with Google");
+      }
+      setIsLoading(false);
+      return result;
     } catch (err: any) {
       setError(err.message || "Failed to sign in with Google");
       console.error("Google signin error:", err.message);
       setIsLoading(false);
+      return { success: false, error: err.message || "Failed to sign in with Google" };
     }
   };
 

@@ -6,7 +6,7 @@ import { useAuthForm } from "./hooks/useAuthForm";
 import { Separator } from "@/components/ui/separator";
 import { ArrowRight, Apple } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface AuthFormProps {
   type?: 'business' | 'user';
@@ -26,11 +26,20 @@ const AuthForm = ({ type }: AuthFormProps) => {
   } = useAuthForm({ type });
   
   const [appleButtonDisabled, setAppleButtonDisabled] = useState(false);
+  const [googleButtonDisabled, setGoogleButtonDisabled] = useState(false);
 
   const handleAppleSignIn = async () => {
     const result = await signInWithApple();
     if (!result.success && result.providerDisabled) {
       setAppleButtonDisabled(true);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    console.log("Google sign-in button clicked");
+    const result = await signInWithGoogle();
+    if (!result.success && result.providerDisabled) {
+      setGoogleButtonDisabled(true);
     }
   };
 
@@ -69,10 +78,11 @@ const AuthForm = ({ type }: AuthFormProps) => {
         <div className="mt-4 grid grid-cols-2 gap-3">
           <Button
             type="button"
-            onClick={signInWithGoogle}
+            onClick={handleGoogleSignIn}
             variant="outline"
             className="w-full"
-            disabled={isLoading}
+            disabled={isLoading || googleButtonDisabled}
+            title={googleButtonDisabled ? "Google sign-in is not currently enabled" : "Sign in with Google"}
           >
             <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
               <path

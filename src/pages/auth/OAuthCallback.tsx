@@ -41,6 +41,10 @@ const OAuthCallback = () => {
         if (code) {
           console.log("Found authorization code, exchanging for session");
           
+          // Before exchanging code, wait a moment to ensure browser state is updated
+          // This can sometimes help with race conditions
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
           try {
             // Exchange the code for a session
             const { data, error } = await supabase.auth.exchangeCodeForSession(code);
@@ -69,8 +73,9 @@ const OAuthCallback = () => {
               const redirectPath = localStorage.getItem('authRedirectPath') || '/';
               localStorage.removeItem('authRedirectPath'); // Clean up
               
+              // Short delay to ensure toast is shown before redirect
               setTimeout(() => {
-                navigate(redirectPath);
+                navigate(redirectPath, { replace: true });
               }, 500);
               return;
             } else {
@@ -118,7 +123,7 @@ const OAuthCallback = () => {
             localStorage.removeItem('authRedirectPath');
             
             setTimeout(() => {
-              navigate(redirectPath);
+              navigate(redirectPath, { replace: true });
             }, 500);
           } else {
             console.log("No session found and no code parameter, redirecting to auth page");

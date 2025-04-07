@@ -94,20 +94,31 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    // Use the correct Provider type for Google and simplify the configuration
+    // Improved Google OAuth configuration with better error handling
     const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google' as Provider,
+      provider: 'google',
       options: {
-        redirectTo: window.location.origin + '/auth/callback',
+        redirectTo: `${window.location.origin}/auth/callback`,
         queryParams: {
-          access_type: 'offline',
-          prompt: 'consent'
+          prompt: 'select_account',  // Forces account selection even if already logged in
+          access_type: 'offline'     // Requests a refresh token
         }
       }
     });
     
     if (error) {
       console.error("Google sign-in error:", error);
+      
+      // Check if the provider is not enabled
+      if (error.message.includes("not enabled")) {
+        toast({
+          title: "Google Sign In Not Available",
+          description: "Google sign-in is not currently configured properly. Please try another sign-in method.",
+          variant: "destructive",
+        });
+        return { success: false, error: error.message, providerDisabled: true };
+      }
+      
       toast({
         title: "Google Sign In Error",
         description: error.message,
@@ -117,6 +128,18 @@ export const handleGoogleSignIn = async (
     }
     
     console.log("Google sign-in initiated successfully");
+    
+    // If no URL was returned, we have a configuration problem
+    if (!data.url) {
+      toast({
+        title: "Configuration Error",
+        description: "The authentication provider is not configured correctly.",
+        variant: "destructive",
+      });
+      return { success: false, error: "Missing OAuth URL" };
+    }
+    
+    // Redirect is handled by Supabase SDK
     return { success: true, error: null };
   } catch (error: any) {
     console.error("Google sign-in exception:", error);

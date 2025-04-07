@@ -1,3 +1,4 @@
+
 import { createClient, Provider } from '@supabase/supabase-js';
 import type { Database } from './types';
 
@@ -14,32 +15,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce', // Using PKCE flow for security
-    storageKey: 'supabase-auth',
-    storage: {
-      getItem: (key) => {
-        try {
-          return Promise.resolve(localStorage.getItem(key));
-        } catch (error) {
-          return Promise.resolve(null);
-        }
-      },
-      setItem: (key, value) => {
-        try {
-          localStorage.setItem(key, value);
-          return Promise.resolve();
-        } catch (error) {
-          return Promise.resolve();
-        }
-      },
-      removeItem: (key) => {
-        try {
-          localStorage.removeItem(key);
-          return Promise.resolve();
-        } catch (error) {
-          return Promise.resolve();
-        }
-      }
-    }
+    storage: localStorage,
   }
 });
 
@@ -69,7 +45,14 @@ export const configureOAuthRedirect = (provider: string) => {
   return {
     provider: provider as Provider,
     options: {
-      redirectTo: `${APP_URL}/auth/callback`
+      redirectTo: `${APP_URL}/auth/callback`,
+      // Add prompt parameter for Google to force account selection
+      ...(provider === 'google' && {
+        queryParams: {
+          prompt: 'select_account',
+          access_type: 'offline'
+        }
+      })
     }
   };
 };
