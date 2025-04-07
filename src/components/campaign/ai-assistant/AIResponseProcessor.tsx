@@ -35,8 +35,8 @@ export const AIResponseProcessor = ({ message, isLoading = false }: AIResponsePr
       return;
     }
 
-    // Enhanced URL regex that better captures various link formats
-    const urlRegex = /(https?:\/\/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b[-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
+    // Enhanced URL regex that better matches all URL formats including subdomain patterns
+    const urlRegex = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/g;
     
     const withLinks = content.split(urlRegex).map((part, index) => {
       if (urlRegex.test(part)) {

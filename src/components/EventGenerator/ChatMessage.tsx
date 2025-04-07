@@ -90,12 +90,12 @@ export const ChatMessage = ({
   
   // Process links in the message
   const processMessage = (content: string) => {
-    // Enhanced URL regex
-    const urlRegex = /(https?:\/\/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b[-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
+    // Enhanced URL regex that matches a wide variety of URL formats including subdomains
+    const urlRegex = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/g;
     
-    // Replace URLs with anchor tags
+    // Replace URLs with anchor tags that explicitly open in a new tab
     return content
-      .replace(urlRegex, '<a href="$&" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline" onclick="event.stopPropagation();">$&</a>')
+      .replace(urlRegex, '<a href="$&" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline" onclick="event.stopPropagation(); window.open(\'$&\', \'_blank\');">$&</a>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\n/g, '<br />');
   };
