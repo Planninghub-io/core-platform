@@ -35,11 +35,14 @@ export const AIResponseProcessor = ({ message, isLoading = false }: AIResponsePr
       return;
     }
 
-    // Improved URL regex for better link detection
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    // Enhanced URL regex that better captures various link formats
+    const urlRegex = /(https?:\/\/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b[-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
     
     const withLinks = content.split(urlRegex).map((part, index) => {
-      if (part.match(urlRegex)) {
+      if (urlRegex.test(part)) {
+        // Reset lastIndex because test() changes it
+        urlRegex.lastIndex = 0;
+        
         // Ensure the URL is properly formatted for href
         const url = part.trim();
         return (

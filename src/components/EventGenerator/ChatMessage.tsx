@@ -1,3 +1,4 @@
+
 import { cn } from "@/lib/utils";
 import { Copy, ThumbsUp, ThumbsDown, RotateCcw, Sparkles, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -87,6 +88,18 @@ export const ChatMessage = ({
     });
   };
   
+  // Process links in the message
+  const processMessage = (content: string) => {
+    // Enhanced URL regex
+    const urlRegex = /(https?:\/\/[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b[-a-zA-Z0-9()@:%_\+.~#?&//=]*)/g;
+    
+    // Replace URLs with anchor tags
+    return content
+      .replace(urlRegex, '<a href="$&" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline" onclick="event.stopPropagation();">$&</a>')
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br />');
+  };
+  
   // ChatGPT style: user messages on right, AI messages on left
   return (
     <div 
@@ -122,9 +135,7 @@ export const ChatMessage = ({
             ) : (
               <div className="whitespace-pre-wrap break-words" 
                 dangerouslySetInnerHTML={{ 
-                  __html: (disableTyping || type === 'user' ? message : displayedMessage)
-                          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                          .replace(/\n/g, '<br />') 
+                  __html: processMessage(disableTyping || type === 'user' ? message : displayedMessage)
                 }}
               />
             )}
