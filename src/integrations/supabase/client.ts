@@ -6,6 +6,7 @@ export const SUPABASE_URL = "https://asexlqsjachwhabzvzwk.supabase.co";
 export const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZXhscXNqYWNod2hhYnp2endrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkyMDczMzAsImV4cCI6MjA1NDc4MzMzMH0.LmkXoRHxqsRfQUK1KEyn70Z7gkxLVnAGY_G6nKeZFCw";
 
 // Make sure we use the correct URL for callback
+// Using window.location.origin ensures we get the actual deployed URL
 export const APP_URL = typeof window !== 'undefined' 
   ? window.location.origin 
   : 'http://localhost:5173'; // Fallback for SSR

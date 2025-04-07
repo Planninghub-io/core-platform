@@ -47,14 +47,15 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
-    // Ensure we use the fully qualified URL to the new-password page
-    // This should be the URL of your application, not Lovable platform
+    // Get the current origin - this is crucial to ensure we redirect correctly
+    // The APP_URL will be calculated based on window.location.origin 
+    // This ensures the redirect works correctly in any environment
     const redirectTo = `${APP_URL}/auth/new-password`;
     
     console.log("Password reset requested for:", email);
     console.log("Using redirect URL:", redirectTo);
     
-    // Request password reset
+    // Request password reset with proper redirectTo URL
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo,
     });
