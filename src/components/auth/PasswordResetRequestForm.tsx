@@ -12,6 +12,7 @@ const PasswordResetRequestForm = () => {
   useEffect(() => {
     const setupCustomEmail = async () => {
       try {
+        console.log("Setting up custom email templates");
         const { data, error } = await supabase.functions.invoke('custom-email');
         if (error) {
           console.error("Error setting up custom email:", error);

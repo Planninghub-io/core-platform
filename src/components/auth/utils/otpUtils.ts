@@ -48,7 +48,6 @@ export const sendPasswordResetOTP = async (
 ) => {
   try {
     // Get the current origin - this is crucial to ensure we redirect correctly
-    // The APP_URL will be calculated based on window.location.origin 
     // This ensures the redirect works correctly in any environment
     const redirectTo = `${APP_URL}/auth/new-password`;
     
