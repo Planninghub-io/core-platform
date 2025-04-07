@@ -17,14 +17,13 @@ const OAuthCallback = () => {
         console.log("OAuth callback triggered, processing authentication");
         console.log("Current URL:", window.location.href);
         
-        // Get code from URL parameters
+        // Get code and error parameters from URL
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
-        
-        // Check for error parameters
         const errorParam = urlParams.get('error');
         const errorDescriptionParam = urlParams.get('error_description');
         
+        // Handle error parameters first
         if (errorParam || errorDescriptionParam) {
           const errorMessage = errorDescriptionParam || errorParam || 'Unknown error';
           console.error("OAuth error from URL:", errorMessage);
@@ -41,12 +40,11 @@ const OAuthCallback = () => {
         if (code) {
           console.log("Found authorization code, exchanging for session");
           
-          // Before exchanging code, wait a moment to ensure browser state is updated
-          // This can sometimes help with race conditions
-          await new Promise(resolve => setTimeout(resolve, 100));
-          
           try {
-            // Exchange the code for a session
+            // Wait a moment to ensure browser state is updated (helps with race conditions)
+            await new Promise(resolve => setTimeout(resolve, 300));
+            
+            // Exchange the code for a session with better error handling
             const { data, error } = await supabase.auth.exchangeCodeForSession(code);
             
             if (error) {
@@ -61,7 +59,7 @@ const OAuthCallback = () => {
               return;
             }
             
-            console.log("Successfully exchanged code for session");
+            console.log("Successfully exchanged code for session:", data);
             
             if (data.session) {
               toast({
@@ -73,11 +71,10 @@ const OAuthCallback = () => {
               const redirectPath = localStorage.getItem('authRedirectPath') || '/';
               localStorage.removeItem('authRedirectPath'); // Clean up
               
-              // Short delay to ensure toast is shown before redirect
+              // Delay redirect to ensure toast is shown
               setTimeout(() => {
                 navigate(redirectPath, { replace: true });
               }, 500);
-              return;
             } else {
               console.error("No session returned after code exchange");
               setError("Failed to retrieve session");
@@ -86,6 +83,7 @@ const OAuthCallback = () => {
                 description: "Failed to retrieve session. Please try again.",
                 variant: "destructive",
               });
+              setLoading(false);
             }
           } catch (exchangeError: any) {
             console.error("Error during code exchange:", exchangeError);
@@ -95,10 +93,11 @@ const OAuthCallback = () => {
               description: "Failed to process authentication. Please try again.",
               variant: "destructive",
             });
+            setLoading(false);
           }
         } else {
           console.error("No code found in URL");
-          // If no code is present, check if we already have a session
+          // Check if we already have a session
           const { data, error } = await supabase.auth.getSession();
           
           if (error) {
@@ -138,7 +137,6 @@ const OAuthCallback = () => {
           description: "An unexpected error occurred. Please try again.",
           variant: "destructive",
         });
-      } finally {
         setLoading(false);
       }
     };

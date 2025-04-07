@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import SignUpForm from "./SignUpForm";
 import SignInForm from "./SignInForm";
@@ -7,6 +6,8 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowRight, Apple } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { Alert } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface AuthFormProps {
   type?: 'business' | 'user';
@@ -27,19 +28,28 @@ const AuthForm = ({ type }: AuthFormProps) => {
   
   const [appleButtonDisabled, setAppleButtonDisabled] = useState(false);
   const [googleButtonDisabled, setGoogleButtonDisabled] = useState(false);
+  const [oauthError, setOauthError] = useState<string | null>(null);
 
   const handleAppleSignIn = async () => {
+    setOauthError(null);
     const result = await signInWithApple();
-    if (!result.success && result.providerDisabled) {
-      setAppleButtonDisabled(true);
+    if (!result.success) {
+      if (result.providerDisabled) {
+        setAppleButtonDisabled(true);
+      }
+      setOauthError(result.error || "Failed to sign in with Apple");
     }
   };
 
   const handleGoogleSignIn = async () => {
+    setOauthError(null);
     console.log("Google sign-in button clicked");
     const result = await signInWithGoogle();
-    if (!result.success && result.providerDisabled) {
-      setGoogleButtonDisabled(true);
+    if (!result.success) {
+      if (result.providerDisabled) {
+        setGoogleButtonDisabled(true);
+      }
+      setOauthError(result.error || "Failed to sign in with Google");
     }
   };
 
@@ -48,6 +58,14 @@ const AuthForm = ({ type }: AuthFormProps) => {
       <h1 className="mb-6 text-2xl font-bold">
         {isSignUp ? `Sign Up${isBusiness ? ' as Business' : ''}` : 'Sign In'}
       </h1>
+      
+      {oauthError && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertCircle className="h-4 w-4" />
+          <div className="ml-2">{oauthError}</div>
+        </Alert>
+      )}
+      
       {isSignUp ? (
         <SignUpForm
           onSubmit={signUp}

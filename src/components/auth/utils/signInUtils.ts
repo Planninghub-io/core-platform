@@ -1,4 +1,3 @@
-
 import { Provider } from "@supabase/supabase-js";
 import { supabase, APP_URL, configureOAuthRedirect } from "@/integrations/supabase/client";
 
@@ -94,17 +93,12 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    // Improved Google OAuth configuration with better error handling
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-        queryParams: {
-          prompt: 'select_account',  // Forces account selection even if already logged in
-          access_type: 'offline'     // Requests a refresh token
-        }
-      }
-    });
+    // Use the configureOAuthRedirect helper for consistent configuration
+    const oauthConfig = configureOAuthRedirect('google');
+    console.log("OAuth Configuration:", oauthConfig);
+    
+    // Sign in with improved error handling
+    const { data, error } = await supabase.auth.signInWithOAuth(oauthConfig);
     
     if (error) {
       console.error("Google sign-in error:", error);
@@ -113,7 +107,7 @@ export const handleGoogleSignIn = async (
       if (error.message.includes("not enabled")) {
         toast({
           title: "Google Sign In Not Available",
-          description: "Google sign-in is not currently configured properly. Please try another sign-in method.",
+          description: "Google sign-in is not currently configured properly. Please check Supabase auth configuration.",
           variant: "destructive",
         });
         return { success: false, error: error.message, providerDisabled: true };
@@ -127,7 +121,7 @@ export const handleGoogleSignIn = async (
       return { success: false, error: error.message };
     }
     
-    console.log("Google sign-in initiated successfully");
+    console.log("Google sign-in initiated successfully, redirecting to:", data?.url);
     
     // If no URL was returned, we have a configuration problem
     if (!data.url) {
