@@ -16,6 +16,7 @@ interface Event {
   expected_attendees: number | null;
   image_url: string | null;
   status?: string;
+  budget?: number | string | null;
   user_profiles?: {
     email: string | null;
   } | null;
@@ -26,8 +27,13 @@ export const useEventData = (eventId: string) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  // Fetch event details when eventId changes
   useEffect(() => {
-    fetchEventDetails();
+    if (eventId) {
+      fetchEventDetails();
+    } else {
+      setLoading(false);
+    }
   }, [eventId]);
 
   const fetchEventDetails = async () => {
@@ -37,6 +43,7 @@ export const useEventData = (eventId: string) => {
     }
     
     try {
+      console.log('Fetching event details for ID:', eventId);
       const { data, error } = await supabase
         .from('events')
         .select(`
@@ -48,9 +55,13 @@ export const useEventData = (eventId: string) => {
         .eq('id', ensureUUID(eventId))
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching event details:', error);
+        throw error;
+      }
       
       if (data) {
+        console.log('Event data retrieved:', data);
         setEvent(data as Event);
       } else {
         console.warn('No event found with ID:', eventId);

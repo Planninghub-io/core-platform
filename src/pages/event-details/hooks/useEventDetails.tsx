@@ -5,7 +5,7 @@ import { useEventData } from "@/hooks/useEventData";
 import { useToast } from "@/components/ui/use-toast";
 
 export const useEventDetails = () => {
-  const { eventId: id } = useParams();
+  const { eventId } = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const isEditing = searchParams.get('edit') === 'true';
@@ -21,7 +21,7 @@ export const useEventDetails = () => {
     handleInputChange: originalHandleInputChange, 
     handleDelete,
     saveChanges 
-  } = useEventData(id!);
+  } = useEventData(eventId!);
 
   // When event data is loaded or editing mode changes, store original data
   useEffect(() => {
@@ -74,7 +74,7 @@ export const useEventDetails = () => {
       handleSaveChanges();
     }
     setEditingField(null);
-    navigate(isEditing ? `/events/${id}` : `/events/${id}?edit=true`);
+    navigate(isEditing ? `/events/${eventId}` : `/events/${eventId}?edit=true`);
   };
 
   // Handle field-level editing
@@ -93,7 +93,7 @@ export const useEventDetails = () => {
   };
 
   return {
-    id,
+    eventId,
     event,
     loading,
     isEditing,
