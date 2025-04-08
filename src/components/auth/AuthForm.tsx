@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import SignUpForm from "./SignUpForm";
 import SignInForm from "./SignInForm";
@@ -149,17 +150,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
         </Button>
       </div>
       
-      {!isSignUp && (
-        <div className="mt-4 text-center">
-          <Button
-            variant="link"
-            className="p-0 text-sm font-normal text-gray-600 hover:text-gray-900"
-            asChild
-          >
-            <Link to="/auth/password-reset">Forgot password?</Link>
-          </Button>
-        </div>
-      )}
+      {/* Removing the redundant "Forgot password?" link here */}
     </div>
   );
 };
