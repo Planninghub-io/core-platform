@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Mail, Eye, EyeOff } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Link } from "react-router-dom";
 
 interface SignInFormProps {
   onSubmit: (data: {
@@ -12,7 +13,7 @@ interface SignInFormProps {
     password: string;
   }) => void;
   isLoading: boolean;
-  error?: string | null; // Add error prop
+  error?: string | null;
 }
 
 const SignInForm = ({ onSubmit, isLoading, error }: SignInFormProps) => {
@@ -79,6 +80,15 @@ const SignInForm = ({ onSubmit, isLoading, error }: SignInFormProps) => {
               <Eye className="h-4 w-4" />
             }
           </button>
+        </div>
+        <div className="text-right mt-1">
+          <Button
+            variant="link"
+            className="p-0 text-xs font-normal text-gray-600 hover:text-gray-900"
+            asChild
+          >
+            <Link to="/auth/password-reset">Forgot password?</Link>
+          </Button>
         </div>
       </div>
       
