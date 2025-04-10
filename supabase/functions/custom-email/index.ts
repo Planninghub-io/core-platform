@@ -34,64 +34,78 @@ serve(async (req) => {
           },
           // Customize the recovery (password reset) template
           "recovery": {
-            "email_subject": "Reset your account password",
+            "email_subject": "Reset your password",
             "email_from_name": "Planning Hub Team",
-            "email_from_email": "admin@planninghub.io",
+            "email_from_email": "noreply@planninghub.io",
             "template_html": `
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Reset your account password</title>
+  <title>Reset your password</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       line-height: 1.6;
-      color: #333;
+      color: #ffffff;
+      background-color: #000000;
       max-width: 600px;
       margin: 0 auto;
       padding: 20px;
     }
+    .container {
+      text-align: center;
+      padding: 40px 20px;
+    }
     .logo {
-      display: block;
-      margin: 20px auto;
-      max-width: 200px;
+      font-size: 32px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      display: inline-block;
+      width: 60px;
+      height: 60px;
+      line-height: 60px;
+      border: 1px solid #ffffff;
+      border-radius: 4px;
+    }
+    h1 {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    p {
+      margin-bottom: 30px;
+      font-size: 16px;
     }
     .button {
       display: inline-block;
-      background-color: #8B5CF6;
-      color: white;
-      padding: 12px 25px;
+      background-color: #ffffff;
+      color: #000000;
+      padding: 16px 24px;
       text-decoration: none;
       border-radius: 4px;
-      margin: 20px 0;
-      font-weight: bold;
+      font-weight: 600;
+      margin: 20px 0 30px 0;
     }
-    .footer {
-      margin-top: 30px;
-      font-size: 12px;
-      color: #666;
-      border-top: 1px solid #eee;
-      padding-top: 20px;
+    .note {
+      font-size: 14px;
+      opacity: 0.8;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
-  <img src="https://nice-moss-0d3d9cf0f.5.azurestaticapps.net/lovable-uploads/c030d16e-cbcf-4be4-befd-81d2328d13e1.png" alt="Planning Hub Logo" class="logo">
-  
-  <p>Dear {{ .Email }},</p>
-  
-  <p>We've received your request to reset your password. Please click the link below to complete the reset.</p>
-  
-  <p><a href="{{ .ActionUrl }}" target="_blank" class="button">Reset My Password</a></p>
-  
-  <p>This link is valid for a single use and expires in 24 hours.</p>
-  
-  <p>Please ignore this email if you did not initiate this change. If you need additional assistance, please contact <a href="mailto:help@planninghub.io">help@planninghub.io</a>.</p>
-  
-  <div class="footer">
-    <p>&copy; 2024 Planning Hub. All rights reserved.</p>
+  <div class="container">
+    <div class="logo">R</div>
+    
+    <h1>Reset your password</h1>
+    
+    <p>Follow the button to reset the password for your user.</p>
+    
+    <a href="{{ .ActionUrl }}" target="_blank" class="button">Reset Password</a>
+    
+    <p class="note">If you did not request password reset, you can safely ignore this email, nothing further will happen.</p>
   </div>
 </body>
 </html>
