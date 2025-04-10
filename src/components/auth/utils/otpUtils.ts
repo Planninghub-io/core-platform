@@ -92,18 +92,32 @@ export const sendPasswordResetOTP = async (
 async function setupCustomEmailTemplate() {
   try {
     console.log("Setting up custom email templates before sending reset email");
-    const { data, error } = await supabase.functions.invoke('custom-email', {
-      method: 'POST',
-      body: { action: 'setup-templates' }
-    });
-    
-    if (error) {
-      console.error("Error setting up custom email template:", error);
-    } else {
-      console.log("Custom email template set up successfully:", data);
+    // Make a more robust call with multiple retries
+    for (let i = 0; i < 3; i++) {
+      try {
+        const { data, error } = await supabase.functions.invoke('custom-email', {
+          method: 'POST',
+          body: { action: 'setup-templates' }
+        });
+        
+        if (error) {
+          console.error(`Attempt ${i+1} - Error setting up custom email template:`, error);
+        } else {
+          console.log(`Attempt ${i+1} - Custom email template set up successfully:`, data);
+          return; // Success, exit the function
+        }
+      } catch (err) {
+        console.error(`Attempt ${i+1} - Exception setting up custom email template:`, err);
+      }
+      
+      // Wait before retrying (exponential backoff)
+      if (i < 2) { // Don't wait after the last attempt
+        await new Promise(resolve => setTimeout(resolve, 500 * Math.pow(2, i)));
+      }
     }
+    console.log("All attempts to set up email template completed");
   } catch (err) {
-    console.error("Failed to set up custom email template:", err);
+    console.error("Failed completely to set up custom email template:", err);
   }
 }
 

@@ -17,7 +17,7 @@ serve(async (req) => {
       throw new Error('Missing Supabase URL or service role key');
     }
 
-    console.log("Updating email templates...");
+    console.log("Updating email templates with URL:", supabaseUrl);
 
     // This endpoint allows you to customize the email templates used for password resets
     const res = await fetch(
@@ -27,6 +27,7 @@ serve(async (req) => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${supabaseServiceKey}`,
+          'apikey': `${supabaseServiceKey}`,
         },
         body: JSON.stringify({
           // Set global settings for all templates

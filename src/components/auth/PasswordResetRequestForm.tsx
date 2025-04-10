@@ -29,7 +29,15 @@ const PasswordResetRequestForm = () => {
       }
     };
     
+    // Call the setup function and also set a timer to call it again after a delay
     setupCustomEmail();
+    
+    // Try again after 2 seconds to account for potential race conditions
+    const timer = setTimeout(() => {
+      setupCustomEmail();
+    }, 2000);
+    
+    return () => clearTimeout(timer);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
