@@ -17,6 +17,8 @@ serve(async (req) => {
       throw new Error('Missing Supabase URL or service role key');
     }
 
+    console.log("Updating email templates...");
+
     // This endpoint allows you to customize the email templates used for password resets
     const res = await fetch(
       `${supabaseUrl}/auth/v1/admin/email-templates`,
@@ -27,9 +29,9 @@ serve(async (req) => {
           'Authorization': `Bearer ${supabaseServiceKey}`,
         },
         body: JSON.stringify({
-          // Update the template configuration for password reset emails
+          // Set global settings for all templates
           "action_link": {
-            "email_subject": "Reset your account password",
+            "email_subject": "Reset your password",
             "email_from_name": "Planning Hub Team"
           },
           // Customize the recovery (password reset) template
@@ -97,7 +99,7 @@ serve(async (req) => {
 </head>
 <body>
   <div class="container">
-    <div class="logo">R</div>
+    <div class="logo">P</div>
     
     <h1>Reset your password</h1>
     
@@ -116,6 +118,7 @@ serve(async (req) => {
     );
 
     const data = await res.json();
+    console.log("Email template update response:", data);
 
     return new Response(
       JSON.stringify({
@@ -128,6 +131,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
+    console.error("Error updating email templates:", error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

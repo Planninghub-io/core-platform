@@ -8,12 +8,17 @@ import { useEffect } from "react";
 const PasswordResetRequestForm = () => {
   const { email, setEmail, isLoading, handleResetRequest } = usePasswordReset();
 
-  // Call the custom-email function to set up email templates on component mount
+  // Call the custom-email function to set up email templates when the component mounts
   useEffect(() => {
     const setupCustomEmail = async () => {
       try {
         console.log("Setting up custom email templates");
-        const { data, error } = await supabase.functions.invoke('custom-email');
+        // Call the custom-email function with the correct authentication
+        const { data, error } = await supabase.functions.invoke('custom-email', {
+          method: 'POST',
+          body: { action: 'setup-templates' }
+        });
+        
         if (error) {
           console.error("Error setting up custom email:", error);
         } else {

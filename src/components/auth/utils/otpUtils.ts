@@ -47,6 +47,9 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
+    // First, ensure the custom email template is set up
+    await setupCustomEmailTemplate();
+    
     // Use the environment-aware APP_URL
     const redirectTo = `${APP_URL}/auth/new-password`;
     
@@ -84,6 +87,25 @@ export const sendPasswordResetOTP = async (
     return { success: false, error: "An unexpected error occurred" };
   }
 };
+
+// Helper function to set up custom email template
+async function setupCustomEmailTemplate() {
+  try {
+    console.log("Setting up custom email templates before sending reset email");
+    const { data, error } = await supabase.functions.invoke('custom-email', {
+      method: 'POST',
+      body: { action: 'setup-templates' }
+    });
+    
+    if (error) {
+      console.error("Error setting up custom email template:", error);
+    } else {
+      console.log("Custom email template set up successfully:", data);
+    }
+  } catch (err) {
+    console.error("Failed to set up custom email template:", err);
+  }
+}
 
 // Function to set new password after reset
 export const setNewPassword = async (
