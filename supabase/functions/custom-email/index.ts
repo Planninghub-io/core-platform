@@ -9,17 +9,17 @@ serve(async (req) => {
   }
 
   try {
-    // Get the email template from Supabase Auth
+    // Get required environment variables
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
     if (!supabaseUrl || !supabaseServiceKey) {
-      throw new Error('Missing Supabase URL or service role key');
+      throw new Error('Missing environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
     }
 
-    console.log("Updating email templates with URL:", supabaseUrl);
+    console.log("Setting up email templates at URL:", supabaseUrl);
 
-    // This endpoint allows you to customize the email templates used for password resets
+    // Call the Auth Admin API to update email templates
     const res = await fetch(
       `${supabaseUrl}/auth/v1/admin/email-templates`,
       {
@@ -27,7 +27,7 @@ serve(async (req) => {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${supabaseServiceKey}`,
-          'apikey': `${supabaseServiceKey}`,
+          'apikey': supabaseServiceKey,
         },
         body: JSON.stringify({
           // Set global settings for all templates
@@ -118,13 +118,21 @@ serve(async (req) => {
       }
     );
 
+    // Check response status
+    if (!res.ok) {
+      const errorDetails = await res.text();
+      console.error(`Failed to update email templates: HTTP ${res.status}`, errorDetails);
+      throw new Error(`Failed to update email templates: HTTP ${res.status}`);
+    }
+
     const data = await res.json();
-    console.log("Email template update response:", data);
+    console.log("Email templates updated successfully:", data);
 
     return new Response(
       JSON.stringify({
         success: true,
-        data,
+        message: "Email templates updated successfully",
+        data
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -134,10 +142,14 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error updating email templates:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false, 
+        error: error.message || "Unknown error occurred",
+        stack: error.stack 
+      }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 400,
+        status: 500,
       }
     );
   }

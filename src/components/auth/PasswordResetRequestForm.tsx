@@ -3,36 +3,46 @@ import { Button } from "@/components/ui/button";
 import { usePasswordReset } from "./hooks/usePasswordReset";
 import { EmailInput } from "./components/EmailInput";
 import { supabase } from "@/integrations/supabase/client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const PasswordResetRequestForm = () => {
   const { email, setEmail, isLoading, handleResetRequest } = usePasswordReset();
-
+  const [setupStatus, setSetupStatus] = useState<"pending" | "success" | "error">("pending");
+  
   // Call the custom-email function to set up email templates when the component mounts
   useEffect(() => {
     const setupCustomEmail = async () => {
       try {
         console.log("Setting up custom email templates");
-        // Call the custom-email function with the correct authentication
+        setSetupStatus("pending");
+        
+        // Add a timestamp parameter to prevent caching
         const { data, error } = await supabase.functions.invoke('custom-email', {
           method: 'POST',
-          body: { action: 'setup-templates' }
+          body: { 
+            action: 'setup-templates',
+            timestamp: new Date().toISOString() 
+          }
         });
         
         if (error) {
           console.error("Error setting up custom email:", error);
+          setSetupStatus("error");
         } else {
           console.log("Custom email templates set up successfully:", data);
+          setSetupStatus("success");
         }
       } catch (err) {
         console.error("Exception setting up custom email:", err);
+        setSetupStatus("error");
       }
     };
     
-    // Call the setup function and also set a timer to call it again after a delay
+    // Call the setup function immediately
     setupCustomEmail();
     
-    // Try again after 2 seconds to account for potential race conditions
+    // And then again after a short delay to ensure it's applied
     const timer = setTimeout(() => {
       setupCustomEmail();
     }, 2000);
@@ -51,6 +61,14 @@ const PasswordResetRequestForm = () => {
       <p className="mb-6 text-gray-600">
         Enter your email address and we'll send you a link to reset your password.
       </p>
+
+      {setupStatus === "error" && (
+        <Alert variant="destructive" className="mb-4">
+          <AlertDescription>
+            There was an issue setting up the email template. Your password reset email might use the default template.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <form className="space-y-4" onSubmit={handleSubmit}>
         <EmailInput
