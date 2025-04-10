@@ -47,8 +47,7 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
-    // Get the current origin - this is crucial to ensure we redirect correctly
-    // This ensures the redirect works correctly in any environment
+    // Use the environment-aware APP_URL
     const redirectTo = `${APP_URL}/auth/new-password`;
     
     console.log("Password reset requested for:", email);

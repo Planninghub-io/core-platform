@@ -5,11 +5,26 @@ import type { Database } from './types';
 export const SUPABASE_URL = "https://asexlqsjachwhabzvzwk.supabase.co";
 export const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZXhscXNqYWNod2hhYnp2endrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkyMDczMzAsImV4cCI6MjA1NDc4MzMzMH0.LmkXoRHxqsRfQUK1KEyn70Z7gkxLVnAGY_G6nKeZFCw";
 
-// Make sure we use the correct URL for callback
-// Using window.location.origin ensures we get the actual deployed URL
-export const APP_URL = typeof window !== 'undefined' 
-  ? window.location.origin 
-  : 'http://localhost:5173'; // Fallback for SSR
+// Determine the base URL based on the environment
+const getAppUrl = () => {
+  // Check if we're in a browser environment
+  if (typeof window === 'undefined') {
+    return 'http://localhost:8080'; // Default for non-browser environments
+  }
+  
+  const hostname = window.location.hostname;
+  
+  // Development environment
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return `${window.location.protocol}//${hostname}:${window.location.port}`;
+  }
+  
+  // Production or preview deployments - use the actual origin
+  return window.location.origin;
+};
+
+// Export the APP_URL for use in other parts of the application
+export const APP_URL = getAppUrl();
 
 // Create a Supabase client with the correct auth options
 export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
@@ -45,15 +60,10 @@ export async function safeQuery<T>(queryFn: () => Promise<{ data: T | null; erro
 
 // Configuration for OAuth providers
 export const configureOAuthRedirect = (provider: string) => {
-  // Ensure we have a proper origin
-  const origin = typeof window !== 'undefined' 
-    ? window.location.origin 
-    : 'http://localhost:5173';
-
   return {
     provider: provider as Provider,
     options: {
-      redirectTo: `${origin}/auth/callback`,
+      redirectTo: `${APP_URL}/auth/callback`,
       // Add prompt parameter for Google to force account selection
       ...(provider === 'google' && {
         queryParams: {
