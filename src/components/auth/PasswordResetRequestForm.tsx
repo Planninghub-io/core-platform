@@ -5,41 +5,45 @@ import { EmailInput } from "./components/EmailInput";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
 
 const PasswordResetRequestForm = () => {
   const { email, setEmail, isLoading, handleResetRequest } = usePasswordReset();
-  const [setupStatus, setSetupStatus] = useState<"pending" | "success" | "error">("pending");
+  const [setupStatus, setSetupStatus] = useState<"pending" | "success" | "error" | "idle">("idle");
+  const [isSettingUpTemplate, setIsSettingUpTemplate] = useState(false);
   
-  // Call the custom-email function to set up email templates when the component mounts
-  useEffect(() => {
-    const setupCustomEmail = async () => {
-      try {
-        console.log("Setting up custom email templates");
-        setSetupStatus("pending");
-        
-        // Add a timestamp parameter to prevent caching
-        const { data, error } = await supabase.functions.invoke('custom-email', {
-          method: 'POST',
-          body: { 
-            action: 'setup-templates',
-            timestamp: new Date().toISOString() 
-          }
-        });
-        
-        if (error) {
-          console.error("Error setting up custom email:", error);
-          setSetupStatus("error");
-        } else {
-          console.log("Custom email templates set up successfully:", data);
-          setSetupStatus("success");
+  // Function to set up email templates
+  const setupCustomEmail = async () => {
+    try {
+      console.log("Setting up custom email templates");
+      setIsSettingUpTemplate(true);
+      
+      // Add a timestamp parameter to prevent caching
+      const { data, error } = await supabase.functions.invoke('custom-email', {
+        method: 'POST',
+        body: { 
+          action: 'setup-templates',
+          timestamp: new Date().toISOString() 
         }
-      } catch (err) {
-        console.error("Exception setting up custom email:", err);
+      });
+      
+      if (error) {
+        console.error("Error setting up custom email:", error);
         setSetupStatus("error");
+      } else {
+        console.log("Custom email templates set up successfully:", data);
+        setSetupStatus("success");
       }
-    };
-    
-    // Call the setup function immediately
+    } catch (err) {
+      console.error("Exception setting up custom email:", err);
+      setSetupStatus("error");
+    } finally {
+      setIsSettingUpTemplate(false);
+    }
+  };
+  
+  // Call the custom email setup when the component mounts
+  useEffect(() => {
     setupCustomEmail();
     
     // And then again after a short delay to ensure it's applied
@@ -52,6 +56,12 @@ const PasswordResetRequestForm = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Ensure custom template is set up before sending the reset link
+    if (setupStatus !== "success") {
+      await setupCustomEmail();
+    }
+    
     await handleResetRequest();
   };
 
@@ -70,6 +80,13 @@ const PasswordResetRequestForm = () => {
         </Alert>
       )}
 
+      {isSettingUpTemplate && (
+        <div className="mb-4 flex items-center text-sm text-gray-600">
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Setting up custom email template...
+        </div>
+      )}
+
       <form className="space-y-4" onSubmit={handleSubmit}>
         <EmailInput
           id="email"
@@ -78,7 +95,7 @@ const PasswordResetRequestForm = () => {
           placeholder="Enter your email"
         />
         
-        <Button type="submit" disabled={isLoading} className="w-full">
+        <Button type="submit" disabled={isLoading || isSettingUpTemplate} className="w-full">
           {isLoading ? 'Sending...' : 'Send Reset Link'}
         </Button>
       </form>

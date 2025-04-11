@@ -19,6 +19,10 @@ serve(async (req) => {
 
     console.log("Setting up email templates at URL:", supabaseUrl);
 
+    // Parse request body if provided
+    const body = req.body ? await req.json() : {};
+    console.log("Request body:", body);
+
     // Call the Auth Admin API to update email templates
     const res = await fetch(
       `${supabaseUrl}/auth/v1/admin/email-templates`,
@@ -51,64 +55,78 @@ serve(async (req) => {
     body {
       font-family: Arial, sans-serif;
       line-height: 1.6;
-      color: #ffffff;
-      background-color: #000000;
+      color: #333333;
+      background-color: #f8f9fa;
       max-width: 600px;
       margin: 0 auto;
       padding: 20px;
     }
     .container {
       text-align: center;
-      padding: 40px 20px;
+      padding: 30px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     }
     .logo {
-      font-size: 32px;
+      font-size: 28px;
       font-weight: bold;
       margin-bottom: 30px;
+      color: #6c5ce7;
       display: inline-block;
-      width: 60px;
-      height: 60px;
-      line-height: 60px;
-      border: 1px solid #ffffff;
-      border-radius: 4px;
     }
     h1 {
       font-size: 24px;
       font-weight: bold;
       margin-bottom: 20px;
+      color: #333333;
     }
     p {
-      margin-bottom: 30px;
+      margin-bottom: 25px;
       font-size: 16px;
+      color: #555555;
     }
     .button {
       display: inline-block;
-      background-color: #ffffff;
-      color: #000000;
-      padding: 16px 24px;
+      background-color: #6c5ce7;
+      color: #ffffff;
+      padding: 12px 24px;
       text-decoration: none;
       border-radius: 4px;
-      font-weight: 600;
+      font-weight: 500;
       margin: 20px 0 30px 0;
+      transition: background-color 0.3s;
+    }
+    .button:hover {
+      background-color: #5649c0;
     }
     .note {
       font-size: 14px;
-      opacity: 0.8;
+      color: #777777;
       margin-top: 20px;
+    }
+    .footer {
+      margin-top: 30px;
+      font-size: 12px;
+      color: #999999;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="logo">P</div>
+    <div class="logo">Planning Hub</div>
     
     <h1>Reset your password</h1>
     
-    <p>Follow the button to reset the password for your user.</p>
+    <p>We received a request to reset your password. Click the button below to create a new password.</p>
     
     <a href="{{ .ActionUrl }}" target="_blank" class="button">Reset Password</a>
     
-    <p class="note">If you did not request password reset, you can safely ignore this email, nothing further will happen.</p>
+    <p class="note">If you didn't request a password reset, you can safely ignore this email - nothing will be changed.</p>
+    
+    <div class="footer">
+      &copy; 2025 Planning Hub. All rights reserved.
+    </div>
   </div>
 </body>
 </html>
