@@ -323,6 +323,114 @@ export type Database = {
           },
         ]
       }
+      marketplace_clients: {
+        Row: {
+          created_at: string | null
+          id: string
+          logo_url: string | null
+          name: string
+          slug: string
+          theme_colors: Json | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          logo_url?: string | null
+          name: string
+          slug: string
+          theme_colors?: Json | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          logo_url?: string | null
+          name?: string
+          slug?: string
+          theme_colors?: Json | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      marketplace_preferred_vendors: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          marketplace_client_id: string
+          vendor_service_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          marketplace_client_id: string
+          vendor_service_id: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          marketplace_client_id?: string
+          vendor_service_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_preferred_vendors_marketplace_client_id_fkey"
+            columns: ["marketplace_client_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_preferred_vendors_vendor_service_id_fkey"
+            columns: ["vendor_service_id"]
+            isOneToOne: false
+            referencedRelation: "vendor_services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      marketplace_preferred_venues: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          id: string
+          marketplace_client_id: string
+          venue_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          marketplace_client_id: string
+          venue_id: string
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          id?: string
+          marketplace_client_id?: string
+          venue_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_preferred_venues_marketplace_client_id_fkey"
+            columns: ["marketplace_client_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_preferred_venues_venue_id_fkey"
+            columns: ["venue_id"]
+            isOneToOne: false
+            referencedRelation: "venues"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ticket_purchases: {
         Row: {
           created_at: string

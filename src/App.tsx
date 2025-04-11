@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
@@ -36,6 +35,8 @@ import ResetPassword from './pages/auth/ResetPassword';
 import CheckoutPage from './pages/CheckoutPage';
 import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
 import EventManagement from './pages/event-management/EventManagement';
+import EmbedMarketplace from './pages/marketplace/EmbedMarketplace';
+import ClientMarketplace from './pages/marketplace/ClientMarketplace';
 
 function App() {
   const { user } = useAuthRedirect({ skipRedirect: true });
@@ -89,7 +90,10 @@ function App() {
             <Route path="venues" element={<Venues />} />
             <Route path="vendors" element={<Vendors />} />
             <Route path="recommendations" element={<VenueRecommendations />} />
+            <Route path="embed" element={<EmbedMarketplace />} />
           </Route>
+          
+          <Route path="client/:slug" element={<ClientMarketplace />} />
           
           <Route path="settings" element={user ? <SettingsLayout /> : <Navigate to="/auth" replace state={{ redirectPath: '/settings' }} />}>
             <Route path="profile" element={<UserProfileSettings />} />
