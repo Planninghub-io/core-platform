@@ -8,6 +8,8 @@ interface Vendor {
   price_range_start: number | null;
   price_range_end: number | null;
   company_id: string;
+  city: string | null;
+  zipcode: string | null;
 }
 
 interface ScrapedVendor {
@@ -18,6 +20,7 @@ interface ScrapedVendor {
   services?: string[];
   location?: string;
   city?: string;
+  zipcode?: string;
 }
 
 // Function to fetch vendor data from event vendor websites in Austin, TX
@@ -37,7 +40,8 @@ async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
         price_range_end: 5000,
         services: ["Lighting design", "Installation", "Audio-visual support"],
         location: "Austin",
-        city: "Austin"
+        city: "Austin",
+        zipcode: "78701"
       },
       {
         name: "Capital Catering Co.",
@@ -46,7 +50,8 @@ async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
         price_range_end: 150,
         services: ["Full-service catering", "Buffet service", "Plated meals"],
         location: "Austin",
-        city: "Austin"
+        city: "Austin",
+        zipcode: "78702"
       },
       {
         name: "Lone Star Photography",
@@ -55,7 +60,8 @@ async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
         price_range_end: 8000,
         services: ["Event photography", "Photo booth", "Same-day edits"],
         location: "Austin",
-        city: "Austin"
+        city: "Austin",
+        zipcode: "78704"
       },
       {
         name: "ATX DJ Collective",
@@ -64,7 +70,8 @@ async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
         price_range_end: 3000,
         services: ["DJ services", "Sound equipment", "Custom playlists"],
         location: "Austin",
-        city: "Austin"
+        city: "Austin",
+        zipcode: "78701"
       },
       {
         name: "Wildflower Event Florists",
@@ -73,7 +80,8 @@ async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
         price_range_end: 10000,
         services: ["Floral arrangements", "Installation", "Consultation"],
         location: "Austin",
-        city: "Austin"
+        city: "Austin",
+        zipcode: "78703"
       },
       {
         name: "Austin Vintage Rentals",
@@ -82,7 +90,8 @@ async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
         price_range_end: 7500,
         services: ["Furniture rental", "Styling", "Delivery and setup"],
         location: "Austin",
-        city: "Austin"
+        city: "Austin",
+        zipcode: "78704"
       },
       {
         name: "Live Oak Videography",
@@ -91,7 +100,8 @@ async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
         price_range_end: 12000,
         services: ["Event videography", "Drone footage", "Highlight reels"],
         location: "Austin",
-        city: "Austin"
+        city: "Austin",
+        zipcode: "78704"
       },
       {
         name: "Texas Hill Country Events",
@@ -100,7 +110,8 @@ async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
         price_range_end: 15000,
         services: ["Event planning", "Day-of coordination", "Venue selection"],
         location: "Austin",
-        city: "Austin"
+        city: "Austin",
+        zipcode: "78705"
       },
       {
         name: "Austin Sound & Stage",
@@ -109,7 +120,8 @@ async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
         price_range_end: 8000,
         services: ["Sound engineering", "Stage setup", "Equipment rental"],
         location: "Austin",
-        city: "Austin"
+        city: "Austin",
+        zipcode: "78701"
       },
       {
         name: "Capital City Bartenders",
@@ -118,7 +130,8 @@ async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
         price_range_end: 2500,
         services: ["Bartending", "Custom cocktail menus", "Bar setup"],
         location: "Austin",
-        city: "Austin"
+        city: "Austin",
+        zipcode: "78701"
       },
       {
         name: "ATX Event Staffing",
@@ -127,7 +140,8 @@ async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
         price_range_end: 45,
         services: ["Event staffing", "Server training", "On-site management"],
         location: "Austin",
-        city: "Austin"
+        city: "Austin",
+        zipcode: "78702"
       },
       {
         name: "Austin Wedding Officiants",
@@ -136,21 +150,56 @@ async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
         price_range_end: 1200,
         services: ["Ceremony planning", "Officiating", "Custom vows"],
         location: "Austin",
-        city: "Austin"
+        city: "Austin",
+        zipcode: "78705"
+      },
+      // Add vendors in San Antonio
+      {
+        name: "San Antonio Sound Productions",
+        description: "High-quality audio and visual services for events and concerts",
+        price_range_start: 600,
+        price_range_end: 6000,
+        city: "San Antonio",
+        zipcode: "78205"
+      },
+      {
+        name: "Alamo City Catering",
+        description: "Authentic Tex-Mex catering for all types of events",
+        price_range_start: 20,
+        price_range_end: 120,
+        city: "San Antonio",
+        zipcode: "78210"
+      },
+      // Add vendors in Dallas
+      {
+        name: "Dallas Decor & Design",
+        description: "Luxury event decoration and design services",
+        price_range_start: 2000,
+        price_range_end: 20000,
+        city: "Dallas",
+        zipcode: "75201"
+      },
+      {
+        name: "North Texas Photo Booths",
+        description: "Fun and interactive photo booth rentals",
+        price_range_start: 400,
+        price_range_end: 1800,
+        city: "Dallas",
+        zipcode: "75202"
       }
     ];
     
-    console.log(`Found ${austinVendors.length} vendors in Austin`);
+    console.log(`Found ${austinVendors.length} vendors in multiple cities`);
     return austinVendors;
   } catch (error) {
-    console.error("Error scraping Austin vendors:", error);
+    console.error("Error scraping vendors:", error);
     throw error;
   }
 }
 
 // Create a sample company if it doesn't exist
 async function ensureVendorCompany(supabase): Promise<string> {
-  const companyName = "Austin Vendors Collection";
+  const companyName = "Texas Vendors Collection";
   
   // Check if company already exists
   const { data: existingCompany } = await supabase
@@ -169,7 +218,7 @@ async function ensureVendorCompany(supabase): Promise<string> {
     .insert({
       name: companyName,
       type: 'vendor',
-      description: 'Collection of event vendors in Austin, Texas'
+      description: 'Collection of event vendors in Texas'
     })
     .select('id')
     .single();
@@ -233,6 +282,8 @@ Deno.serve(async (req) => {
         description: vendor.description || null,
         price_range_start: vendor.price_range_start || null,
         price_range_end: vendor.price_range_end || null,
+        city: vendor.city || null,
+        zipcode: vendor.zipcode || null,
         company_id: companyId
       }));
     
@@ -264,7 +315,7 @@ Deno.serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        message: `Successfully added ${data.length} new vendors from Austin, Texas`,
+        message: `Successfully added ${data.length} new vendors from multiple cities`,
         vendors: data.map(v => v.name)
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

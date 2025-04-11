@@ -1,5 +1,5 @@
+
 import React, { useState, useCallback, useEffect } from "react";
-import { LocationFilter } from "./components/LocationFilter";
 import { CapacityFilter } from "./components/CapacityFilter";
 import { AvailabilityFilter } from "./components/AvailabilityFilter";
 import { VenueFilterValues } from "@/hooks/useVenues";
@@ -7,6 +7,8 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle } from "lucide-react";
+import { CitySelector } from "./components/CitySelector";
+import { ZipCodeFilter } from "./components/ZipCodeFilter";
 
 interface VenueFiltersProps {
   onFilterChange: (filters: VenueFilterValues) => void;
@@ -14,6 +16,7 @@ interface VenueFiltersProps {
 
 const VenueFilters = ({ onFilterChange }: VenueFiltersProps) => {
   const [city, setCity] = useState<string>("");
+  const [zipcode, setZipcode] = useState<string>("");
   const [minCapacity, setMinCapacity] = useState<number | undefined>(undefined);
   const [availabilityDate, setAvailabilityDate] = useState<Date | undefined>(undefined);
   const [verifiedOnly, setVerifiedOnly] = useState<boolean>(false);
@@ -22,6 +25,7 @@ const VenueFilters = ({ onFilterChange }: VenueFiltersProps) => {
   useEffect(() => {
     const filters: VenueFilterValues = {
       city: city || undefined,
+      zipcode: zipcode || undefined,
       capacity: {
         min: minCapacity,
         max: undefined
@@ -31,10 +35,14 @@ const VenueFilters = ({ onFilterChange }: VenueFiltersProps) => {
     };
 
     onFilterChange(filters);
-  }, [city, minCapacity, availabilityDate, verifiedOnly, onFilterChange]);
+  }, [city, zipcode, minCapacity, availabilityDate, verifiedOnly, onFilterChange]);
 
   const handleCityChange = useCallback((value: string) => {
     setCity(value);
+  }, []);
+
+  const handleZipcodeChange = useCallback((value: string) => {
+    setZipcode(value);
   }, []);
 
   const handleMinCapacityChange = useCallback((value: string) => {
@@ -44,6 +52,7 @@ const VenueFilters = ({ onFilterChange }: VenueFiltersProps) => {
 
   const handleResetFilters = useCallback(() => {
     setCity("");
+    setZipcode("");
     setMinCapacity(undefined);
     setAvailabilityDate(undefined);
     setVerifiedOnly(false);
@@ -64,19 +73,28 @@ const VenueFilters = ({ onFilterChange }: VenueFiltersProps) => {
   return (
     <div className="mb-6">
       <div className="flex flex-wrap gap-4 items-center">
-        <LocationFilter 
-          cityValue={city} 
-          onCityChange={handleCityChange}
+        <CitySelector 
+          selectedCity={city} 
+          onCitySelect={handleCityChange}
+          type="venues" 
         />
+        
+        <ZipCodeFilter
+          value={zipcode}
+          onChange={handleZipcodeChange}
+        />
+        
         <CapacityFilter 
           value={minCapacity?.toString() || ''} 
           onChange={handleMinCapacityChange}
         />
+        
         <AvailabilityFilter 
           availabilityDate={availabilityDate}
           onChange={handleAvailabilityChange}
           onClear={handleAvailabilityClear}
         />
+        
         <div className="flex items-center space-x-2">
           <Switch 
             id="verified-only" 
@@ -93,6 +111,7 @@ const VenueFilters = ({ onFilterChange }: VenueFiltersProps) => {
             )}
           </Label>
         </div>
+        
         <div className="ml-auto">
           <button 
             onClick={handleResetFilters}

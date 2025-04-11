@@ -8,6 +8,7 @@ export interface Venue {
   description: string;
   location: string;
   city: string;
+  zipcode?: string;
   state: string;
   type: string;
   capacity: number;
@@ -29,6 +30,7 @@ export interface Venue {
 
 export interface Filter {
   city?: string;
+  zipcode?: string;
   state?: string;
   type?: string;
   minCapacity?: number;
@@ -38,6 +40,7 @@ export interface Filter {
 
 export interface VenueFilterValues {
   city?: string;
+  zipcode?: string;
   capacity?: {
     min?: number;
     max?: number;
@@ -63,6 +66,7 @@ export const useVenues = (filters: VenueFilterValues = {}) => {
   const convertFilters = (filterValues: VenueFilterValues): Filter => {
     return {
       city: filterValues.city,
+      zipcode: filterValues.zipcode,
       minCapacity: filterValues.capacity?.min,
       maxCapacity: filterValues.capacity?.max,
       date: filterValues.availabilityDate ? filterValues.availabilityDate.toISOString().split('T')[0] : undefined

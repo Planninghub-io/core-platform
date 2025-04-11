@@ -11,6 +11,7 @@ import { VenuesList } from "@/components/venue-browser/VenuesList";
 import { useVenues } from "@/hooks/useVenues";
 import VenueFilters from "@/components/venue-filters/VenueFilters";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { CitySelector } from "@/components/venue-filters/components/CitySelector";
 
 interface MarketplaceClient {
   id: string;
@@ -27,6 +28,8 @@ interface PreferredVendor {
   id: string;
   name: string;
   description?: string;
+  city?: string;
+  zipcode?: string;
   price_range_start?: number;
   price_range_end?: number;
   company?: {
@@ -47,6 +50,8 @@ const ClientMarketplace = () => {
   const { venues, isLoading, error } = useVenues(filters);
   const [isClientLoading, setIsClientLoading] = useState(true);
   const [clientError, setClientError] = useState<string | null>(null);
+  const [selectedCity, setSelectedCity] = useState("");
+  const [selectedVendorCity, setSelectedVendorCity] = useState("");
 
   // Load client data when slug changes
   useEffect(() => {
@@ -105,8 +110,14 @@ const ClientMarketplace = () => {
       if (!client || activeTab !== "preferred") return;
       
       try {
+        // Build the query string with optional city filter
+        let queryString = `client=${client.slug}`;
+        if (selectedVendorCity) {
+          queryString += `&city=${encodeURIComponent(selectedVendorCity)}`;
+        }
+        
         // Direct API call to the marketplace-api function
-        const response = await fetch(`${window.location.origin}/functions/v1/marketplace-api/preferred-vendors?client=${client.slug}`);
+        const response = await fetch(`${window.location.origin}/functions/v1/marketplace-api/preferred-vendors?${queryString}`);
         const result = await response.json();
         
         if (!response.ok) {
@@ -122,10 +133,14 @@ const ClientMarketplace = () => {
     };
     
     fetchPreferredVendors();
-  }, [client, activeTab]);
+  }, [client, activeTab, selectedVendorCity]);
 
   const handleFilterChange = (newFilters: any) => {
     setFilters(newFilters);
+  };
+  
+  const handleVendorCityChange = (city: string) => {
+    setSelectedVendorCity(city);
   };
 
   const handleTabChange = (value: string) => {
@@ -248,6 +263,18 @@ const ClientMarketplace = () => {
         </TabsContent>
         
         <TabsContent value="preferred" className="pt-4">
+          <div className="mb-6">
+            <div className="bg-gray-50 p-4 rounded-md">
+              <div className="max-w-xs">
+                <CitySelector 
+                  selectedCity={selectedVendorCity} 
+                  onCitySelect={handleVendorCityChange}
+                  type="vendors" 
+                />
+              </div>
+            </div>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {preferredVendors.length === 0 ? (
               <div className="col-span-full py-12 text-center">
@@ -255,7 +282,10 @@ const ClientMarketplace = () => {
                   No Preferred Vendors
                 </h3>
                 <p className="text-gray-500">
-                  {client.name} has not added any preferred vendors yet.
+                  {selectedVendorCity 
+                    ? `No preferred vendors found in ${selectedVendorCity}.` 
+                    : `${client.name} has not added any preferred vendors yet.`
+                  }
                 </p>
               </div>
             ) : (
@@ -267,9 +297,16 @@ const ClientMarketplace = () => {
                       <p className="text-gray-600 mb-3 line-clamp-2">{vendor.description}</p>
                     )}
                     
+                    {vendor.city && (
+                      <p className="text-sm text-gray-500 mb-2">
+                        <span className="font-medium">Location:</span> {vendor.city}
+                        {vendor.zipcode && `, ${vendor.zipcode}`}
+                      </p>
+                    )}
+                    
                     {(vendor.price_range_start || vendor.price_range_end) && (
                       <p className="text-sm text-gray-500 mb-4">
-                        Price Range: 
+                        <span className="font-medium">Price Range:</span>
                         {vendor.price_range_start && vendor.price_range_end 
                           ? ` $${vendor.price_range_start} - $${vendor.price_range_end}`
                           : vendor.price_range_start

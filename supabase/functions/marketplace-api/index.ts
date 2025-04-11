@@ -69,12 +69,16 @@ serve(async (req) => {
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
         );
       
+      case 'cities':
+        // New endpoint to get distinct cities for venues or vendors
+        return await handleCities(req, corsHeaders);
+      
       default:
         return new Response(
           JSON.stringify({ 
             success: false, 
             error: 'Invalid endpoint',
-            available_endpoints: ['venues', 'vendors', 'preferred-venues', 'preferred-vendors', 'client']
+            available_endpoints: ['venues', 'vendors', 'preferred-venues', 'preferred-vendors', 'client', 'cities']
           }),
           { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
         );
@@ -88,12 +92,51 @@ serve(async (req) => {
   }
 });
 
+// New handler for retrieving distinct cities
+async function handleCities(req: Request, corsHeaders: Record<string, string>) {
+  const url = new URL(req.url);
+  const type = url.searchParams.get('type') || 'venues'; // 'venues' or 'vendors'
+  
+  let query;
+  if (type === 'venues') {
+    query = supabase
+      .from('venues')
+      .select('city')
+      .not('city', 'is', null)
+      .order('city');
+  } else {
+    query = supabase
+      .from('vendor_services')
+      .select('city')
+      .not('city', 'is', null)
+      .order('city');
+  }
+  
+  const { data, error } = await query;
+  
+  if (error) {
+    return new Response(
+      JSON.stringify({ success: false, error: error.message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    );
+  }
+  
+  // Extract unique cities
+  const cities = [...new Set(data.map(item => item.city))].filter(Boolean);
+  
+  return new Response(
+    JSON.stringify({ success: true, data: cities }),
+    { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+  );
+}
+
 // Handler for venues endpoint
 async function handleVenues(req: Request, client: any, corsHeaders: Record<string, string>) {
   const url = new URL(req.url);
   
   // Parse query parameters for filtering
   const city = url.searchParams.get('city');
+  const zipcode = url.searchParams.get('zipcode');
   const minCapacity = url.searchParams.get('minCapacity') ? parseInt(url.searchParams.get('minCapacity')!) : null;
   const maxCapacity = url.searchParams.get('maxCapacity') ? parseInt(url.searchParams.get('maxCapacity')!) : null;
   const date = url.searchParams.get('date');
@@ -106,6 +149,7 @@ async function handleVenues(req: Request, client: any, corsHeaders: Record<strin
       name,
       location,
       city,
+      zipcode,
       capacity,
       indoor_space_sqft,
       outdoor_space_sqft,
@@ -118,6 +162,7 @@ async function handleVenues(req: Request, client: any, corsHeaders: Record<strin
   
   // Apply filters if provided
   if (city) query = query.ilike('city', `%${city}%`);
+  if (zipcode) query = query.eq('zipcode', zipcode);
   if (minCapacity) query = query.gte('capacity', minCapacity);
   if (maxCapacity) query = query.lte('capacity', maxCapacity);
   
@@ -153,6 +198,8 @@ async function handleVendors(req: Request, client: any, corsHeaders: Record<stri
   
   // Parse filter parameters
   const name = url.searchParams.get('name');
+  const city = url.searchParams.get('city');
+  const zipcode = url.searchParams.get('zipcode');
   const minPrice = url.searchParams.get('minPrice') ? parseInt(url.searchParams.get('minPrice')!) : null;
   const maxPrice = url.searchParams.get('maxPrice') ? parseInt(url.searchParams.get('maxPrice')!) : null;
   
@@ -163,6 +210,8 @@ async function handleVendors(req: Request, client: any, corsHeaders: Record<stri
       id,
       name,
       description,
+      city,
+      zipcode,
       price_range_start,
       price_range_end,
       companies (name, id)
@@ -170,6 +219,8 @@ async function handleVendors(req: Request, client: any, corsHeaders: Record<stri
   
   // Apply filters if provided
   if (name) query = query.ilike('name', `%${name}%`);
+  if (city) query = query.ilike('city', `%${city}%`);
+  if (zipcode) query = query.eq('zipcode', zipcode);
   if (minPrice) query = query.gte('price_range_start', minPrice);
   if (maxPrice) query = query.lte('price_range_end', maxPrice);
   
@@ -190,7 +241,11 @@ async function handleVendors(req: Request, client: any, corsHeaders: Record<stri
 
 // Handler for preferred venues endpoint
 async function handlePreferredVenues(req: Request, client: any, corsHeaders: Record<string, string>) {
-  const { data: preferredVenues, error } = await supabase
+  const url = new URL(req.url);
+  const city = url.searchParams.get('city');
+  const zipcode = url.searchParams.get('zipcode');
+  
+  let query = supabase
     .from('marketplace_preferred_venues')
     .select(`
       id,
@@ -200,6 +255,7 @@ async function handlePreferredVenues(req: Request, client: any, corsHeaders: Rec
         name,
         location,
         city,
+        zipcode,
         capacity,
         indoor_space_sqft,
         outdoor_space_sqft,
@@ -213,6 +269,8 @@ async function handlePreferredVenues(req: Request, client: any, corsHeaders: Rec
     .eq('marketplace_client_id', client.id)
     .order('display_order');
   
+  const { data: preferredVenues, error } = await query;
+  
   if (error) {
     return new Response(
       JSON.stringify({ success: false, error: error.message }),
@@ -221,7 +279,16 @@ async function handlePreferredVenues(req: Request, client: any, corsHeaders: Rec
   }
   
   // Extract venue objects from join table results
-  const venues = preferredVenues?.map(pv => pv.venues) || [];
+  let venues = preferredVenues?.map(pv => pv.venues) || [];
+  
+  // Apply city/zipcode filter if provided
+  if (city) {
+    venues = venues.filter(venue => venue.city && venue.city.toLowerCase().includes(city.toLowerCase()));
+  }
+  
+  if (zipcode) {
+    venues = venues.filter(venue => venue.zipcode === zipcode);
+  }
   
   return new Response(
     JSON.stringify({ success: true, data: venues }),
@@ -231,6 +298,10 @@ async function handlePreferredVenues(req: Request, client: any, corsHeaders: Rec
 
 // Handler for preferred vendors endpoint
 async function handlePreferredVendors(req: Request, client: any, corsHeaders: Record<string, string>) {
+  const url = new URL(req.url);
+  const city = url.searchParams.get('city');
+  const zipcode = url.searchParams.get('zipcode');
+  
   const { data: preferredVendors, error } = await supabase
     .from('marketplace_preferred_vendors')
     .select(`
@@ -240,6 +311,8 @@ async function handlePreferredVendors(req: Request, client: any, corsHeaders: Re
         id,
         name,
         description,
+        city,
+        zipcode,
         price_range_start,
         price_range_end,
         companies (name, id)
@@ -256,7 +329,16 @@ async function handlePreferredVendors(req: Request, client: any, corsHeaders: Re
   }
   
   // Extract vendor objects from join table results
-  const vendors = preferredVendors?.map(pv => pv.vendor_services) || [];
+  let vendors = preferredVendors?.map(pv => pv.vendor_services) || [];
+  
+  // Apply city/zipcode filter if provided
+  if (city) {
+    vendors = vendors.filter(vendor => vendor.city && vendor.city.toLowerCase().includes(city.toLowerCase()));
+  }
+  
+  if (zipcode) {
+    vendors = vendors.filter(vendor => vendor.zipcode === zipcode);
+  }
   
   return new Response(
     JSON.stringify({ success: true, data: vendors }),

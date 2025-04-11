@@ -32,3 +32,5 @@ enabled = true
 verify_jwt = false
 [functions.marketplace-api]
 verify_jwt = false
+[functions.venue-availability]
+verify_jwt = false

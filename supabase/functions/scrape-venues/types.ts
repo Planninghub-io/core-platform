@@ -8,6 +8,8 @@ export interface Venue {
   booking_policy: string | null;
   cancellation_policy: string | null;
   company_id: string;
+  city: string;
+  zipcode: string | null;
 }
 
 export interface ScrapedVenue {
@@ -18,4 +20,6 @@ export interface ScrapedVenue {
   amenities?: Record<string, boolean>;
   booking_policy?: string;
   cancellation_policy?: string;
+  city: string;
+  zipcode?: string;
 }

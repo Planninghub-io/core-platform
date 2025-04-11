@@ -648,6 +648,7 @@ export type Database = {
       }
       vendor_services: {
         Row: {
+          city: string | null
           company_id: string
           created_at: string
           description: string | null
@@ -656,8 +657,10 @@ export type Database = {
           price_range_end: number | null
           price_range_start: number | null
           updated_at: string
+          zipcode: string | null
         }
         Insert: {
+          city?: string | null
           company_id: string
           created_at?: string
           description?: string | null
@@ -666,8 +669,10 @@ export type Database = {
           price_range_end?: number | null
           price_range_start?: number | null
           updated_at?: string
+          zipcode?: string | null
         }
         Update: {
+          city?: string | null
           company_id?: string
           created_at?: string
           description?: string | null
@@ -676,6 +681,7 @@ export type Database = {
           price_range_end?: number | null
           price_range_start?: number | null
           updated_at?: string
+          zipcode?: string | null
         }
         Relationships: [
           {
@@ -694,7 +700,7 @@ export type Database = {
           booking_policy: string | null
           cancellation_policy: string | null
           capacity: number | null
-          city: string | null
+          city: string
           company_id: string
           created_at: string
           id: string
@@ -703,6 +709,7 @@ export type Database = {
           name: string
           outdoor_space_sqft: number | null
           updated_at: string
+          zipcode: string | null
         }
         Insert: {
           amenities?: Json | null
@@ -710,7 +717,7 @@ export type Database = {
           booking_policy?: string | null
           cancellation_policy?: string | null
           capacity?: number | null
-          city?: string | null
+          city: string
           company_id: string
           created_at?: string
           id?: string
@@ -719,6 +726,7 @@ export type Database = {
           name: string
           outdoor_space_sqft?: number | null
           updated_at?: string
+          zipcode?: string | null
         }
         Update: {
           amenities?: Json | null
@@ -726,7 +734,7 @@ export type Database = {
           booking_policy?: string | null
           cancellation_policy?: string | null
           capacity?: number | null
-          city?: string | null
+          city?: string
           company_id?: string
           created_at?: string
           id?: string
@@ -735,6 +743,7 @@ export type Database = {
           name?: string
           outdoor_space_sqft?: number | null
           updated_at?: string
+          zipcode?: string | null
         }
         Relationships: [
           {

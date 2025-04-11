@@ -4,7 +4,7 @@ import { Venue, ScrapedVenue } from "./types.ts";
 
 // Create a sample company if it doesn't exist
 export async function ensureVenueCompany(supabase): Promise<string> {
-  const companyName = "Austin Venues Collection";
+  const companyName = "Texas Venues Collection";
   
   // Check if company already exists
   const { data: existingCompany } = await supabase
@@ -23,7 +23,7 @@ export async function ensureVenueCompany(supabase): Promise<string> {
     .insert({
       name: companyName,
       type: 'venue',
-      description: 'Collection of venues in Austin, Texas'
+      description: 'Collection of venues across Texas'
     })
     .select('id')
     .single();
@@ -61,7 +61,9 @@ export async function prepareVenuesForInsertion(
       amenities: venue.amenities || null,
       booking_policy: venue.booking_policy || null,
       cancellation_policy: venue.cancellation_policy || null,
-      company_id: companyId
+      company_id: companyId,
+      city: venue.city,
+      zipcode: venue.zipcode || null
     }));
     
   return venuesToInsert;
