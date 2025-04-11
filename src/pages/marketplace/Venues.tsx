@@ -75,7 +75,11 @@ const Venues = () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        toast.error("You need to be logged in to use this feature");
+        toast({
+          title: "Error",
+          description: "You need to be logged in to use this feature",
+          variant: "destructive",
+        });
         setIsScrapingVenues(false);
         return;
       }
