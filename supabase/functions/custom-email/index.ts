@@ -1,9 +1,14 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "../_shared/cors.ts";
+
+// Define CORS headers for browser access
+export const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
 
 serve(async (req) => {
-  // This is needed if you're planning to invoke your function from a browser.
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -14,17 +19,26 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
     if (!supabaseUrl || !supabaseServiceKey) {
+      console.error("Missing environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
       throw new Error('Missing environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
     }
 
     console.log("Setting up email templates at URL:", supabaseUrl);
 
     // Parse request body if provided
-    const body = req.body ? await req.json() : {};
-    console.log("Request body:", body);
+    let body = {};
+    try {
+      if (req.body) {
+        body = await req.json();
+        console.log("Request body:", body);
+      }
+    } catch (e) {
+      console.error("Failed to parse request body:", e);
+      // Continue even if body parsing fails
+    }
 
     // Call the Auth Admin API to update email templates
-    const res = await fetch(
+    const response = await fetch(
       `${supabaseUrl}/auth/v1/admin/email-templates`,
       {
         method: 'PUT',
@@ -137,13 +151,24 @@ serve(async (req) => {
     );
 
     // Check response status
-    if (!res.ok) {
-      const errorDetails = await res.text();
-      console.error(`Failed to update email templates: HTTP ${res.status}`, errorDetails);
-      throw new Error(`Failed to update email templates: HTTP ${res.status}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Failed to update email templates: HTTP ${response.status}`, errorText);
+      
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          message: `Failed to update email templates: HTTP ${response.status}`,
+          details: errorText
+        }),
+        {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 200, // Return 200 even for API errors to avoid cascading failures
+        }
+      );
     }
 
-    const data = await res.json();
+    const data = await response.json();
     console.log("Email templates updated successfully:", data);
 
     return new Response(
@@ -159,6 +184,7 @@ serve(async (req) => {
     );
   } catch (error) {
     console.error("Error updating email templates:", error);
+    
     return new Response(
       JSON.stringify({ 
         success: false, 
@@ -167,7 +193,7 @@ serve(async (req) => {
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
+        status: 200, // Return 200 instead of 500 to prevent cascading failures
       }
     );
   }

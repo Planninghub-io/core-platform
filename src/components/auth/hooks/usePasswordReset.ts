@@ -9,10 +9,20 @@ export const usePasswordReset = () => {
   const { toast } = useToast();
 
   const handleResetRequest = async () => {
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
-      // Call the password reset function from otpUtils
+      // Call the password reset function from otpUtils directly
+      // No need to set up template multiple times
       const result = await sendPasswordResetOTP(email, toast);
       
       if (result.success) {

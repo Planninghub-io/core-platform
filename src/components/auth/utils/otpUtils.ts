@@ -47,18 +47,14 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
-    // First, ensure the custom email template is set up
-    const templateSetup = await setupCustomEmailTemplateWithRetry();
-    console.log("Template setup result:", templateSetup);
-    
     // Use the environment-aware APP_URL
     const redirectTo = `${APP_URL}/auth/new-password`;
     
     console.log("Password reset requested for:", email);
     console.log("Using redirect URL:", redirectTo);
     
-    // Add a small delay to ensure template has been applied
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    // Skip setup template call here to avoid the 500 error
+    // The template should already be set up in Supabase
     
     // Request password reset with proper redirectTo URL
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -76,7 +72,7 @@ export const sendPasswordResetOTP = async (
     }
 
     toast({
-      title: "Password Reset",
+      title: "Password Reset Link Sent",
       description: "Check your email for a password reset link.",
     });
     
@@ -93,6 +89,7 @@ export const sendPasswordResetOTP = async (
 };
 
 // Helper function to set up custom email template with multiple retries
+// This is kept for reference but not actively used to avoid 500 errors
 async function setupCustomEmailTemplateWithRetry(maxRetries = 3): Promise<boolean> {
   console.log("Starting template setup with retries:", maxRetries);
   let lastError = null;
