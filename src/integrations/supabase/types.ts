@@ -700,7 +700,7 @@ export type Database = {
           booking_policy: string | null
           cancellation_policy: string | null
           capacity: number | null
-          city: string
+          city: string | null
           company_id: string
           created_at: string
           id: string
@@ -717,7 +717,7 @@ export type Database = {
           booking_policy?: string | null
           cancellation_policy?: string | null
           capacity?: number | null
-          city: string
+          city?: string | null
           company_id: string
           created_at?: string
           id?: string
@@ -734,7 +734,7 @@ export type Database = {
           booking_policy?: string | null
           cancellation_policy?: string | null
           capacity?: number | null
-          city?: string
+          city?: string | null
           company_id?: string
           created_at?: string
           id?: string

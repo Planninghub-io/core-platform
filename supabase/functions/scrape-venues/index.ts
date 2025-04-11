@@ -1,6 +1,6 @@
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.38.4';
-import { scrapeAustinVenues } from "./venueScrapers.ts";
+import { scrapeTexasVenues } from "./venueScrapers.ts";
 import { ensureVenueCompany, prepareVenuesForInsertion, insertVenues } from "./dbOperations.ts";
 
 Deno.serve(async (req) => {
@@ -30,10 +30,10 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    console.log("Starting venue scraping process...");
+    console.log("Starting venue scraping process for multiple Texas cities...");
     
-    // Scrape venue data
-    const venueData = await scrapeAustinVenues();
+    // Scrape venue data from multiple Texas cities
+    const venueData = await scrapeTexasVenues();
     
     // Get or create a company for these venues
     const companyId = await ensureVenueCompany(supabase);
@@ -58,8 +58,8 @@ Deno.serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        message: `Successfully added ${insertedVenues.length} new venues from Austin, Texas`,
-        venues: insertedVenues.map(v => v.name)
+        message: `Successfully added ${insertedVenues.length} new venues from Texas cities`,
+        venues: insertedVenues.map(v => ({name: v.name, city: v.city}))
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

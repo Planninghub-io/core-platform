@@ -23,23 +23,23 @@ interface ScrapedVendor {
   zipcode?: string;
 }
 
-// Function to fetch vendor data from event vendor websites in Austin, TX
-async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
-  console.log("Starting to scrape Austin vendors...");
+// Function to fetch vendor data from event vendor websites in Texas cities
+async function scrapeTexasVendors(): Promise<ScrapedVendor[]> {
+  console.log("Starting to scrape Texas vendors...");
   
   try {
     // In a production environment, you would use real web scraping here
     // For now, we're using enhanced sample data to simulate web scraping results
     // This would be replaced with actual scraping logic using libraries like Cheerio, Puppeteer, or services like Firecrawl
     
-    const austinVendors: ScrapedVendor[] = [
+    const texasVendors: ScrapedVendor[] = [
+      // Austin vendors
       {
         name: "Austin Event Lighting",
         description: "Professional lighting solutions for events of all sizes",
         price_range_start: 500,
         price_range_end: 5000,
         services: ["Lighting design", "Installation", "Audio-visual support"],
-        location: "Austin",
         city: "Austin",
         zipcode: "78701"
       },
@@ -49,7 +49,6 @@ async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
         price_range_start: 25,
         price_range_end: 150,
         services: ["Full-service catering", "Buffet service", "Plated meals"],
-        location: "Austin",
         city: "Austin",
         zipcode: "78702"
       },
@@ -59,138 +58,100 @@ async function scrapeAustinVendors(): Promise<ScrapedVendor[]> {
         price_range_start: 1500,
         price_range_end: 8000,
         services: ["Event photography", "Photo booth", "Same-day edits"],
-        location: "Austin",
         city: "Austin",
         zipcode: "78704"
       },
+      
+      // Dallas vendors
       {
-        name: "ATX DJ Collective",
-        description: "Experienced DJs for weddings, corporate events, and private parties",
-        price_range_start: 800,
-        price_range_end: 3000,
-        services: ["DJ services", "Sound equipment", "Custom playlists"],
-        location: "Austin",
-        city: "Austin",
-        zipcode: "78701"
-      },
-      {
-        name: "Wildflower Event Florists",
-        description: "Bespoke floral designs featuring Texas wildflowers and sustainable practices",
-        price_range_start: 1000,
-        price_range_end: 10000,
-        services: ["Floral arrangements", "Installation", "Consultation"],
-        location: "Austin",
-        city: "Austin",
-        zipcode: "78703"
-      },
-      {
-        name: "Austin Vintage Rentals",
-        description: "Curated collection of vintage furniture and decor for unique event styling",
-        price_range_start: 500,
-        price_range_end: 7500,
-        services: ["Furniture rental", "Styling", "Delivery and setup"],
-        location: "Austin",
-        city: "Austin",
-        zipcode: "78704"
-      },
-      {
-        name: "Live Oak Videography",
-        description: "Cinematic event videography with a storytelling approach",
-        price_range_start: 2500,
-        price_range_end: 12000,
-        services: ["Event videography", "Drone footage", "Highlight reels"],
-        location: "Austin",
-        city: "Austin",
-        zipcode: "78704"
-      },
-      {
-        name: "Texas Hill Country Events",
-        description: "Full-service event planning and coordination",
-        price_range_start: 3000,
-        price_range_end: 15000,
-        services: ["Event planning", "Day-of coordination", "Venue selection"],
-        location: "Austin",
-        city: "Austin",
-        zipcode: "78705"
-      },
-      {
-        name: "Austin Sound & Stage",
-        description: "Professional sound and staging for events and performances",
-        price_range_start: 1000,
-        price_range_end: 8000,
-        services: ["Sound engineering", "Stage setup", "Equipment rental"],
-        location: "Austin",
-        city: "Austin",
-        zipcode: "78701"
-      },
-      {
-        name: "Capital City Bartenders",
-        description: "Professional bartending services with craft cocktail expertise",
-        price_range_start: 500,
-        price_range_end: 2500,
-        services: ["Bartending", "Custom cocktail menus", "Bar setup"],
-        location: "Austin",
-        city: "Austin",
-        zipcode: "78701"
-      },
-      {
-        name: "ATX Event Staffing",
-        description: "Professional event staff including servers, greeters, and security",
-        price_range_start: 25,
-        price_range_end: 45,
-        services: ["Event staffing", "Server training", "On-site management"],
-        location: "Austin",
-        city: "Austin",
-        zipcode: "78702"
-      },
-      {
-        name: "Austin Wedding Officiants",
-        description: "Professional officiants for weddings and commitment ceremonies",
-        price_range_start: 350,
-        price_range_end: 1200,
-        services: ["Ceremony planning", "Officiating", "Custom vows"],
-        location: "Austin",
-        city: "Austin",
-        zipcode: "78705"
-      },
-      // Add vendors in San Antonio
-      {
-        name: "San Antonio Sound Productions",
-        description: "High-quality audio and visual services for events and concerts",
-        price_range_start: 600,
-        price_range_end: 6000,
-        city: "San Antonio",
-        zipcode: "78205"
-      },
-      {
-        name: "Alamo City Catering",
-        description: "Authentic Tex-Mex catering for all types of events",
-        price_range_start: 20,
-        price_range_end: 120,
-        city: "San Antonio",
-        zipcode: "78210"
-      },
-      // Add vendors in Dallas
-      {
-        name: "Dallas Decor & Design",
-        description: "Luxury event decoration and design services",
-        price_range_start: 2000,
-        price_range_end: 20000,
+        name: "Dallas Elite Catering",
+        description: "Premium catering services for corporate and social events",
+        price_range_start: 35,
+        price_range_end: 200,
+        services: ["Corporate events", "Weddings", "Social gatherings"],
         city: "Dallas",
         zipcode: "75201"
       },
       {
-        name: "North Texas Photo Booths",
-        description: "Fun and interactive photo booth rentals",
-        price_range_start: 400,
-        price_range_end: 1800,
+        name: "North Texas Event Productions",
+        description: "Full-service event production company",
+        price_range_start: 2000,
+        price_range_end: 15000,
+        services: ["Event planning", "Audio-visual", "Stage design"],
         city: "Dallas",
         zipcode: "75202"
+      },
+      {
+        name: "Dallas Wedding Films",
+        description: "Cinematic wedding and event videography",
+        price_range_start: 2500,
+        price_range_end: 7500,
+        services: ["Wedding films", "Event highlights", "Drone footage"],
+        city: "Dallas",
+        zipcode: "75219"
+      },
+      
+      // Houston vendors
+      {
+        name: "Houston Sound & Lighting",
+        description: "Professional audio and lighting services for any event",
+        price_range_start: 800,
+        price_range_end: 6000,
+        services: ["Sound systems", "Stage lighting", "DJ services"],
+        city: "Houston",
+        zipcode: "77002"
+      },
+      {
+        name: "Bayou City Caterers",
+        description: "Houston's premier catering service featuring Gulf Coast cuisine",
+        price_range_start: 30,
+        price_range_end: 175,
+        services: ["Corporate catering", "Wedding receptions", "Social events"],
+        city: "Houston",
+        zipcode: "77006"
+      },
+      {
+        name: "Space City Event Rentals",
+        description: "Complete event rental solutions from tables to tents",
+        price_range_start: 500,
+        price_range_end: 10000,
+        services: ["Furniture rental", "Tent rental", "Decor packages"],
+        city: "Houston",
+        zipcode: "77007"
+      },
+      
+      // San Antonio vendors
+      {
+        name: "Alamo City Bartenders",
+        description: "Professional bartending services with Texas flair",
+        price_range_start: 350,
+        price_range_end: 1800,
+        services: ["Bartending", "Custom cocktails", "Bar setup"],
+        city: "San Antonio",
+        zipcode: "78205"
+      },
+      {
+        name: "River Walk Florists",
+        description: "Beautiful floral designs for all occasions",
+        price_range_start: 500,
+        price_range_end: 5000,
+        services: ["Wedding flowers", "Event decor", "Centerpieces"],
+        city: "San Antonio",
+        zipcode: "78205"
+      },
+      {
+        name: "Mission Event Planning",
+        description: "Full-service event planning with San Antonio charm",
+        price_range_start: 2500,
+        price_range_end: 15000,
+        services: ["Wedding planning", "Corporate events", "Destination management"],
+        city: "San Antonio",
+        zipcode: "78215"
       }
     ];
     
-    console.log(`Found ${austinVendors.length} vendors in multiple cities`);
-    return austinVendors;
+    console.log(`Found ${texasVendors.length} vendors across Texas cities`);
+    return texasVendors;
   } catch (error) {
     console.error("Error scraping vendors:", error);
     throw error;
@@ -258,10 +219,10 @@ Deno.serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
     
-    console.log("Starting vendor scraping process...");
+    console.log("Starting vendor scraping process for Texas cities...");
     
     // Scrape vendor data
-    const vendorData = await scrapeAustinVendors();
+    const vendorData = await scrapeTexasVendors();
     
     // Get or create a company for these vendors
     const companyId = await ensureVendorCompany(supabase);
@@ -315,8 +276,8 @@ Deno.serve(async (req) => {
     
     return new Response(
       JSON.stringify({ 
-        message: `Successfully added ${data.length} new vendors from multiple cities`,
-        vendors: data.map(v => v.name)
+        message: `Successfully added ${data.length} new vendors from Texas cities`,
+        vendors: data.map(v => ({name: v.name, city: v.city}))
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

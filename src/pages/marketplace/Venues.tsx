@@ -6,7 +6,7 @@ import { useToast } from "@/components/ui/use-toast";
 import VenueFilters from "@/components/venue-filters/VenueFilters";
 import { VenueFilterValues, useVenues } from "@/hooks/useVenues";
 import { VenuesList } from "@/components/venue-browser/VenuesList";
-import { Sparkles, RefreshCw } from "lucide-react";
+import { Sparkles, RefreshCw, DownloadCloud } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,6 +14,7 @@ const Venues = () => {
   const { toast } = useToast();
   const [filters, setFilters] = useState<VenueFilterValues>({});
   const [isScraping, setIsScraping] = useState(false);
+  const [isScrapingVenues, setIsScrapingVenues] = useState(false);
   const [activeTab, setActiveTab] = useState("browse");
   
   const { venues, isLoading, error, refetch } = useVenues(filters);
@@ -65,6 +66,66 @@ const Venues = () => {
       setIsScraping(false);
     }
   };
+  
+  // Function to trigger venue scraping for multiple cities
+  const handleScrapeVenues = async () => {
+    setIsScrapingVenues(true);
+    
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast.error("You need to be logged in to use this feature");
+        setIsScrapingVenues(false);
+        return;
+      }
+      
+      const { data, error } = await supabase.functions.invoke('scrape-venues', {
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+      
+      if (error) {
+        console.error("Error scraping venues:", error);
+        toast({
+          title: "Error",
+          description: "Failed to scrape venues. Please try again later.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Refetch venue data to show the newly added venues
+      await refetch();
+      
+      if (data.venues && data.venues.length > 0) {
+        toast({
+          title: "Success",
+          description: `Successfully added ${data.venues.length} new venues from Texas cities`,
+        });
+      } else if (data.message?.includes('No new venues')) {
+        toast({
+          title: "Info",
+          description: "No new venues found. All venues are already in the database.",
+        });
+      } else {
+        toast({
+          title: "Success",
+          description: data.message,
+        });
+      }
+    } catch (err: any) {
+      console.error("Error in scrape venues process:", err);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsScrapingVenues(false);
+    }
+  };
 
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -90,6 +151,15 @@ const Venues = () => {
           </TabsList>
           
           <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleScrapeVenues}
+              disabled={isScrapingVenues}
+            >
+              <DownloadCloud className={`h-4 w-4 mr-2 ${isScrapingVenues ? 'animate-bounce' : ''}`} />
+              {isScrapingVenues ? 'Collecting Venues...' : 'Load City Venues'}
+            </Button>
             <Button 
               variant="outline" 
               size="sm"

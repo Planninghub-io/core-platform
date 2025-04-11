@@ -4,9 +4,10 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, DollarSign, Compass, Sparkles, RefreshCw } from "lucide-react";
+import { ArrowRight, DollarSign, Compass, Sparkles, RefreshCw, DownloadCloud } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { CitySelector } from "@/components/venue-filters/components/CitySelector";
 
 type VendorService = {
   id: string;
@@ -16,12 +17,18 @@ type VendorService = {
   price_range_end: number | null;
   company_id: string;
   created_at: string;
+  city: string | null;
+  zipcode: string | null;
 };
 
-const fetchVendorServices = async (): Promise<VendorService[]> => {
-  const { data, error } = await supabase
-    .from("vendor_services")
-    .select("*");
+const fetchVendorServices = async (city: string = ""): Promise<VendorService[]> => {
+  let query = supabase.from("vendor_services").select("*");
+  
+  if (city) {
+    query = query.eq("city", city);
+  }
+  
+  const { data, error } = await query;
   
   if (error) {
     console.error("Error fetching vendor services:", error);
@@ -43,9 +50,11 @@ const formatPrice = (price: number | null) => {
 
 const Vendors = () => {
   const [isScrapingVendors, setIsScrapingVendors] = useState(false);
+  const [selectedCity, setSelectedCity] = useState("");
+  
   const { data: vendorServices, isLoading, error, refetch } = useQuery({
-    queryKey: ["vendor_services"],
-    queryFn: fetchVendorServices,
+    queryKey: ["vendor_services", selectedCity],
+    queryFn: () => fetchVendorServices(selectedCity),
   });
 
   const handleScrapeVendors = async () => {
@@ -74,7 +83,7 @@ const Vendors = () => {
       await refetch();
       
       if (data.vendors && data.vendors.length > 0) {
-        toast.success(`Successfully added ${data.vendors.length} new vendors from Austin`);
+        toast.success(`Successfully added ${data.vendors.length} new vendors from Texas cities`);
       } else if (data.message.includes('No new vendors')) {
         toast.info("No new vendors found. All vendors are already in the database.");
       } else {
@@ -87,21 +96,50 @@ const Vendors = () => {
       setIsScrapingVendors(false);
     }
   };
+  
+  const handleCityChange = (city: string) => {
+    setSelectedCity(city);
+  };
 
   return (
     <>
       <Tabs defaultValue="browse" className="mb-6">
-        <TabsList>
-          <TabsTrigger value="browse" className="flex items-center gap-2">
-            <Compass className="h-4 w-4" />
-            Browse Vendors
-          </TabsTrigger>
-          <TabsTrigger value="ai-agent" className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4" />
-            Vendor AI Agent
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex justify-between items-center mb-4">
+          <TabsList>
+            <TabsTrigger value="browse" className="flex items-center gap-2">
+              <Compass className="h-4 w-4" />
+              Browse Vendors
+            </TabsTrigger>
+            <TabsTrigger value="ai-agent" className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              Vendor AI Agent
+            </TabsTrigger>
+          </TabsList>
+          
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleScrapeVendors}
+              disabled={isScrapingVendors}
+            >
+              <DownloadCloud className={`h-4 w-4 mr-2 ${isScrapingVendors ? 'animate-bounce' : ''}`} />
+              {isScrapingVendors ? 'Collecting Vendors...' : 'Load City Vendors'}
+            </Button>
+          </div>
+        </div>
+        
         <TabsContent value="browse" className="pt-4">
+          <div className="bg-gray-50 p-4 rounded-md mb-6">
+            <div className="max-w-xs">
+              <CitySelector 
+                selectedCity={selectedCity} 
+                onCitySelect={handleCityChange} 
+                type="vendors"
+              />
+            </div>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {isLoading && (
               <div className="col-span-3 flex justify-center items-center h-64">
@@ -118,7 +156,11 @@ const Vendors = () => {
             {vendorServices && vendorServices.length === 0 && !isLoading && (
               <div className="col-span-3 text-center py-10">
                 <h3 className="mt-2 text-lg font-medium text-gray-900">No vendor services found</h3>
-                <p className="mt-1 text-gray-500">Check back later for available vendor services.</p>
+                <p className="mt-1 text-gray-500">
+                  {selectedCity 
+                    ? `No vendors found in ${selectedCity}. Try a different city or load more vendors.` 
+                    : "Try selecting a city or loading more vendors."}
+                </p>
               </div>
             )}
 
@@ -147,6 +189,13 @@ const Vendors = () => {
                       </span>
                     </div>
                   )}
+                  
+                  {service.city && (
+                    <div className="text-sm text-gray-600 mb-2">
+                      <span className="font-medium">Location:</span> {service.city}
+                      {service.zipcode && `, ${service.zipcode}`}
+                    </div>
+                  )}
                 </CardContent>
                 <CardFooter className="bg-gray-50 border-t flex justify-between">
                   <div className="text-sm text-gray-500">
@@ -166,16 +215,16 @@ const Vendors = () => {
             <div className="text-center mb-8">
               <h3 className="text-xl font-medium text-gray-900 mb-3">Vendor AI Discovery Agent</h3>
               <p className="text-gray-600 max-w-2xl mx-auto">
-                Our AI agent can search the web for event vendors in Austin and automatically add them to our database.
+                Our AI agent can search the web for event vendors in Texas and automatically add them to our database.
                 This helps keep our marketplace up-to-date with the latest available vendors.
               </p>
             </div>
             
             <div className="flex flex-col items-center space-y-6">
               <div className="bg-white p-6 rounded-lg shadow-sm border border-purple-100 w-full max-w-md">
-                <h4 className="font-medium text-lg mb-4 text-gray-800">Scrape Austin Vendors</h4>
+                <h4 className="font-medium text-lg mb-4 text-gray-800">Scrape Texas Vendors</h4>
                 <p className="text-gray-600 mb-6">
-                  Click the button below to scan for event vendors in Austin and add them to our database.
+                  Click the button below to scan for event vendors across Texas cities and add them to our database.
                 </p>
                 <Button 
                   onClick={handleScrapeVendors}
@@ -190,7 +239,7 @@ const Vendors = () => {
                   ) : (
                     <>
                       <Sparkles className="h-4 w-4 mr-2" />
-                      Discover Austin Vendors
+                      Discover Texas Vendors
                     </>
                   )}
                 </Button>
