@@ -4,12 +4,13 @@ import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Building, Store, Star } from "lucide-react";
+import { Building, Store, Star, AlertCircle } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { VenuesList } from "@/components/venue-browser/VenuesList";
 import { useVenues } from "@/hooks/useVenues";
 import VenueFilters from "@/components/venue-filters/VenueFilters";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface MarketplaceClient {
   id: string;
@@ -44,50 +45,54 @@ const ClientMarketplace = () => {
   const [activeTab, setActiveTab] = useState("venues");
   const [filters, setFilters] = useState({});
   const { venues, isLoading, error } = useVenues(filters);
+  const [isClientLoading, setIsClientLoading] = useState(true);
+  const [clientError, setClientError] = useState<string | null>(null);
 
   // Load client data when slug changes
   useEffect(() => {
     const fetchClientData = async () => {
       if (!slug) return;
       
+      setIsClientLoading(true);
+      setClientError(null);
+      
       try {
-        const { data, error } = await supabase.functions.invoke('marketplace-api', {
-          body: { endpoint: 'client', client: slug }
-        });
+        // Direct API call to the marketplace-api function
+        const response = await fetch(`${window.location.origin}/functions/v1/marketplace-api/client?client=${slug}`);
+        const result = await response.json();
         
-        if (error) {
-          console.error("Error fetching client data:", error);
-          toast({
-            title: "Error",
-            description: "Unable to load marketplace data",
-            variant: "destructive",
-          });
-          return;
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to load marketplace client");
         }
         
-        if (data.success && data.data) {
-          setClient(data.data);
-          document.title = `${data.data.name} Marketplace`;
+        if (result.success && result.data) {
+          setClient(result.data);
+          document.title = `${result.data.name} Marketplace`;
           
           // Apply theme colors if available
-          if (data.data.theme_colors) {
+          if (result.data.theme_colors) {
             document.documentElement.style.setProperty(
               '--marketplace-primary', 
-              data.data.theme_colors.primary
+              result.data.theme_colors.primary
             );
             document.documentElement.style.setProperty(
               '--marketplace-secondary', 
-              data.data.theme_colors.secondary
+              result.data.theme_colors.secondary
             );
           }
+        } else {
+          throw new Error("Invalid client data received");
         }
       } catch (err) {
         console.error("Failed to load marketplace:", err);
+        setClientError(err instanceof Error ? err.message : "Unable to load marketplace");
         toast({
           title: "Error",
           description: "Unable to load marketplace",
           variant: "destructive",
         });
+      } finally {
+        setIsClientLoading(false);
       }
     };
     
@@ -100,20 +105,16 @@ const ClientMarketplace = () => {
       if (!client || activeTab !== "preferred") return;
       
       try {
-        const { data, error } = await supabase.functions.invoke('marketplace-api', {
-          body: { 
-            endpoint: 'preferred-vendors', 
-            client: client.slug 
-          }
-        });
+        // Direct API call to the marketplace-api function
+        const response = await fetch(`${window.location.origin}/functions/v1/marketplace-api/preferred-vendors?client=${client.slug}`);
+        const result = await response.json();
         
-        if (error) {
-          console.error("Error fetching preferred vendors:", error);
-          return;
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to load preferred vendors");
         }
         
-        if (data.success) {
-          setPreferredVendors(data.data);
+        if (result.success) {
+          setPreferredVendors(result.data);
         }
       } catch (err) {
         console.error("Failed to load preferred vendors:", err);
@@ -150,12 +151,39 @@ const ClientMarketplace = () => {
     color: "white",
   };
 
+  if (isClientLoading) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <div className="flex flex-col justify-center items-center h-64">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900 mb-4"></div>
+          <p className="text-gray-600">Loading marketplace...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (clientError) {
+    return (
+      <div className="container mx-auto px-4 py-12">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            {clientError}. Please check the marketplace URL and try again.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
   if (!client) {
     return (
       <div className="container mx-auto px-4 py-12">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-gray-900"></div>
-        </div>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Marketplace not found. Please check the URL and try again.
+          </AlertDescription>
+        </Alert>
       </div>
     );
   }

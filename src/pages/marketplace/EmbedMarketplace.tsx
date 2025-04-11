@@ -13,6 +13,7 @@ const EmbedMarketplace = () => {
   const [clientSlug, setClientSlug] = useState('visitkileen');
   const [copied, setCopied] = useState(false);
   
+  // Use window.location.origin to get the current base URL
   const baseUrl = window.location.origin;
   const marketplaceUrl = `${baseUrl}/client/${clientSlug}`;
   const iframeCode = `<iframe src="${marketplaceUrl}" width="100%" height="800" style="border: none; width: 100%;" title="${clientSlug} Marketplace"></iframe>`;
@@ -27,6 +28,11 @@ const EmbedMarketplace = () => {
     });
     
     setTimeout(() => setCopied(false), 2000);
+  };
+  
+  // Function to open preview in a new tab
+  const handlePreview = () => {
+    window.open(`/client/${clientSlug}`, '_blank');
   };
   
   return (
@@ -46,7 +52,7 @@ const EmbedMarketplace = () => {
             className="max-w-xs"
           />
           <Button 
-            onClick={() => window.open(`/client/${clientSlug}`, '_blank')}
+            onClick={handlePreview}
             className="flex items-center gap-2"
           >
             <ExternalLink className="h-4 w-4" />
