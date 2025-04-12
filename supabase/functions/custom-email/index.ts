@@ -40,38 +40,51 @@ serve(async (req) => {
       // Continue even if body parsing fails
     }
 
-    // Add cache busting to the request URL
-    // IMPORTANT: The correct endpoint is /auth/v1/admin/templates, not /auth/v1/admin/email-templates
+    // Try multiple API endpoints to handle different Supabase versions
     const timestamp = Date.now();
-    const apiUrl = `${supabaseUrl}/auth/v1/admin/templates?cb=${timestamp}`;
-    console.log(`Using API URL with cache busting: ${apiUrl}`);
-
-    // Call the Auth Admin API to update email templates
-    const response = await fetch(
-      apiUrl,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${supabaseServiceKey}`,
-          'apikey': supabaseServiceKey,
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        },
-        body: JSON.stringify({
-          // Set global settings for all templates
-          "action_link": {
-            "email_subject": "Reset your Planning Hub password",
-            "email_from_name": "Planning Hub Team",
-            "email_from_email": "noreply@planninghub.io",
-          },
-          // Customize the recovery (password reset) template
-          "recovery": {
-            "email_subject": "Reset your Planning Hub password",
-            "email_from_name": "Planning Hub Team",
-            "email_from_email": "noreply@planninghub.io",
-            "template_html": `
+    const endpoints = [
+      `/auth/v1/admin/templates?cb=${timestamp}`,
+      `/rest/v1/auth/templates?cb=${timestamp}`,
+      `/auth/admin/templates?cb=${timestamp}`,
+    ];
+    
+    let response = null;
+    let lastError = null;
+    
+    console.log("Trying multiple API endpoints for template update...");
+    
+    // Try each endpoint until one works
+    for (const endpoint of endpoints) {
+      const apiUrl = `${supabaseUrl}${endpoint}`;
+      console.log(`Trying API URL: ${apiUrl}`);
+      
+      try {
+        // Call the Auth Admin API to update email templates
+        const attemptResponse = await fetch(
+          apiUrl,
+          {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${supabaseServiceKey}`,
+              'apikey': supabaseServiceKey,
+              'Cache-Control': 'no-cache, no-store, must-revalidate',
+              'Pragma': 'no-cache',
+              'Expires': '0'
+            },
+            body: JSON.stringify({
+              // Set global settings for all templates
+              "action_link": {
+                "email_subject": "Reset your Planning Hub password",
+                "email_from_name": "Planning Hub Team",
+                "email_from_email": "noreply@planninghub.io",
+              },
+              // Customize the recovery (password reset) template
+              "recovery": {
+                "email_subject": "Reset your Planning Hub password",
+                "email_from_name": "Planning Hub Team",
+                "email_from_email": "noreply@planninghub.io",
+                "template_html": `
 <!DOCTYPE html>
 <html>
 <head>
@@ -157,21 +170,37 @@ serve(async (req) => {
   </div>
 </body>
 </html>
-            `,
+                `,
+              }
+            }),
           }
-        }),
+        );
+        
+        // If successful, store the response and break the loop
+        if (response.ok) {
+          response = attemptResponse;
+          console.log(`Success with endpoint: ${endpoint}`);
+          break;
+        }
+        
+        // If not successful, store the error but continue trying other endpoints
+        const responseText = await attemptResponse.text();
+        console.error(`Failed with endpoint ${endpoint}: HTTP ${attemptResponse.status} - ${responseText}`);
+        lastError = `HTTP ${attemptResponse.status} - ${responseText}`;
+      } catch (err) {
+        console.error(`Error with endpoint ${endpoint}:`, err);
+        lastError = err.message || err.toString();
       }
-    );
-
-    // Get response as text first to log any errors
-    const responseText = await response.text();
-    console.log(`Response status: ${response.status}, text: ${responseText}`);
-
-    // Check response status
-    if (!response.ok) {
-      console.error(`Failed to update email templates: HTTP ${response.status}`, responseText);
-      throw new Error(`Failed to update email templates: HTTP ${response.status} - ${responseText}`);
     }
+
+    // If all attempts failed, throw an error
+    if (!response || !response.ok) {
+      throw new Error(`All template update attempts failed. Last error: ${lastError}`);
+    }
+
+    // Get response as text
+    const responseText = await response.text();
+    console.log(`Response status: ${response.status}, text length: ${responseText.length}`);
 
     // Try to parse the response as JSON if possible
     let data;

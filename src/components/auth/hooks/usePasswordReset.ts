@@ -15,7 +15,7 @@ export const usePasswordReset = () => {
         description: "Please enter your email address",
         variant: "destructive",
       });
-      return { success: false };
+      return { success: false, error: "Please enter your email address" };
     }
     
     setIsLoading(true);
@@ -34,6 +34,16 @@ export const usePasswordReset = () => {
       }
       
       return result;
+    } catch (error: any) {
+      const errorMessage = error.message || "An unexpected error occurred";
+      
+      toast({
+        title: "Password Reset Failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+      
+      return { success: false, error: errorMessage };
     } finally {
       setIsLoading(false);
     }

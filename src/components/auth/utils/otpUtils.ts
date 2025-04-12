@@ -41,7 +41,7 @@ export const verifyOTP = async (
   }
 };
 
-// Function to setup custom email template with cache busting
+// Function to setup custom email template with multiple retries
 const setupCustomEmailTemplate = async (): Promise<boolean> => {
   try {
     console.log("Setting up custom email template for password reset...");
@@ -49,24 +49,58 @@ const setupCustomEmailTemplate = async (): Promise<boolean> => {
     // Generate a unique timestamp for cache busting
     const timestamp = Date.now();
     
-    // Call the custom-email edge function to set up the email template
-    console.log("Invoking custom-email edge function...");
-    const { data, error } = await supabase.functions.invoke('custom-email', {
-      method: 'POST',
-      body: { 
-        action: 'setup-templates',
-        timestamp, // Add timestamp to prevent caching
-        cacheBuster: `t=${timestamp}`
-      }
-    });
+    // Maximum number of retry attempts
+    const maxRetries = 3;
+    let attempt = 0;
+    let success = false;
     
-    if (error) {
-      console.error("Error setting up email template:", error);
-      return false;
+    // Try multiple times if needed
+    while (attempt < maxRetries && !success) {
+      attempt++;
+      console.log(`Custom email template setup attempt ${attempt} of ${maxRetries}...`);
+      
+      try {
+        // Call the custom-email edge function to set up the email template
+        console.log("Invoking custom-email edge function...");
+        const { data, error } = await supabase.functions.invoke('custom-email', {
+          method: 'POST',
+          body: { 
+            action: 'setup-templates',
+            timestamp, // Add timestamp to prevent caching
+            cacheBuster: `t=${timestamp}`
+          }
+        });
+        
+        if (error) {
+          console.error(`Template setup attempt ${attempt} failed:`, error);
+          // Wait before next attempt
+          if (attempt < maxRetries) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
+          }
+          continue;
+        }
+        
+        console.log(`Template setup response (attempt ${attempt}):`, data);
+        success = data?.success === true;
+        
+        if (success) {
+          console.log("Template setup successful on attempt", attempt);
+          return true;
+        } else {
+          console.warn(`Template setup returned false on attempt ${attempt}`);
+        }
+      } catch (err) {
+        console.error(`Template setup exception on attempt ${attempt}:`, err);
+      }
+      
+      // Wait before next attempt
+      if (attempt < maxRetries) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
     }
     
-    console.log("Template setup response:", data);
-    return data?.success === true;
+    // Return status after all attempts
+    return success;
   } catch (err) {
     console.error("Exception during template setup:", err);
     return false;
@@ -91,9 +125,9 @@ export const sendPasswordResetOTP = async (
       console.log("Custom template setup successful");
     }
     
-    // Short delay to ensure template is applied
+    // Longer delay to ensure template is applied
     console.log("Waiting for template to be applied...");
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(resolve => setTimeout(resolve, 3000));
     
     // Use the correct absolute URL for redirection
     const redirectTo = `${APP_URL}/auth/new-password`;

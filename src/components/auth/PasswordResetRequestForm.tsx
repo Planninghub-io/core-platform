@@ -4,7 +4,7 @@ import { usePasswordReset } from "./hooks/usePasswordReset";
 import { EmailInput } from "./components/EmailInput";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, CheckCircle, X } from "lucide-react";
+import { Loader2, CheckCircle, AlertCircle, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const PasswordResetRequestForm = () => {
@@ -12,10 +12,12 @@ const PasswordResetRequestForm = () => {
   const { email, setEmail, isLoading, handleResetRequest } = usePasswordReset();
   const [isTemplateSetup, setIsTemplateSetup] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
+  const [setupError, setSetupError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsEmailSent(false);
+    setSetupError(null);
     
     // Show template setup status
     setIsTemplateSetup(true);
@@ -24,7 +26,11 @@ const PasswordResetRequestForm = () => {
       const result = await handleResetRequest();
       if (result?.success) {
         setIsEmailSent(true);
+      } else if (result?.error) {
+        setSetupError(result.error);
       }
+    } catch (err: any) {
+      setSetupError(err.message || "An unexpected error occurred");
     } finally {
       setIsTemplateSetup(false);
     }
@@ -65,6 +71,15 @@ const PasswordResetRequestForm = () => {
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Setting up custom email template...
           </div>
+        )}
+        
+        {setupError && (
+          <Alert variant="destructive" className="mt-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription className="ml-2">
+              {setupError}
+            </AlertDescription>
+          </Alert>
         )}
         
         <Button type="submit" disabled={isLoading || isTemplateSetup} className="w-full">
