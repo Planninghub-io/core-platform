@@ -28,18 +28,24 @@ serve(async (req) => {
 
     console.log("Setting up email templates at URL:", supabaseUrl);
     
-    // Parse request body if provided
+    // Parse request body if provided and get the base URL
     let body = {};
-    let baseUrl = "https://www.yourplanner.ai";
+    // Default to production URL
+    let baseUrl = "https://yourplanner.ai";
     
     try {
       if (req.body) {
         body = await req.json();
         console.log("Request body:", body);
-        if (body.baseUrl) {
+        
+        // Only use baseUrl from request if it's not a Lovable preview URL
+        if (body.baseUrl && 
+            !body.baseUrl.includes('lovableproject.com') && 
+            !body.baseUrl.includes('lovable.dev')) {
           baseUrl = body.baseUrl;
-          console.log("Using base URL from request:", baseUrl);
         }
+        
+        console.log("Using base URL for templates:", baseUrl);
       }
     } catch (e) {
       console.error("Failed to parse request body:", e);

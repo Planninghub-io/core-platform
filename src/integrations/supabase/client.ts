@@ -7,24 +7,35 @@ export const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ey
 
 // Determine the base URL based on the environment
 const getAppUrl = () => {
+  // For server-side (Edge functions or SSR)
   if (typeof window === 'undefined') {
-    return 'https://yourplanner.ai'; // Default for server-side
+    return 'https://yourplanner.ai'; 
   }
   
   const hostname = window.location.hostname;
+  const origin = window.location.origin;
+  
+  console.log("Current hostname:", hostname);
+  console.log("Current origin:", origin);
+  
+  // Production environment
+  if (hostname === 'yourplanner.ai' || hostname === 'www.yourplanner.ai') {
+    return 'https://yourplanner.ai';
+  }
   
   // Development environment
   if (hostname === 'localhost' || hostname === '127.0.0.1') {
     return `${window.location.protocol}//${hostname}:${window.location.port}`;
   }
   
-  // Look for Lovable preview URLs
-  if (hostname.includes('lovableproject.com')) {
-    return window.location.origin;
+  // If it's a Lovable preview URL but the code is asking for APP_URL,
+  // always return the production URL to prevent accidental redirects to preview
+  if (hostname.includes('lovableproject.com') || origin.includes('lovable.dev')) {
+    return 'https://yourplanner.ai';
   }
   
-  // Production or other deployments - use the actual origin
-  return window.location.origin;
+  // Fallback to current origin
+  return origin;
 };
 
 // Export the APP_URL for use in other parts of the application

@@ -19,8 +19,21 @@ const handler = async (req: Request): Promise<Response> => {
   try {
     // Parse the request body to get reset URL and email
     const body = await req.json();
-    const resetUrl = body.resetUrl || "https://www.yourplanner.ai/auth/new-password";
-    const targetEmail = body.email || "raj@planninghub.io";
+    
+    // Check if the resetUrl is a Lovable preview URL and if so, replace it with production URL
+    let resetUrl = body.resetUrl || "https://yourplanner.ai/auth/new-password";
+    
+    // Force production URL if the resetUrl contains lovable.dev or lovableproject.com
+    if (resetUrl.includes('lovable.dev') || resetUrl.includes('lovableproject.com')) {
+      console.log("Overriding Lovable preview URL with production URL");
+      resetUrl = "https://yourplanner.ai/auth/new-password";
+    }
+    
+    const targetEmail = body.email || "";
+    
+    if (!targetEmail) {
+      throw new Error("Email address is required");
+    }
     
     console.log("Sending password reset email to:", targetEmail);
     console.log("With reset URL:", resetUrl);

@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "../../../integrations/supabase/client";
+import { supabase, APP_URL } from "../../../integrations/supabase/client";
 
 export const usePasswordReset = () => {
   const [email, setEmail] = useState("");
@@ -21,20 +21,8 @@ export const usePasswordReset = () => {
     setIsLoading(true);
     
     try {
-      // Get the actual production URL for redirection
-      // This ensures we're using yourplanner.ai and not the lovable preview URL
-      const hostname = window.location.hostname;
-      let baseUrl;
-      
-      if (hostname === 'yourplanner.ai' || hostname === 'www.yourplanner.ai') {
-        baseUrl = 'https://www.yourplanner.ai';
-      } else if (hostname === 'localhost' || hostname === '127.0.0.1') {
-        baseUrl = `${window.location.protocol}//${hostname}:${window.location.port}`;
-      } else {
-        baseUrl = window.location.origin;
-      }
-      
-      const redirectTo = `${baseUrl}/auth/new-password`;
+      // Always use the APP_URL which has been fixed to handle all environments properly
+      const redirectTo = `${APP_URL}/auth/new-password`;
       console.log("Password reset redirect URL:", redirectTo);
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
