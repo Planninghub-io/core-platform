@@ -5,6 +5,9 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 export const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+  "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+  "Pragma": "no-cache",
+  "Expires": "0"
 };
 
 serve(async (req) => {
@@ -37,15 +40,22 @@ serve(async (req) => {
       // Continue even if body parsing fails
     }
 
+    // Add cache busting to the request URL
+    const apiUrl = `${supabaseUrl}/auth/v1/admin/email-templates?cb=${Date.now()}`;
+    console.log(`Using API URL with cache busting: ${apiUrl}`);
+
     // Call the Auth Admin API to update email templates
     const response = await fetch(
-      `${supabaseUrl}/auth/v1/admin/email-templates`,
+      apiUrl,
       {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${supabaseServiceKey}`,
           'apikey': supabaseServiceKey,
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
         },
         body: JSON.stringify({
           // Set global settings for all templates
@@ -151,16 +161,25 @@ serve(async (req) => {
       }
     );
 
+    // Get response as text first to log any errors
+    const responseText = await response.text();
+    console.log(`Response status: ${response.status}, text: ${responseText}`);
+
     // Check response status
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Failed to update email templates: HTTP ${response.status}`, errorText);
-      
-      throw new Error(`Failed to update email templates: HTTP ${response.status} - ${errorText}`);
+      console.error(`Failed to update email templates: HTTP ${response.status}`, responseText);
+      throw new Error(`Failed to update email templates: HTTP ${response.status} - ${responseText}`);
     }
 
-    const data = await response.json();
-    console.log("Email templates updated successfully:", data);
+    // Try to parse the response as JSON if possible
+    let data;
+    try {
+      data = JSON.parse(responseText);
+      console.log("Email templates updated successfully:", data);
+    } catch (e) {
+      console.log("Response is not valid JSON, using text response");
+      data = { text: responseText };
+    }
 
     return new Response(
       JSON.stringify({

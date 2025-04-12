@@ -36,4 +36,3 @@ verify_jwt = false
 verify_jwt = false
 [functions.scrape-venues]
 verify_jwt = false
-

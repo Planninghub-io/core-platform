@@ -41,17 +41,22 @@ export const verifyOTP = async (
   }
 };
 
-// Function to setup custom email template
+// Function to setup custom email template with cache busting
 const setupCustomEmailTemplate = async (): Promise<boolean> => {
   try {
     console.log("Setting up custom email template for password reset...");
+    
+    // Generate a unique timestamp for cache busting
+    const timestamp = Date.now();
+    const cacheBuster = `t=${timestamp}`;
     
     // Call the custom-email edge function to set up the email template
     const { data, error } = await supabase.functions.invoke('custom-email', {
       method: 'POST',
       body: { 
         action: 'setup-templates',
-        timestamp: new Date().toISOString() // Add timestamp to prevent caching
+        timestamp, // Add timestamp to prevent caching
+        cacheBuster
       }
     });
     
@@ -61,7 +66,7 @@ const setupCustomEmailTemplate = async (): Promise<boolean> => {
     }
     
     console.log("Template setup response:", data);
-    return true;
+    return data?.success === true;
   } catch (err) {
     console.error("Exception during template setup:", err);
     return false;
@@ -74,22 +79,27 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
-    // First, ensure the custom email template is set up
-    await setupCustomEmailTemplate();
+    // First, ensure the custom email template is set up with a force refresh
+    const templateSetupSuccess = await setupCustomEmailTemplate();
+    
+    if (!templateSetupSuccess) {
+      console.warn("Custom template setup may have failed, continuing with default template");
+    } else {
+      console.log("Custom template setup successful");
+    }
     
     // Short delay to ensure template is applied
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise(resolve => setTimeout(resolve, 1000));
     
     // Use the correct absolute URL for redirection
-    // Make sure it points to our app's reset password page, not Lovable's domain
     const redirectTo = `${APP_URL}/auth/new-password`;
     
     console.log("Password reset requested for:", email);
     console.log("Using redirect URL:", redirectTo);
     
-    // Request password reset with proper redirectTo URL
+    // Add cache busting parameter to ensure we don't get a cached template
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo,
+      redirectTo: `${redirectTo}?cb=${Date.now()}`,
     });
 
     if (error) {
