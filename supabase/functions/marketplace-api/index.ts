@@ -1,4 +1,3 @@
-
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
@@ -121,8 +120,9 @@ async function handleCities(req: Request, corsHeaders: Record<string, string>) {
     );
   }
   
-  // Extract unique cities
-  const cities = [...new Set(data.map(item => item.city))].filter(Boolean);
+  // Extract unique cities and ensure none are empty strings
+  const cities = [...new Set(data.map(item => item.city))]
+    .filter(city => city && city.trim() !== "");
   
   return new Response(
     JSON.stringify({ success: true, data: cities }),

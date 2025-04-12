@@ -59,7 +59,7 @@ export const CitySelector = ({ onCitySelect, selectedCity, type = 'venues' }: Ci
             <SelectValue placeholder="Select a city" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Cities</SelectItem>
+            <SelectItem value="all">All Cities</SelectItem>
             {cities.map((city) => (
               <SelectItem key={city} value={city}>{city}</SelectItem>
             ))}

@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from "react";
 import { CapacityFilter } from "./components/CapacityFilter";
 import { AvailabilityFilter } from "./components/AvailabilityFilter";
@@ -24,7 +23,7 @@ const VenueFilters = ({ onFilterChange }: VenueFiltersProps) => {
   // Apply filters automatically whenever a filter value changes
   useEffect(() => {
     const filters: VenueFilterValues = {
-      city: city || undefined,
+      city: city && city !== "all" ? city : undefined,
       zipcode: zipcode || undefined,
       capacity: {
         min: minCapacity,
