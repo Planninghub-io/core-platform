@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { sendPasswordResetOTP } from "../utils/otpUtils";
+import { supabase } from "../../../integrations/supabase/client";
 
 export const usePasswordReset = () => {
   const [email, setEmail] = useState("");
@@ -21,19 +21,30 @@ export const usePasswordReset = () => {
     setIsLoading(true);
     
     try {
-      // Call the password reset function from otpUtils
-      // This will also handle setting up the custom template
-      const result = await sendPasswordResetOTP(email, toast);
+      // We'll directly call resetPasswordForEmail instead of using the sendPasswordResetOTP
+      // utility that was trying to set up the template each time
+      const redirectTo = `${window.location.origin}/auth/new-password`;
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo
+      });
       
-      if (result.success) {
-        // Show additional information to help the user understand what to do next
+      if (error) {
         toast({
-          title: "Reset Email Sent",
-          description: "A password reset link has been sent to your email. Please check your inbox and click the link to reset your password.",
+          title: "Password Reset Failed",
+          description: error.message,
+          variant: "destructive",
         });
+        
+        return { success: false, error: error.message };
       }
       
-      return result;
+      // Show success information to help the user understand what to do next
+      toast({
+        title: "Reset Email Sent",
+        description: "A password reset link has been sent to your email. Please check your inbox and click the link to reset your password.",
+      });
+      
+      return { success: true, error: null };
     } catch (error: any) {
       const errorMessage = error.message || "An unexpected error occurred";
       

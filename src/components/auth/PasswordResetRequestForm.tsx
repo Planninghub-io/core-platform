@@ -4,35 +4,29 @@ import { usePasswordReset } from "./hooks/usePasswordReset";
 import { EmailInput } from "./components/EmailInput";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, CheckCircle, AlertCircle, X } from "lucide-react";
+import { CheckCircle, AlertCircle, X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const PasswordResetRequestForm = () => {
   const navigate = useNavigate();
   const { email, setEmail, isLoading, handleResetRequest } = usePasswordReset();
-  const [isTemplateSetup, setIsTemplateSetup] = useState(false);
   const [isEmailSent, setIsEmailSent] = useState(false);
-  const [setupError, setSetupError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsEmailSent(false);
-    setSetupError(null);
-    
-    // Show template setup status
-    setIsTemplateSetup(true);
+    setError(null);
     
     try {
       const result = await handleResetRequest();
       if (result?.success) {
         setIsEmailSent(true);
       } else if (result?.error) {
-        setSetupError(result.error);
+        setError(result.error);
       }
     } catch (err: any) {
-      setSetupError(err.message || "An unexpected error occurred");
-    } finally {
-      setIsTemplateSetup(false);
+      setError(err.message || "An unexpected error occurred");
     }
   };
 
@@ -66,23 +60,16 @@ const PasswordResetRequestForm = () => {
           placeholder="Enter your email"
         />
         
-        {isTemplateSetup && (
-          <div className="flex items-center text-sm text-gray-600">
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Setting up custom email template...
-          </div>
-        )}
-        
-        {setupError && (
+        {error && (
           <Alert variant="destructive" className="mt-4">
             <AlertCircle className="h-4 w-4" />
             <AlertDescription className="ml-2">
-              {setupError}
+              {error}
             </AlertDescription>
           </Alert>
         )}
         
-        <Button type="submit" disabled={isLoading || isTemplateSetup} className="w-full">
+        <Button type="submit" disabled={isLoading} className="w-full">
           {isLoading ? 'Sending...' : 'Send Reset Link'}
         </Button>
       </form>
