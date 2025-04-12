@@ -30,10 +30,16 @@ serve(async (req) => {
     
     // Parse request body if provided
     let body = {};
+    let baseUrl = "https://www.yourplanner.ai";
+    
     try {
       if (req.body) {
         body = await req.json();
         console.log("Request body:", body);
+        if (body.baseUrl) {
+          baseUrl = body.baseUrl;
+          console.log("Using base URL from request:", baseUrl);
+        }
       }
     } catch (e) {
       console.error("Failed to parse request body:", e);
@@ -177,7 +183,7 @@ serve(async (req) => {
         );
         
         // If successful, store the response and break the loop
-        if (response.ok) {
+        if (attemptResponse.ok) {
           response = attemptResponse;
           console.log(`Success with endpoint: ${endpoint}`);
           break;

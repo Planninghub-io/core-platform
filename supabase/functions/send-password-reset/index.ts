@@ -1,3 +1,4 @@
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { Resend } from "npm:resend@2.0.0";
 
@@ -16,9 +17,17 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
+    // Parse the request body to get reset URL and email
+    const body = await req.json();
+    const resetUrl = body.resetUrl || "https://www.yourplanner.ai/auth/new-password";
+    const targetEmail = body.email || "raj@planninghub.io";
+    
+    console.log("Sending password reset email to:", targetEmail);
+    console.log("With reset URL:", resetUrl);
+
     const emailResponse = await resend.emails.send({
       from: "Planning Hub <noreply@planninghub.io>",
-      to: ["raj@planninghub.io"],
+      to: [targetEmail],
       subject: "Reset your Planning Hub password",
       html: `
 <!DOCTYPE html>
@@ -96,7 +105,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     <p>We received a request to reset your password. Click the button below to create a new password.</p>
     
-    <a href="https://yourplanner.ai/auth/new-password" target="_blank" class="button">Reset Password</a>
+    <a href="${resetUrl}" target="_blank" class="button">Reset Password</a>
     
     <p class="note">If you didn't request a password reset, you can safely ignore this email - nothing will be changed.</p>
     

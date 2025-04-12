@@ -21,9 +21,22 @@ export const usePasswordReset = () => {
     setIsLoading(true);
     
     try {
-      // We'll directly call resetPasswordForEmail instead of using the sendPasswordResetOTP
-      // utility that was trying to set up the template each time
-      const redirectTo = `${window.location.origin}/auth/new-password`;
+      // Get the actual production URL for redirection
+      // This ensures we're using yourplanner.ai and not the lovable preview URL
+      const hostname = window.location.hostname;
+      let baseUrl;
+      
+      if (hostname === 'yourplanner.ai' || hostname === 'www.yourplanner.ai') {
+        baseUrl = 'https://www.yourplanner.ai';
+      } else if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        baseUrl = `${window.location.protocol}//${hostname}:${window.location.port}`;
+      } else {
+        baseUrl = window.location.origin;
+      }
+      
+      const redirectTo = `${baseUrl}/auth/new-password`;
+      console.log("Password reset redirect URL:", redirectTo);
+      
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo
       });

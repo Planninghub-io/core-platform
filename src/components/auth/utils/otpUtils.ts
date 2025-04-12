@@ -1,5 +1,5 @@
 
-import { supabase, APP_URL } from "@/integrations/supabase/client";
+import { supabase } from "@/integrations/supabase/client";
 
 // Handle OTP verification
 export const verifyOTP = async (
@@ -125,12 +125,20 @@ export const sendPasswordResetOTP = async (
       console.log("Custom template setup successful");
     }
     
-    // Longer delay to ensure template is applied
-    console.log("Waiting for template to be applied...");
-    await new Promise(resolve => setTimeout(resolve, 3000));
+    // Get the actual production URL for redirection
+    const hostname = window.location.hostname;
+    let baseUrl;
+    
+    if (hostname === 'yourplanner.ai' || hostname === 'www.yourplanner.ai') {
+      baseUrl = 'https://www.yourplanner.ai';
+    } else if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      baseUrl = `${window.location.protocol}//${hostname}:${window.location.port}`;
+    } else {
+      baseUrl = window.location.origin;
+    }
     
     // Use the correct absolute URL for redirection
-    const redirectTo = `${APP_URL}/auth/new-password`;
+    const redirectTo = `${baseUrl}/auth/new-password`;
     
     console.log("Password reset requested for:", email);
     console.log("Using redirect URL:", redirectTo);
