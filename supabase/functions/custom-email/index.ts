@@ -13,84 +13,44 @@ export const corsHeaders = {
 // Production URL constant
 const PRODUCTION_URL = 'https://yourplanner.ai';
 
-serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
+// Handle CORS preflight requests
+function handleCorsPreflightRequest(): Response {
+  return new Response('ok', { headers: corsHeaders });
+}
+
+// Validate environment variables
+function validateEnvironmentVariables(): { isValid: boolean; error?: string } {
+  const supabaseUrl = Deno.env.get('SUPABASE_URL');
+  const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  
+  if (!supabaseUrl || !supabaseServiceKey) {
+    return {
+      isValid: false,
+      error: 'Missing environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY'
+    };
   }
+  
+  return { isValid: true };
+}
 
+// Parse request body safely
+async function parseRequestBody(req: Request): Promise<Record<string, any>> {
   try {
-    // Get required environment variables
-    const supabaseUrl = Deno.env.get('SUPABASE_URL');
-    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
-    
-    if (!supabaseUrl || !supabaseServiceKey) {
-      console.error("Missing environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY");
-      throw new Error('Missing environment variables: SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY');
+    if (req.body) {
+      const body = await req.json();
+      console.log("Request body:", body);
+      return body;
     }
+  } catch (e) {
+    console.error("Failed to parse request body:", e);
+  }
+  
+  return {};
+}
 
-    console.log("Setting up email templates at URL:", supabaseUrl);
-    
-    // Parse request body if provided but always use PRODUCTION_URL
-    let body = {};
-    
-    try {
-      if (req.body) {
-        body = await req.json();
-        console.log("Request body:", body);
-      }
-    } catch (e) {
-      console.error("Failed to parse request body:", e);
-      // Continue even if body parsing fails
-    }
-    
-    console.log("Using production URL for templates:", PRODUCTION_URL);
-
-    // Try multiple API endpoints to handle different Supabase versions
-    const timestamp = Date.now();
-    const endpoints = [
-      `/auth/v1/admin/templates?cb=${timestamp}`,
-      `/rest/v1/auth/templates?cb=${timestamp}`,
-      `/auth/admin/templates?cb=${timestamp}`,
-    ];
-    
-    let response = null;
-    let lastError = null;
-    
-    console.log("Trying multiple API endpoints for template update...");
-    
-    // Try each endpoint until one works
-    for (const endpoint of endpoints) {
-      const apiUrl = `${supabaseUrl}${endpoint}`;
-      console.log(`Trying API URL: ${apiUrl}`);
-      
-      try {
-        // Call the Auth Admin API to update email templates
-        const attemptResponse = await fetch(
-          apiUrl,
-          {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${supabaseServiceKey}`,
-              'apikey': supabaseServiceKey,
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-              'Expires': '0'
-            },
-            body: JSON.stringify({
-              // Set global settings for all templates
-              "action_link": {
-                "email_subject": "Reset your Planning Hub password",
-                "email_from_name": "Planning Hub Team",
-                "email_from_email": "noreply@planninghub.io",
-              },
-              // Customize the recovery (password reset) template
-              "recovery": {
-                "email_subject": "Reset your Planning Hub password",
-                "email_from_name": "Planning Hub Team",
-                "email_from_email": "noreply@planninghub.io",
-                "template_html": `
+// Get HTML template for password reset email
+function getPasswordResetEmailTemplate(): string {
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -176,47 +136,140 @@ serve(async (req) => {
   </div>
 </body>
 </html>
-                `,
-              }
-            }),
-          }
-        );
-        
-        // If successful, store the response and break the loop
-        if (attemptResponse.ok) {
-          response = attemptResponse;
-          console.log(`Success with endpoint: ${endpoint}`);
-          break;
-        }
-        
-        // If not successful, store the error but continue trying other endpoints
-        const responseText = await attemptResponse.text();
-        console.error(`Failed with endpoint ${endpoint}: HTTP ${attemptResponse.status} - ${responseText}`);
-        lastError = `HTTP ${attemptResponse.status} - ${responseText}`;
-      } catch (err) {
-        console.error(`Error with endpoint ${endpoint}:`, err);
-        lastError = err.message || err.toString();
-      }
+  `;
+}
+
+// Create email template settings object
+function createEmailTemplateSettings(): Record<string, any> {
+  return {
+    // Set global settings for all templates
+    "action_link": {
+      "email_subject": "Reset your Planning Hub password",
+      "email_from_name": "Planning Hub Team",
+      "email_from_email": "noreply@planninghub.io",
+    },
+    // Customize the recovery (password reset) template
+    "recovery": {
+      "email_subject": "Reset your Planning Hub password",
+      "email_from_name": "Planning Hub Team",
+      "email_from_email": "noreply@planninghub.io",
+      "template_html": getPasswordResetEmailTemplate(),
     }
+  };
+}
+
+// Try multiple API endpoints to update email templates
+async function tryUpdateEmailTemplates(
+  supabaseUrl: string, 
+  supabaseServiceKey: string, 
+  timestamp: number
+): Promise<{ response: Response | null; lastError: string | null }> {
+  const endpoints = [
+    `/auth/v1/admin/templates?cb=${timestamp}`,
+    `/rest/v1/auth/templates?cb=${timestamp}`,
+    `/auth/admin/templates?cb=${timestamp}`,
+  ];
+  
+  let response = null;
+  let lastError = null;
+  
+  console.log("Trying multiple API endpoints for template update...");
+  
+  // Try each endpoint until one works
+  for (const endpoint of endpoints) {
+    const apiUrl = `${supabaseUrl}${endpoint}`;
+    console.log(`Trying API URL: ${apiUrl}`);
+    
+    try {
+      // Call the Auth Admin API to update email templates
+      const attemptResponse = await fetch(
+        apiUrl,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${supabaseServiceKey}`,
+            'apikey': supabaseServiceKey,
+            'Cache-Control': 'no-cache, no-store, must-revalidate',
+            'Pragma': 'no-cache',
+            'Expires': '0'
+          },
+          body: JSON.stringify(createEmailTemplateSettings()),
+        }
+      );
+      
+      // If successful, store the response and break the loop
+      if (attemptResponse.ok) {
+        response = attemptResponse;
+        console.log(`Success with endpoint: ${endpoint}`);
+        break;
+      }
+      
+      // If not successful, store the error but continue trying other endpoints
+      const responseText = await attemptResponse.text();
+      console.error(`Failed with endpoint ${endpoint}: HTTP ${attemptResponse.status} - ${responseText}`);
+      lastError = `HTTP ${attemptResponse.status} - ${responseText}`;
+    } catch (err) {
+      console.error(`Error with endpoint ${endpoint}:`, err);
+      lastError = err.message || err.toString();
+    }
+  }
+
+  return { response, lastError };
+}
+
+// Process response text and create response object
+async function createResponseObject(response: Response): Promise<Record<string, any>> {
+  // Get response as text
+  const responseText = await response.text();
+  console.log(`Response status: ${response.status}, text length: ${responseText.length}`);
+
+  // Try to parse the response as JSON if possible
+  try {
+    return JSON.parse(responseText);
+  } catch (e) {
+    console.log("Response is not valid JSON, using text response");
+    return { text: responseText };
+  }
+}
+
+// Main request handler
+async function handleRequest(req: Request): Promise<Response> {
+  try {
+    // Validate environment variables
+    const validation = validateEnvironmentVariables();
+    if (!validation.isValid) {
+      console.error(validation.error);
+      throw new Error(validation.error);
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+
+    console.log("Setting up email templates at URL:", supabaseUrl);
+    
+    // Parse request body if provided but always use PRODUCTION_URL
+    await parseRequestBody(req);
+    
+    console.log("Using production URL for templates:", PRODUCTION_URL);
+
+    // Add timestamp to prevent caching
+    const timestamp = Date.now();
+    
+    // Try updating templates using multiple endpoints
+    const { response, lastError } = await tryUpdateEmailTemplates(
+      supabaseUrl, 
+      supabaseServiceKey, 
+      timestamp
+    );
 
     // If all attempts failed, throw an error
     if (!response || !response.ok) {
       throw new Error(`All template update attempts failed. Last error: ${lastError}`);
     }
 
-    // Get response as text
-    const responseText = await response.text();
-    console.log(`Response status: ${response.status}, text length: ${responseText.length}`);
-
-    // Try to parse the response as JSON if possible
-    let data;
-    try {
-      data = JSON.parse(responseText);
-      console.log("Email templates updated successfully:", data);
-    } catch (e) {
-      console.log("Response is not valid JSON, using text response");
-      data = { text: responseText };
-    }
+    // Process response and create response object
+    const data = await createResponseObject(response);
 
     return new Response(
       JSON.stringify({
@@ -244,4 +297,14 @@ serve(async (req) => {
       }
     );
   }
+}
+
+// Main serve function
+serve(async (req) => {
+  // Handle CORS preflight requests
+  if (req.method === 'OPTIONS') {
+    return handleCorsPreflightRequest();
+  }
+
+  return handleRequest(req);
 });
