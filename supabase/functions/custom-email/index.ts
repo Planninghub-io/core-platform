@@ -51,7 +51,8 @@ serve(async (req) => {
           // Set global settings for all templates
           "action_link": {
             "email_subject": "Reset your Planning Hub password",
-            "email_from_name": "Planning Hub Team"
+            "email_from_name": "Planning Hub Team",
+            "email_from_email": "noreply@planninghub.io",
           },
           // Customize the recovery (password reset) template
           "recovery": {
@@ -134,7 +135,7 @@ serve(async (req) => {
     
     <p>We received a request to reset your password. Click the button below to create a new password.</p>
     
-    <a href="{{ .ActionUrl }}" target="_blank" class="button">Reset Password</a>
+    <a href="{{ .ConfirmationURL }}" target="_blank" class="button">Reset Password</a>
     
     <p class="note">If you didn't request a password reset, you can safely ignore this email - nothing will be changed.</p>
     
@@ -155,17 +156,7 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error(`Failed to update email templates: HTTP ${response.status}`, errorText);
       
-      return new Response(
-        JSON.stringify({ 
-          success: false, 
-          message: `Failed to update email templates: HTTP ${response.status}`,
-          details: errorText
-        }),
-        {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-          status: 200, // Return 200 even for API errors to avoid cascading failures
-        }
-      );
+      throw new Error(`Failed to update email templates: HTTP ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();

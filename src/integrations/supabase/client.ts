@@ -18,7 +18,12 @@ const getAppUrl = () => {
     return `${window.location.protocol}//${hostname}:${window.location.port}`;
   }
   
-  // Production or preview deployments - use the actual origin
+  // Look for Lovable preview URLs
+  if (hostname.includes('lovableproject.com')) {
+    return window.location.origin;
+  }
+  
+  // Production or other deployments - use the actual origin
   return window.location.origin;
 };
 

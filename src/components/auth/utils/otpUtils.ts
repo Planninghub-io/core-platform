@@ -41,6 +41,33 @@ export const verifyOTP = async (
   }
 };
 
+// Function to setup custom email template
+const setupCustomEmailTemplate = async (): Promise<boolean> => {
+  try {
+    console.log("Setting up custom email template for password reset...");
+    
+    // Call the custom-email edge function to set up the email template
+    const { data, error } = await supabase.functions.invoke('custom-email', {
+      method: 'POST',
+      body: { 
+        action: 'setup-templates',
+        timestamp: new Date().toISOString() // Add timestamp to prevent caching
+      }
+    });
+    
+    if (error) {
+      console.error("Error setting up email template:", error);
+      return false;
+    }
+    
+    console.log("Template setup response:", data);
+    return true;
+  } catch (err) {
+    console.error("Exception during template setup:", err);
+    return false;
+  }
+};
+
 // Function to send OTP for password reset
 export const sendPasswordResetOTP = async (
   email: string,
@@ -48,8 +75,10 @@ export const sendPasswordResetOTP = async (
 ) => {
   try {
     // First, ensure the custom email template is set up
-    console.log("Setting up custom email template for password reset...");
-    await setupCustomEmailTemplateWithRetry();
+    await setupCustomEmailTemplate();
+    
+    // Short delay to ensure template is applied
+    await new Promise(resolve => setTimeout(resolve, 500));
     
     // Use the correct absolute URL for redirection
     // Make sure it points to our app's reset password page, not Lovable's domain
@@ -73,11 +102,6 @@ export const sendPasswordResetOTP = async (
       return { success: false, error: error.message };
     }
 
-    toast({
-      title: "Password Reset Link Sent",
-      description: "Check your email for a password reset link.",
-    });
-    
     return { success: true, error: null };
   } catch (error: any) {
     console.error("Password reset exception:", error);
@@ -89,54 +113,6 @@ export const sendPasswordResetOTP = async (
     return { success: false, error: "An unexpected error occurred" };
   }
 };
-
-// Helper function to set up custom email template with multiple retries
-async function setupCustomEmailTemplateWithRetry(maxRetries = 3): Promise<boolean> {
-  console.log("Starting template setup with retries:", maxRetries);
-  let lastError = null;
-  
-  for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    try {
-      console.log(`Template setup attempt ${attempt}/${maxRetries}`);
-      
-      const { data, error } = await supabase.functions.invoke('custom-email', {
-        method: 'POST',
-        body: { 
-          action: 'setup-templates',
-          timestamp: new Date().toISOString() // Add timestamp to prevent caching
-        }
-      });
-      
-      if (error) {
-        console.error(`Attempt ${attempt} - Error setting up template:`, error);
-        lastError = error;
-        
-        // Wait before retrying (exponential backoff)
-        if (attempt < maxRetries) {
-          const delay = 500 * Math.pow(2, attempt - 1);
-          console.log(`Retrying in ${delay}ms...`);
-          await new Promise(resolve => setTimeout(resolve, delay));
-        }
-      } else {
-        console.log(`Template setup successful on attempt ${attempt}:`, data);
-        return true; // Success
-      }
-    } catch (err) {
-      console.error(`Attempt ${attempt} - Exception during template setup:`, err);
-      lastError = err;
-      
-      // Wait before retrying
-      if (attempt < maxRetries) {
-        const delay = 500 * Math.pow(2, attempt - 1);
-        console.log(`Retrying in ${delay}ms...`);
-        await new Promise(resolve => setTimeout(resolve, delay));
-      }
-    }
-  }
-  
-  console.warn("All template setup attempts failed, last error:", lastError);
-  return false; // All attempts failed
-}
 
 // Function to set new password after reset
 export const setNewPassword = async (
