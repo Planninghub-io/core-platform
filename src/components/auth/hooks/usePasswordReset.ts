@@ -15,7 +15,7 @@ export const usePasswordReset = () => {
         description: "Please enter your email address",
         variant: "destructive",
       });
-      return;
+      return { success: false };
     }
     
     setIsLoading(true);

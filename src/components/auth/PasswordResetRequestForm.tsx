@@ -4,20 +4,25 @@ import { usePasswordReset } from "./hooks/usePasswordReset";
 import { EmailInput } from "./components/EmailInput";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle } from "lucide-react";
 
 const PasswordResetRequestForm = () => {
   const { email, setEmail, isLoading, handleResetRequest } = usePasswordReset();
   const [isTemplateSetup, setIsTemplateSetup] = useState(false);
+  const [isEmailSent, setIsEmailSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsEmailSent(false);
     
     // Show template setup status
     setIsTemplateSetup(true);
     
     try {
-      await handleResetRequest();
+      const result = await handleResetRequest();
+      if (result?.success) {
+        setIsEmailSent(true);
+      }
     } finally {
       setIsTemplateSetup(false);
     }
@@ -35,6 +40,15 @@ const PasswordResetRequestForm = () => {
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Setting up custom email template...
         </div>
+      )}
+      
+      {isEmailSent && (
+        <Alert className="mb-4 border-green-100 bg-green-50">
+          <CheckCircle className="h-4 w-4 text-green-500" />
+          <AlertDescription className="ml-2 text-green-700">
+            Password reset email sent! Please check your inbox and follow the instructions to reset your password.
+          </AlertDescription>
+        </Alert>
       )}
 
       <form className="space-y-4" onSubmit={handleSubmit}>
