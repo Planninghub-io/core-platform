@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { setNewPassword } from "./utils/authUtils";
+import { setNewPassword } from "./utils/passwordUpdateUtils";
 import { usePasswordValidation } from "./hooks/usePasswordValidation";
 import { PasswordInput } from "./components/PasswordInput";
 import { PasswordRequirements } from "./components/PasswordRequirements";

@@ -2,7 +2,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { SignUpData, handleUserSignUp } from "./signUpUtils";
 import { SignInData, handleUserSignIn, handleGoogleSignIn, handleAppleSignIn, SignInResult } from "./signInUtils";
-import { sendPasswordResetOTP, setNewPassword as otpSetNewPassword } from "./otpUtils";
+import { sendPasswordResetOTP } from "./passwordResetUtils";
+import { setNewPassword } from "./passwordUpdateUtils";
 import { setupMFA, verifyMFA } from "./mfaUtils";
 
 export type { SignUpData, SignInData, SignInResult };
@@ -15,11 +16,9 @@ export {
   handleAppleSignIn,
   sendPasswordResetOTP,
   setupMFA,
-  verifyMFA
+  verifyMFA,
+  setNewPassword
 };
-
-// Set new password (using the implementation from otpUtils to avoid duplication)
-export const setNewPassword = otpSetNewPassword;
 
 // Check if user needs profile setup
 export const checkProfileSetup = async () => {
