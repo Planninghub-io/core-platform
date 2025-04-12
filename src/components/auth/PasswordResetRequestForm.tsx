@@ -52,13 +52,6 @@ const PasswordResetRequestForm = () => {
         Enter your email address and we'll send you a link to reset your password.
       </p>
 
-      {isTemplateSetup && (
-        <div className="mb-4 flex items-center text-sm text-gray-600">
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          Setting up custom email template...
-        </div>
-      )}
-
       <form className="space-y-4" onSubmit={handleSubmit}>
         <EmailInput
           id="email"
@@ -66,6 +59,13 @@ const PasswordResetRequestForm = () => {
           onChange={(e) => setEmail(e.target.value)}
           placeholder="Enter your email"
         />
+        
+        {isTemplateSetup && (
+          <div className="flex items-center text-sm text-gray-600">
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Setting up custom email template...
+          </div>
+        )}
         
         <Button type="submit" disabled={isLoading || isTemplateSetup} className="w-full">
           {isLoading ? 'Sending...' : 'Send Reset Link'}

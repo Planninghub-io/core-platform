@@ -41,7 +41,8 @@ serve(async (req) => {
     }
 
     // Add cache busting to the request URL
-    const apiUrl = `${supabaseUrl}/auth/v1/admin/email-templates?cb=${Date.now()}`;
+    const timestamp = Date.now();
+    const apiUrl = `${supabaseUrl}/auth/v1/admin/email-templates?cb=${timestamp}`;
     console.log(`Using API URL with cache busting: ${apiUrl}`);
 
     // Call the Auth Admin API to update email templates
@@ -155,7 +156,7 @@ serve(async (req) => {
   </div>
 </body>
 </html>
-            `
+            `,
           }
         }),
       }

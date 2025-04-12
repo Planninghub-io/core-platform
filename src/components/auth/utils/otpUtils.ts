@@ -48,7 +48,6 @@ const setupCustomEmailTemplate = async (): Promise<boolean> => {
     
     // Generate a unique timestamp for cache busting
     const timestamp = Date.now();
-    const cacheBuster = `t=${timestamp}`;
     
     // Call the custom-email edge function to set up the email template
     const { data, error } = await supabase.functions.invoke('custom-email', {
@@ -56,7 +55,7 @@ const setupCustomEmailTemplate = async (): Promise<boolean> => {
       body: { 
         action: 'setup-templates',
         timestamp, // Add timestamp to prevent caching
-        cacheBuster
+        cacheBuster: `t=${timestamp}`
       }
     });
     
@@ -98,8 +97,9 @@ export const sendPasswordResetOTP = async (
     console.log("Using redirect URL:", redirectTo);
     
     // Add cache busting parameter to ensure we don't get a cached template
+    const cacheBuster = Date.now();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${redirectTo}?cb=${Date.now()}`,
+      redirectTo: `${redirectTo}?cb=${cacheBuster}`,
     });
 
     if (error) {
