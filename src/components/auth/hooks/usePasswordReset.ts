@@ -21,8 +21,8 @@ export const usePasswordReset = () => {
     setIsLoading(true);
     
     try {
-      // Call the password reset function from otpUtils directly
-      // No need to set up template multiple times
+      // Call the password reset function from otpUtils
+      // This will also handle setting up the custom template
       const result = await sendPasswordResetOTP(email, toast);
       
       if (result.success) {

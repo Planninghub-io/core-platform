@@ -7,22 +7,19 @@ export const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ey
 
 // Determine the base URL based on the environment
 const getAppUrl = () => {
-  // Commented out environment-specific logic
-  // if (typeof window === 'undefined') {
-  //   return 'http://localhost:8080'; // Default for non-browser environments
-  // }
+  if (typeof window === 'undefined') {
+    return 'https://yourplanner.ai'; // Default for server-side
+  }
   
-  // const hostname = window.location.hostname;
+  const hostname = window.location.hostname;
   
-  // // Development environment
-  // if (hostname === 'localhost' || hostname === '127.0.0.1') {
-  //   return `${window.location.protocol}//${hostname}:${window.location.port}`;
-  // }
+  // Development environment
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    return `${window.location.protocol}//${hostname}:${window.location.port}`;
+  }
   
-  // // Production or preview deployments - use the actual origin
-  // return window.location.origin;
-
-  return 'https://yourplanner.ai/';
+  // Production or preview deployments - use the actual origin
+  return window.location.origin;
 };
 
 // Export the APP_URL for use in other parts of the application

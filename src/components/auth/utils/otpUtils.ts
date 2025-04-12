@@ -47,14 +47,16 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
-    // Use the environment-aware APP_URL
+    // First, ensure the custom email template is set up
+    console.log("Setting up custom email template for password reset...");
+    await setupCustomEmailTemplateWithRetry();
+    
+    // Use the correct absolute URL for redirection
+    // Make sure it points to our app's reset password page, not Lovable's domain
     const redirectTo = `${APP_URL}/auth/new-password`;
     
     console.log("Password reset requested for:", email);
     console.log("Using redirect URL:", redirectTo);
-    
-    // Skip setup template call here to avoid the 500 error
-    // The template should already be set up in Supabase
     
     // Request password reset with proper redirectTo URL
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
@@ -89,7 +91,6 @@ export const sendPasswordResetOTP = async (
 };
 
 // Helper function to set up custom email template with multiple retries
-// This is kept for reference but not actively used to avoid 500 errors
 async function setupCustomEmailTemplateWithRetry(maxRetries = 3): Promise<boolean> {
   console.log("Starting template setup with retries:", maxRetries);
   let lastError = null;

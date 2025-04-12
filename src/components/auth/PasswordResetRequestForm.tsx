@@ -5,18 +5,22 @@ import { EmailInput } from "./components/EmailInput";
 import { useState } from "react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
 
 const PasswordResetRequestForm = () => {
   const { email, setEmail, isLoading, handleResetRequest } = usePasswordReset();
-  const [isSettingUpTemplate, setIsSettingUpTemplate] = useState(false);
-  const { toast } = useToast();
+  const [isTemplateSetup, setIsTemplateSetup] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    setIsSettingUpTemplate(false);
-    await handleResetRequest();
+    // Show template setup status
+    setIsTemplateSetup(true);
+    
+    try {
+      await handleResetRequest();
+    } finally {
+      setIsTemplateSetup(false);
+    }
   };
 
   return (
@@ -26,7 +30,7 @@ const PasswordResetRequestForm = () => {
         Enter your email address and we'll send you a link to reset your password.
       </p>
 
-      {isSettingUpTemplate && (
+      {isTemplateSetup && (
         <div className="mb-4 flex items-center text-sm text-gray-600">
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           Setting up custom email template...
@@ -41,7 +45,7 @@ const PasswordResetRequestForm = () => {
           placeholder="Enter your email"
         />
         
-        <Button type="submit" disabled={isLoading || isSettingUpTemplate} className="w-full">
+        <Button type="submit" disabled={isLoading || isTemplateSetup} className="w-full">
           {isLoading ? 'Sending...' : 'Send Reset Link'}
         </Button>
       </form>

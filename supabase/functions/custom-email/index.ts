@@ -50,12 +50,12 @@ serve(async (req) => {
         body: JSON.stringify({
           // Set global settings for all templates
           "action_link": {
-            "email_subject": "Reset your password",
+            "email_subject": "Reset your Planning Hub password",
             "email_from_name": "Planning Hub Team"
           },
           // Customize the recovery (password reset) template
           "recovery": {
-            "email_subject": "Reset your password",
+            "email_subject": "Reset your Planning Hub password",
             "email_from_name": "Planning Hub Team",
             "email_from_email": "noreply@planninghub.io",
             "template_html": `
