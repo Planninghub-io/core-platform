@@ -10,6 +10,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
+// Production URL constant
+const PRODUCTION_URL = 'https://yourplanner.ai';
+
 const handler = async (req: Request): Promise<Response> => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
@@ -20,14 +23,8 @@ const handler = async (req: Request): Promise<Response> => {
     // Parse the request body to get reset URL and email
     const body = await req.json();
     
-    // Check if the resetUrl is a Lovable preview URL and if so, replace it with production URL
-    let resetUrl = body.resetUrl || "https://yourplanner.ai/auth/new-password";
-    
-    // Force production URL if the resetUrl contains lovable.dev or lovableproject.com
-    if (resetUrl.includes('lovable.dev') || resetUrl.includes('lovableproject.com')) {
-      console.log("Overriding Lovable preview URL with production URL");
-      resetUrl = "https://yourplanner.ai/auth/new-password";
-    }
+    // Always use production URL for reset links
+    const resetUrl = `${PRODUCTION_URL}/auth/new-password`;
     
     const targetEmail = body.email || "";
     

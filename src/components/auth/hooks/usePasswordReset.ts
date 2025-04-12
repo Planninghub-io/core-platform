@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase, APP_URL } from "../../../integrations/supabase/client";
+import { supabase, PRODUCTION_URL } from "../../../integrations/supabase/client";
 
 export const usePasswordReset = () => {
   const [email, setEmail] = useState("");
@@ -21,8 +21,8 @@ export const usePasswordReset = () => {
     setIsLoading(true);
     
     try {
-      // Always use the APP_URL which has been fixed to handle all environments properly
-      const redirectTo = `${APP_URL}/auth/new-password`;
+      // ALWAYS use the production URL for password reset links
+      const redirectTo = `${PRODUCTION_URL}/auth/new-password`;
       console.log("Password reset redirect URL:", redirectTo);
       
       const { error } = await supabase.auth.resetPasswordForEmail(email, {

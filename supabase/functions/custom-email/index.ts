@@ -10,6 +10,9 @@ export const corsHeaders = {
   "Expires": "0"
 };
 
+// Production URL constant
+const PRODUCTION_URL = 'https://yourplanner.ai';
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -28,29 +31,20 @@ serve(async (req) => {
 
     console.log("Setting up email templates at URL:", supabaseUrl);
     
-    // Parse request body if provided and get the base URL
+    // Parse request body if provided but always use PRODUCTION_URL
     let body = {};
-    // Default to production URL
-    let baseUrl = "https://yourplanner.ai";
     
     try {
       if (req.body) {
         body = await req.json();
         console.log("Request body:", body);
-        
-        // Only use baseUrl from request if it's not a Lovable preview URL
-        if (body.baseUrl && 
-            !body.baseUrl.includes('lovableproject.com') && 
-            !body.baseUrl.includes('lovable.dev')) {
-          baseUrl = body.baseUrl;
-        }
-        
-        console.log("Using base URL for templates:", baseUrl);
       }
     } catch (e) {
       console.error("Failed to parse request body:", e);
       // Continue even if body parsing fails
     }
+    
+    console.log("Using production URL for templates:", PRODUCTION_URL);
 
     // Try multiple API endpoints to handle different Supabase versions
     const timestamp = Date.now();

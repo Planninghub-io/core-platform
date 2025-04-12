@@ -1,4 +1,5 @@
-import { supabase, APP_URL } from "@/integrations/supabase/client";
+
+import { supabase, PRODUCTION_URL } from "@/integrations/supabase/client";
 
 // Handle OTP verification
 export const verifyOTP = async (
@@ -124,9 +125,9 @@ export const sendPasswordResetOTP = async (
       console.log("Custom template setup successful");
     }
     
-    // Always use the APP_URL which has been fixed to handle all environments properly
-    console.log("Using APP_URL for redirect:", APP_URL);
-    const redirectTo = `${APP_URL}/auth/new-password`;
+    // Always use PRODUCTION_URL for password reset redirects
+    console.log("Using PRODUCTION_URL for redirect:", PRODUCTION_URL);
+    const redirectTo = `${PRODUCTION_URL}/auth/new-password`;
     
     console.log("Password reset requested for:", email);
     console.log("Using redirect URL:", redirectTo);

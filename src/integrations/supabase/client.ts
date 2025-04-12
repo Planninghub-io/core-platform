@@ -5,22 +5,23 @@ import type { Database } from './types';
 export const SUPABASE_URL = "https://asexlqsjachwhabzvzwk.supabase.co";
 export const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZXhscXNqYWNod2hhYnp2endrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkyMDczMzAsImV4cCI6MjA1NDc4MzMzMH0.LmkXoRHxqsRfQUK1KEyn70Z7gkxLVnAGY_G6nKeZFCw";
 
+// Production URL constant - single source of truth
+export const PRODUCTION_URL = 'https://yourplanner.ai';
+
 // Determine the base URL based on the environment
 const getAppUrl = () => {
   // For server-side (Edge functions or SSR)
   if (typeof window === 'undefined') {
-    return 'https://yourplanner.ai'; 
+    return PRODUCTION_URL;
   }
   
   const hostname = window.location.hostname;
-  const origin = window.location.origin;
   
   console.log("Current hostname:", hostname);
-  console.log("Current origin:", origin);
   
   // Production environment
   if (hostname === 'yourplanner.ai' || hostname === 'www.yourplanner.ai') {
-    return 'https://yourplanner.ai';
+    return PRODUCTION_URL;
   }
   
   // Development environment
@@ -28,14 +29,9 @@ const getAppUrl = () => {
     return `${window.location.protocol}//${hostname}:${window.location.port}`;
   }
   
-  // If it's a Lovable preview URL but the code is asking for APP_URL,
-  // always return the production URL to prevent accidental redirects to preview
-  if (hostname.includes('lovableproject.com') || origin.includes('lovable.dev')) {
-    return 'https://yourplanner.ai';
-  }
-  
-  // Fallback to current origin
-  return origin;
+  // CRITICAL: For password reset links, ALWAYS use production URL
+  // This ensures password reset links always go to the production site
+  return PRODUCTION_URL;
 };
 
 // Export the APP_URL for use in other parts of the application
@@ -78,7 +74,7 @@ export const configureOAuthRedirect = (provider: string) => {
   return {
     provider: provider as Provider,
     options: {
-      redirectTo: `${APP_URL}/auth/callback`,
+      redirectTo: `${PRODUCTION_URL}/auth/callback`,
       // Add prompt parameter for Google to force account selection
       ...(provider === 'google' && {
         queryParams: {
