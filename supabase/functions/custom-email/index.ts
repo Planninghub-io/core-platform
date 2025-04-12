@@ -13,7 +13,7 @@ export const corsHeaders = {
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
@@ -27,7 +27,7 @@ serve(async (req) => {
     }
 
     console.log("Setting up email templates at URL:", supabaseUrl);
-
+    
     // Parse request body if provided
     let body = {};
     try {
@@ -41,8 +41,9 @@ serve(async (req) => {
     }
 
     // Add cache busting to the request URL
+    // IMPORTANT: The correct endpoint is /auth/v1/admin/templates, not /auth/v1/admin/email-templates
     const timestamp = Date.now();
-    const apiUrl = `${supabaseUrl}/auth/v1/admin/email-templates?cb=${timestamp}`;
+    const apiUrl = `${supabaseUrl}/auth/v1/admin/templates?cb=${timestamp}`;
     console.log(`Using API URL with cache busting: ${apiUrl}`);
 
     // Call the Auth Admin API to update email templates

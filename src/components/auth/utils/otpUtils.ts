@@ -50,6 +50,7 @@ const setupCustomEmailTemplate = async (): Promise<boolean> => {
     const timestamp = Date.now();
     
     // Call the custom-email edge function to set up the email template
+    console.log("Invoking custom-email edge function...");
     const { data, error } = await supabase.functions.invoke('custom-email', {
       method: 'POST',
       body: { 
@@ -78,7 +79,10 @@ export const sendPasswordResetOTP = async (
   toast: any
 ) => {
   try {
+    console.log("Password reset flow started for:", email);
+    
     // First, ensure the custom email template is set up with a force refresh
+    console.log("Setting up custom email template...");
     const templateSetupSuccess = await setupCustomEmailTemplate();
     
     if (!templateSetupSuccess) {
@@ -88,7 +92,8 @@ export const sendPasswordResetOTP = async (
     }
     
     // Short delay to ensure template is applied
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    console.log("Waiting for template to be applied...");
+    await new Promise(resolve => setTimeout(resolve, 1500));
     
     // Use the correct absolute URL for redirection
     const redirectTo = `${APP_URL}/auth/new-password`;
@@ -98,6 +103,8 @@ export const sendPasswordResetOTP = async (
     
     // Add cache busting parameter to ensure we don't get a cached template
     const cacheBuster = Date.now();
+    console.log("Sending password reset email with cache buster:", cacheBuster);
+    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${redirectTo}?cb=${cacheBuster}`,
     });
@@ -111,7 +118,8 @@ export const sendPasswordResetOTP = async (
       });
       return { success: false, error: error.message };
     }
-
+    
+    console.log("Password reset email sent successfully");
     return { success: true, error: null };
   } catch (error: any) {
     console.error("Password reset exception:", error);
