@@ -20,12 +20,12 @@ serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const pathParts = url.pathname.split('/').filter(Boolean);
+    // Parse the request body if it exists
+    const body = req.body ? await req.json() : {};
+    const endpoint = body.endpoint || '';
+    const clientSlug = body.client || 'visitkileen'; // Default to VisitKileen if not specified
     
-    // Skip 'marketplace-api' in path
-    const endpoint = pathParts.length > 1 ? pathParts[1] : null;
-    const clientSlug = url.searchParams.get('client') || 'visitkileen'; // Default to VisitKileen if not specified
+    console.log(`Handling request for endpoint: ${endpoint}`);
 
     // Get the marketplace client
     const { data: client, error: clientError } = await supabase
@@ -34,7 +34,8 @@ serve(async (req) => {
       .eq('slug', clientSlug)
       .single();
 
-    if (clientError || !client) {
+    if (clientError) {
+      console.error(`Client error: ${clientError.message}`);
       return new Response(
         JSON.stringify({ 
           success: false, 
@@ -70,9 +71,10 @@ serve(async (req) => {
       
       case 'cities':
         // New endpoint to get distinct cities for venues or vendors
-        return await handleCities(req, corsHeaders);
+        return await handleCities(body, corsHeaders);
       
       default:
+        console.log(`Invalid endpoint: ${endpoint}`);
         return new Response(
           JSON.stringify({ 
             success: false, 
@@ -91,43 +93,56 @@ serve(async (req) => {
   }
 });
 
-// New handler for retrieving distinct cities
-async function handleCities(req: Request, corsHeaders: Record<string, string>) {
-  const url = new URL(req.url);
-  const type = url.searchParams.get('type') || 'venues'; // 'venues' or 'vendors'
+// Handler for retrieving distinct cities
+async function handleCities(body: any, corsHeaders: Record<string, string>) {
+  const type = body.type || 'venues'; // 'venues' or 'vendors'
+  console.log(`Fetching cities for type: ${type}`);
   
   let query;
-  if (type === 'venues') {
-    query = supabase
-      .from('venues')
-      .select('city')
-      .not('city', 'is', null)
-      .order('city');
-  } else {
-    query = supabase
-      .from('vendor_services')
-      .select('city')
-      .not('city', 'is', null)
-      .order('city');
-  }
-  
-  const { data, error } = await query;
-  
-  if (error) {
+  try {
+    if (type === 'venues') {
+      query = supabase
+        .from('venues')
+        .select('city')
+        .not('city', 'is', null)
+        .order('city');
+    } else {
+      query = supabase
+        .from('vendor_services')
+        .select('city')
+        .not('city', 'is', null)
+        .order('city');
+    }
+    
+    const { data, error } = await query;
+    
+    if (error) {
+      console.error(`Error fetching cities: ${error.message}`);
+      return new Response(
+        JSON.stringify({ success: false, error: error.message }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      );
+    }
+    
+    // Extract unique cities and ensure none are empty strings
+    const cities = Array.isArray(data) 
+      ? [...new Set(data.map(item => item.city))]
+          .filter(city => city && typeof city === 'string' && city.trim() !== "")
+      : [];
+    
+    console.log(`Found ${cities.length} unique cities`);
+    
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: true, data: cities }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
+    );
+  } catch (err) {
+    console.error(`Unexpected error in handleCities: ${err.message}`);
+    return new Response(
+      JSON.stringify({ success: false, error: err.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     );
   }
-  
-  // Extract unique cities and ensure none are empty strings
-  const cities = [...new Set(data.map(item => item.city))]
-    .filter(city => city && city.trim() !== "");
-  
-  return new Response(
-    JSON.stringify({ success: true, data: cities }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 }
-  );
 }
 
 // Handler for venues endpoint

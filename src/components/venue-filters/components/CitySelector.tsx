@@ -33,7 +33,7 @@ export const CitySelector = ({ onCitySelect, selectedCity, type = 'venues' }: Ci
           throw new Error(error.message);
         }
 
-        if (data?.success && data?.data) {
+        if (data?.success && Array.isArray(data?.data)) {
           setCities(data.data);
         } else {
           setCities([]);
@@ -41,6 +41,8 @@ export const CitySelector = ({ onCitySelect, selectedCity, type = 'venues' }: Ci
       } catch (err: any) {
         console.error("Failed to fetch cities:", err);
         setError(err.message || "Failed to load cities");
+        // Continue with empty cities array instead of breaking the UI
+        setCities([]);
       } finally {
         setIsLoading(false);
       }
