@@ -51,7 +51,10 @@ export const handleGoogleSignIn = async (
     
     console.log("Google sign-in initiated successfully, redirecting to:", data?.url);
     
-    if (!data.url) {
+    // Critical fix: Actually redirect to Google's OAuth page
+    if (data.url) {
+      window.location.href = data.url;
+    } else {
       toast({
         title: "Configuration Error",
         description: "The authentication provider is not configured correctly.",
