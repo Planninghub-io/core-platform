@@ -1,3 +1,4 @@
+
 import { Provider } from "@supabase/supabase-js";
 import { supabase, APP_URL, configureOAuthRedirect } from "@/integrations/supabase/client";
 
@@ -93,12 +94,21 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    // Use the configureOAuthRedirect helper for consistent configuration
-    const oauthConfig = configureOAuthRedirect('google');
-    console.log("OAuth Configuration:", oauthConfig);
+    // Use window.location.origin to ensure we get the correct base URL
+    const origin = window.location.origin;
+    console.log("Current origin:", origin);
     
-    // Sign in with improved error handling
-    const { data, error } = await supabase.auth.signInWithOAuth(oauthConfig);
+    // Direct configuration instead of using the helper function
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${origin}/auth/callback`,
+        queryParams: {
+          prompt: 'select_account',
+          access_type: 'offline'
+        }
+      }
+    });
     
     if (error) {
       console.error("Google sign-in error:", error);
@@ -159,10 +169,13 @@ export const handleAppleSignIn = async (
     
     console.log("Attempting to sign in with Apple...");
     
+    // Use window.location.origin for consistent redirect URL
+    const origin = window.location.origin;
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'apple' as Provider,
       options: {
-        redirectTo: window.location.origin + '/auth/callback'
+        redirectTo: `${origin}/auth/callback`
       }
     });
     

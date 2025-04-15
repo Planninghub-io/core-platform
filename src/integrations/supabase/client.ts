@@ -16,22 +16,18 @@ const getAppUrl = () => {
   }
   
   const hostname = window.location.hostname;
+  const origin = window.location.origin;
   
   console.log("Current hostname:", hostname);
+  console.log("Current origin:", origin);
   
   // Production environment
   if (hostname === 'yourplanner.ai' || hostname === 'www.yourplanner.ai') {
     return PRODUCTION_URL;
   }
   
-  // Development environment
-  if (hostname === 'localhost' || hostname === '127.0.0.1') {
-    return `${window.location.protocol}//${hostname}:${window.location.port}`;
-  }
-  
-  // CRITICAL: For password reset links, ALWAYS use production URL
-  // This ensures password reset links always go to the production site
-  return PRODUCTION_URL;
+  // Development environment or preview environment
+  return origin;
 };
 
 // Export the APP_URL for use in other parts of the application
@@ -71,10 +67,17 @@ export async function safeQuery<T>(queryFn: () => Promise<{ data: T | null; erro
 
 // Configuration for OAuth providers
 export const configureOAuthRedirect = (provider: string) => {
+  // For local development or preview environments, use the actual origin
+  const redirectTo = typeof window !== 'undefined' ? 
+    `${window.location.origin}/auth/callback` : 
+    `${PRODUCTION_URL}/auth/callback`;
+  
+  console.log("OAuth redirect URL:", redirectTo);
+  
   return {
     provider: provider as Provider,
     options: {
-      redirectTo: `${PRODUCTION_URL}/auth/callback`,
+      redirectTo,
       // Add prompt parameter for Google to force account selection
       ...(provider === 'google' && {
         queryParams: {
