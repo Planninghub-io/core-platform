@@ -46,6 +46,19 @@ export const handleAppleSignIn = async (
     }
 
     console.log("Apple sign-in initiated:", data);
+    
+    // Critical fix: Actually redirect to Apple's OAuth page
+    if (data.url) {
+      window.location.replace(data.url);
+    } else {
+      toast({
+        title: "Configuration Error",
+        description: "The authentication provider is not configured correctly.",
+        variant: "destructive",
+      });
+      return { success: false, error: "Missing OAuth URL" };
+    }
+    
     return { success: true, error: null };
   } catch (error: any) {
     console.error("Apple sign-in exception:", error);

@@ -67,12 +67,10 @@ export async function safeQuery<T>(queryFn: () => Promise<{ data: T | null; erro
 
 // Configuration for OAuth providers
 export const configureOAuthRedirect = (provider: string) => {
-  // For local development or preview environments, use the actual origin
-  const redirectTo = typeof window !== 'undefined' ? 
-    `${window.location.origin}/auth/callback` : 
-    `${PRODUCTION_URL}/auth/callback`;
+  const origin = typeof window !== 'undefined' ? window.location.origin : PRODUCTION_URL;
+  const redirectTo = `${origin}/auth/callback`;
   
-  console.log("OAuth redirect URL:", redirectTo);
+  console.log(`[OAuth Config] Provider: ${provider}, Redirect URL: ${redirectTo}`);
   
   return {
     provider: provider as Provider,

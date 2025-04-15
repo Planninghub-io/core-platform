@@ -15,9 +15,11 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
+    // Get the current origin for redirect URL
     const origin = window.location.origin;
     console.log("Current origin:", origin);
     
+    // Use the configureOAuthRedirect helper for consistent setup
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
@@ -53,7 +55,9 @@ export const handleGoogleSignIn = async (
     
     // Critical fix: Actually redirect to Google's OAuth page
     if (data.url) {
-      window.location.href = data.url;
+      // Force a complete page reload to the OAuth URL instead of just changing location
+      // This helps avoid CORS and mixed content issues
+      window.location.replace(data.url);
     } else {
       toast({
         title: "Configuration Error",
