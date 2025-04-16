@@ -19,11 +19,15 @@ export const handleGoogleSignIn = async (
     const origin = window.location.origin;
     console.log("Current origin:", origin);
     
-    // Use the configureOAuthRedirect helper for consistent setup
+    // Define redirect URL
+    const redirectUrl = `${origin}/auth/callback`;
+    console.log("Using redirect URL:", redirectUrl);
+    
+    // Explicitly define the provider options
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${origin}/auth/callback`,
+        redirectTo: redirectUrl,
         queryParams: {
           prompt: 'select_account',
           access_type: 'offline'
@@ -53,12 +57,15 @@ export const handleGoogleSignIn = async (
     
     console.log("Google sign-in initiated successfully, redirecting to:", data?.url);
     
-    // Critical fix: Actually redirect to Google's OAuth page
+    // Ensure we have a URL to redirect to
     if (data.url) {
-      // Force a complete page reload to the OAuth URL instead of just changing location
-      // This helps avoid CORS and mixed content issues
+      console.log("Full redirect URL:", data.url);
+      
+      // Use replace instead of href to completely reload the page
+      // and avoid any potential state issues
       window.location.replace(data.url);
     } else {
+      console.error("No redirect URL provided by Supabase");
       toast({
         title: "Configuration Error",
         description: "The authentication provider is not configured correctly.",

@@ -17,11 +17,13 @@ export const handleAppleSignIn = async (
     console.log("Attempting to sign in with Apple...");
     
     const origin = window.location.origin;
+    const redirectUrl = `${origin}/auth/callback`;
+    console.log("Using redirect URL:", redirectUrl);
     
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'apple' as Provider,
       options: {
-        redirectTo: `${origin}/auth/callback`
+        redirectTo: redirectUrl
       }
     });
     
@@ -31,7 +33,7 @@ export const handleAppleSignIn = async (
       if (error.message.includes("provider is not enabled")) {
         toast({
           title: "Apple Sign In Not Available",
-          description: "Apple sign-in is not currently enabled. Please use another sign-in method.",
+          description: "Apple sign-in is not currently enabled. Please check Supabase auth configuration.",
           variant: "destructive",
         });
         return { success: false, error: error.message, providerDisabled: true };
@@ -45,12 +47,14 @@ export const handleAppleSignIn = async (
       return { success: false, error: error.message };
     }
 
-    console.log("Apple sign-in initiated:", data);
+    console.log("Apple sign-in initiated successfully, redirecting to:", data?.url);
     
     // Critical fix: Actually redirect to Apple's OAuth page
     if (data.url) {
+      console.log("Full redirect URL:", data.url);
       window.location.replace(data.url);
     } else {
+      console.error("No redirect URL provided by Supabase");
       toast({
         title: "Configuration Error",
         description: "The authentication provider is not configured correctly.",
