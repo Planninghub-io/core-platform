@@ -1,10 +1,9 @@
-
 import { Button } from "@/components/ui/button";
 import SignUpForm from "./SignUpForm";
 import SignInForm from "./SignInForm";
 import { useAuthForm } from "./hooks/useAuthForm";
 import { Separator } from "@/components/ui/separator";
-import { ArrowRight, Apple } from "lucide-react";
+import { ArrowRight, Apple, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Alert } from "@/components/ui/alert";
@@ -138,6 +137,19 @@ const AuthForm = ({ type }: AuthFormProps) => {
         </div>
       </div>
       
+      <div className="mt-6 text-center text-xs text-gray-500">
+        <p>
+          By signing up, you agree to our{' '}
+          <Link to="/terms" className="underline hover:text-gray-900">
+            Terms of Service
+          </Link>{' '}
+          and{' '}
+          <Link to="/privacy" className="underline hover:text-gray-900">
+            Privacy Policy
+          </Link>
+        </p>
+      </div>
+      
       <div className="mt-6 text-center text-sm text-gray-500">
         <Button
           type="button"
@@ -149,8 +161,6 @@ const AuthForm = ({ type }: AuthFormProps) => {
           <ArrowRight className="ml-1 h-3 w-3" />
         </Button>
       </div>
-      
-      {/* Removing the redundant "Forgot password?" link here */}
     </div>
   );
 };
