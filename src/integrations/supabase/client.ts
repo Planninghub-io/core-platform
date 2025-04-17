@@ -61,15 +61,12 @@ export async function safeQuery<T>(queryFn: () => Promise<{ data: T | null; erro
   }
 }
 
-// Configuration for OAuth providers
+// Configuration for OAuth providers - updated to ensure consistency
 export const configureOAuthRedirect = (provider: string) => {
-  // Use the APP_URL function to get the appropriate base URL
-  const baseUrl = APP_URL;
+  // Always use the production URL for OAuth redirects in Google Cloud settings
+  const redirectTo = `${PRODUCTION_URL}/auth/callback`;
   
-  // Create the redirect URL
-  const redirectTo = `${baseUrl}/auth/callback`;
-  
-  console.log(`[OAuth Config] Provider: ${provider}, Base URL: ${baseUrl}, Redirect URL: ${redirectTo}`);
+  console.log(`[OAuth Config] Provider: ${provider}, Redirect URL: ${redirectTo}`);
   
   return {
     provider: provider as Provider,

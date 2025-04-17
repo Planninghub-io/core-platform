@@ -16,6 +16,7 @@ export const handleGoogleSignIn = async (
     }
     
     // Use the configureOAuthRedirect helper to get consistent OAuth configuration
+    // This now always uses the production URL for the redirect
     const oauthConfig = configureOAuthRedirect('google');
     console.log("Google OAuth config:", oauthConfig);
     
@@ -23,6 +24,17 @@ export const handleGoogleSignIn = async (
     
     if (error) {
       console.error("Google sign-in error:", error);
+      
+      // Check for common OAuth errors
+      if (error.message.includes("redirect_uri_mismatch")) {
+        toast({
+          title: "OAuth Configuration Error",
+          description: "Redirect URL mismatch. Please check Google Cloud Console settings.",
+          variant: "destructive",
+        });
+        console.error("The redirect URL in your code doesn't match the one authorized in Google Cloud Console");
+        return { success: false, error: error.message, configError: true };
+      }
       
       if (error.message.includes("not enabled")) {
         toast({

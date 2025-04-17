@@ -8,4 +8,5 @@ export interface SignInResult {
   success: boolean;
   error: string | null;
   providerDisabled?: boolean;
+  configError?: boolean;
 }
