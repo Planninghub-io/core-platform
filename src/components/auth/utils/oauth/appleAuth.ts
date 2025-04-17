@@ -1,5 +1,5 @@
 
-import { supabase, configureOAuthRedirect } from "@/integrations/supabase/client";
+import { supabase, configureOAuthRedirect, PRODUCTION_URL } from "@/integrations/supabase/client";
 import type { Provider } from "@supabase/supabase-js";
 import type { SignInResult } from "../types/auth";
 
@@ -16,14 +16,27 @@ export const handleAppleSignIn = async (
     
     console.log("Attempting to sign in with Apple...");
     
-    // Use the configureOAuthRedirect helper to get consistent OAuth configuration
+    // IMPORTANT: This uses the production URL (https://yourplanner.ai/auth/callback)
+    // The redirect URL MUST match exactly in Supabase and Apple Developer settings
     const oauthConfig = configureOAuthRedirect('apple');
     console.log("Apple OAuth config:", oauthConfig);
+    console.log("Redirect URL being used:", PRODUCTION_URL + "/auth/callback");
     
     const { data, error } = await supabase.auth.signInWithOAuth(oauthConfig);
     
     if (error) {
       console.error("Apple sign-in error:", error);
+      
+      if (error.message.includes("redirect_uri_mismatch")) {
+        toast({
+          title: "OAuth Configuration Error",
+          description: "Redirect URL mismatch. Please check Apple Developer settings.",
+          variant: "destructive",
+        });
+        console.error("The redirect URL in your code doesn't match the one authorized in Apple Developer settings");
+        console.error("Expected redirect URL: " + PRODUCTION_URL + "/auth/callback");
+        return { success: false, error: error.message, configError: true };
+      }
       
       if (error.message.includes("provider is not enabled")) {
         toast({

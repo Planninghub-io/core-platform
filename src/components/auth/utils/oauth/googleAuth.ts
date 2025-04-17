@@ -1,5 +1,5 @@
 
-import { supabase, configureOAuthRedirect } from "@/integrations/supabase/client";
+import { supabase, configureOAuthRedirect, PRODUCTION_URL } from "@/integrations/supabase/client";
 import type { SignInResult } from "../types/auth";
 
 export const handleGoogleSignIn = async (
@@ -15,10 +15,11 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    // Use the configureOAuthRedirect helper to get consistent OAuth configuration
-    // This now always uses the production URL for the redirect
+    // IMPORTANT: This uses the production URL (https://yourplanner.ai/auth/callback)
+    // The redirect URL MUST match exactly in Supabase and Google Cloud Console
     const oauthConfig = configureOAuthRedirect('google');
     console.log("Google OAuth config:", oauthConfig);
+    console.log("Redirect URL being used:", PRODUCTION_URL + "/auth/callback");
     
     const { data, error } = await supabase.auth.signInWithOAuth(oauthConfig);
     
@@ -33,6 +34,7 @@ export const handleGoogleSignIn = async (
           variant: "destructive",
         });
         console.error("The redirect URL in your code doesn't match the one authorized in Google Cloud Console");
+        console.error("Expected redirect URL: " + PRODUCTION_URL + "/auth/callback");
         return { success: false, error: error.message, configError: true };
       }
       

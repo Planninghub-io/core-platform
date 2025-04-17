@@ -61,9 +61,11 @@ export async function safeQuery<T>(queryFn: () => Promise<{ data: T | null; erro
   }
 }
 
-// Configuration for OAuth providers - updated to ensure consistency
+// IMPORTANT: Always use https://yourplanner.ai/auth/callback for OAuth redirects
+// This must match the URL configured in both Supabase AND Google Cloud Console
 export const configureOAuthRedirect = (provider: string) => {
-  // Always use the production URL for OAuth redirects in Google Cloud settings
+  // Always use the production URL for OAuth redirects
+  // This is critical for Google OAuth to work properly
   const redirectTo = `${PRODUCTION_URL}/auth/callback`;
   
   console.log(`[OAuth Config] Provider: ${provider}, Redirect URL: ${redirectTo}`);
