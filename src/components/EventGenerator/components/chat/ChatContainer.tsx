@@ -26,9 +26,6 @@ export const ChatContainer = ({
 }: ChatContainerProps) => {
   const isMobile = useIsMobile();
   
-  console.log("ChatContainer: Rendering with isGenerating =", isGenerating);
-  console.log("ChatContainer: Chat messages:", chatMessages);
-  
   useEffect(() => {
     const messagesEndRef = document.getElementById("messages-end-ref");
     if (messagesEndRef) {
@@ -37,7 +34,7 @@ export const ChatContainer = ({
   }, [chatMessages, isGenerating]);
   
   return (
-    <div className="bg-white rounded-t-xl shadow-md overflow-hidden border border-gray-200 flex flex-col h-full w-full min-h-[65vh]">
+    <div className="bg-white rounded-t-xl shadow-md overflow-hidden border border-gray-200 flex flex-col h-full w-full min-h-[45vh] max-h-[55vh]">
       <div className="flex-grow overflow-auto flex flex-col">
         <ChatMessages 
           chatMessages={chatMessages} 

@@ -1,4 +1,3 @@
-
 import { EventGeneratorContent } from "./EventGeneratorContent";
 import { WelcomeHeader } from "../WelcomeHeader";
 import { ManualEventButton } from "../ManualEventButton";
@@ -39,14 +38,12 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
     waitingForBudget,
   } = useEventGeneration();
 
-  // Debug effect to check if we have a generated event
   useEffect(() => {
     if (generatedEvent) {
       console.log("EventGeneratorContainer: Generated event available:", generatedEvent);
     }
   }, [generatedEvent]);
 
-  // Get the latest user prompt from chat messages
   const getLatestUserPrompt = () => {
     for (let i = chatMessages.length - 1; i >= 0; i--) {
       if (chatMessages[i].type === 'user') {
@@ -56,10 +53,8 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
     return "";
   };
 
-  // Get the latest user prompt
   const latestPrompt = getLatestUserPrompt();
 
-  // Prepare event data for navigation
   const prepareEventData = () => {
     if (!generatedEvent) return null;
     
@@ -71,19 +66,15 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
     };
   };
 
-  // Handle model change
   const handleModelChange = (model: 'openai' | 'anthropic') => {
     setModelProvider(model);
     console.log("Model changed to:", model);
   };
 
-  // Handle manual event creation with populated data
   const handleManualEventCreation = () => {
-    // Prepare event data based on chat information
     let eventData = {};
     
     if (generatedEvent) {
-      // If we have a generated event, use that data
       eventData = {
         title: eventTitle || generatedEvent.title,
         description: generatedEvent.description,
@@ -94,8 +85,6 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
         imageUrl: generatedEvent.imageUrl
       };
     } else {
-      // If no generated event yet, but user has entered some data in chat
-      // Extract information from chat messages or additional info
       eventData = {
         ...(additionalInfo.date && { date: additionalInfo.date }),
         ...(additionalInfo.location && { location: additionalInfo.location }),
@@ -103,12 +92,11 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
       };
     }
     
-    // Navigate to create-event with the collected data
     window.location.href = "/create-event";
   };
 
   return (
-    <div className="container py-8">
+    <div className="container py-4 sm:py-6">
       <div className="mx-auto max-w-4xl">
         <WelcomeHeader show={chatMessages.length === 0} />
 
@@ -133,10 +121,12 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
           />
         </div>
 
-        <ManualEventButton 
-          show={chatMessages.length === 0} 
-          onClick={onCreateManualEvent || handleManualEventCreation} 
-        />
+        <div className="mt-4">
+          <ManualEventButton 
+            show={chatMessages.length === 0} 
+            onClick={onCreateManualEvent || handleManualEventCreation} 
+          />
+        </div>
 
         <SignUpDialog
           open={showSignUpDialog}
@@ -158,7 +148,6 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
     </div>
   );
 
-  // Redirect to authentication with event data
   function handleSignUp(type: 'business' | 'user') {
     setShowSignUpDialog(false);
     const eventData = prepareEventData();

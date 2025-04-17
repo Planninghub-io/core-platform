@@ -11,7 +11,7 @@ export const ManualEventButton = ({ show, onClick }: ManualEventButtonProps) => 
   if (!show) return null;
   
   return (
-    <div className="mt-10 flex justify-center">
+    <div className="flex justify-center">
       <Button
         onClick={onClick}
         className="animate-fade-up gap-2 bg-[#9b87f5] hover:bg-[#9b87f5]/90"
