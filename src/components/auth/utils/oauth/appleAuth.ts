@@ -1,5 +1,5 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, configureOAuthRedirect } from "@/integrations/supabase/client";
 import type { Provider } from "@supabase/supabase-js";
 import type { SignInResult } from "../types/auth";
 
@@ -16,16 +16,11 @@ export const handleAppleSignIn = async (
     
     console.log("Attempting to sign in with Apple...");
     
-    const origin = window.location.origin;
-    const redirectUrl = `${origin}/auth/callback`;
-    console.log("Using redirect URL:", redirectUrl);
+    // Use the configureOAuthRedirect helper to get consistent OAuth configuration
+    const oauthConfig = configureOAuthRedirect('apple');
+    console.log("Apple OAuth config:", oauthConfig);
     
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'apple' as Provider,
-      options: {
-        redirectTo: redirectUrl
-      }
-    });
+    const { data, error } = await supabase.auth.signInWithOAuth(oauthConfig);
     
     if (error) {
       console.error("Apple sign-in error:", error);

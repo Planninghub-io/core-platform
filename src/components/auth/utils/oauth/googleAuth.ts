@@ -1,5 +1,5 @@
 
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, configureOAuthRedirect } from "@/integrations/supabase/client";
 import type { SignInResult } from "../types/auth";
 
 export const handleGoogleSignIn = async (
@@ -15,25 +15,11 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    // Get the current origin for redirect URL
-    const origin = window.location.origin;
-    console.log("Current origin:", origin);
+    // Use the configureOAuthRedirect helper to get consistent OAuth configuration
+    const oauthConfig = configureOAuthRedirect('google');
+    console.log("Google OAuth config:", oauthConfig);
     
-    // Define redirect URL
-    const redirectUrl = `${origin}/auth/callback`;
-    console.log("Using redirect URL:", redirectUrl);
-    
-    // Explicitly define the provider options
-    const { data, error } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: redirectUrl,
-        queryParams: {
-          prompt: 'select_account',
-          access_type: 'offline'
-        }
-      }
-    });
+    const { data, error } = await supabase.auth.signInWithOAuth(oauthConfig);
     
     if (error) {
       console.error("Google sign-in error:", error);

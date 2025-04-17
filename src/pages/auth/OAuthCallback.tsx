@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, APP_URL } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const OAuthCallback = () => {
@@ -16,6 +16,7 @@ const OAuthCallback = () => {
       try {
         console.log("OAuth callback triggered, processing authentication");
         console.log("Current URL:", window.location.href);
+        console.log("App URL to use for redirects:", APP_URL);
         
         // Get code and error parameters from URL
         const urlParams = new URLSearchParams(window.location.search);
@@ -71,6 +72,26 @@ const OAuthCallback = () => {
               const redirectPath = localStorage.getItem('authRedirectPath') || '/';
               localStorage.removeItem('authRedirectPath'); // Clean up
               
+              // For production environments using yourplanner.ai domain
+              const hostname = window.location.hostname;
+              if (hostname !== 'yourplanner.ai' && hostname !== 'www.yourplanner.ai' && 
+                  hostname !== 'localhost' && !hostname.includes('.localhost') && 
+                  !hostname.includes('127.0.0.1')) {
+                
+                console.log("We are not on production or local, redirecting to production URL");
+                // We're on a preview environment, but need to redirect to production
+                const productionRedirectUrl = `${APP_URL}${redirectPath}`;
+                console.log("Redirecting to production URL:", productionRedirectUrl);
+                
+                // Delay redirect to ensure toast is shown
+                setTimeout(() => {
+                  window.location.replace(productionRedirectUrl);
+                }, 500);
+                return;
+              }
+              
+              // Local development or already on production, use React Router
+              console.log("Navigating to:", redirectPath);
               // Delay redirect to ensure toast is shown
               setTimeout(() => {
                 navigate(redirectPath, { replace: true });
@@ -121,6 +142,24 @@ const OAuthCallback = () => {
             const redirectPath = localStorage.getItem('authRedirectPath') || '/';
             localStorage.removeItem('authRedirectPath');
             
+            // For production environments using yourplanner.ai domain
+            const hostname = window.location.hostname;
+            if (hostname !== 'yourplanner.ai' && hostname !== 'www.yourplanner.ai' && 
+                hostname !== 'localhost' && !hostname.includes('.localhost') && 
+                !hostname.includes('127.0.0.1')) {
+              
+              console.log("We are not on production or local, redirecting to production URL");
+              // We're on a preview environment, but need to redirect to production
+              const productionRedirectUrl = `${APP_URL}${redirectPath}`;
+              console.log("Redirecting to production URL:", productionRedirectUrl);
+              
+              setTimeout(() => {
+                window.location.replace(productionRedirectUrl);
+              }, 500);
+              return;
+            }
+            
+            // Local development or already on production, use React Router
             setTimeout(() => {
               navigate(redirectPath, { replace: true });
             }, 500);

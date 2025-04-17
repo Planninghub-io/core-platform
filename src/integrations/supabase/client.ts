@@ -16,18 +16,14 @@ const getAppUrl = () => {
   }
   
   const hostname = window.location.hostname;
-  const origin = window.location.origin;
-  
-  console.log("Current hostname:", hostname);
-  console.log("Current origin:", origin);
   
   // Production environment
   if (hostname === 'yourplanner.ai' || hostname === 'www.yourplanner.ai') {
     return PRODUCTION_URL;
   }
   
-  // Development environment or preview environment
-  return origin;
+  // Development or preview environment
+  return window.location.origin;
 };
 
 // Export the APP_URL for use in other parts of the application
@@ -67,14 +63,13 @@ export async function safeQuery<T>(queryFn: () => Promise<{ data: T | null; erro
 
 // Configuration for OAuth providers
 export const configureOAuthRedirect = (provider: string) => {
-  // Get the current origin whether we're in the browser or server
-  const origin = typeof window !== 'undefined' ? window.location.origin : PRODUCTION_URL;
+  // Use the APP_URL function to get the appropriate base URL
+  const baseUrl = APP_URL;
   
   // Create the redirect URL
-  const redirectTo = `${origin}/auth/callback`;
+  const redirectTo = `${baseUrl}/auth/callback`;
   
-  // Log for debugging purposes
-  console.log(`[OAuth Config] Provider: ${provider}, Redirect URL: ${redirectTo}`);
+  console.log(`[OAuth Config] Provider: ${provider}, Base URL: ${baseUrl}, Redirect URL: ${redirectTo}`);
   
   return {
     provider: provider as Provider,
