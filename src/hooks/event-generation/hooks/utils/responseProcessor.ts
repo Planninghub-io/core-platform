@@ -64,6 +64,8 @@ export const processResponse = (
       id: `missing-fields-${apiCallId}`
     }]);
     
+    // Always return the event data, even with missing fields,
+    // so it can be displayed with a form to collect missing info
     return { 
       validatedEvent: eventData, 
       missing, 

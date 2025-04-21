@@ -5,6 +5,7 @@ import { ChatInputArea } from "./ChatInputArea";
 import { usePromptHandler } from "./PromptHandler";
 import { EventFormReview } from "../EventFormReview";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { EventDetailsForm } from "../EventDetailsForm";
 
 interface ChatInterfaceProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -29,6 +30,9 @@ interface ChatInterfaceProps {
 export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
   const [modelProvider, setModelProvider] = useState<'openai' | 'anthropic'>(props.modelProvider || 'openai');
   const [showEventForm, setShowEventForm] = useState(false);
+  const [selectedDate, setSelectedDateLocal] = useState(props.generatedEvent?.date || "");
+  const [location, setLocationLocal] = useState(props.generatedEvent?.location || "");
+  const [eventTitle, setEventTitleLocal] = useState(props.eventTitle || props.generatedEvent?.title || "");
 
   // Use the prompt handler hook
   const {
@@ -54,6 +58,28 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
       props.onModelChange(model);
     }
   };
+
+  // Update local state when props change
+  useEffect(() => {
+    if (props.generatedEvent) {
+      setEventTitleLocal(props.eventTitle || props.generatedEvent.title || "");
+      setSelectedDateLocal(props.generatedEvent.date || "");
+      setLocationLocal(props.generatedEvent.location || "");
+    }
+  }, [props.generatedEvent, props.eventTitle]);
+
+  // Update parent state when local state changes
+  useEffect(() => {
+    if (props.setSelectedDate && selectedDate) {
+      props.setSelectedDate(selectedDate);
+    }
+    if (props.setLocation && location) {
+      props.setLocation(location);
+    }
+    if (props.setEventTitle && eventTitle) {
+      props.setEventTitle(eventTitle);
+    }
+  }, [selectedDate, location, eventTitle, props.setSelectedDate, props.setLocation, props.setEventTitle]);
 
   // Show event form when all requirements are met
   useEffect(() => {
@@ -106,14 +132,35 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         </div>
       </div>
 
+      {/* Display generated event form below chat when available */}
+      {props.generatedEvent && (
+        <div className="mt-6 p-4 bg-white shadow-md border border-gray-200 rounded-xl">
+          <h2 className="text-xl font-semibold mb-4">Your Generated Event</h2>
+          <EventDetailsForm
+            event={props.generatedEvent}
+            eventTitle={eventTitle}
+            setEventTitle={setEventTitleLocal}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDateLocal}
+            location={location}
+            setLocation={setLocationLocal}
+            hasMissingDate={!selectedDate}
+            hasMissingLocation={!location}
+            isCreating={false}
+            handleCreateEvent={props.handleCreateEvent || (() => {})}
+            prompt={props.prompt}
+          />
+        </div>
+      )}
+
       {/* Event Form Review Dialog */}
       <Dialog open={showEventForm} onOpenChange={setShowEventForm}>
         <DialogContent className="sm:max-w-2xl">
           {props.generatedEvent && (
             <EventFormReview
               event={props.generatedEvent}
-              eventTitle={props.eventTitle || ''}
-              setEventTitle={props.setEventTitle}
+              eventTitle={eventTitle}
+              setEventTitle={setEventTitleLocal}
               onClose={() => setShowEventForm(false)}
               onSubmit={() => {
                 if (props.handleCreateEvent) {
