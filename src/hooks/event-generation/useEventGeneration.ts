@@ -55,6 +55,13 @@ export const useEventGeneration = (): any => {
     requestBudgetInChat
   );
 
+  // Add debug logging to track generated event
+  useState(() => {
+    if (generatedEvent) {
+      console.log("useEventGeneration: Generated event is available:", generatedEvent);
+    }
+  });
+
   // Check if date or location is missing
   const hasMissingDate = missingFields?.includes('date') || (!selectedDate && !generatedEvent?.date);
   const hasMissingLocation = missingFields?.includes('location') || (!location && !generatedEvent?.location);
@@ -82,6 +89,8 @@ export const useEventGeneration = (): any => {
 
   // Handle create event
   const handleCreateEvent = async () => {
+    console.log("handleCreateEvent called with generatedEvent:", generatedEvent);
+    
     if (!generatedEvent) {
       toast({
         title: "Error",
@@ -121,6 +130,8 @@ export const useEventGeneration = (): any => {
       image_url: generatedEvent.imageUrl,
       user_id: user.id
     };
+
+    console.log("Creating event with data:", eventData);
 
     // Create event in database
     try {

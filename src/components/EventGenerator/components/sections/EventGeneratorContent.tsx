@@ -42,25 +42,22 @@ export const EventGeneratorContent = ({
   promptCount
 }: EventGeneratorContentProps) => {
   const { prompt, setPrompt, isGenerating, handlePromptSubmit } = useEventGeneration();
-  const [showEventDetails, setShowEventDetails] = useState(false);
   
-  // Show event details when an event is generated
+  // Pre-populate event title if not already set
   useEffect(() => {
-    if (generatedEvent) {
-      console.log("EventGeneratorContent: Generated event received:", generatedEvent);
-      
-      // Pre-populate event title if not already set
-      if (!eventTitle && generatedEvent.title) {
-        setEventTitle(generatedEvent.title);
-      }
-      
-      // Don't need to set this flag anymore as the dialog will be shown directly from ChatInterfaceRefactored
-      // setShowEventDetails(true);
+    if (generatedEvent && !eventTitle && generatedEvent.title) {
+      console.log("EventGeneratorContent: Setting event title from generated event:", generatedEvent.title);
+      setEventTitle(generatedEvent.title);
     }
   }, [generatedEvent, eventTitle, setEventTitle]);
 
   // Using an empty string as the welcome message to let ChatMessages component use its enhanced version
   const welcomeMessage = "";
+
+  // Debug log to check if generatedEvent is properly passed
+  useEffect(() => {
+    console.log("EventGeneratorContent: Current generatedEvent:", generatedEvent);
+  }, [generatedEvent]);
 
   return (
     <div className="w-full">
@@ -85,26 +82,6 @@ export const EventGeneratorContent = ({
           handleCreateEvent={handleCreateEvent}
         />
       </div>
-      
-      {/* Only show event details section when an event is generated and we want to display it below the chat */}
-      {showEventDetails && generatedEvent && (
-        <div className="w-full">
-          <EventDetailsSection
-            generatedEvent={generatedEvent}
-            eventTitle={eventTitle}
-            setEventTitle={setEventTitle}
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            location={location}
-            setLocation={setLocation}
-            hasMissingDate={hasMissingDate}
-            hasMissingLocation={hasMissingLocation}
-            isCreating={false}
-            handleCreateEvent={handleCreateEvent}
-            prompt={latestPrompt}
-          />
-        </div>
-      )}
     </div>
   );
 };

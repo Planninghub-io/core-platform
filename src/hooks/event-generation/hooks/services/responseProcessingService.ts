@@ -25,7 +25,7 @@ export const processSuccessfulResponse = (
     const eventData = response.data || response.validatedEvent;
     console.log("Setting generated event data:", eventData);
     
-    // Store generated event
+    // Store generated event - make sure this happens
     setGeneratedEvent(eventData);
     
     // Update prompt count for new prompts

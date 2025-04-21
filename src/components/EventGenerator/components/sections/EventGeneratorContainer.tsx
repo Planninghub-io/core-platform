@@ -1,3 +1,4 @@
+
 import { EventGeneratorContent } from "./EventGeneratorContent";
 import { WelcomeHeader } from "../WelcomeHeader";
 import { ManualEventButton } from "../ManualEventButton";
@@ -38,9 +39,12 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
     waitingForBudget,
   } = useEventGeneration();
 
+  // Add debug logging to track the generated event
   useEffect(() => {
     if (generatedEvent) {
-      console.log("EventGeneratorContainer: Generated event available:", generatedEvent);
+      console.log("EventGeneratorContainer: Generated event available:", JSON.stringify(generatedEvent, null, 2));
+    } else {
+      console.log("EventGeneratorContainer: No generated event available");
     }
   }, [generatedEvent]);
 

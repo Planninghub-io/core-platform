@@ -29,7 +29,7 @@ export const ChatInterface = (props: ChatInterfaceProps) => {
     props.setPrompt(newPrompt);
   };
   
-  // Simply pass all props to the enhanced chat interface
+  // Add debug logging to track the generatedEvent
   console.log("ChatInterface: Rendering with generatedEvent:", props.generatedEvent);
   
   return (

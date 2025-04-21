@@ -1,139 +1,127 @@
 
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
+import { useState, useCallback } from "react";
 import { ChatMessage } from "../types";
-import { submitPrompt } from "./services/promptSubmissionService";
-import { SubmissionResult, GeneratedEvent } from "../types/api-types";
-
-// Define a more explicit result type to fix TypeScript errors
-interface ApiResponse {
-  validatedEvent?: GeneratedEvent;
-  missing?: string[];
-  needsBudget?: boolean;
-  error?: Error;
-}
+import { generateEventWithAPI } from "./services/eventGenerationService";
+import { processResponse } from "./utils/responseProcessor";
 
 /**
- * Hook for handling prompt submission and processing
+ * Hook for handling prompt submissions and processing responses
  */
 export const usePromptSubmission = (
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
   waitingForBudget: boolean,
   requestBudgetInChat: () => void
 ) => {
-  const { toast } = useToast();
   const [isGenerating, setIsGenerating] = useState(false);
   const [promptCount, setPromptCount] = useState(0);
-  const [missingInfo, setMissingInfo] = useState<any>(null);
-  const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
-  const [isResubmitting, setIsResubmitting] = useState(false);
-  const [generatedEvent, setGeneratedEvent] = useState<GeneratedEvent | null>(null);
   const [missingFields, setMissingFields] = useState<string[]>([]);
+  const [missingInfo, setMissingInfo] = useState(null);
+  const [generatedEvent, setGeneratedEvent] = useState(null);
+  const [isResubmitting, setIsResubmitting] = useState(false);
   const [previouslyRequestedFields, setPreviouslyRequestedFields] = useState<string[]>([]);
-  const [lastApiCallId, setLastApiCallId] = useState<string | null>(null);
-  const [hasInitiated, setHasInitiated] = useState(false);
+  const [latestApiCallId, setLatestApiCallId] = useState<string | null>(null);
 
   /**
-   * Handle prompt submission - only when explicitly called with a non-empty prompt
+   * Handle prompt submission to AI
    */
-  const handlePromptSubmit = async (prompt: string, modelProvider: 'openai' | 'anthropic' = 'openai') => {
-    // Skip empty prompts or automatic calls
-    if (!prompt || prompt.trim() === '') {
-      console.log("usePromptSubmission: Empty prompt, ignoring request");
-      return;
-    }
+  const handlePromptSubmit = useCallback(async (
+    prompt: string, 
+    modelProvider: 'openai' | 'anthropic' = 'openai',
+    additionalInfo = {}
+  ) => {
+    if (!prompt.trim() || isGenerating) return;
     
-    // Mark as having been initiated by user action
-    if (!hasInitiated) {
-      setHasInitiated(true);
-    }
+    setIsGenerating(true);
     
-    console.log("usePromptSubmission: handlePromptSubmit called with model:", modelProvider);
-    console.log("usePromptSubmission: Prompt received:", prompt);
-    
-    if (isGenerating) {
-      console.log("usePromptSubmission: Already generating, ignoring new request");
-      return;
-    }
+    // Add user message to chat
+    setChatMessages(prev => [...prev, { 
+      type: 'user', 
+      content: prompt 
+    }]);
     
     // Generate a unique ID for this API call
     const apiCallId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
-    console.log(`usePromptSubmission: Starting API call with ID: ${apiCallId}`);
-    setLastApiCallId(apiCallId);
+    setLatestApiCallId(apiCallId);
+    
+    console.log(`usePromptSubmission [${apiCallId}]: Submitting prompt:`, prompt);
     
     try {
-      const result = await submitPrompt(
+      // Make API call to generate event
+      const response = await generateEventWithAPI(
         prompt,
+        previouslyRequestedFields,
         modelProvider,
         additionalInfo,
-        setChatMessages,
-        setIsGenerating,
-        waitingForBudget,
-        requestBudgetInChat,
-        setPreviouslyRequestedFields,
-        setPromptCount,
-        isResubmitting,
         apiCallId
       );
       
-      console.log(`usePromptSubmission [${apiCallId}]: Result from submitPrompt:`, JSON.stringify(result, null, 2));
+      console.log(`usePromptSubmission [${apiCallId}]: Received API response:`, response);
       
-      // Ensure this is still the most recent API call
-      if (lastApiCallId !== apiCallId) {
+      // Only process the latest API call's response
+      if (apiCallId === latestApiCallId) {
+        // Process the response
+        const result = processResponse(
+          response, 
+          setChatMessages, 
+          waitingForBudget, 
+          requestBudgetInChat,
+          setPreviouslyRequestedFields,
+          apiCallId
+        );
+        
+        console.log(`usePromptSubmission [${apiCallId}]: Result from submitPrompt:`, result);
+        
+        if (result && result.validatedEvent) {
+          // Set missing fields
+          if (result.missing && result.missing.length) {
+            setMissingFields(result.missing);
+          } else {
+            setMissingFields([]);
+          }
+          
+          // Important: Set the generated event regardless of missing fields
+          console.log(`usePromptSubmission [${apiCallId}]: Setting generated event:`, result.validatedEvent);
+          setGeneratedEvent(result.validatedEvent);
+          
+          // Increment prompt count
+          setPromptCount(prev => prev + 1);
+          
+          return result;
+        }
+      } else {
         console.log(`usePromptSubmission [${apiCallId}]: Ignoring result as a newer API call was made`);
-        return;
       }
+    } catch (error) {
+      console.error(`usePromptSubmission [${apiCallId}]: Error generating event:`, error);
       
-      if (result?.error) {
-        console.error(`usePromptSubmission [${apiCallId}]: Error in result:`, result.error);
-        toast({
-          title: "Error",
-          description: result.error.message || "Failed to generate event. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Update generated event if we have one
-      if (result?.validatedEvent) {
-        console.log(`usePromptSubmission [${apiCallId}]: Setting generated event:`, result.validatedEvent);
-        setGeneratedEvent(result.validatedEvent);
-      } else {
-        console.log(`usePromptSubmission [${apiCallId}]: No validated event in result`);
-      }
-      
-      // Update missing fields if any
-      if (result?.missing) {
-        console.log(`usePromptSubmission [${apiCallId}]: Setting missing fields:`, result.missing);
-        setMissingFields(result.missing);
-      } else {
-        console.log(`usePromptSubmission [${apiCallId}]: No missing fields in result`);
-      }
-      
-    } catch (error: any) {
-      console.error(`usePromptSubmission [${apiCallId}]: Error in handlePromptSubmit:`, error);
-      
-      toast({
-        title: "Error",
-        description: error.message || "An unexpected error occurred. Please try again.",
-        variant: "destructive",
-      });
+      // Add error message to chat
+      setChatMessages(prev => [...prev, { 
+        type: 'ai', 
+        content: "I'm sorry, I couldn't generate an event based on your request. Please try again with more details." 
+      }]);
+    } finally {
+      setIsGenerating(false);
     }
-  };
-
-  return { 
+    
+    return null;
+  }, [
     isGenerating, 
-    promptCount, 
-    missingInfo, 
-    setMissingInfo,
-    additionalInfo,
-    setAdditionalInfo,
-    isResubmitting,
-    setIsResubmitting,
+    setChatMessages, 
+    previouslyRequestedFields, 
+    waitingForBudget, 
+    requestBudgetInChat, 
+    latestApiCallId
+  ]);
+
+  return {
+    isGenerating,
+    promptCount,
+    missingInfo,
     generatedEvent,
     setGeneratedEvent,
+    isResubmitting,
+    setIsResubmitting,
     missingFields,
-    previouslyRequestedFields,
     handlePromptSubmit
   };
 };
