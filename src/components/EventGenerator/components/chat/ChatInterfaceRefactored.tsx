@@ -76,7 +76,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
   }, [props.generatedEvent, props.isGenerating]);
 
   return (
-    <div className="w-full min-h-[70vh] flex flex-col">
+    <div className="w-full min-h-[70vh] max-h-[85vh] flex flex-col">
       <div className="flex-grow overflow-hidden rounded-t-xl">
         <ChatContainer 
           chatMessages={props.chatMessages}
@@ -89,8 +89,8 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
           onTranscriptReceived={props.onTranscriptReceived}
         />
       </div>
-      {/* Remove padding and margin from chat input container to bring it flush to chat container */}
-      <div className="border-x border-b border-gray-200 bg-white rounded-b-xl">
+      {/* Make chat input flush with chat container; remove any margin or padding causing gap */}
+      <div className="border-x border-t-0 border-gray-200 bg-white rounded-b-none">
         <ChatInputArea 
           chatMessages={props.chatMessages} 
           prompt={props.prompt} 
