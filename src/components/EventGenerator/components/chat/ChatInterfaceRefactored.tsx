@@ -29,7 +29,7 @@ interface ChatInterfaceProps {
 export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
   const [modelProvider, setModelProvider] = useState<'openai' | 'anthropic'>(props.modelProvider || 'openai');
   const [showEventForm, setShowEventForm] = useState(false);
-  
+
   // Use the prompt handler hook
   const {
     handleSubmit,
@@ -48,7 +48,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
   // Handle model change
   const handleModelChange = (model: 'openai' | 'anthropic') => {
     if (model === modelProvider) return;
-    
+
     setModelProvider(model);
     if (props.onModelChange) {
       props.onModelChange(model);
@@ -57,60 +57,52 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
 
   // Show event form when all requirements are met
   useEffect(() => {
-    console.log("ChatInterfaceRefactored: Checking if we should show event form", {
-      generatedEvent: props.generatedEvent,
-      requiredFieldsCollected,
-      hasMissingFields,
-      isGenerating: props.isGenerating
-    });
-    
     if (props.generatedEvent && !props.isGenerating) {
-      // Wait a short moment to allow the user to read the last message
       const timer = setTimeout(() => {
-        console.log("ChatInterfaceRefactored: Opening event form dialog");
         setShowEventForm(true);
       }, 1000);
-      
+
       return () => clearTimeout(timer);
     }
   }, [props.generatedEvent, props.isGenerating]);
 
+  // Unified container: one border/background, rounded corners, no gap
   return (
     <div className="w-full min-h-[70vh] max-h-[85vh] flex flex-col">
-      <div className="flex-grow overflow-hidden rounded-t-xl">
-        <ChatContainer 
-          chatMessages={props.chatMessages}
-          isGenerating={props.isGenerating}
-          promptCount={props.promptCount}
-          welcomeMessage={props.welcomeMessage}
-          generatedEvent={props.generatedEvent}
-          requiredFieldsCollected={requiredFieldsCollected}
-          hasMissingFields={hasMissingFields}
-          onTranscriptReceived={props.onTranscriptReceived}
-        />
+      <div className="flex flex-col flex-grow bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden w-full h-full">
+        <div className="flex-grow overflow-hidden">
+          <ChatContainer
+            chatMessages={props.chatMessages}
+            isGenerating={props.isGenerating}
+            promptCount={props.promptCount}
+            welcomeMessage={props.welcomeMessage}
+            generatedEvent={props.generatedEvent}
+            requiredFieldsCollected={requiredFieldsCollected}
+            hasMissingFields={hasMissingFields}
+            onTranscriptReceived={props.onTranscriptReceived}
+          />
+        </div>
+        <div>
+          <ChatInputArea
+            chatMessages={props.chatMessages}
+            prompt={props.prompt}
+            setPrompt={props.setPrompt}
+            isGenerating={props.isGenerating}
+            promptCount={props.promptCount}
+            handlePromptSubmit={handleSubmit}
+            generatedEvent={props.generatedEvent}
+            hasMissingFields={hasMissingFields}
+            requiredFieldsCollected={requiredFieldsCollected}
+            modelProvider={modelProvider}
+            onModelChange={handleModelChange}
+          />
+        </div>
       </div>
-      {/* Make chat input flush with chat container; remove any margin or padding causing gap */}
-      <div className="border-x border-t-0 border-gray-200 bg-white rounded-b-none">
-        <ChatInputArea 
-          chatMessages={props.chatMessages} 
-          prompt={props.prompt} 
-          setPrompt={props.setPrompt} 
-          isGenerating={props.isGenerating} 
-          promptCount={props.promptCount} 
-          handlePromptSubmit={handleSubmit}
-          generatedEvent={props.generatedEvent}
-          hasMissingFields={hasMissingFields}
-          requiredFieldsCollected={requiredFieldsCollected}
-          modelProvider={modelProvider}
-          onModelChange={handleModelChange}
-        />
-      </div>
-
       {/* Event Form Review Dialog */}
       <Dialog open={showEventForm} onOpenChange={setShowEventForm}>
         <DialogContent className="sm:max-w-2xl">
           {props.generatedEvent && (
-            <EventFormReview 
+            <EventFormReview
               event={props.generatedEvent}
               eventTitle={props.eventTitle || ''}
               setEventTitle={props.setEventTitle}
@@ -128,4 +120,3 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     </div>
   );
 };
-
