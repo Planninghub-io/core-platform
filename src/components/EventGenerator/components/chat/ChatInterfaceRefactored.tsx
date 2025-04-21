@@ -67,6 +67,12 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     }
   }, [props.generatedEvent, props.isGenerating]);
 
+  // Debug event rendering
+  useEffect(() => {
+    console.log("ChatInterfaceRefactored: Current generatedEvent state:", props.generatedEvent);
+    console.log("ChatInterfaceRefactored: Dialog state:", showEventForm);
+  }, [props.generatedEvent, showEventForm]);
+
   // Unified container: one border/background, rounded corners, no gap
   return (
     <div className="w-full min-h-[70vh] max-h-[85vh] flex flex-col">
@@ -99,6 +105,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
           />
         </div>
       </div>
+
       {/* Event Form Review Dialog */}
       <Dialog open={showEventForm} onOpenChange={setShowEventForm}>
         <DialogContent className="sm:max-w-2xl">

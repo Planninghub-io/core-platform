@@ -32,6 +32,13 @@ export const ChatContainer = ({
       messagesEndRef.scrollIntoView({ behavior: 'smooth' });
     }
   }, [chatMessages, isGenerating]);
+
+  // Debug the generatedEvent
+  useEffect(() => {
+    if (generatedEvent) {
+      console.log("ChatContainer received generatedEvent:", generatedEvent);
+    }
+  }, [generatedEvent]);
   
   return (
     <div className="flex-grow overflow-auto h-full">

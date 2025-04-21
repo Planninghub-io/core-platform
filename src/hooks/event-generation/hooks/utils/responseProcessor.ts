@@ -72,7 +72,7 @@ export const processResponse = (
   }
   
   // If we have a complete event with no missing fields
-  if (missing.length === 0 && eventData) {
+  if (eventData) {
     console.log(`processResponse [${apiCallId}]: Event is complete, sending success message`);
     // Success message
     setChatMessages(prev => [...prev, {
