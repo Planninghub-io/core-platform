@@ -1,5 +1,4 @@
-
-import { generateEventWithAPI } from "./eventGenerationAPI";
+import { generateEventAPI } from "./eventGenerationService";
 import { extractInfoFromPrompt } from "../utils/promptExtractor";
 import { ChatMessage } from "../../types";
 import { SubmissionResult, GenerateEventResponse } from "../../types/api-types";
@@ -78,13 +77,12 @@ export const submitPrompt = async (
     setChatMessages(prev => [...prev, { type: 'ai', content: "Generating your event details...", id: loadingMessageId }]);
     
     // Generate the event
-    console.log(`submitPrompt [${apiCallId}]: Calling generateEventWithAPI`);
-    const response = await generateEventWithAPI(
+    console.log(`submitPrompt [${apiCallId}]: Calling generateEventAPI`);
+    const response = await generateEventAPI({
       prompt,
-      modelProvider,
-      combinedInfo,
-      apiCallId
-    ) as GenerateEventResponse;
+      additionalInfo: combinedInfo,
+      modelProvider
+    }) as GenerateEventResponse;
     
     console.log(`submitPrompt [${apiCallId}]: Received API response:`, JSON.stringify(response, null, 2));
     

@@ -32,7 +32,14 @@ export const processSuccessfulResponse = (
     if (!isResubmitting) {
       setPromptCount(prev => prev + 1);
     }
+
+    // Return the processed data to maintain consistency
+    return {
+      validatedEvent: eventData,
+      missing: response.missing || []
+    };
   } else {
     console.error("Missing data property in API response:", response);
+    return null;
   }
 };

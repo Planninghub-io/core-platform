@@ -1,7 +1,7 @@
 
 import { useState, useCallback } from "react";
 import { ChatMessage } from "../types";
-import { generateEventWithAPI } from "./services/eventGenerationService";
+import { generateEventAPI } from "./services/eventGenerationService";
 import { processResponse } from "./utils/responseProcessor";
 
 /**
@@ -46,14 +46,12 @@ export const usePromptSubmission = (
     console.log(`usePromptSubmission [${apiCallId}]: Submitting prompt:`, prompt);
     
     try {
-      // Make API call to generate event
-      const response = await generateEventWithAPI(
+      // Make API call to generate event - updated to use generateEventAPI
+      const response = await generateEventAPI({
         prompt,
-        previouslyRequestedFields,
-        modelProvider,
         additionalInfo,
-        apiCallId
-      );
+        modelProvider
+      });
       
       console.log(`usePromptSubmission [${apiCallId}]: Received API response:`, response);
       
@@ -63,10 +61,9 @@ export const usePromptSubmission = (
         const result = processResponse(
           response, 
           setChatMessages, 
-          waitingForBudget, 
-          requestBudgetInChat,
-          setPreviouslyRequestedFields,
-          apiCallId
+          setGeneratedEvent,
+          setPromptCount,
+          isResubmitting
         );
         
         console.log(`usePromptSubmission [${apiCallId}]: Result from submitPrompt:`, result);
@@ -106,11 +103,12 @@ export const usePromptSubmission = (
     return null;
   }, [
     isGenerating, 
-    setChatMessages, 
-    previouslyRequestedFields, 
+    setChatMessages,
+    previouslyRequestedFields,
     waitingForBudget, 
     requestBudgetInChat, 
-    latestApiCallId
+    latestApiCallId,
+    isResubmitting
   ]);
 
   return {
