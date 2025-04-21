@@ -89,7 +89,8 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
           onTranscriptReceived={props.onTranscriptReceived}
         />
       </div>
-      <div className="rounded-b-xl border-x border-b border-gray-200 bg-white">
+      {/* Remove padding and margin from chat input container to bring it flush to chat container */}
+      <div className="border-x border-b border-gray-200 bg-white rounded-b-xl">
         <ChatInputArea 
           chatMessages={props.chatMessages} 
           prompt={props.prompt} 
@@ -127,3 +128,4 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     </div>
   );
 };
+
