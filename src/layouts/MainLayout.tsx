@@ -3,6 +3,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { SidebarProvider } from '@/components/ui/sidebar';
 import SideNav from '@/components/SideNav';
+import { HelpMenu } from '@/components/auth/components/HelpMenu';
 
 export const MainLayout = () => {
   return (
@@ -12,6 +13,7 @@ export const MainLayout = () => {
         <main className="flex-1 overflow-auto">
           <Outlet />
         </main>
+        <HelpMenu />
       </div>
     </SidebarProvider>
   );
