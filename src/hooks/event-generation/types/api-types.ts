@@ -16,7 +16,7 @@ export interface GeneratedEvent {
 }
 
 export interface GenerateEventResponse {
-  data: GeneratedEvent;
+  data?: GeneratedEvent; // Make data optional
   missing?: string[];
   error?: Error;
 }

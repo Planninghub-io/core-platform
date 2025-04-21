@@ -1,3 +1,4 @@
+
 import { generateEventAPI } from "./eventGenerationService";
 import { extractInfoFromPrompt } from "../utils/promptExtractor";
 import { ChatMessage } from "../../types";
@@ -78,13 +79,13 @@ export const submitPrompt = async (
     
     // Generate the event
     console.log(`submitPrompt [${apiCallId}]: Calling generateEventAPI`);
-    const response = await generateEventAPI({
+    const apiResponse = await generateEventAPI({
       prompt,
       additionalInfo: combinedInfo,
       modelProvider
     });
     
-    console.log(`submitPrompt [${apiCallId}]: Received API response:`, JSON.stringify(response, null, 2));
+    console.log(`submitPrompt [${apiCallId}]: Received API response:`, JSON.stringify(apiResponse, null, 2));
     
     if (isAborted) {
       console.log(`submitPrompt [${apiCallId}]: Request was aborted, ignoring response`);
@@ -97,17 +98,23 @@ export const submitPrompt = async (
       return prev.filter(msg => msg.id !== loadingMessageId);
     });
     
-    if (response.error) {
-      console.error(`submitPrompt [${apiCallId}]: Error in API response:`, response.error);
-      throw response.error;
+    if (apiResponse.error) {
+      console.error(`submitPrompt [${apiCallId}]: Error in API response:`, apiResponse.error);
+      throw apiResponse.error;
     }
+    
+    // Ensure we have a properly shaped response object for processResponse
+    const formattedResponse: GenerateEventResponse = {
+      data: apiResponse.data,
+      missing: apiResponse.missing || []
+    };
     
     // Process the response and handle missing fields
     console.log(`submitPrompt [${apiCallId}]: Processing API response through processResponse`);
     const processed = processResponse(
-      response, 
+      formattedResponse,
       setChatMessages,
-      setGeneratedEvent => {}, // Fix: Pass a proper React dispatcher function instead of boolean
+      setGeneratedEvent => {}, // Pass a proper React dispatcher function instead of boolean
       setPromptCount,
       isResubmitting,
       apiCallId
@@ -134,8 +141,8 @@ export const submitPrompt = async (
     
     // Return a default result with the data from the API
     return { 
-      validatedEvent: response.data,
-      missing: response.missing || []
+      validatedEvent: apiResponse.data,
+      missing: apiResponse.missing || []
     };
     
   } catch (error: any) {
