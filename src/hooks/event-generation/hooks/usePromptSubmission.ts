@@ -47,43 +47,53 @@ export const usePromptSubmission = (
     
     try {
       // Make API call to generate event - updated to use generateEventAPI
-      const response = await generateEventAPI({
+      const apiResponse = await generateEventAPI({
         prompt,
         additionalInfo,
         modelProvider
       });
       
-      console.log(`usePromptSubmission [${apiCallId}]: Received API response:`, response);
+      console.log(`usePromptSubmission [${apiCallId}]: Received API response:`, apiResponse);
       
       // Only process the latest API call's response
       if (apiCallId === latestApiCallId) {
-        // Process the response
-        const result = processResponse(
-          response, 
-          setChatMessages, 
-          setGeneratedEvent,
-          setPromptCount,
-          isResubmitting
-        );
+        // Check if there's an error in the response
+        if (apiResponse.error) {
+          throw apiResponse.error;
+        }
         
-        console.log(`usePromptSubmission [${apiCallId}]: Result from submitPrompt:`, result);
-        
-        if (result && result.validatedEvent) {
-          // Set missing fields
-          if (result.missing && result.missing.length) {
-            setMissingFields(result.missing);
-          } else {
-            setMissingFields([]);
+        // If we have data, process the response
+        if (apiResponse.data) {
+          // Process the response
+          const result = processResponse(
+            { data: apiResponse.data, missing: apiResponse.missing || [] }, 
+            setChatMessages, 
+            setGeneratedEvent,
+            setPromptCount,
+            isResubmitting
+          );
+          
+          console.log(`usePromptSubmission [${apiCallId}]: Result from submitPrompt:`, result);
+          
+          if (result && result.validatedEvent) {
+            // Set missing fields
+            if (result.missing && result.missing.length) {
+              setMissingFields(result.missing);
+            } else {
+              setMissingFields([]);
+            }
+            
+            // Important: Set the generated event regardless of missing fields
+            console.log(`usePromptSubmission [${apiCallId}]: Setting generated event:`, result.validatedEvent);
+            setGeneratedEvent(result.validatedEvent);
+            
+            // Increment prompt count
+            setPromptCount(prev => prev + 1);
+            
+            return result;
           }
-          
-          // Important: Set the generated event regardless of missing fields
-          console.log(`usePromptSubmission [${apiCallId}]: Setting generated event:`, result.validatedEvent);
-          setGeneratedEvent(result.validatedEvent);
-          
-          // Increment prompt count
-          setPromptCount(prev => prev + 1);
-          
-          return result;
+        } else {
+          console.error(`usePromptSubmission [${apiCallId}]: No data in API response:`, apiResponse);
         }
       } else {
         console.log(`usePromptSubmission [${apiCallId}]: Ignoring result as a newer API call was made`);

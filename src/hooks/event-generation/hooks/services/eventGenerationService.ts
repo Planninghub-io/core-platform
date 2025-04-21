@@ -1,5 +1,6 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { GenerateEventResponse } from "../../types/api-types";
 
 /**
  * Calls the API to generate an event based on a prompt
@@ -12,7 +13,7 @@ export const generateEventAPI = async ({
   prompt: string;
   additionalInfo?: Record<string, string>;
   modelProvider?: 'openai' | 'anthropic';
-}) => {
+}): Promise<{ data?: any; error?: any }> => {
   try {
     // Validate prompt
     if (!prompt || !prompt.trim()) {
