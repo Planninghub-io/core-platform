@@ -1,6 +1,7 @@
 
 import { useCallback, useRef, useState } from "react";
-import { checkPromptForRequiredFields, trackPendingInformation } from "@/hooks/event-generation/utils/promptPreChecker";
+import { extractDateFromPrompt } from "@/hooks/event-generation/utils/prompt-extraction/dateExtractor";
+import { extractLocationFromPrompt } from "@/hooks/event-generation/utils/prompt-extraction/locationExtractor";
 
 interface PromptHandlerProps {
   setChatMessages: React.Dispatch<React.SetStateAction<Array<{ type: 'user' | 'ai', content: string, id?: string }>>>;
@@ -25,11 +26,12 @@ export const usePromptHandler = ({
     location?: string;
     description?: string;
     originalPrompt?: string;
+    eventType?: string;
   }>({});
   const [requiredFieldsCollected, setRequiredFieldsCollected] = useState(false);
   
   // Check if we have all the required fields
-  const hasMissingFields = !pendingInfo.date || !pendingInfo.location;
+  const hasMissingFields = !pendingInfo.date || !pendingInfo.location || !pendingInfo.eventType;
   
   // Create a new wrapper for the submit handler with optimized checks
   const handleSubmit = useCallback((userPrompt: string) => {
@@ -49,21 +51,28 @@ export const usePromptHandler = ({
     // Add the user message to chat
     setChatMessages(prev => [...prev, { type: 'user', content: userPrompt }]);
     
+    // Extract event type from prompt
+    const eventTypeRegex = /(birthday|wedding|party|meeting|conference|dinner|lunch|brunch|gathering|ceremony|celebration|corporate|team building|reception)/i;
+    const eventTypeMatch = userPrompt.match(eventTypeRegex);
+    const extractedEventType = eventTypeMatch ? eventTypeMatch[0] : null;
+    
     // If we're in the middle of gathering information for an initial prompt
     if (pendingInfo.originalPrompt) {
       console.log("PromptHandler: Processing follow-up information for original prompt");
       
-      const { updatedInfo, shouldProceed, completePrompt } = trackPendingInformation(
-        pendingInfo.originalPrompt,
-        pendingInfo,
-        userPrompt
-      );
+      // Extract date and location from the new prompt
+      const extractedDate = extractDateFromPrompt(userPrompt);
+      const extractedLocation = extractLocationFromPrompt(userPrompt);
       
-      // Update our pending info state with any new extracted data
-      setPendingInfo({ 
-        ...updatedInfo, 
-        originalPrompt: pendingInfo.originalPrompt 
-      });
+      // Update our pending info with any new extracted data
+      const updatedInfo = { 
+        ...pendingInfo,
+        date: extractedDate || pendingInfo.date,
+        location: extractedLocation || pendingInfo.location,
+        eventType: extractedEventType || pendingInfo.eventType
+      };
+      
+      setPendingInfo(updatedInfo);
       
       // Update date and location if provided
       if (updatedInfo.date && setSelectedDate) {
@@ -74,9 +83,26 @@ export const usePromptHandler = ({
         setLocation(updatedInfo.location);
       }
       
+      // Check if we now have all required information
+      const hasAllRequiredInfo = Boolean(
+        updatedInfo.date && 
+        updatedInfo.location && 
+        (updatedInfo.eventType || extractedEventType)
+      );
+      
       // If we now have all required info, proceed with the API call
-      if (shouldProceed) {
+      if (hasAllRequiredInfo) {
         console.log("PromptHandler: All required info collected, proceeding with request");
+        
+        // Construct a complete prompt with all gathered information
+        let completePrompt = pendingInfo.originalPrompt || "";
+        if (extractedDate || extractedLocation) {
+          completePrompt += ` The event will be on ${updatedInfo.date} at ${updatedInfo.location}.`;
+        }
+        if (updatedInfo.eventType) {
+          completePrompt += ` It's a ${updatedInfo.eventType} event.`;
+        }
+        
         console.log("PromptHandler: Complete prompt:", completePrompt);
         
         // Set the required fields as collected
@@ -85,7 +111,7 @@ export const usePromptHandler = ({
         // Add AI message indicating we're generating the event
         setChatMessages(prev => [...prev, { 
           type: 'ai', 
-          content: "I have all the required details. Let me generate the event for you to review and create."
+          content: "Great! I have all the required details. Let me generate your event plan for you to review."
         }]);
         
         // Call the handler with the complete prompt
@@ -103,36 +129,80 @@ export const usePromptHandler = ({
         setPendingInfo({});
         return;
       } else {
-        // Still missing info, clear input for user to provide more
+        // Still missing info, ask for what's missing
+        let missingFieldsMessage = "I still need more information to create your event. ";
+        
+        if (!updatedInfo.date) {
+          missingFieldsMessage += "When will the event take place? ";
+        }
+        if (!updatedInfo.location) {
+          missingFieldsMessage += "Where will the event be held? ";
+        }
+        if (!updatedInfo.eventType) {
+          missingFieldsMessage += "What type of event is this (birthday, wedding, meeting, etc.)? ";
+        }
+        
+        setChatMessages(prev => [...prev, { type: 'ai', content: missingFieldsMessage }]);
+        
+        // Clear input for user to provide more
         setPrompt("");
         return;
       }
     }
     
     // First time prompt submission - check if it has all required fields
-    const { shouldProceed, extractedInfo } = checkPromptForRequiredFields(
-      userPrompt,
-      setChatMessages
+    const extractedDate = extractDateFromPrompt(userPrompt);
+    const extractedLocation = extractLocationFromPrompt(userPrompt);
+    
+    // Store the original prompt and any extracted info
+    const newPendingInfo = {
+      originalPrompt: userPrompt,
+      description: userPrompt,
+      date: extractedDate,
+      location: extractedLocation,
+      eventType: extractedEventType
+    };
+    
+    // Check if all required fields are present
+    const hasAllRequiredInfo = Boolean(
+      newPendingInfo.date && 
+      newPendingInfo.location && 
+      newPendingInfo.eventType
     );
     
+    // Update date and location if extracted
+    if (extractedDate && setSelectedDate) {
+      setSelectedDate(extractedDate);
+    }
+    
+    if (extractedLocation && setLocation) {
+      setLocation(extractedLocation);
+    }
+    
     // If not all required fields are present, store what we have and wait for more info
-    if (!shouldProceed) {
+    if (!hasAllRequiredInfo) {
       console.log("PromptHandler: Missing required fields in prompt, asking user for more information");
-      // Store the original prompt and any extracted info
-      setPendingInfo({
-        originalPrompt: userPrompt,
-        description: userPrompt,
-        ...extractedInfo
-      });
       
-      // Update date and location if extracted
-      if (extractedInfo.date && setSelectedDate) {
-        setSelectedDate(extractedInfo.date);
+      setPendingInfo(newPendingInfo);
+      
+      // Generate a message asking for missing info
+      let missingFieldsMessage = "I'd like to help plan your event, but I need a few more details: ";
+      
+      if (!newPendingInfo.date) {
+        missingFieldsMessage += "When will the event take place? ";
+      }
+      if (!newPendingInfo.location) {
+        missingFieldsMessage += "Where will the event be held? ";
+      }
+      if (!newPendingInfo.eventType) {
+        missingFieldsMessage += "What type of event is this (birthday, wedding, meeting, etc.)? ";
       }
       
-      if (extractedInfo.location && setLocation) {
-        setLocation(extractedInfo.location);
-      }
+      // Add AI message asking for missing info
+      setChatMessages(prev => [...prev, { 
+        type: 'ai', 
+        content: missingFieldsMessage
+      }]);
       
       setPrompt(""); // Clear input for user to add more info
       return;
@@ -141,22 +211,13 @@ export const usePromptHandler = ({
     // If we have all required fields, proceed with the API call
     console.log("PromptHandler: All required fields present, proceeding with API call");
     
-    // Update date and location if provided
-    if (extractedInfo.date && setSelectedDate) {
-      setSelectedDate(extractedInfo.date);
-    }
-    
-    if (extractedInfo.location && setLocation) {
-      setLocation(extractedInfo.location);
-    }
-    
     // Set the required fields as collected
     setRequiredFieldsCollected(true);
     
     // Add AI message indicating we're generating the event
     setChatMessages(prev => [...prev, { 
       type: 'ai', 
-      content: "I have all the required details. Let me generate the event for you to review and create."
+      content: "Great! I have all the required details. Let me generate your event plan for you to review."
     }]);
     
     // Clear the input for better UX

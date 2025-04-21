@@ -34,16 +34,14 @@ export const ChatContainer = ({
   }, [chatMessages, isGenerating]);
   
   return (
-    <div className="bg-white rounded-t-xl shadow-md overflow-hidden border border-gray-200 flex flex-col h-full w-full min-h-[45vh] max-h-[55vh]">
-      <div className="flex-grow overflow-auto flex flex-col">
-        <ChatMessages 
-          chatMessages={chatMessages} 
-          isGenerating={isGenerating} 
-          welcomeMessage={welcomeMessage} 
-          onTranscriptReceived={onTranscriptReceived}
-        />
-        <div id="messages-end-ref" className="h-0" />
-      </div>
+    <div className="flex-grow overflow-auto h-full">
+      <ChatMessages 
+        chatMessages={chatMessages} 
+        isGenerating={isGenerating} 
+        welcomeMessage={welcomeMessage} 
+        onTranscriptReceived={onTranscriptReceived}
+      />
+      <div id="messages-end-ref" className="h-0" />
     </div>
   );
 };

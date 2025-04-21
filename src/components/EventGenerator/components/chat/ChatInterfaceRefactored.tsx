@@ -58,6 +58,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
   // Show event form when all requirements are met
   useEffect(() => {
     if (props.generatedEvent && !props.isGenerating) {
+      console.log("ChatInterfaceRefactored: Generated event available:", props.generatedEvent);
       const timer = setTimeout(() => {
         setShowEventForm(true);
       }, 1000);
@@ -82,7 +83,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
             onTranscriptReceived={props.onTranscriptReceived}
           />
         </div>
-        <div>
+        <div className="border-t border-gray-200">
           <ChatInputArea
             chatMessages={props.chatMessages}
             prompt={props.prompt}
