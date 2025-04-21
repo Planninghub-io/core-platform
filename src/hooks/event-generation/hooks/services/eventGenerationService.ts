@@ -13,7 +13,7 @@ export const generateEventAPI = async ({
   prompt: string;
   additionalInfo?: Record<string, string>;
   modelProvider?: 'openai' | 'anthropic';
-}): Promise<{ data?: any; error?: any }> => {
+}): Promise<{ data?: any; error?: any; missing?: string[] }> => {
   try {
     // Validate prompt
     if (!prompt || !prompt.trim()) {
@@ -40,7 +40,11 @@ export const generateEventAPI = async ({
     }
     
     console.log('Received response from generate-event:', data);
-    return { data };
+    
+    // Extract missing fields if available
+    const missing = data?.missingFields || [];
+    
+    return { data, missing };
   } catch (error: any) {
     console.error('Error generating event:', error);
     return { error };

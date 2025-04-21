@@ -64,13 +64,20 @@ export const usePromptSubmission = (
         
         // If we have data, process the response
         if (apiResponse.data) {
-          // Process the response
+          // Process the response - Fix: Create a properly shaped object for processResponse
+          const responseData = {
+            data: apiResponse.data,
+            // Fix: If apiResponse.missing doesn't exist, provide an empty array
+            missing: Array.isArray(apiResponse.missing) ? apiResponse.missing : []
+          };
+          
           const result = processResponse(
-            { data: apiResponse.data, missing: apiResponse.missing || [] }, 
+            responseData,
             setChatMessages, 
             setGeneratedEvent,
             setPromptCount,
-            isResubmitting
+            isResubmitting,
+            apiCallId
           );
           
           console.log(`usePromptSubmission [${apiCallId}]: Result from submitPrompt:`, result);

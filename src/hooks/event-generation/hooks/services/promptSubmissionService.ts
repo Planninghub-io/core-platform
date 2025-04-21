@@ -82,7 +82,7 @@ export const submitPrompt = async (
       prompt,
       additionalInfo: combinedInfo,
       modelProvider
-    }) as GenerateEventResponse;
+    });
     
     console.log(`submitPrompt [${apiCallId}]: Received API response:`, JSON.stringify(response, null, 2));
     
@@ -106,10 +106,10 @@ export const submitPrompt = async (
     console.log(`submitPrompt [${apiCallId}]: Processing API response through processResponse`);
     const processed = processResponse(
       response, 
-      setChatMessages, 
-      waitingForBudget, 
-      requestBudgetInChat, 
-      setPreviouslyRequestedFields,
+      setChatMessages,
+      setGeneratedEvent => {}, // Fix: Pass a proper React dispatcher function instead of boolean
+      setPromptCount,
+      isResubmitting,
       apiCallId
     );
     
