@@ -49,25 +49,9 @@ export const ChatContainer = ({
           modelProvider={modelProvider}
           onModelChange={onModelChange}
         />
-        
-        {isGenerating && (
-          <div className="fixed inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-10">
-            <div className="text-center space-y-4">
-              <img 
-                src="photo-1486312338219-ce68d2c6f44d" 
-                alt="Loading" 
-                className="w-64 h-48 object-cover rounded-lg mx-auto opacity-80"
-              />
-              <div className="flex items-center justify-center space-x-2">
-                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-              </div>
-              <p className="text-sm text-gray-600">Your AI assistant is crafting a thoughtful response...</p>
-            </div>
-          </div>
-        )}
-        
+
+        {/* Removed overlay loader! */}
+
         <div id="messages-end-ref" className="h-0" />
       </div>
     </ScrollArea>
