@@ -1,4 +1,3 @@
-
 import { ChatMessage } from "../../ChatMessage";
 import { useEffect, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -97,13 +96,12 @@ export const ChatMessages = ({
           key={`message-${index}-${message.id || ''}`} 
           message={message.content} 
           type={message.type} 
-          isLoading={index === chatMessages.length - 1 && message.type === 'ai' && isGenerating}
+          isLoading={false}
           disableTyping={true}
         />
       ))}
       
-      {/* Show the magic wand loader inside the chat as a message bubble! */}
-      {isGenerating && !chatMessages.some(msg => msg.type === 'ai' && msg.content === "Generating your event details...") && (
+      {isGenerating && (
         <MagicWandLoader />
       )}
       
@@ -111,4 +109,3 @@ export const ChatMessages = ({
     </div>
   );
 };
-
