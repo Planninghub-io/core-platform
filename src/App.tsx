@@ -1,3 +1,4 @@
+
 import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
@@ -37,6 +38,8 @@ import CheckoutSuccessPage from './pages/CheckoutSuccessPage';
 import EventManagement from './pages/event-management/EventManagement';
 import EmbedMarketplace from './pages/marketplace/EmbedMarketplace';
 import ClientMarketplace from './pages/marketplace/ClientMarketplace';
+import Privacy from './pages/Privacy';
+import Terms from './pages/Terms';
 
 function App() {
   const { user } = useAuthRedirect({ skipRedirect: true });
@@ -100,6 +103,9 @@ function App() {
             <Route path="company" element={<CompanySettings />} />
             <Route path="billing" element={<BillingSettings />} />
           </Route>
+          
+          <Route path="privacy" element={<Privacy />} />
+          <Route path="terms" element={<Terms />} />
         </Route>
         
         <Route path="/auth" element={<AuthLayout />}>

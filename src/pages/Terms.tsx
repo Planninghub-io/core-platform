@@ -9,69 +9,97 @@ const Terms = () => {
       
       <div className="space-y-6 text-gray-700">
         <section>
-          <h2 className="text-2xl font-semibold mb-4">1. Introduction</h2>
+          <h2 className="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
           <p>
-            Welcome to EventIt. These Terms of Service govern your use of our website, 
-            applications, and services. By using EventIt, you agree to these terms.
+            By accessing or using the EventIt platform, you agree to be bound by these Terms of Service. 
+            If you disagree with any part of the terms, you may not access the service.
           </p>
         </section>
         
         <section>
-          <h2 className="text-2xl font-semibold mb-4">2. Account Registration</h2>
+          <h2 className="text-2xl font-semibold mb-4">2. Description of Service</h2>
           <p>
-            When you create an account with us, you must provide accurate and complete 
-            information. You are responsible for safeguarding the password and for all 
-            activities that occur under your account.
+            EventIt provides an event planning and management platform that allows users to create, 
+            organize, and manage events. The specific features and functionality may change over time.
           </p>
         </section>
         
         <section>
-          <h2 className="text-2xl font-semibold mb-4">3. User Content</h2>
+          <h2 className="text-2xl font-semibold mb-4">3. User Accounts</h2>
           <p>
-            Our platform allows you to create and share event information. You are 
-            responsible for the content you post and must ensure it doesn't violate any laws 
-            or infringe on third-party rights.
+            To use certain features of the service, you must register for an account. 
+            You are responsible for maintaining the confidentiality of your account and password 
+            and for restricting access to your computer. You agree to accept responsibility for 
+            all activities that occur under your account.
           </p>
         </section>
         
         <section>
-          <h2 className="text-2xl font-semibold mb-4">4. Intellectual Property</h2>
+          <h2 className="text-2xl font-semibold mb-4">4. User Content</h2>
           <p>
-            The service and all content and materials available through it are the property 
-            of EventIt or its licensors and are protected by copyright, trademark, and other 
-            intellectual property laws.
+            Our service allows you to post, link, store, share and otherwise make available certain 
+            information, text, graphics, or other material. You retain any and all rights to any content 
+            you submit, post or display on or through the service.
           </p>
         </section>
         
         <section>
-          <h2 className="text-2xl font-semibold mb-4">5. Privacy</h2>
+          <h2 className="text-2xl font-semibold mb-4">5. Payment Terms</h2>
           <p>
-            Our Privacy Policy describes how we handle the information you provide to us when 
-            you use our services. By using EventIt, you consent to our collection and use of 
-            your data as described in our Privacy Policy.
+            Certain aspects of the service may be provided for a fee. You will be required to select a 
+            payment plan and provide accurate information regarding your payment method. You agree to pay 
+            all fees in accordance with the payment plan you select.
           </p>
         </section>
         
         <section>
-          <h2 className="text-2xl font-semibold mb-4">6. Termination</h2>
+          <h2 className="text-2xl font-semibold mb-4">6. Intellectual Property</h2>
           <p>
-            We may terminate or suspend your account at any time, without prior notice or 
-            liability, for any reason, including breach of these Terms.
+            The service and its original content, features, and functionality are and will remain the 
+            exclusive property of EventIt and its licensors. The service is protected by copyright, 
+            trademark, and other laws of both the United States and foreign countries.
           </p>
         </section>
         
         <section>
-          <h2 className="text-2xl font-semibold mb-4">7. Changes to Terms</h2>
+          <h2 className="text-2xl font-semibold mb-4">7. Limitation of Liability</h2>
           <p>
-            We reserve the right to modify these terms at any time. If we make changes, we 
-            will provide notice through our website or by other means.
+            In no event shall EventIt, nor its directors, employees, partners, agents, suppliers, or 
+            affiliates, be liable for any indirect, incidental, special, consequential or punitive damages, 
+            including without limitation, loss of profits, data, use, goodwill, or other intangible losses.
           </p>
         </section>
         
         <section>
-          <h2 className="text-2xl font-semibold mb-4">8. Contact Us</h2>
+          <h2 className="text-2xl font-semibold mb-4">8. Termination</h2>
           <p>
-            If you have any questions about these Terms, please contact us at support@eventit.com.
+            We may terminate or suspend your account immediately, without prior notice or liability, for 
+            any reason whatsoever, including without limitation if you breach the Terms. Upon termination, 
+            your right to use the service will immediately cease.
+          </p>
+        </section>
+        
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">9. Governing Law</h2>
+          <p>
+            These Terms shall be governed and construed in accordance with the laws of the United States, 
+            without regard to its conflict of law provisions.
+          </p>
+        </section>
+        
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">10. Changes to Terms</h2>
+          <p>
+            We reserve the right, at our sole discretion, to modify or replace these Terms at any time. By 
+            continuing to access or use our service after those revisions become effective, you agree to be 
+            bound by the revised terms.
+          </p>
+        </section>
+        
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">11. Contact Us</h2>
+          <p>
+            If you have any questions about these Terms, please contact us at terms@eventit.com.
           </p>
         </section>
       </div>
