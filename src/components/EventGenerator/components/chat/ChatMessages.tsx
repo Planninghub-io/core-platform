@@ -1,7 +1,9 @@
+
 import { ChatMessage } from "../../ChatMessage";
 import { useEffect, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ModelDropdown } from "./ModelDropdown";
+import { Wand, Sparkles } from "lucide-react";
 
 interface ChatMessagesProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -61,6 +63,31 @@ export const ChatMessages = ({
     </div>
   );
 
+  // Animation: Magic wand with sparkles and pulse
+  const MagicWandLoader = () => (
+    <div className="w-full flex justify-start">
+      <div className="max-w-[85%] bg-gray-100 text-gray-900 rounded-2xl border border-gray-200 shadow-sm px-5 py-4 my-2 flex items-center gap-3 animate-fade-in">
+        <div className="flex flex-col items-center justify-center shrink-0 relative">
+          <Wand className="text-[#8B5CF6] animate-bounce" size={28} />
+          <Sparkles
+            className="text-yellow-400 absolute -top-2 -right-2 animate-pulse"
+            size={16}
+            style={{ zIndex: 1 }}
+          />
+        </div>
+        <div>
+          <span className="font-medium text-[#8B5CF6]">Magic in progress…</span>
+          <div className="flex items-center mt-1 space-x-1">
+            <div className="w-2 h-2 rounded-full bg-[#8B5CF6] animate-bounce" style={{ animationDelay: '0ms' }} />
+            <div className="w-2 h-2 rounded-full bg-[#8B5CF6] animate-bounce" style={{ animationDelay: '150ms' }} />
+            <div className="w-2 h-2 rounded-full bg-[#8B5CF6] animate-bounce" style={{ animationDelay: '300ms' }} />
+          </div>
+          <p className="text-xs mt-1 text-gray-500">Crafting your event details...</p>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="p-4 overflow-y-auto flex-1 w-full flex flex-col min-h-[60vh]">
       {chatMessages.length === 0 && <WelcomeMessageWithModelSelector />}
@@ -75,15 +102,13 @@ export const ChatMessages = ({
         />
       ))}
       
+      {/* Show the magic wand loader inside the chat as a message bubble! */}
       {isGenerating && !chatMessages.some(msg => msg.type === 'ai' && msg.content === "Generating your event details...") && (
-        <div className="flex items-center space-x-1 mt-2">
-          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-          <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
-        </div>
+        <MagicWandLoader />
       )}
       
       <div ref={messagesEndRef} />
     </div>
   );
 };
+
