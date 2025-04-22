@@ -1,4 +1,3 @@
-
 import { ChatMessage } from "../../ChatMessage";
 import { useEffect, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -24,20 +23,17 @@ export const ChatMessages = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
 
-  // Debug logging
   useEffect(() => {
     console.log("ChatMessages: Rendering with", chatMessages.length, "messages");
     console.log("ChatMessages: Messages content:", JSON.stringify(chatMessages.slice(-2)));
   }, [chatMessages]);
 
-  // Auto-scroll to bottom when messages change
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isGenerating]);
 
-  // Updated welcome message with model selector
   const WelcomeMessageWithModelSelector = () => (
-    <div className="w-full">
+    <div className="w-full relative">
       <div className="mb-4">
         <ChatMessage
           key="welcome"
@@ -53,16 +49,13 @@ export const ChatMessages = ({
       </div>
       
       {onModelChange && (
-        <div className="flex items-center justify-center mb-4 mt-2">
-          <div className="flex items-center bg-gray-50 px-3 py-2 rounded-lg">
-            <span className="text-sm text-gray-600 mr-2">AI Model:</span>
-            <ModelDropdown 
-              modelProvider={modelProvider} 
-              onModelChange={model => {
-                if (onModelChange) onModelChange(model);
-              }}
-            />
-          </div>
+        <div className="absolute top-4 right-4">
+          <ModelDropdown 
+            modelProvider={modelProvider} 
+            onModelChange={model => {
+              if (onModelChange) onModelChange(model);
+            }}
+          />
         </div>
       )}
     </div>
@@ -70,10 +63,8 @@ export const ChatMessages = ({
 
   return (
     <div className="p-4 overflow-y-auto flex-1 w-full flex flex-col min-h-[60vh]">
-      {/* Show welcome message if no messages yet */}
       {chatMessages.length === 0 && <WelcomeMessageWithModelSelector />}
 
-      {/* Render chat messages */}
       {chatMessages.map((message, index) => (
         <ChatMessage 
           key={`message-${index}-${message.id || ''}`} 
@@ -84,7 +75,6 @@ export const ChatMessages = ({
         />
       ))}
       
-      {/* Show typing indicator when generating and no loading message exists */}
       {isGenerating && !chatMessages.some(msg => msg.type === 'ai' && msg.content === "Generating your event details...") && (
         <div className="flex items-center space-x-1 mt-2">
           <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
@@ -93,7 +83,6 @@ export const ChatMessages = ({
         </div>
       )}
       
-      {/* This empty div helps with auto-scrolling */}
       <div ref={messagesEndRef} />
     </div>
   );

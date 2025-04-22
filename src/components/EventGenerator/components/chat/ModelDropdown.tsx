@@ -5,7 +5,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger
+  DropdownMenuTrigger,
+  DropdownMenuLabel
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,11 +25,6 @@ export const ModelDropdown = ({
   modelProvider, 
   onModelChange 
 }: ModelDropdownProps) => {
-  // Get display name for the model
-  const getModelDisplayName = (model: 'openai' | 'anthropic') => {
-    return model === 'openai' ? 'ChatGPT' : 'Claude Sonnet';
-  };
-
   return (
     <TooltipProvider>
       <Tooltip>
@@ -36,14 +32,15 @@ export const ModelDropdown = ({
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button 
-                variant="outline" 
+                variant="ghost" 
                 size="icon" 
-                className="h-8 w-8 border-gray-300 text-gray-700 bg-white hover:bg-gray-50"
+                className="h-8 w-8 rounded-full hover:bg-gray-100"
               >
                 <Settings size={16} />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
+              <DropdownMenuLabel>AI Model</DropdownMenuLabel>
               <DropdownMenuItem 
                 onClick={() => onModelChange('openai')}
                 className="flex justify-between"
@@ -62,7 +59,7 @@ export const ModelDropdown = ({
           </DropdownMenu>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Select AI Model</p>
+          <p>AI Model</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
