@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { ChatContainer } from "./ChatContainer";
 import { ChatInputArea } from "./ChatInputArea";
 import { usePromptHandler } from "./PromptHandler";
@@ -33,6 +33,9 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
   const [selectedDate, setSelectedDateLocal] = useState(props.generatedEvent?.date || "");
   const [location, setLocationLocal] = useState(props.generatedEvent?.location || "");
   const [eventTitle, setEventTitleLocal] = useState(props.eventTitle || props.generatedEvent?.title || "");
+  
+  // Track if we've already shown the event form for this event to prevent re-showing
+  const generatedEventRef = useRef<string | null>(null);
 
   // Use the prompt handler hook
   const {
@@ -65,6 +68,20 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
       setEventTitleLocal(props.eventTitle || props.generatedEvent.title || "");
       setSelectedDateLocal(props.generatedEvent.date || "");
       setLocationLocal(props.generatedEvent.location || "");
+      
+      // Track the current event to prevent duplicate dialogs
+      const eventId = JSON.stringify(props.generatedEvent);
+      if (eventId !== generatedEventRef.current) {
+        generatedEventRef.current = eventId;
+        
+        // Show event form when a new complete event is generated
+        console.log("Displaying event form for new generated event:", props.generatedEvent);
+        const timer = setTimeout(() => {
+          setShowEventForm(true);
+        }, 1000);
+        
+        return () => clearTimeout(timer);
+      }
     }
   }, [props.generatedEvent, props.eventTitle]);
 
@@ -81,25 +98,12 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     }
   }, [selectedDate, location, eventTitle, props.setSelectedDate, props.setLocation, props.setEventTitle]);
 
-  // Show event form when all requirements are met
-  useEffect(() => {
-    if (props.generatedEvent && !props.isGenerating) {
-      console.log("ChatInterfaceRefactored: Generated event available:", props.generatedEvent);
-      const timer = setTimeout(() => {
-        setShowEventForm(true);
-      }, 1000);
-
-      return () => clearTimeout(timer);
-    }
-  }, [props.generatedEvent, props.isGenerating]);
-
   // Debug event rendering
   useEffect(() => {
     console.log("ChatInterfaceRefactored: Current generatedEvent state:", props.generatedEvent);
     console.log("ChatInterfaceRefactored: Dialog state:", showEventForm);
   }, [props.generatedEvent, showEventForm]);
 
-  // Unified container: one border/background, rounded corners, no gap
   return (
     <div className="w-full min-h-[70vh] max-h-[85vh] flex flex-col">
       <div className="flex flex-col flex-grow bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden w-full h-full">
@@ -144,8 +148,8 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
             setSelectedDate={setSelectedDateLocal}
             location={location}
             setLocation={setLocationLocal}
-            hasMissingDate={!selectedDate}
-            hasMissingLocation={!location}
+            hasMissingDate={!selectedDate && !props.generatedEvent.date}
+            hasMissingLocation={!location && !props.generatedEvent.location}
             isCreating={false}
             handleCreateEvent={props.handleCreateEvent || (() => {})}
             prompt={props.prompt}
@@ -154,7 +158,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
       )}
 
       {/* Event Form Review Dialog */}
-      <Dialog open={showEventForm} onOpenChange={setShowEventForm}>
+      <Dialog open={showEventForm && !!props.generatedEvent} onOpenChange={setShowEventForm}>
         <DialogContent className="sm:max-w-2xl">
           {props.generatedEvent && (
             <EventFormReview

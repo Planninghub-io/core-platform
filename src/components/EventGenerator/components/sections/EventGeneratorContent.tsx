@@ -49,7 +49,17 @@ export const EventGeneratorContent = ({
       console.log("EventGeneratorContent: Setting event title from generated event:", generatedEvent.title);
       setEventTitle(generatedEvent.title);
     }
-  }, [generatedEvent, eventTitle, setEventTitle]);
+    
+    // Also pre-populate other fields if they're available but not set
+    if (generatedEvent) {
+      if (generatedEvent.date && !selectedDate) {
+        setSelectedDate(generatedEvent.date);
+      }
+      if (generatedEvent.location && !location) {
+        setLocation(generatedEvent.location);
+      }
+    }
+  }, [generatedEvent, eventTitle, setEventTitle, selectedDate, setSelectedDate, location, setLocation]);
 
   // Using an empty string as the welcome message to let ChatMessages component use its enhanced version
   const welcomeMessage = "";

@@ -26,7 +26,21 @@ export const processSuccessfulResponse = (
     console.log("Setting generated event data:", eventData);
     
     // Store generated event - make sure this happens
-    setGeneratedEvent(eventData);
+    if (eventData) {
+      // Ensure we have all required fields for a valid event
+      const validEvent = {
+        ...eventData,
+        title: eventData.title || "New Event",
+        description: eventData.description || "",
+        date: eventData.date || "",
+        location: eventData.location || "",
+        category: eventData.category || "Other",
+        estimatedPrice: eventData.estimatedPrice || "Free"
+      };
+      
+      console.log("Setting validated event data:", validEvent);
+      setGeneratedEvent(validEvent);
+    }
     
     // Update prompt count for new prompts
     if (!isResubmitting) {
