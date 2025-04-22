@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { ChatContainer } from "./ChatContainer";
 import { ChatInputArea } from "./ChatInputArea";
@@ -6,6 +5,7 @@ import { usePromptHandler } from "./PromptHandler";
 import { EventFormReview } from "../EventFormReview";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { EventDetailsForm } from "../EventDetailsForm";
+import { ModelSelector } from "./ModelSelector";
 
 interface ChatInterfaceProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -34,10 +34,8 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
   const [location, setLocationLocal] = useState(props.generatedEvent?.location || "");
   const [eventTitle, setEventTitleLocal] = useState(props.eventTitle || props.generatedEvent?.title || "");
   
-  // Track if we've already shown the event form for this event to prevent re-showing
   const generatedEventRef = useRef<string | null>(null);
 
-  // Use the prompt handler hook
   const {
     handleSubmit,
     pendingInfo,
@@ -52,7 +50,6 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     modelProvider
   });
 
-  // Handle model change
   const handleModelChange = (model: 'openai' | 'anthropic') => {
     if (model === modelProvider) return;
 
@@ -62,19 +59,16 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     }
   };
 
-  // Update local state when props change
   useEffect(() => {
     if (props.generatedEvent) {
       setEventTitleLocal(props.eventTitle || props.generatedEvent.title || "");
       setSelectedDateLocal(props.generatedEvent.date || "");
       setLocationLocal(props.generatedEvent.location || "");
       
-      // Track the current event to prevent duplicate dialogs
       const eventId = JSON.stringify(props.generatedEvent);
       if (eventId !== generatedEventRef.current) {
         generatedEventRef.current = eventId;
         
-        // Show event form when a new complete event is generated
         console.log("Displaying event form for new generated event:", props.generatedEvent);
         const timer = setTimeout(() => {
           setShowEventForm(true);
@@ -85,7 +79,6 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     }
   }, [props.generatedEvent, props.eventTitle]);
 
-  // Update parent state when local state changes
   useEffect(() => {
     if (props.setSelectedDate && selectedDate) {
       props.setSelectedDate(selectedDate);
@@ -98,16 +91,19 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     }
   }, [selectedDate, location, eventTitle, props.setSelectedDate, props.setLocation, props.setEventTitle]);
 
-  // Debug event rendering
   useEffect(() => {
     console.log("ChatInterfaceRefactored: Current generatedEvent state:", props.generatedEvent);
     console.log("ChatInterfaceRefactored: Dialog state:", showEventForm);
   }, [props.generatedEvent, showEventForm]);
 
   return (
-    <div className="w-full min-h-[70vh] max-h-[85vh] flex flex-col">
-      <div className="flex flex-col flex-grow bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden w-full h-full">
-        <div className="flex-grow overflow-hidden">
+    <div className="w-full min-h-[50vh] max-h-[85vh] flex flex-col">
+      <div className="flex flex-col flex-grow bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden w-full relative">
+        <ModelSelector 
+          modelProvider={modelProvider} 
+          onModelChange={handleModelChange}
+        />
+        <div className="flex-grow overflow-hidden relative">
           <ChatContainer
             chatMessages={props.chatMessages}
             isGenerating={props.isGenerating}
@@ -136,7 +132,6 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         </div>
       </div>
 
-      {/* Display generated event form below chat when available */}
       {props.generatedEvent && (
         <div className="mt-6 p-4 bg-white shadow-md border border-gray-200 rounded-xl">
           <h2 className="text-xl font-semibold mb-4">Your Generated Event</h2>
@@ -157,7 +152,6 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         </div>
       )}
 
-      {/* Event Form Review Dialog */}
       <Dialog open={showEventForm && !!props.generatedEvent} onOpenChange={setShowEventForm}>
         <DialogContent className="sm:max-w-2xl">
           {props.generatedEvent && (

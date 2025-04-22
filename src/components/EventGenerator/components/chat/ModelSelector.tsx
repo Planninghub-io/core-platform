@@ -1,5 +1,12 @@
 
-import { useCallback, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { AIModelSelector } from "../AIModelSelector";
 
 interface ModelSelectorProps {
@@ -7,31 +14,26 @@ interface ModelSelectorProps {
   onModelChange: (model: 'openai' | 'anthropic') => void;
 }
 
-export const ModelSelector = ({ 
-  modelProvider, 
-  onModelChange 
-}: ModelSelectorProps) => {
-  // Handle model change with debounce to prevent unnecessary API calls
-  const handleModelChange = useCallback((model: 'openai' | 'anthropic') => {
-    if (model === modelProvider) return; // Skip if same model
-    
-    console.log("ModelSelector: Model changed from", modelProvider, "to", model);
-    onModelChange(model);
-  }, [modelProvider, onModelChange]);
-
-  // Avoid excessive logging
-  useEffect(() => {
-    if (window.location.hostname !== 'localhost') {
-      console.log("ModelSelector: Current model provider:", modelProvider);
-    }
-  }, [modelProvider]);
-
+export const ModelSelector = ({ modelProvider, onModelChange }: ModelSelectorProps) => {
   return (
-    <div className="pb-4">
-      <AIModelSelector 
-        selectedModel={modelProvider} 
-        onChange={handleModelChange} 
-      />
+    <div className="absolute top-2 right-2">
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="h-8 w-8 rounded-full hover:bg-gray-100"
+              onClick={() => onModelChange(modelProvider === 'openai' ? 'anthropic' : 'openai')}
+            >
+              <Settings size={16} />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>AI Model: {modelProvider === 'openai' ? 'ChatGPT' : 'Claude Sonnet'}</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };
