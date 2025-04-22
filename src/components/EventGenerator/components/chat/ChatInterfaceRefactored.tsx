@@ -70,6 +70,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         generatedEventRef.current = eventId;
         
         console.log("Displaying event form for new generated event:", props.generatedEvent);
+        // Show the event form modal when a new event is generated
         const timer = setTimeout(() => {
           setShowEventForm(true);
         }, 1000);
@@ -130,9 +131,48 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         </div>
       </div>
 
+      {/* Modify the EventFormReview Dialog to ensure it appears when an event is generated */}
+      <Dialog 
+        open={showEventForm && !!props.generatedEvent} 
+        onOpenChange={(open) => {
+          setShowEventForm(open);
+          console.log("Dialog open state changed to:", open);
+        }}
+      >
+        <DialogContent className="sm:max-w-2xl">
+          {props.generatedEvent && (
+            <EventFormReview
+              event={props.generatedEvent}
+              eventTitle={eventTitle}
+              setEventTitle={setEventTitleLocal}
+              onClose={() => {
+                console.log("Closing event form dialog");
+                setShowEventForm(false);
+              }}
+              onSubmit={() => {
+                console.log("Submit button clicked in event form dialog");
+                if (props.handleCreateEvent) {
+                  props.handleCreateEvent();
+                }
+                setShowEventForm(false);
+              }}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Also display the event details in the main view for users to reference */}
       {props.generatedEvent && (
         <div className="mt-6 p-4 bg-white shadow-md border border-gray-200 rounded-xl">
-          <h2 className="text-xl font-semibold mb-4">Your Generated Event</h2>
+          <h2 className="text-xl font-semibold mb-4 flex items-center">
+            <span className="mr-2">Your Generated Event</span>
+            <button
+              onClick={() => setShowEventForm(true)}
+              className="ml-auto text-sm bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-full transition-colors"
+            >
+              Review & Submit
+            </button>
+          </h2>
           <EventDetailsForm
             event={props.generatedEvent}
             eventTitle={eventTitle}
@@ -144,30 +184,15 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
             hasMissingDate={!selectedDate && !props.generatedEvent.date}
             hasMissingLocation={!location && !props.generatedEvent.location}
             isCreating={false}
-            handleCreateEvent={props.handleCreateEvent || (() => {})}
+            handleCreateEvent={() => {
+              if (props.handleCreateEvent) {
+                props.handleCreateEvent();
+              }
+            }}
             prompt={props.prompt}
           />
         </div>
       )}
-
-      <Dialog open={showEventForm && !!props.generatedEvent} onOpenChange={setShowEventForm}>
-        <DialogContent className="sm:max-w-2xl">
-          {props.generatedEvent && (
-            <EventFormReview
-              event={props.generatedEvent}
-              eventTitle={eventTitle}
-              setEventTitle={setEventTitleLocal}
-              onClose={() => setShowEventForm(false)}
-              onSubmit={() => {
-                if (props.handleCreateEvent) {
-                  props.handleCreateEvent();
-                }
-                setShowEventForm(false);
-              }}
-            />
-          )}
-        </DialogContent>
-      </Dialog>
     </div>
   );
 };
