@@ -13,6 +13,8 @@ interface ChatContainerProps {
   hasMissingFields?: boolean;
   requiredFieldsCollected?: boolean;
   onTranscriptReceived?: (transcript: string) => void;
+  modelProvider?: 'openai' | 'anthropic';
+  onModelChange?: (model: 'openai' | 'anthropic') => void;
 }
 
 export const ChatContainer = ({
@@ -23,7 +25,9 @@ export const ChatContainer = ({
   generatedEvent,
   hasMissingFields = false,
   requiredFieldsCollected = false,
-  onTranscriptReceived
+  onTranscriptReceived,
+  modelProvider,
+  onModelChange
 }: ChatContainerProps) => {
   const isMobile = useIsMobile();
   
@@ -42,6 +46,8 @@ export const ChatContainer = ({
           isGenerating={isGenerating} 
           welcomeMessage={welcomeMessage} 
           onTranscriptReceived={onTranscriptReceived}
+          modelProvider={modelProvider}
+          onModelChange={onModelChange}
         />
         
         {isGenerating && (

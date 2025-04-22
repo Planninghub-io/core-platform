@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useRef } from "react";
 import { ChatContainer } from "./ChatContainer";
 import { ChatInputArea } from "./ChatInputArea";
@@ -5,7 +6,6 @@ import { usePromptHandler } from "./PromptHandler";
 import { EventFormReview } from "../EventFormReview";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { EventDetailsForm } from "../EventDetailsForm";
-import { ModelSelector } from "./ModelSelector";
 
 interface ChatInterfaceProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -99,10 +99,6 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
   return (
     <div className="w-full min-h-[50vh] max-h-[85vh] flex flex-col">
       <div className="flex flex-col flex-grow bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden w-full relative">
-        <ModelSelector 
-          modelProvider={modelProvider} 
-          onModelChange={handleModelChange}
-        />
         <div className="flex-grow overflow-hidden relative">
           <ChatContainer
             chatMessages={props.chatMessages}
@@ -113,6 +109,8 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
             requiredFieldsCollected={requiredFieldsCollected}
             hasMissingFields={hasMissingFields}
             onTranscriptReceived={props.onTranscriptReceived}
+            modelProvider={modelProvider}
+            onModelChange={handleModelChange}
           />
         </div>
         <div className="border-t border-gray-200">

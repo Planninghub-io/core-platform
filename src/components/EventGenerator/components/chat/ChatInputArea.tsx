@@ -3,7 +3,6 @@ import { ChatInputField } from "./ChatInputField";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import React, { FormEvent, useRef } from "react";
-import { ModelDropdown } from "./ModelDropdown";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatInputAreaProps {
@@ -87,12 +86,6 @@ export const ChatInputArea = ({
           >
             <Send size={18} className="text-white" />
           </Button>
-          {!isMobile && (
-            <ModelDropdown 
-              modelProvider={modelProvider}
-              onModelChange={onModelChange}
-            />
-          )}
         </div>
       </form>
       

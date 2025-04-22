@@ -9,6 +9,9 @@ import {
 } from "@/components/ui/tooltip";
 import { AIModelSelector } from "../AIModelSelector";
 
+// This component has been deprecated in favor of including the model selection
+// directly in the welcome message. It's kept here for reference but is no longer used.
+
 interface ModelSelectorProps {
   modelProvider: 'openai' | 'anthropic';
   onModelChange: (model: 'openai' | 'anthropic') => void;
