@@ -1,4 +1,3 @@
-
 import { ChatMessage } from "../../ChatMessage";
 import { useEffect, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -35,7 +34,7 @@ export const ChatMessages = ({
 
   const WelcomeMessageWithModelSelector = () => (
     <div className="w-full relative">
-      <div className="mb-4 pr-12">  {/* Added right padding to make space for the icon */}
+      <div className="mb-4">
         <ChatMessage
           key="welcome"
           message={
