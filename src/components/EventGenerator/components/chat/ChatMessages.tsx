@@ -49,7 +49,7 @@ export const ChatMessages = ({
       </div>
       
       {onModelChange && (
-        <div className="absolute top-4 right-4">
+        <div className="absolute top-1 right-2">
           <ModelDropdown 
             modelProvider={modelProvider} 
             onModelChange={model => {
