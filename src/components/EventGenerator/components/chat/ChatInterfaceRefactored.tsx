@@ -163,7 +163,6 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
           setLocation={setLocationLocal}
           hasMissingDate={!selectedDate && !props.generatedEvent.date}
           hasMissingLocation={!location && !props.generatedEvent.location}
-          isCreating={false}
           handleCreateEvent={props.handleCreateEvent}
           prompt={props.prompt}
           onReview={() => setShowEventForm(true)}

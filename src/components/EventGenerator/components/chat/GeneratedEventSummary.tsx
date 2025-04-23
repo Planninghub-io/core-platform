@@ -14,6 +14,7 @@ interface GeneratedEventSummaryProps {
   hasMissingDate: boolean;
   hasMissingLocation: boolean;
   onReview: () => void;
+  // Add the missing property to the interface
 }
 
 export const GeneratedEventSummary = ({
