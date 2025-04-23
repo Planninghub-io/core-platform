@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { GeneratedEvent } from "@/hooks/event-generation/types";
 import { Calendar, MapPin, Tag, DollarSign, Users } from "lucide-react";
+import { toast } from "sonner";
 
 interface EventFormReviewProps {
   event: GeneratedEvent;
@@ -20,16 +21,25 @@ export const EventFormReview: React.FC<EventFormReviewProps> = ({
   onClose,
   onSubmit
 }) => {
+  console.log("EventFormReview rendering with:", { event, eventTitle });
+
   // Format date for better display if available
-  const formattedDate = event.date ? new Date(event.date).toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  }) : "Not specified";
+  const formattedDate = event.date 
+    ? new Date(event.date).toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }) 
+    : "Not specified";
 
   // Initialize local state with event title or generated title
   const [localTitle, setLocalTitle] = useState(eventTitle || event.title || "");
+
+  // Effect for debugging purposes
+  useEffect(() => {
+    console.log("EventFormReview mounted with event:", event);
+  }, []);
 
   // Update eventTitle when local title changes
   useEffect(() => {
@@ -41,9 +51,20 @@ export const EventFormReview: React.FC<EventFormReviewProps> = ({
   // Effect to initialize title from event when component mounts
   useEffect(() => {
     if (!eventTitle && event.title) {
+      console.log("Initializing local title from event:", event.title);
       setLocalTitle(event.title);
     }
   }, [event, eventTitle]);
+
+  // Handle submit with validation
+  const handleSubmit = () => {
+    if (!localTitle.trim()) {
+      toast.error("Please enter an event title");
+      return;
+    }
+    console.log("Submitting event with title:", localTitle);
+    onSubmit();
+  };
 
   return (
     <div className="space-y-4 py-4">
@@ -130,7 +151,7 @@ export const EventFormReview: React.FC<EventFormReviewProps> = ({
           Back to Chat
         </Button>
         <Button 
-          onClick={onSubmit} 
+          onClick={handleSubmit} 
           disabled={!localTitle} 
           className="w-full sm:w-auto bg-purple-600 hover:bg-purple-700"
         >

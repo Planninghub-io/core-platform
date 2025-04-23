@@ -34,7 +34,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
   const [location, setLocationLocal] = useState(props.generatedEvent?.location || "");
   const [eventTitle, setEventTitleLocal] = useState(props.eventTitle || props.generatedEvent?.title || "");
   
-  const generatedEventRef = useRef<any>(null);
+  const lastProcessedEventRef = useRef<string | null>(null);
   const lastPromptCountRef = useRef<number>(props.promptCount || 0);
 
   const {
@@ -60,35 +60,62 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     }
   };
 
+  // Debug logging for monitoring state
+  useEffect(() => {
+    console.log("ChatInterface: Current state check:", {
+      generatedEvent: props.generatedEvent ? "YES" : "NO",
+      showDialog: showEventForm,
+      promptCount: props.promptCount,
+      lastPromptCount: lastPromptCountRef.current
+    });
+  }, [props.generatedEvent, showEventForm, props.promptCount]);
+
   // Effect to show dialog when a new event is generated
   useEffect(() => {
     if (props.generatedEvent) {
+      console.log("Generated event detected:", props.generatedEvent);
+      
       // Update local state with event data
       setEventTitleLocal(props.eventTitle || props.generatedEvent.title || "");
       setSelectedDateLocal(props.generatedEvent.date || "");
       setLocationLocal(props.generatedEvent.location || "");
       
-      // Check if this is a new event (comparing with previous event or prompt count)
+      // Create a "fingerprint" of the current event to detect changes
+      const eventFingerprint = JSON.stringify({
+        title: props.generatedEvent.title,
+        date: props.generatedEvent.date,
+        location: props.generatedEvent.location,
+        description: props.generatedEvent.description?.substring(0, 50), // Use part of description to detect changes
+        promptCount: props.promptCount
+      });
+      
+      // Check if this is a new event or prompt count changed
       const isNewEvent = (
-        !generatedEventRef.current || 
-        JSON.stringify(props.generatedEvent) !== JSON.stringify(generatedEventRef.current) ||
+        eventFingerprint !== lastProcessedEventRef.current || 
         props.promptCount > lastPromptCountRef.current
       );
       
+      console.log("Event check:", { 
+        isNewEvent, 
+        lastFingerprint: lastProcessedEventRef.current,
+        currentFingerprint: eventFingerprint,
+        lastPromptCount: lastPromptCountRef.current,
+        currentPromptCount: props.promptCount
+      });
+      
       if (isNewEvent) {
-        console.log("New event detected, showing dialog:", props.generatedEvent);
-        generatedEventRef.current = props.generatedEvent;
+        console.log("NEW EVENT DETECTED - showing form dialog!");
+        lastProcessedEventRef.current = eventFingerprint;
         lastPromptCountRef.current = props.promptCount;
         
-        // Show dialog with a short delay to ensure state updates are complete
-        const timer = setTimeout(() => {
+        // Force dialog to show with a slight delay to ensure state is updated
+        setTimeout(() => {
           setShowEventForm(true);
-        }, 500);
-        
-        return () => clearTimeout(timer);
+          console.log("Dialog visibility set to:", true);
+        }, 300);
       }
     }
-  }, [props.generatedEvent, props.eventTitle, props.promptCount]);
+  }, [props.generatedEvent, props.promptCount, props.eventTitle]);
 
   // Effect to sync local state with parent props
   useEffect(() => {
@@ -102,15 +129,6 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
       props.setEventTitle(eventTitle);
     }
   }, [selectedDate, location, eventTitle, props.setSelectedDate, props.setLocation, props.setEventTitle]);
-
-  // Debug logging
-  useEffect(() => {
-    console.log("ChatInterfaceRefactored: Current state:", {
-      generatedEvent: props.generatedEvent,
-      showDialog: showEventForm,
-      promptCount: props.promptCount
-    });
-  }, [props.generatedEvent, showEventForm, props.promptCount]);
 
   return (
     <div className="w-full min-h-[50vh] max-h-[85vh] flex flex-col">
@@ -146,15 +164,25 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         </div>
       </div>
 
-      {/* Event Form Review Dialog */}
+      {/* Event Form Review Dialog - FIXED with forceMount and important controls */}
       <Dialog 
         open={showEventForm && !!props.generatedEvent} 
         onOpenChange={(open) => {
+          console.log("Dialog visibility changing to:", open);
           setShowEventForm(open);
-          console.log("Dialog open state changed to:", open);
         }}
       >
-        <DialogContent className="sm:max-w-2xl">
+        <DialogContent 
+          className="sm:max-w-2xl"
+          onInteractOutside={(e) => {
+            e.preventDefault(); // Prevent closing by clicking outside
+            console.log("Outside interaction prevented");
+          }}
+          onEscapeKeyDown={(e) => {
+            e.preventDefault(); // Prevent closing with escape key
+            console.log("Escape key prevented");
+          }}
+        >
           {props.generatedEvent && (
             <EventFormReview
               event={props.generatedEvent}
@@ -182,7 +210,10 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
           <h2 className="text-xl font-semibold mb-4 flex items-center justify-between">
             <span>Your Generated Event</span>
             <button
-              onClick={() => setShowEventForm(true)}
+              onClick={() => {
+                console.log("Review & Submit button clicked");
+                setShowEventForm(true);
+              }}
               className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full transition-colors"
             >
               Review & Submit

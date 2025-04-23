@@ -40,11 +40,14 @@ export const processSuccessfulResponse = (
       
       console.log("Setting validated event data:", validEvent);
       setGeneratedEvent(validEvent);
-    }
-    
-    // Update prompt count for new prompts
-    if (!isResubmitting) {
-      setPromptCount(prev => prev + 1);
+      
+      // Force prompt count increment to trigger UI updates
+      setPromptCount(prev => {
+        console.log(`Incrementing prompt count from ${prev} to ${prev + 1}`);
+        return prev + 1;
+      });
+    } else {
+      console.error("No eventData found in API response");
     }
 
     // Return the processed data to maintain consistency
