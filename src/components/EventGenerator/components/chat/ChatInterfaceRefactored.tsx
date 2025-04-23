@@ -34,7 +34,8 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
   const [location, setLocationLocal] = useState(props.generatedEvent?.location || "");
   const [eventTitle, setEventTitleLocal] = useState(props.eventTitle || props.generatedEvent?.title || "");
   
-  const generatedEventRef = useRef<string | null>(null);
+  const generatedEventRef = useRef<any>(null);
+  const lastPromptCountRef = useRef<number>(props.promptCount || 0);
 
   const {
     handleSubmit,
@@ -59,27 +60,37 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     }
   };
 
+  // Effect to show dialog when a new event is generated
   useEffect(() => {
     if (props.generatedEvent) {
+      // Update local state with event data
       setEventTitleLocal(props.eventTitle || props.generatedEvent.title || "");
       setSelectedDateLocal(props.generatedEvent.date || "");
       setLocationLocal(props.generatedEvent.location || "");
       
-      const eventId = JSON.stringify(props.generatedEvent);
-      if (eventId !== generatedEventRef.current) {
-        generatedEventRef.current = eventId;
+      // Check if this is a new event (comparing with previous event or prompt count)
+      const isNewEvent = (
+        !generatedEventRef.current || 
+        JSON.stringify(props.generatedEvent) !== JSON.stringify(generatedEventRef.current) ||
+        props.promptCount > lastPromptCountRef.current
+      );
+      
+      if (isNewEvent) {
+        console.log("New event detected, showing dialog:", props.generatedEvent);
+        generatedEventRef.current = props.generatedEvent;
+        lastPromptCountRef.current = props.promptCount;
         
-        console.log("Displaying event form for new generated event:", props.generatedEvent);
-        // Show the event form modal when a new event is generated
+        // Show dialog with a short delay to ensure state updates are complete
         const timer = setTimeout(() => {
           setShowEventForm(true);
-        }, 1000);
+        }, 500);
         
         return () => clearTimeout(timer);
       }
     }
-  }, [props.generatedEvent, props.eventTitle]);
+  }, [props.generatedEvent, props.eventTitle, props.promptCount]);
 
+  // Effect to sync local state with parent props
   useEffect(() => {
     if (props.setSelectedDate && selectedDate) {
       props.setSelectedDate(selectedDate);
@@ -92,10 +103,14 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     }
   }, [selectedDate, location, eventTitle, props.setSelectedDate, props.setLocation, props.setEventTitle]);
 
+  // Debug logging
   useEffect(() => {
-    console.log("ChatInterfaceRefactored: Current generatedEvent state:", props.generatedEvent);
-    console.log("ChatInterfaceRefactored: Dialog state:", showEventForm);
-  }, [props.generatedEvent, showEventForm]);
+    console.log("ChatInterfaceRefactored: Current state:", {
+      generatedEvent: props.generatedEvent,
+      showDialog: showEventForm,
+      promptCount: props.promptCount
+    });
+  }, [props.generatedEvent, showEventForm, props.promptCount]);
 
   return (
     <div className="w-full min-h-[50vh] max-h-[85vh] flex flex-col">
@@ -131,7 +146,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         </div>
       </div>
 
-      {/* Modify the EventFormReview Dialog to ensure it appears when an event is generated */}
+      {/* Event Form Review Dialog */}
       <Dialog 
         open={showEventForm && !!props.generatedEvent} 
         onOpenChange={(open) => {
@@ -164,11 +179,11 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
       {/* Also display the event details in the main view for users to reference */}
       {props.generatedEvent && (
         <div className="mt-6 p-4 bg-white shadow-md border border-gray-200 rounded-xl">
-          <h2 className="text-xl font-semibold mb-4 flex items-center">
-            <span className="mr-2">Your Generated Event</span>
+          <h2 className="text-xl font-semibold mb-4 flex items-center justify-between">
+            <span>Your Generated Event</span>
             <button
               onClick={() => setShowEventForm(true)}
-              className="ml-auto text-sm bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded-full transition-colors"
+              className="text-sm bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-full transition-colors"
             >
               Review & Submit
             </button>
