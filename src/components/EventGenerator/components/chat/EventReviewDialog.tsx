@@ -2,6 +2,7 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { EventFormReview } from "../EventFormReview";
 import { toast } from "sonner";
+import { useEffect } from "react";
 
 interface EventReviewDialogProps {
   open: boolean;
@@ -20,19 +21,33 @@ export const EventReviewDialog = ({
   onClose,
   onSubmit
 }: EventReviewDialogProps) => {
+  // Debug logging
+  useEffect(() => {
+    console.log("EventReviewDialog rendered with:", { 
+      open, 
+      hasGeneratedEvent: !!generatedEvent,
+      eventTitle
+    });
+  }, [open, generatedEvent, eventTitle]);
+
   // Validate before submission
   const handleSubmit = () => {
     if (!eventTitle || !eventTitle.trim()) {
       toast.error("Please enter an event title");
       return;
     }
+    console.log("Submitting event with title:", eventTitle);
     onSubmit();
   };
 
+  // Dialog should only be open when both conditions are met
+  const shouldShowDialog = open && !!generatedEvent;
+
   return (
     <Dialog 
-      open={open && !!generatedEvent} 
+      open={shouldShowDialog}
       onOpenChange={(visible) => {
+        console.log("Dialog visibility changing to:", visible);
         if (!visible) onClose();
       }}
     >

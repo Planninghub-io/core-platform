@@ -78,6 +78,8 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
   // Update local state when generated event changes
   useEffect(() => {
     if (props.generatedEvent) {
+      console.log("Generated event received:", props.generatedEvent);
+      
       // Force update local state with generated event data
       setEventTitleLocal(props.generatedEvent.title || eventTitle || "");
       setSelectedDateLocal(props.generatedEvent.date || selectedDate || "");
@@ -103,6 +105,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         
         // Show the event form after a short delay
         setTimeout(() => {
+          console.log("Opening event review dialog");
           setShowEventForm(true);
         }, 300);
       }
@@ -178,8 +181,20 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         </div>
       </div>
 
+      {/* Debug button to manually show dialog */}
+      {props.generatedEvent && !showEventForm && (
+        <div className="mt-2 text-center">
+          <button 
+            onClick={() => setShowEventForm(true)}
+            className="text-sm text-purple-600 hover:text-purple-800"
+          >
+            Can't see the event form? Click here
+          </button>
+        </div>
+      )}
+
       <EventReviewDialog
-        open={showEventForm && !!props.generatedEvent}
+        open={showEventForm}
         generatedEvent={props.generatedEvent}
         eventTitle={eventTitle}
         setEventTitle={setEventTitleLocal}
@@ -203,7 +218,10 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
           hasMissingLocation={!location && !props.generatedEvent.location}
           handleCreateEvent={onCreateEvent}
           prompt={props.prompt}
-          onReview={() => setShowEventForm(true)}
+          onReview={() => {
+            console.log("onReview called, opening dialog");
+            setShowEventForm(true);
+          }}
         />
       )}
     </div>
