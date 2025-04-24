@@ -36,6 +36,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
 
   const lastProcessedEventRef = useRef<string | null>(null);
   const lastPromptCountRef = useRef<number>(props.promptCount || 0);
+  const forceShowFormRef = useRef<boolean>(false);
 
   const {
     handleSubmit,
@@ -71,8 +72,16 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
       lastPromptCount: lastPromptCountRef.current,
       eventTitle,
       selectedDate,
-      location
+      location,
+      forceShowForm: forceShowFormRef.current
     });
+
+    // If user explicitly clicked to show the form or if we have a generated event and the form should be shown
+    if (forceShowFormRef.current && props.generatedEvent) {
+      console.log("Forcing dialog to show based on user interaction");
+      setShowEventForm(true);
+      forceShowFormRef.current = false;
+    }
   }, [props.generatedEvent, showEventForm, props.promptCount, eventTitle, selectedDate, location]);
 
   // Update local state when generated event changes
@@ -103,11 +112,11 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         lastProcessedEventRef.current = eventFingerprint;
         lastPromptCountRef.current = props.promptCount;
         
-        // Show the event form after a short delay
-        setTimeout(() => {
-          console.log("Opening event review dialog");
-          setShowEventForm(true);
-        }, 300);
+        // Show the event form immediately 
+        setShowEventForm(true);
+        
+        // Add extra debug message
+        console.log("Opening event review dialog immediately for new event");
       }
     }
   }, [props.generatedEvent, props.promptCount]);
@@ -181,18 +190,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         </div>
       </div>
 
-      {/* Debug button to manually show dialog */}
-      {props.generatedEvent && !showEventForm && (
-        <div className="mt-2 text-center">
-          <button 
-            onClick={() => setShowEventForm(true)}
-            className="text-sm text-purple-600 hover:text-purple-800"
-          >
-            Can't see the event form? Click here
-          </button>
-        </div>
-      )}
-
+      {/* Event review dialog */}
       <EventReviewDialog
         open={showEventForm}
         generatedEvent={props.generatedEvent}
@@ -205,7 +203,24 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         }}
       />
 
-      {props.generatedEvent && (
+      {/* Manual trigger button - always visible when we have a generated event */}
+      {props.generatedEvent && !showEventForm && (
+        <div className="mt-4 text-center">
+          <button 
+            onClick={() => {
+              console.log("Manual review button clicked");
+              forceShowFormRef.current = true;
+              setShowEventForm(true);
+            }}
+            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+          >
+            Review & Create Your Event
+          </button>
+        </div>
+      )}
+
+      {/* Generated event summary - this serves as a preview */}
+      {props.generatedEvent && !showEventForm && (
         <GeneratedEventSummary
           generatedEvent={props.generatedEvent}
           eventTitle={eventTitle}
@@ -220,6 +235,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
           prompt={props.prompt}
           onReview={() => {
             console.log("onReview called, opening dialog");
+            forceShowFormRef.current = true;
             setShowEventForm(true);
           }}
         />

@@ -43,7 +43,7 @@ export const processResponse = (
   const successMessage = createSuccessMessage(eventData.title || "Your Event");
   setChatMessages(prev => [...prev, {
     type: 'ai',
-    content: successMessage,
+    content: successMessage + " Please review the details in the form below and make any necessary changes.",
     id: `success-${apiCallId}`
   }]);
   

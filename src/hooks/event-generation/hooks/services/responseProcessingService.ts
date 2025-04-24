@@ -15,7 +15,7 @@ export const processSuccessfulResponse = (
   // Add AI response to chat messages
   addAIMessage(
     setChatMessages,
-    `I've generated an event plan based on your request. Please review the details below.`
+    `I've generated an event plan based on your request. Please review the details below and make any necessary changes.`
   );
   
   console.log("Processing successful API response:", response);
@@ -43,15 +43,15 @@ export const processSuccessfulResponse = (
       
       // Always increment prompt count to ensure UI updates
       setPromptCount(prev => prev + 1);
+
+      // Return the processed data to maintain consistency
+      return {
+        validatedEvent: validEvent,
+        missing: response.missing || []
+      };
     } else {
       console.error("No eventData found in API response");
     }
-
-    // Return the processed data to maintain consistency
-    return {
-      validatedEvent: eventData,
-      missing: response.missing || []
-    };
   } else {
     console.error("Missing data property in API response:", response);
     return null;

@@ -1,8 +1,9 @@
 
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { EventFormReview } from "../EventFormReview";
 import { toast } from "sonner";
 import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
 
 interface EventReviewDialogProps {
   open: boolean;
@@ -43,6 +44,10 @@ export const EventReviewDialog = ({
   // Dialog should only be open when both conditions are met
   const shouldShowDialog = open && !!generatedEvent;
 
+  if (!generatedEvent) {
+    return null;
+  }
+
   return (
     <Dialog 
       open={shouldShowDialog}
@@ -56,6 +61,12 @@ export const EventReviewDialog = ({
         onInteractOutside={(e) => e.preventDefault()}
         onEscapeKeyDown={(e) => e.preventDefault()}
       >
+        <DialogHeader>
+          <DialogTitle className="text-xl font-bold text-center">
+            Review Your Event
+          </DialogTitle>
+        </DialogHeader>
+        
         {generatedEvent && (
           <EventFormReview
             event={generatedEvent}
@@ -65,6 +76,21 @@ export const EventReviewDialog = ({
             onSubmit={handleSubmit}
           />
         )}
+        
+        <DialogFooter className="mt-4 flex gap-3 justify-end">
+          <Button
+            variant="outline"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            className="bg-purple-600 hover:bg-purple-700 text-white"
+          >
+            Create Event
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

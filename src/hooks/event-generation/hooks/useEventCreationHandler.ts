@@ -4,8 +4,10 @@ import { useEventCreation } from "@/hooks/useEventCreation";
 import { GeneratedEvent } from "../types";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 export const useEventCreationHandler = () => {
+  const navigate = useNavigate();
   const [showSignUpDialog, setShowSignUpDialog] = useState(false);
   const [eventTitle, setEventTitle] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
@@ -55,7 +57,13 @@ export const useEventCreationHandler = () => {
     };
 
     // Create the event in the database
-    await createEvent(eventData);
+    const result = await createEvent(eventData);
+    
+    if (result && !result.error) {
+      toast.success("Event created successfully!");
+      // Navigate to events hub after successful creation
+      navigate("/events-hub");
+    }
   };
 
   return {
