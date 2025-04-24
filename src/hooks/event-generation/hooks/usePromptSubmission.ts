@@ -46,7 +46,14 @@ export const usePromptSubmission = (
     console.log(`usePromptSubmission [${apiCallId}]: Submitting prompt:`, prompt);
     
     try {
-      // Make API call to generate event - updated to use generateEventAPI
+      // Add loading message to chat
+      setChatMessages(prev => [...prev, { 
+        type: 'ai', 
+        content: "Generating your event plan...",
+        id: `loading-${apiCallId}`
+      }]);
+      
+      // Make API call to generate event
       const apiResponse = await generateEventAPI({
         prompt,
         additionalInfo,
@@ -54,6 +61,9 @@ export const usePromptSubmission = (
       });
       
       console.log(`usePromptSubmission [${apiCallId}]: Received API response:`, apiResponse);
+      
+      // Remove loading message
+      setChatMessages(prev => prev.filter(msg => msg.id !== `loading-${apiCallId}`));
       
       // Only process the latest API call's response
       if (apiCallId === latestApiCallId) {
@@ -64,12 +74,16 @@ export const usePromptSubmission = (
         
         // If we have data, process the response
         if (apiResponse.data) {
-          // Process the response - Fix: Create a properly shaped object for processResponse
+          // Process the response 
           const responseData = {
             data: apiResponse.data,
-            // Fix: If apiResponse.missing doesn't exist, provide an empty array
             missing: Array.isArray(apiResponse.missing) ? apiResponse.missing : []
           };
+          
+          console.log(`usePromptSubmission [${apiCallId}]: Processing response with data:`, responseData);
+          
+          // Setting generated event directly here first to ensure it's available
+          setGeneratedEvent(apiResponse.data);
           
           const result = processResponse(
             responseData,
@@ -80,7 +94,7 @@ export const usePromptSubmission = (
             apiCallId
           );
           
-          console.log(`usePromptSubmission [${apiCallId}]: Result from submitPrompt:`, result);
+          console.log(`usePromptSubmission [${apiCallId}]: Result from processResponse:`, result);
           
           if (result && result.validatedEvent) {
             // Set missing fields
@@ -89,10 +103,6 @@ export const usePromptSubmission = (
             } else {
               setMissingFields([]);
             }
-            
-            // Important: Set the generated event regardless of missing fields
-            console.log(`usePromptSubmission [${apiCallId}]: Setting generated event:`, result.validatedEvent);
-            setGeneratedEvent(result.validatedEvent);
             
             // Increment prompt count
             setPromptCount(prev => prev + 1);

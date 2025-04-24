@@ -37,13 +37,14 @@ export const processResponse = (
   console.log(`processResponse [${apiCallId}]: Missing fields:`, missing);
   
   // Store generated event data - this ensures we always set it regardless of missing fields
+  console.log(`processResponse [${apiCallId}]: Setting generated event state:`, eventData);
   setGeneratedEvent(eventData);
   
   // Add AI message to chat with event creation success
   const successMessage = createSuccessMessage(eventData.title || "Your Event");
   setChatMessages(prev => [...prev, {
     type: 'ai',
-    content: successMessage + " Please review the details in the form below and make any necessary changes.",
+    content: successMessage,
     id: `success-${apiCallId}`
   }]);
   
@@ -61,6 +62,22 @@ export const processResponse = (
       content: missingFieldMessage,
       id: `missing-fields-${apiCallId}`
     }]);
+  } else {
+    // If we have all fields, add a message prompting the user to review
+    setChatMessages(prev => [...prev, {
+      type: 'ai',
+      content: "Please review the event details in the form and make any necessary adjustments before creating the event.",
+      id: `review-prompt-${apiCallId}`
+    }]);
+    
+    // Encode the event data for redirect
+    const eventDataParam = encodeURIComponent(JSON.stringify(eventData));
+    console.log(`processResponse [${apiCallId}]: Preparing redirection to create-event with data:`, eventDataParam);
+    
+    // Use a timeout to ensure the state updates have time to propagate
+    setTimeout(() => {
+      window.location.href = `/create-event?data=${eventDataParam}`;
+    }, 1000);
   }
   
   // Update prompt count for non-resubmissions
