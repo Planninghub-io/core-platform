@@ -41,7 +41,27 @@ export const processResponse = (
   setGeneratedEvent(eventData);
   
   // Add AI message to chat with event creation success
-  const successMessage = createSuccessMessage(eventData.title || "Your Event");
+  const eventType = eventData.category?.toLowerCase() || 'event';
+  const location = eventData.location || 'your selected location';
+  
+  // Format date nicely if available
+  let dateStr = 'the specified date';
+  if (eventData.date) {
+    try {
+      const date = new Date(eventData.date);
+      dateStr = date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    } catch (e) {
+      console.error("Error formatting date:", e);
+    }
+  }
+
+  const successMessage = `Perfect! I've collected all the necessary information for your ${eventType} in ${location} on ${dateStr}. I'm taking you to the event form to review and complete your event.`;
+  
   setChatMessages(prev => [...prev, {
     type: 'ai',
     content: successMessage,
@@ -62,23 +82,16 @@ export const processResponse = (
       content: missingFieldMessage,
       id: `missing-fields-${apiCallId}`
     }]);
-  } else {
-    // If we have all fields, add a message prompting the user to review
-    setChatMessages(prev => [...prev, {
-      type: 'ai',
-      content: "Please review the event details in the form and make any necessary adjustments before creating the event.",
-      id: `review-prompt-${apiCallId}`
-    }]);
-    
-    // Encode the event data for redirect
-    const eventDataParam = encodeURIComponent(JSON.stringify(eventData));
-    console.log(`processResponse [${apiCallId}]: Preparing redirection to create-event with data:`, eventDataParam);
-    
-    // Use a timeout to ensure the state updates have time to propagate
-    setTimeout(() => {
-      window.location.href = `/create-event?data=${eventDataParam}`;
-    }, 1000);
   }
+
+  // Encode the event data for redirect
+  const eventDataParam = encodeURIComponent(JSON.stringify(eventData));
+  console.log(`processResponse [${apiCallId}]: Preparing redirection to create-event with data:`, eventDataParam);
+  
+  // Redirect to create-event with the data
+  setTimeout(() => {
+    window.location.href = `/create-event?data=${eventDataParam}`;
+  }, 1000);
   
   // Update prompt count for non-resubmissions
   if (!isResubmitting) {

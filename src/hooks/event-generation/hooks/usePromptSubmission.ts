@@ -65,7 +65,7 @@ export const usePromptSubmission = (
       // Remove loading message
       setChatMessages(prev => prev.filter(msg => msg.id !== `loading-${apiCallId}`));
       
-      // Only process the latest API call's response
+      // Only process the response if this is the latest API call
       if (apiCallId === latestApiCallId) {
         // Check if there's an error in the response
         if (apiResponse.error) {
@@ -82,9 +82,10 @@ export const usePromptSubmission = (
           
           console.log(`usePromptSubmission [${apiCallId}]: Processing response with data:`, responseData);
           
-          // Setting generated event directly here first to ensure it's available
+          // Set the generated event right away
           setGeneratedEvent(apiResponse.data);
           
+          // Process the response - this should redirect to the event creation form
           const result = processResponse(
             responseData,
             setChatMessages, 
@@ -111,6 +112,7 @@ export const usePromptSubmission = (
           }
         } else {
           console.error(`usePromptSubmission [${apiCallId}]: No data in API response:`, apiResponse);
+          throw new Error("No data in API response");
         }
       } else {
         console.log(`usePromptSubmission [${apiCallId}]: Ignoring result as a newer API call was made`);

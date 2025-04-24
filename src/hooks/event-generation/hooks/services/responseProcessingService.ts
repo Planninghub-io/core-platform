@@ -39,7 +39,7 @@ export const processSuccessfulResponse = (
     // Add success message
     addAIMessage(
       setChatMessages,
-      `Perfect! I've collected all the necessary information. Let's create your event now.`
+      `Perfect! I've created your ${validEvent.category.toLowerCase()} event on ${validEvent.date ? new Date(validEvent.date).toLocaleDateString() : 'the selected date'} in ${validEvent.location}.`
     );
 
     // Encode the event data and redirect
