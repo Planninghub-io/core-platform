@@ -34,12 +34,22 @@ export const useEventCreation = () => {
 
     if (!event.title) {
       console.error('Title is missing from event data'); // Debug log
+      toast({
+        title: "Error",
+        description: "Event title is required",
+        variant: "destructive",
+      });
       return { error: new Error("Event title is required") };
     }
 
     const trimmedTitle = event.title.trim();
     if (trimmedTitle === '') {
       console.error('Title is empty after trimming'); // Debug log
+      toast({
+        title: "Error",
+        description: "Event title cannot be empty",
+        variant: "destructive",
+      });
       return { error: new Error("Event title cannot be empty") };
     }
 
@@ -119,6 +129,11 @@ export const useEventCreation = () => {
 
     } catch (error: any) {
       console.error('Error in createEvent:', error); // Debug log
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create event",
+        variant: "destructive",
+      });
       return { error };
     } finally {
       setIsCreating(false);

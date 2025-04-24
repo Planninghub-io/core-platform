@@ -1,6 +1,7 @@
 
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { EventFormReview } from "../EventFormReview";
+import { toast } from "sonner";
 
 interface EventReviewDialogProps {
   open: boolean;
@@ -19,6 +20,15 @@ export const EventReviewDialog = ({
   onClose,
   onSubmit
 }: EventReviewDialogProps) => {
+  // Validate before submission
+  const handleSubmit = () => {
+    if (!eventTitle || !eventTitle.trim()) {
+      toast.error("Please enter an event title");
+      return;
+    }
+    onSubmit();
+  };
+
   return (
     <Dialog 
       open={open && !!generatedEvent} 
@@ -37,7 +47,7 @@ export const EventReviewDialog = ({
             eventTitle={eventTitle}
             setEventTitle={setEventTitle}
             onClose={onClose}
-            onSubmit={onSubmit}
+            onSubmit={handleSubmit}
           />
         )}
       </DialogContent>

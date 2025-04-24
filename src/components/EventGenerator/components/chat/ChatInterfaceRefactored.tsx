@@ -1,9 +1,11 @@
+
 import { useState, useEffect, useRef } from "react";
 import { ChatContainer } from "./ChatContainer";
 import { ChatInputArea } from "./ChatInputArea";
 import { usePromptHandler } from "./PromptHandler";
 import { EventReviewDialog } from "./EventReviewDialog";
 import { GeneratedEventSummary } from "./GeneratedEventSummary";
+import { toast } from "sonner";
 
 interface ChatInterfaceProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -57,20 +59,30 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     }
   };
 
+  // Debug logging to track state
   useEffect(() => {
     console.log("ChatInterface: Current state check:", {
       generatedEvent: props.generatedEvent ? "YES" : "NO",
+      generatedEventTitle: props.generatedEvent?.title,
+      generatedEventDate: props.generatedEvent?.date,
+      generatedEventLocation: props.generatedEvent?.location,
       showDialog: showEventForm,
       promptCount: props.promptCount,
-      lastPromptCount: lastPromptCountRef.current
+      lastPromptCount: lastPromptCountRef.current,
+      eventTitle,
+      selectedDate,
+      location
     });
-  }, [props.generatedEvent, showEventForm, props.promptCount]);
+  }, [props.generatedEvent, showEventForm, props.promptCount, eventTitle, selectedDate, location]);
 
+  // Update local state when generated event changes
   useEffect(() => {
     if (props.generatedEvent) {
-      setEventTitleLocal(props.eventTitle || props.generatedEvent.title || "");
-      setSelectedDateLocal(props.generatedEvent.date || "");
-      setLocationLocal(props.generatedEvent.location || "");
+      // Force update local state with generated event data
+      setEventTitleLocal(props.generatedEvent.title || eventTitle || "");
+      setSelectedDateLocal(props.generatedEvent.date || selectedDate || "");
+      setLocationLocal(props.generatedEvent.location || location || "");
+      
       const eventFingerprint = JSON.stringify({
         title: props.generatedEvent.title,
         date: props.generatedEvent.date,
@@ -78,20 +90,26 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         description: props.generatedEvent.description?.substring(0, 50),
         promptCount: props.promptCount
       });
+      
       const isNewEvent = (
         eventFingerprint !== lastProcessedEventRef.current || 
         props.promptCount > lastPromptCountRef.current
       );
+      
       if (isNewEvent) {
+        console.log("New event detected, showing form:", eventFingerprint);
         lastProcessedEventRef.current = eventFingerprint;
         lastPromptCountRef.current = props.promptCount;
+        
+        // Show the event form after a short delay
         setTimeout(() => {
           setShowEventForm(true);
         }, 300);
       }
     }
-  }, [props.generatedEvent, props.promptCount, props.eventTitle]);
+  }, [props.generatedEvent, props.promptCount]);
 
+  // Sync local state with parent props when they change
   useEffect(() => {
     if (props.setSelectedDate && selectedDate) {
       props.setSelectedDate(selectedDate);
@@ -103,6 +121,28 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
       props.setEventTitle(eventTitle);
     }
   }, [selectedDate, location, eventTitle, props.setSelectedDate, props.setLocation, props.setEventTitle]);
+
+  // Handle create event function with validation
+  const onCreateEvent = () => {
+    console.log("Attempting to create event with:", {
+      title: eventTitle,
+      date: selectedDate,
+      location: location
+    });
+    
+    if (!eventTitle || !eventTitle.trim()) {
+      toast.error("Please enter an event title");
+      return;
+    }
+    
+    if (props.handleCreateEvent) {
+      console.log("Calling handleCreateEvent from parent");
+      props.handleCreateEvent();
+    } else {
+      console.error("No handleCreateEvent function provided");
+      toast.error("Unable to create event: Setup not complete");
+    }
+  };
 
   return (
     <div className="w-full min-h-[50vh] max-h-[85vh] flex flex-col">
@@ -145,9 +185,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         setEventTitle={setEventTitleLocal}
         onClose={() => setShowEventForm(false)}
         onSubmit={() => {
-          if (props.handleCreateEvent) {
-            props.handleCreateEvent();
-          }
+          onCreateEvent();
           setShowEventForm(false);
         }}
       />
@@ -163,7 +201,7 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
           setLocation={setLocationLocal}
           hasMissingDate={!selectedDate && !props.generatedEvent.date}
           hasMissingLocation={!location && !props.generatedEvent.location}
-          handleCreateEvent={props.handleCreateEvent}
+          handleCreateEvent={onCreateEvent}
           prompt={props.prompt}
           onReview={() => setShowEventForm(true)}
         />
