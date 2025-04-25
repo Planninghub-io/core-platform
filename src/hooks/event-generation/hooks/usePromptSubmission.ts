@@ -97,17 +97,10 @@ export const usePromptSubmission = (
           
           console.log(`usePromptSubmission [${apiCallId}]: Result from processResponse:`, result);
           
+          // Navigate directly to create-event page with data
           if (result && result.validatedEvent) {
-            // Set missing fields
-            if (result.missing && result.missing.length) {
-              setMissingFields(result.missing);
-            } else {
-              setMissingFields([]);
-            }
-            
-            // Increment prompt count
-            setPromptCount(prev => prev + 1);
-            
+            const eventDataParam = encodeURIComponent(JSON.stringify(result.validatedEvent));
+            window.location.href = `/create-event?data=${eventDataParam}`;
             return result;
           }
         } else {

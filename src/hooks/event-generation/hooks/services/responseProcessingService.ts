@@ -1,7 +1,6 @@
 
 import { ChatMessage } from "../../types";
 import { addAIMessage } from "../utils/chatMessageUtils";
-import { useNavigate } from "react-router-dom";
 
 export const processSuccessfulResponse = (
   response: any,
@@ -46,10 +45,8 @@ export const processSuccessfulResponse = (
     const eventDataParam = encodeURIComponent(JSON.stringify(validEvent));
     console.log("Redirecting to create-event with data:", eventDataParam);
     
-    // Use a timeout to ensure the state updates have time to propagate
-    setTimeout(() => {
-      window.location.href = `/create-event?data=${eventDataParam}`;
-    }, 500);
+    // Immediate redirect to ensure form is displayed
+    window.location.href = `/create-event?data=${eventDataParam}`;
 
     return {
       validatedEvent: validEvent,

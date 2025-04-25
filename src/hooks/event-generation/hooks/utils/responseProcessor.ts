@@ -60,7 +60,7 @@ export const processResponse = (
     }
   }
 
-  const successMessage = `Perfect! I've collected all the necessary information for your ${eventType} in ${location} on ${dateStr}. I'm taking you to the event form to review and complete your event.`;
+  const successMessage = `Perfect! I've created your ${eventType} in ${location} on ${dateStr}. Taking you to the event form now to complete your event creation.`;
   
   setChatMessages(prev => [...prev, {
     type: 'ai',
@@ -68,30 +68,12 @@ export const processResponse = (
     id: `success-${apiCallId}`
   }]);
   
-  // If we have missing fields, add another message asking for them
-  if (missing && missing.length > 0) {
-    console.log(`processResponse [${apiCallId}]: Missing fields detected, will request from user:`, missing);
-    
-    // Generate AI message asking for the missing information
-    const missingFieldMessage = formatMissingFieldsMessage(missing);
-    console.log(`processResponse [${apiCallId}]: Sending missing field message to chat:`, missingFieldMessage);
-    
-    // Add the message to chat
-    setChatMessages(prev => [...prev, {
-      type: 'ai',
-      content: missingFieldMessage,
-      id: `missing-fields-${apiCallId}`
-    }]);
-  }
-
   // Encode the event data for redirect
   const eventDataParam = encodeURIComponent(JSON.stringify(eventData));
   console.log(`processResponse [${apiCallId}]: Preparing redirection to create-event with data:`, eventDataParam);
   
-  // Redirect to create-event with the data
-  setTimeout(() => {
-    window.location.href = `/create-event?data=${eventDataParam}`;
-  }, 1000);
+  // Redirect to create-event with the data - do immediately instead of timeout
+  window.location.href = `/create-event?data=${eventDataParam}`;
   
   // Update prompt count for non-resubmissions
   if (!isResubmitting) {
