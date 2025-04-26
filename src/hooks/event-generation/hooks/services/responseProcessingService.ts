@@ -1,6 +1,7 @@
 
 import { ChatMessage } from "../../types";
 import { addAIMessage } from "../utils/chatMessageUtils";
+import { GeneratedEvent, SubmissionResult } from "../../types/api-types";
 
 export const processSuccessfulResponse = (
   response: any,
@@ -8,39 +9,50 @@ export const processSuccessfulResponse = (
   setGeneratedEvent: React.Dispatch<React.SetStateAction<any>>,
   setPromptCount: React.Dispatch<React.SetStateAction<number>>,
   isResubmitting: boolean
-) => {
-  console.log("Processing successful response:", response);
+): SubmissionResult | null => {
+  console.log("processSuccessfulResponse: Processing response:", response);
   
   if (response && (response.data || response.validatedEvent)) {
     const eventData = response.data || response.validatedEvent;
-    console.log("Setting generated event data:", eventData);
+    console.log("processSuccessfulResponse: Setting generated event data:", eventData);
     
     const validEvent = {
       ...eventData,
-      title: eventData.title || "",
+      title: eventData.title || "New Event",
       description: eventData.description || "",
-      date: eventData.date || "",
+      date: eventData.date || new Date().toISOString(),
       location: eventData.location || "",
       category: eventData.category || "Other",
       estimatedPrice: eventData.estimatedPrice || "0"
     };
     
-    console.log("Setting validated event data:", validEvent);
+    console.log("processSuccessfulResponse: Setting validated event data:", validEvent);
     
+    // Set the generated event state
     setGeneratedEvent(validEvent);
-    setPromptCount(prev => prev + 1);
+    
+    // Update prompt count if not resubmitting
+    if (!isResubmitting) {
+      setPromptCount(prev => prev + 1);
+    }
 
-    addAIMessage(
-      setChatMessages,
-      `Perfect! I've created your ${validEvent.category.toLowerCase()} event on ${validEvent.date ? new Date(validEvent.date).toLocaleDateString() : 'the selected date'} in ${validEvent.location}.`
-    );
+    // Create success message for chat
+    const eventType = validEvent.category.toLowerCase();
+    const location = validEvent.location;
+    const dateStr = validEvent.date ? new Date(validEvent.date).toLocaleDateString() : 'the selected date';
+    
+    const successMessage = `Perfect! I've created your ${eventType} event on ${dateStr} in ${location}. Taking you to the event form now to complete your event creation.`;
+    
+    // Add success message to chat
+    addAIMessage(setChatMessages, successMessage);
 
     return {
       validatedEvent: validEvent,
-      missing: response.missing || []
+      missing: response.missing || [],
+      error: null
     };
   }
 
-  console.error("Missing data property in API response:", response);
+  console.error("processSuccessfulResponse: Missing data in response:", response);
   return null;
 };

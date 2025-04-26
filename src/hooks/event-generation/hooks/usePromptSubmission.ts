@@ -1,8 +1,9 @@
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { ChatMessage } from "../types";
 import { generateEventAPI } from "./services/eventGenerationService";
 import { processResponse } from "./utils/responseProcessor";
+import { submitPrompt } from "./services/promptSubmissionService";
 
 /**
  * Hook for handling prompt submissions and processing responses
@@ -21,6 +22,34 @@ export const usePromptSubmission = (
   const [previouslyRequestedFields, setPreviouslyRequestedFields] = useState<string[]>([]);
   const [latestApiCallId, setLatestApiCallId] = useState<string | null>(null);
   const [shouldRedirect, setShouldRedirect] = useState(false);
+  const [redirectData, setRedirectData] = useState<any>(null);
+
+  // Effect to handle redirections when event is generated
+  useEffect(() => {
+    if (generatedEvent && (!missingFields.length || missingFields.length === 0)) {
+      try {
+        console.log("usePromptSubmission: Valid event generated, preparing for redirect:", generatedEvent);
+        // Add a small delay to ensure the success message is shown before redirecting
+        const redirectTimeout = setTimeout(() => {
+          try {
+            const eventDataParam = encodeURIComponent(JSON.stringify(generatedEvent));
+            console.log("usePromptSubmission: Redirecting to create-event with data:", eventDataParam);
+            window.location.href = `/create-event?data=${eventDataParam}`;
+          } catch (error) {
+            console.error("Error during redirect:", error);
+            setChatMessages(prev => [...prev, {
+              type: 'ai',
+              content: "I created your event but encountered an error preparing the form. Please try again."
+            }]);
+          }
+        }, 1500); // 1.5 second delay
+        
+        return () => clearTimeout(redirectTimeout);
+      } catch (error) {
+        console.error("Error preparing redirect:", error);
+      }
+    }
+  }, [generatedEvent, missingFields]);
 
   /**
    * Handle prompt submission to AI
@@ -34,87 +63,39 @@ export const usePromptSubmission = (
     
     setIsGenerating(true);
     
-    // Add user message to chat
-    setChatMessages(prev => [...prev, { 
-      type: 'user', 
-      content: prompt 
-    }]);
-    
     // Generate a unique ID for this API call
     const apiCallId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     setLatestApiCallId(apiCallId);
     
-    try {
-      // Add loading message to chat
-      setChatMessages(prev => [...prev, { 
-        type: 'ai', 
-        content: "Generating your event plan...",
-        id: `loading-${apiCallId}`
-      }]);
+    // Use the submitPrompt service to handle the prompt submission
+    const result = await submitPrompt(
+      prompt,
+      modelProvider,
+      additionalInfo,
+      setChatMessages,
+      setIsGenerating,
+      waitingForBudget,
+      requestBudgetInChat,
+      setPreviouslyRequestedFields,
+      setPromptCount,
+      isResubmitting,
+      setGeneratedEvent,
+      apiCallId
+    );
+    
+    if (result && result.validatedEvent) {
+      // Store the missing fields
+      setMissingFields(result.missing || []);
       
-      // Make API call to generate event
-      const apiResponse = await generateEventAPI({
-        prompt,
-        additionalInfo,
-        modelProvider
-      });
-      
-      // Remove loading message
-      setChatMessages(prev => prev.filter(msg => msg.id !== `loading-${apiCallId}`));
-      
-      // Only process the response if this is the latest API call
-      if (apiCallId === latestApiCallId) {
-        if (apiResponse.error) {
-          throw apiResponse.error;
-        }
-        
-        if (apiResponse.data) {
-          // Process the response 
-          const result = processResponse(
-            {
-              data: apiResponse.data,
-              missing: Array.isArray(apiResponse.missing) ? apiResponse.missing : []
-            },
-            setChatMessages, 
-            setGeneratedEvent,
-            setPromptCount,
-            isResubmitting,
-            apiCallId
-          );
-          
-          console.log(`usePromptSubmission [${apiCallId}]: Result from processResponse:`, result);
-          
-          if (result && result.validatedEvent) {
-            // After processing, check if we should redirect with the processed event data
-            // Encode event data and redirect
-            try {
-              const eventDataParam = encodeURIComponent(JSON.stringify(result.validatedEvent));
-              console.log(`usePromptSubmission [${apiCallId}]: Redirecting to create-event with data:`, eventDataParam);
-              window.location.href = `/create-event?data=${eventDataParam}`;
-            } catch (encodeError) {
-              console.error("Error encoding event data:", encodeError);
-              // Show error toast instead of redirecting
-              setChatMessages(prev => [...prev, { 
-                type: 'ai', 
-                content: "I created your event but encountered an error preparing the form. Please try again." 
-              }]);
-            }
-            return result;
-          }
-        }
+      // If there are no missing fields, we can set the redirect data
+      if (!result.missing || result.missing.length === 0) {
+        console.log("usePromptSubmission: Complete event data received, setting for redirect");
       }
-    } catch (error) {
-      console.error(`usePromptSubmission [${apiCallId}]: Error generating event:`, error);
-      
-      setChatMessages(prev => [...prev, { 
-        type: 'ai', 
-        content: "I'm sorry, I couldn't generate an event based on your request. Please try again with more details." 
-      }]);
-    } finally {
-      setIsGenerating(false);
     }
     
-    return null;
+    setIsGenerating(false);
+    return result;
+    
   }, [
     isGenerating, 
     setChatMessages,

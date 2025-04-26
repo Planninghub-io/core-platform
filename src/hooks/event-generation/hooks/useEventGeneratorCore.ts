@@ -1,150 +1,63 @@
 
-import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { generateEventAPI } from "../api/generateEventAPI";
-import { createErrorMessage } from "../utils/chatMessageUtils";
+import { useState, useCallback, useEffect } from "react";
 import { ChatMessage } from "../types";
-import { useResponseChecker } from "./useResponseChecker";
-import { useEventProcessor } from "./useEventProcessor";
+import { usePromptSubmission } from "./usePromptSubmission";
 
 /**
- * Core hook for event generation functionality
+ * Core hook for handling event generation
  */
 export const useEventGeneratorCore = (
   setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>,
   waitingForBudget: boolean,
   requestBudgetInChat: () => void
 ) => {
-  const { toast } = useToast();
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [promptCount, setPromptCount] = useState(0);
   const [missingInfo, setMissingInfo] = useState<any>(null);
-
-  // Use our new focused hooks
+  const [additionalInfo, setAdditionalInfo] = useState<Record<string, string>>({});
+  const [previouslyRequestedFields, setPreviouslyRequestedFields] = useState<string[]>([]);
+  
+  // Use the prompt submission hook
   const {
-    previouslyRequestedFields,
-    setPreviouslyRequestedFields,
-    checkUserResponse
-  } = useResponseChecker();
-
-  const {
-    additionalInfo,
-    setAdditionalInfo,
-    isResubmitting,
-    setIsResubmitting,
+    isGenerating,
+    promptCount,
     generatedEvent,
     setGeneratedEvent,
+    isResubmitting,
+    setIsResubmitting,
     missingFields,
-    processEventResponse
-  } = useEventProcessor(setChatMessages, waitingForBudget, requestBudgetInChat, setPreviouslyRequestedFields);
+    handlePromptSubmit
+  } = usePromptSubmission(
+    setChatMessages,
+    waitingForBudget,
+    requestBudgetInChat
+  );
 
-  /**
-   * Generate an event based on a prompt and additional information
-   */
-  const generateEvent = async (prompt: string, modelProvider: 'openai' | 'anthropic' = 'openai', providedInfo: Record<string, string> = {}) => {
-    setIsGenerating(true);
-    
-    try {
-      // Show the prompt being submitted in chat
-      setChatMessages(prev => [...prev, { type: "user", content: prompt }]);
-      
-      // Show loading message
-      setChatMessages(prev => [...prev, { 
-        type: "ai", 
-        content: "Generating your event details..." 
-      }]);
-      
-      // Check if the user's response contains information we previously asked for
-      const { containsAllInfo, extractedInfo } = checkUserResponse(
-        prompt,
-        previouslyRequestedFields
-      );
-      
-      // If we found all the information we asked for, clear the requested fields
-      if (containsAllInfo) {
-        // Add the extracted info to providedInfo
-        Object.assign(providedInfo, extractedInfo);
-        
-        // Clear previously requested fields since we got responses for them
-        setPreviouslyRequestedFields([]);
-      }
-      
-      // Combine the existing additional info with provided info
-      const combinedInfo = { ...additionalInfo, ...providedInfo };
-      
-      // Log the combined info for debugging
-      console.log("Combined info before API call:", combinedInfo);
-      console.log("Using model provider:", modelProvider);
-      console.log("Sending prompt to generate event:", prompt);
-      
-      // Call the API
-      const response = await generateEventAPI({
-        prompt,
-        additionalInfo: combinedInfo,
-        modelProvider
-      });
-
-      // Remove the loading message
-      setChatMessages(prev => prev.slice(0, -1));
-
-      if (response.error) {
-        throw response.error;
-      }
-
-      const { data } = response;
-      console.log("Received response from generate-event:", data);
-
-      // Process the event response
-      const result = processEventResponse(data, prompt, providedInfo);
-      
-      // If we need to check for budget
-      if (result?.needsBudget) {
-        setIsGenerating(false);
-        return { needsBudget: true, validatedEvent: result.validatedEvent, missing: result.missing || [] };
-      }
-      
-      // If we have a valid result to return
-      if (result) {
-        // Update the prompt count if this is a new prompt
-        if (!isResubmitting && result.validatedEvent && (result.missing || []).length === 0) {
-          setPromptCount(prev => prev + 1);
-        }
-        
-        // Store missing info if needed
-        if (result.needsMoreInfo) {
-          setMissingInfo(result.data);
-        }
-        
-        return result;
-      }
-      
-      // If no valid data received
-      throw new Error('Invalid response from event generation');
-
-    } catch (error: any) {
-      console.error('Error generating event:', error);
-      
-      // Remove the loading message if present
-      setChatMessages(prev => {
-        const lastMessage = prev[prev.length - 1];
-        if (lastMessage && lastMessage.type === 'ai' && lastMessage.content === "Generating your event details...") {
-          return prev.slice(0, -1);
-        }
-        return prev;
-      });
-      
-      // Add error message to chat
-      setChatMessages(prev => [...prev, {
-        type: 'ai',
-        content: createErrorMessage()
-      }]);
-      
-      return { error };
-    } finally {
-      setIsGenerating(false);
+  // Log when generated event changes
+  useEffect(() => {
+    if (generatedEvent) {
+      console.log("useEventGeneratorCore: Generated event updated:", generatedEvent);
     }
-  };
+  }, [generatedEvent]);
 
+  // Wrapper around handlePromptSubmit
+  const generateEvent = useCallback(async (
+    prompt: string, 
+    modelProvider: 'openai' | 'anthropic' = 'openai',
+    providedInfo: Record<string, string> = {}
+  ) => {
+    const combinedInfo = {
+      ...additionalInfo,
+      ...providedInfo
+    };
+
+    console.log("useEventGeneratorCore: Calling handlePromptSubmit with prompt:", prompt);
+    console.log("useEventGeneratorCore: Additional info:", combinedInfo);
+    
+    return handlePromptSubmit(prompt, modelProvider, combinedInfo);
+  }, [
+    handlePromptSubmit, 
+    additionalInfo
+  ]);
+  
   return {
     isGenerating,
     promptCount,
@@ -152,12 +65,13 @@ export const useEventGeneratorCore = (
     setMissingInfo,
     additionalInfo,
     setAdditionalInfo,
-    isResubmitting,
-    setIsResubmitting,
     generatedEvent,
     setGeneratedEvent,
+    isResubmitting, 
+    setIsResubmitting,
     generateEvent,
     missingFields,
-    previouslyRequestedFields
+    previouslyRequestedFields,
+    setPreviouslyRequestedFields
   };
 };

@@ -44,10 +44,26 @@ const EventCreationPage = () => {
             // Check if valid date
             if (isNaN(startDate.getTime())) {
               // Try different format if needed
-              const dateRegex = /(\d{4}-\d{2}-\d{2})/;
+              const dateRegex = /(\d{4}-\d{2}-\d{2})|(\d{2}\/\d{2}\/\d{4})/;
               const match = eventData.date.match(dateRegex);
               if (match) {
-                startDate = new Date(match[1]);
+                startDate = new Date(match[0]);
+              } else {
+                // Try to extract date from string (e.g., "May 30th")
+                const months = ["january", "february", "march", "april", "may", "june", "july", 
+                               "august", "september", "october", "november", "december"];
+                const monthPattern = new RegExp(`(${months.join("|")})\\s+(\\d+)(?:st|nd|rd|th)?`, "i");
+                const monthMatch = eventData.date.match(monthPattern);
+                
+                if (monthMatch) {
+                  const month = months.findIndex(m => m.toLowerCase() === monthMatch[1].toLowerCase());
+                  const day = parseInt(monthMatch[2]);
+                  const year = new Date().getFullYear();
+                  startDate = new Date(year, month, day);
+                } else {
+                  // Fallback to current date
+                  startDate = new Date();
+                }
               }
             }
           } catch (error) {

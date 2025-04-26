@@ -20,6 +20,7 @@ export const submitPrompt = async (
   setPreviouslyRequestedFields: React.Dispatch<React.SetStateAction<string[]>>,
   setPromptCount: React.Dispatch<React.SetStateAction<number>>,
   isResubmitting: boolean,
+  setGeneratedEvent: React.Dispatch<React.SetStateAction<any>>,
   apiCallId: string = 'default'
 ): Promise<SubmissionResult> => {
   // Validate the prompt
@@ -114,7 +115,7 @@ export const submitPrompt = async (
     const processed = processResponse(
       formattedResponse,
       setChatMessages,
-      setGeneratedEvent => {}, // Pass a proper React dispatcher function instead of boolean
+      setGeneratedEvent,
       setPromptCount,
       isResubmitting,
       apiCallId
