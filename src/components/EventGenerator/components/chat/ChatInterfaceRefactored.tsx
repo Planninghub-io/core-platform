@@ -6,6 +6,7 @@ import { ChatInputArea } from "./ChatInputArea";
 import { ModelDropdown } from "./ModelDropdown";
 import { GeneratedEventSummary } from "./GeneratedEventSummary";
 import { SignUpPrompt } from "./SignUpPrompt";
+import { usePromptHandler } from "./PromptHandler";
 
 interface ChatInterfaceRefactoredProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -49,30 +50,31 @@ export const ChatInterfaceRefactored = ({
   showSignUpPrompt = false
 }: ChatInterfaceRefactoredProps) => {
   const [isSpeechRecognitionAvailable, setIsSpeechRecognitionAvailable] = useState(false);
-  const [isSpeechRecognitionActive, setIsSpeechRecognitionActive] = useState(false);
-  const [speechRecognitionTranscript, setSpeechRecognitionTranscript] = useState('');
-  const [speechRecognitionError, setSpeechRecognitionError] = useState<string | null>(null);
-
+  
   const chatMessagesRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Use the prompt handler which will check for required fields
+  const {
+    handleSubmit,
+    pendingInfo,
+    requiredFieldsCollected,
+    hasMissingFields
+  } = usePromptHandler({
+    setChatMessages,
+    setSelectedDate,
+    setLocation,
+    setPrompt,
+    handlePromptSubmit,
+    modelProvider
+  });
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'SpeechRecognition' in window) {
-      setIsSpeechRecognitionAvailable(true);
-    } else if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
+    if (typeof window !== 'undefined' && 
+        ('SpeechRecognition' in window || 'webkitSpeechRecognition' in window)) {
       setIsSpeechRecognitionAvailable(true);
     }
   }, []);
-
-  const handleSubmit = (input: string, modelProvider?: 'openai' | 'anthropic') => {
-    if (input.trim()) {
-      handlePromptSubmit(input, modelProvider);
-      setPrompt('');
-      if (inputRef.current) {
-        inputRef.current.style.height = 'inherit';
-      }
-    }
-  };
 
   const handleSuggestionClick = (suggestion: string) => {
     setPrompt(suggestion);
@@ -134,6 +136,8 @@ export const ChatInterfaceRefactored = ({
           onTranscriptReceived={onTranscriptReceived}
           modelProvider={modelProvider}
           onModelChange={onModelChange}
+          hasMissingFields={hasMissingFields}
+          requiredFieldsCollected={requiredFieldsCollected}
         />
       </div>
     </Card>

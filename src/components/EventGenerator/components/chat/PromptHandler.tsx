@@ -1,3 +1,4 @@
+
 import { useCallback, useRef, useState } from "react";
 import { extractDateFromPrompt } from "@/hooks/event-generation/utils/prompt-extraction/dateExtractor";
 import { extractLocationFromPrompt } from "@/hooks/event-generation/utils/prompt-extraction/locationExtractor";
@@ -130,9 +131,11 @@ export const usePromptHandler = ({
         
         setRequiredFieldsCollected(true);
         
+        // Add confirmation message that all required details are collected
         setChatMessages(prev => [...prev, { 
           type: 'ai', 
-          content: "Great! I have all the required details. Let me generate your event plan for you to review."
+          content: "Great! I have all the required details for event planning. Let me create the event for your review.",
+          id: `confirmation-${Date.now()}`
         }]);
         
         lastSubmissionRef.current = { prompt: completePrompt, timestamp: now };
@@ -181,6 +184,7 @@ export const usePromptHandler = ({
       }
     }
     
+    // This is the first prompt - check if we have all required fields
     const extractedDate = extractDateFromPrompt(userPrompt);
     const extractedLocation = extractLocationFromPrompt(userPrompt);
     
@@ -212,19 +216,26 @@ export const usePromptHandler = ({
       setPendingInfo(newPendingInfo);
       logState("New pending info", newPendingInfo);
       
-      let missingFieldsMessage = "I'd like to help plan your event, but I need a few more details: ";
+      // Create a more informative message asking for all missing fields at once
+      let missingFieldsMessage = "To help you plan your event, I need the following details:\n";
       const newAskedForFields = [];
       
       if (!newPendingInfo.date) {
-        missingFieldsMessage += "When will the event take place? ";
+        missingFieldsMessage += "• When will the event take place?\n";
         newAskedForFields.push('date');
-      } else if (!newPendingInfo.location) {
-        missingFieldsMessage += "Where will the event be held? ";
+      }
+      
+      if (!newPendingInfo.location) {
+        missingFieldsMessage += "• Where will the event be held?\n";
         newAskedForFields.push('location');
-      } else if (!newPendingInfo.eventType) {
-        missingFieldsMessage += "What type of event is this (birthday, wedding, meeting, etc.)? ";
+      }
+      
+      if (!newPendingInfo.eventType) {
+        missingFieldsMessage += "• What type of event is this (birthday, wedding, meeting, etc.)?\n";
         newAskedForFields.push('eventType');
       }
+      
+      missingFieldsMessage += "\nPlease provide these details so I can create your event.";
       
       setAskedForFields(newAskedForFields);
       logState("Initially asked for fields", newAskedForFields);
@@ -243,9 +254,11 @@ export const usePromptHandler = ({
     
     setRequiredFieldsCollected(true);
     
+    // Add confirmation message for all details being collected
     setChatMessages(prev => [...prev, { 
       type: 'ai', 
-      content: "Great! I have all the required details. Let me generate your event plan for you to review."
+      content: "Great! I have all the required details for event planning. Let me create the event for your review.",
+      id: `confirmation-initial-${Date.now()}`
     }]);
     
     setPrompt("");
