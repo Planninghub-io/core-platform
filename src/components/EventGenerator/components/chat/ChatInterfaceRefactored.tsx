@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useRef } from "react";
 import { ChatContainer } from "./ChatContainer";
 import { ChatInputArea } from "./ChatInputArea";
@@ -6,6 +5,7 @@ import { usePromptHandler } from "./PromptHandler";
 import { EventReviewDialog } from "./EventReviewDialog";
 import { GeneratedEventSummary } from "./GeneratedEventSummary";
 import { toast } from "sonner";
+import { SignUpPrompt } from "./SignUpPrompt";
 
 interface ChatInterfaceProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -25,6 +25,7 @@ interface ChatInterfaceProps {
   setEventTitle?: (title: string) => void;
   handleCreateEvent?: () => void;
   onTranscriptReceived?: (transcript: string) => void;
+  showSignUpPrompt?: boolean;
 }
 
 export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
@@ -60,7 +61,6 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     }
   };
 
-  // Debug logging to track state
   useEffect(() => {
     console.log("ChatInterface: Current state check:", {
       generatedEvent: props.generatedEvent ? "YES" : "NO",
@@ -76,7 +76,6 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
       forceShowForm: forceShowFormRef.current
     });
 
-    // If user explicitly clicked to show the form or if we have a generated event and the form should be shown
     if (forceShowFormRef.current && props.generatedEvent) {
       console.log("Forcing dialog to show based on user interaction");
       setShowEventForm(true);
@@ -84,12 +83,10 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     }
   }, [props.generatedEvent, showEventForm, props.promptCount, eventTitle, selectedDate, location]);
 
-  // Update local state when generated event changes
   useEffect(() => {
     if (props.generatedEvent) {
       console.log("Generated event received:", props.generatedEvent);
       
-      // Force update local state with generated event data
       setEventTitleLocal(props.generatedEvent.title || eventTitle || "");
       setSelectedDateLocal(props.generatedEvent.date || selectedDate || "");
       setLocationLocal(props.generatedEvent.location || location || "");
@@ -112,16 +109,13 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         lastProcessedEventRef.current = eventFingerprint;
         lastPromptCountRef.current = props.promptCount;
         
-        // Show the event form immediately 
         setShowEventForm(true);
         
-        // Add extra debug message
         console.log("Opening event review dialog immediately for new event");
       }
     }
   }, [props.generatedEvent, props.promptCount]);
 
-  // Sync local state with parent props when they change
   useEffect(() => {
     if (props.setSelectedDate && selectedDate) {
       props.setSelectedDate(selectedDate);
@@ -134,7 +128,6 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
     }
   }, [selectedDate, location, eventTitle, props.setSelectedDate, props.setLocation, props.setEventTitle]);
 
-  // Handle create event function with validation
   const onCreateEvent = () => {
     console.log("Attempting to create event with:", {
       title: eventTitle,
@@ -190,7 +183,6 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         </div>
       </div>
 
-      {/* Event review dialog */}
       <EventReviewDialog
         open={showEventForm}
         generatedEvent={props.generatedEvent}
@@ -203,7 +195,6 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         }}
       />
 
-      {/* Manual trigger button - always visible when we have a generated event */}
       {props.generatedEvent && !showEventForm && (
         <div className="mt-4 text-center">
           <button 
@@ -219,7 +210,6 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
         </div>
       )}
 
-      {/* Generated event summary - this serves as a preview */}
       {props.generatedEvent && !showEventForm && (
         <GeneratedEventSummary
           generatedEvent={props.generatedEvent}
@@ -237,6 +227,17 @@ export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
             console.log("onReview called, opening dialog");
             forceShowFormRef.current = true;
             setShowEventForm(true);
+          }}
+        />
+      )}
+
+      {props.showSignUpPrompt && (
+        <SignUpPrompt 
+          onSignUpIndividual={() => {
+            window.location.href = `/auth?redirectPath=/create-event`;
+          }}
+          onSignUpBusiness={() => {
+            window.location.href = `/auth?type=business&redirectPath=/create-event`;
           }}
         />
       )}

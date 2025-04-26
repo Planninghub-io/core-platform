@@ -1,11 +1,8 @@
-
 import { EventGeneratorContent } from "./EventGeneratorContent";
 import { WelcomeHeader } from "../WelcomeHeader";
 import { ManualEventButton } from "../ManualEventButton";
-import { SignUpDialog } from "../../SignUpDialog";
-import { MissingInfoDialog } from "../../MissingInfoDialog";
-import { useEventGeneration } from "@/hooks/event-generation";
 import { useState, useEffect } from "react";
+import { useEventGeneration } from "@/hooks/event-generation";
 
 interface EventGeneratorContainerProps {
   onCreateManualEvent?: () => void;
@@ -18,7 +15,6 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
     promptCount,
     showSignUpDialog,
     setShowSignUpDialog,
-    missingInfo,
     generatedEvent,
     eventTitle,
     setEventTitle,
@@ -38,15 +34,6 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
     handleMissingInfoSubmit,
     waitingForBudget,
   } = useEventGeneration();
-
-  // Add debug logging to track the generated event
-  useEffect(() => {
-    if (generatedEvent) {
-      console.log("EventGeneratorContainer: Generated event available:", JSON.stringify(generatedEvent, null, 2));
-    } else {
-      console.log("EventGeneratorContainer: No generated event available");
-    }
-  }, [generatedEvent]);
 
   const getLatestUserPrompt = () => {
     for (let i = chatMessages.length - 1; i >= 0; i--) {
@@ -99,6 +86,16 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
     window.location.href = "/create-event";
   };
 
+  const showSignUpPrompt = promptCount >= 1 && !generatedEvent;
+
+  useEffect(() => {
+    if (generatedEvent) {
+      console.log("EventGeneratorContainer: Generated event available:", JSON.stringify(generatedEvent, null, 2));
+    } else {
+      console.log("EventGeneratorContainer: No generated event available");
+    }
+  }, [generatedEvent]);
+
   return (
     <div className="container py-4 sm:py-6">
       <div className="mx-auto max-w-4xl">
@@ -122,6 +119,7 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
             modelProvider={modelProvider}
             onModelChange={handleModelChange}
             promptCount={promptCount}
+            showSignUpPrompt={showSignUpPrompt}
           />
         </div>
 
