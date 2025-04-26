@@ -1,3 +1,4 @@
+
 import { ChatMessage } from "../../ChatMessage";
 import { useEffect, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -25,8 +26,8 @@ export const ChatMessages = ({
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    console.log("ChatMessages: Rendering with", chatMessages.length, "messages");
-    console.log("ChatMessages: Messages content:", JSON.stringify(chatMessages.slice(-2)));
+    console.log("ChatMessages: Rendering with", chatMessages?.length || 0, "messages");
+    console.log("ChatMessages: Messages content:", chatMessages ? JSON.stringify(chatMessages.slice(-2)) : "No messages");
   }, [chatMessages]);
 
   useEffect(() => {
@@ -89,9 +90,9 @@ export const ChatMessages = ({
 
   return (
     <div className="p-4 overflow-y-auto flex-1 w-full flex flex-col min-h-[60vh]">
-      {chatMessages.length === 0 && <WelcomeMessageWithModelSelector />}
+      {(!chatMessages || chatMessages.length === 0) && <WelcomeMessageWithModelSelector />}
 
-      {chatMessages.map((message, index) => (
+      {chatMessages && chatMessages.map((message, index) => (
         <ChatMessage 
           key={`message-${index}-${message.id || ''}`} 
           message={message.content} 

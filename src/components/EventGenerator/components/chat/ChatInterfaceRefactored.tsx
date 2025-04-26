@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { ChatMessages } from "./ChatMessages";
@@ -84,15 +85,15 @@ export const ChatInterfaceRefactored = ({
     <Card className="relative flex flex-col h-full overflow-hidden shadow-md border border-gray-200 rounded-lg">
       <div className="absolute top-3 right-3">
         <ModelDropdown
-          selectedModel={modelProvider}
-          onSelectModel={onModelChange || (() => {})}
+          modelProvider={modelProvider}
+          onModelChange={onModelChange || (() => {})}
         />
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
         <ChatMessages
-          messages={chatMessages}
-          isLoading={isGenerating}
+          chatMessages={chatMessages}
+          isGenerating={isGenerating}
           welcomeMessage={welcomeMessage}
         />
       </div>
@@ -101,9 +102,16 @@ export const ChatInterfaceRefactored = ({
         <div className="p-4 border-t border-gray-200">
           <GeneratedEventSummary
             generatedEvent={generatedEvent}
-            eventTitle={eventTitle}
-            setEventTitle={setEventTitle}
-            handleCreateEvent={handleCreateEvent}
+            eventTitle={eventTitle || ''}
+            setEventTitle={setEventTitle || (() => {})}
+            handleCreateEvent={handleCreateEvent || (() => {})}
+            selectedDate={''}
+            setSelectedDate={setSelectedDate || (() => {})}
+            location={''}
+            setLocation={setLocation || (() => {})}
+            hasMissingDate={false}
+            hasMissingLocation={false}
+            showDetailsForm={false}
           />
         </div>
       ) : showSignUpPrompt ? (
@@ -119,7 +127,7 @@ export const ChatInterfaceRefactored = ({
         <ChatInputArea
           prompt={prompt}
           setPrompt={setPrompt}
-          isLoading={isGenerating}
+          isGenerating={isGenerating}
           onSubmit={handleSubmit}
           suggestions={[]}
           onSuggestionClick={handleSuggestionClick}
