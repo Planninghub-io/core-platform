@@ -37,14 +37,20 @@ export const processSuccessfulResponse = (
     }
 
     // Create success message for chat
-    const eventType = validEvent.category.toLowerCase();
-    const location = validEvent.location;
+    const eventType = validEvent.category?.toLowerCase() || 'event';
+    const location = validEvent.location || 'the specified location';
     const dateStr = validEvent.date ? new Date(validEvent.date).toLocaleDateString() : 'the selected date';
     
-    const successMessage = `Perfect! I've created your ${eventType} event on ${dateStr} in ${location}. Taking you to the event form now to complete your event creation.`;
+    // Add initial confirmation message
+    addAIMessage(setChatMessages, "Great! I have all the required information to create your event. Let me prepare that for you now.");
     
-    // Add success message to chat
-    addAIMessage(setChatMessages, successMessage);
+    // Add the detailed success message after a short delay
+    setTimeout(() => {
+      addAIMessage(
+        setChatMessages,
+        `Perfect! I've created your ${eventType} event for ${dateStr} at ${location}. Taking you to the event form now where you can review and customize all the details.`
+      );
+    }, 1000);
 
     return {
       validatedEvent: validEvent,
