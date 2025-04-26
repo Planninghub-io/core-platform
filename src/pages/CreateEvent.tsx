@@ -24,7 +24,7 @@ const CreateEvent = () => {
     handleDateChange,
     handleTimeChange, 
     handleCheckboxChange,
-    handleSubmit 
+    handleSubmit: originalHandleSubmit 
   } = useEventForm();
   
   const { 
@@ -96,7 +96,10 @@ const CreateEvent = () => {
   }, [location.search, setFormData, toast, setPendingEventData]);
 
   // Custom submit handler that checks authentication
-  const handleFormSubmit = async (formData: EventFormData) => {
+  // Fixed: Updated to wrap the form submission properly
+  const handleFormSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     // Check if user is authenticated before submitting
     if (!user) {
       setPendingEventData(formData);
@@ -105,7 +108,7 @@ const CreateEvent = () => {
     }
     
     // Proceed with normal submission
-    handleSubmit(formData);
+    originalHandleSubmit(formData);
   };
 
   const handleSignUpIndividual = () => {

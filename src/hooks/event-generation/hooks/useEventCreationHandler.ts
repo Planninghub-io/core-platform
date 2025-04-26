@@ -44,7 +44,7 @@ export const useEventCreationHandler = () => {
       return;
     }
 
-    // Create event object for database
+    // Create event object
     const eventData = {
       title: finalTitle,
       description: generatedEvent.description || "",
@@ -59,7 +59,8 @@ export const useEventCreationHandler = () => {
     // Create the event in the database
     const result = await createEvent(eventData);
     
-    if (result && !result.error) {
+    // Fixed: Remove the .error property check and handle the result directly
+    if (result) {
       toast.success("Event created successfully!");
       // Navigate to events hub after successful creation
       navigate("/events-hub");
