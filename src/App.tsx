@@ -85,7 +85,8 @@ function App() {
           
           <Route path="events-hub" element={<EventsHub />} />
           <Route path="discover" element={<Discover />} />
-          <Route path="create-event" element={user ? <CreateEvent /> : <Navigate to="/auth" replace state={{ redirectPath: '/create-event' }} />} />
+          {/* Changed to allow non-authenticated users to access create-event */}
+          <Route path="create-event" element={<CreateEvent />} />
           <Route path="campaign-hub" element={<CampaignHub />} />
           
           <Route path="marketplace" element={<MarketplaceLayout />}>

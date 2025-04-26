@@ -6,17 +6,15 @@ import { useEffect, useState } from "react";
 import { EventFormData } from "./create-event/types";
 import { SignUpDialog } from "@/components/EventGenerator/SignUpDialog";
 import { useEventCreation } from "@/hooks/useEventCreation";
-import { useAuthRedirect } from "@/hooks/useAuthRedirect";
+import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 const CreateEvent = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { user, loading } = useAuthRedirect({
-    redirectPath: "/auth",
-    skipRedirect: false
-  });
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   
   const { 
     formData, 
@@ -32,43 +30,83 @@ const CreateEvent = () => {
   const { 
     showSignUpDialog, 
     setShowSignUpDialog, 
-    pendingEventData 
+    pendingEventData,
+    setPendingEventData
   } = useEventCreation();
 
-  // Display error message if user is not authenticated
+  // Check authentication status
   useEffect(() => {
-    if (!loading && !user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to create an event",
-        variant: "destructive",
-      });
-    }
-  }, [loading, user, toast]);
+    const checkAuth = async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        setUser(data.user);
+      } catch (err) {
+        console.error("Error checking auth status:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkAuth();
+  }, []);
 
-  // Check if we have event data from the authentication flow
+  // Check if we have event data from the URL
   useEffect(() => {
-    if (location.state?.eventData) {
-      const eventData = location.state.eventData;
-      
-      // Map the AI generated event data to the form structure
-      const mappedData: Partial<EventFormData> = {
-        title: eventData.title || '',
-        description: eventData.description || '',
-        date: eventData.date || '',
-        location: eventData.location || '',
-        eventType: eventData.category || '',
-        budget: eventData.estimatedPrice || '',
-        imageUrl: eventData.imageUrl || '', 
-      };
-      
-      // Pre-fill the form with this data
-      setFormData(prev => ({
-        ...prev,
-        ...mappedData
-      }));
+    const eventDataParam = new URLSearchParams(location.search).get('data');
+    
+    if (eventDataParam) {
+      try {
+        const eventData = JSON.parse(decodeURIComponent(eventDataParam));
+        console.log("CreateEvent: Found event data in URL:", eventData);
+        
+        // Store the pending event data in case the user needs to sign up
+        setPendingEventData(eventData);
+        
+        // Map the AI generated event data to the form structure
+        const mappedData: Partial<EventFormData> = {
+          title: eventData.title || '',
+          description: eventData.description || '',
+          date: eventData.date || '',
+          location: eventData.location || '',
+          eventType: eventData.category || '',
+          budget: eventData.estimatedPrice || '',
+          imageUrl: eventData.imageUrl || '', 
+        };
+        
+        // Pre-fill the form with this data
+        setFormData(prev => ({
+          ...prev,
+          ...mappedData
+        }));
+        
+        // Show toast notification
+        toast({
+          title: "Event data loaded",
+          description: "Your event details have been loaded from the AI assistant.",
+        });
+      } catch (error) {
+        console.error("Error parsing event data from URL:", error);
+        toast({
+          title: "Error",
+          description: "Could not load event details from URL.",
+          variant: "destructive",
+        });
+      }
     }
-  }, [location.state, setFormData]);
+  }, [location.search, setFormData, toast, setPendingEventData]);
+
+  // Custom submit handler that checks authentication
+  const handleFormSubmit = async (formData: EventFormData) => {
+    // Check if user is authenticated before submitting
+    if (!user) {
+      setPendingEventData(formData);
+      setShowSignUpDialog(true);
+      return;
+    }
+    
+    // Proceed with normal submission
+    handleSubmit(formData);
+  };
 
   const handleSignUpIndividual = () => {
     // Navigate to auth page with event data to create after sign up
@@ -101,15 +139,20 @@ const CreateEvent = () => {
     );
   }
 
-  if (!user) {
-    return null; // Don't render anything, we'll be redirected
-  }
-
   return (
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="container max-w-3xl">
         <h1 className="mb-2 text-3xl font-bold text-gray-900">Create New Event</h1>
         <p className="mb-8 text-gray-600">Please input your event details</p>
+        
+        {!user && (
+          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-blue-800">
+              You're not logged in. You can fill out the event details, but you'll need to sign in or create an account to save your event.
+            </p>
+          </div>
+        )}
+        
         <EventForm
           formData={formData}
           handleChange={handleChange}
@@ -117,7 +160,7 @@ const CreateEvent = () => {
           handleDateChange={handleDateChange}
           handleTimeChange={handleTimeChange}
           handleCheckboxChange={handleCheckboxChange}
-          handleSubmit={handleSubmit}
+          handleSubmit={handleFormSubmit}
           handleCancel={() => navigate("/")}
         />
 

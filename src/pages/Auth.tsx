@@ -11,6 +11,10 @@ const Auth = () => {
   const isBusiness = location.state?.type === 'business';
   const [isLoading, setIsLoading] = useState(true);
   
+  // Get redirectPath and eventData from state if available
+  const redirectPath = location.state?.redirectPath || '/';
+  const eventData = location.state?.eventData;
+  
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -39,8 +43,17 @@ const Auth = () => {
             console.log("Profile setup needed, redirecting to profile setup");
             navigate('/profile-setup', { replace: true });
           } else {
-            console.log("Profile setup not needed, redirecting to home");
-            navigate('/', { replace: true });
+            console.log("Profile setup not needed, redirecting to specified path or home");
+            
+            // Check if we should redirect to create-event with event data
+            if (redirectPath === '/create-event' && eventData) {
+              // We need to encode the event data and add it as a query parameter
+              const eventDataParam = encodeURIComponent(JSON.stringify(eventData));
+              navigate(`${redirectPath}?data=${eventDataParam}`, { replace: true });
+            } else {
+              // Regular redirect
+              navigate(redirectPath, { replace: true });
+            }
           }
         } else {
           console.log("No session found, showing auth form");
@@ -53,7 +66,7 @@ const Auth = () => {
     };
     
     checkAuth();
-  }, [navigate]);
+  }, [navigate, redirectPath, eventData]);
   
   if (isLoading) {
     return (

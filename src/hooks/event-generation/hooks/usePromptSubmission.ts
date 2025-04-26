@@ -32,8 +32,11 @@ export const usePromptSubmission = (
         // Add a small delay to ensure the success message is shown before redirecting
         const redirectTimeout = setTimeout(() => {
           try {
+            // Prepare the event data for URL parameter
             const eventDataParam = encodeURIComponent(JSON.stringify(generatedEvent));
             console.log("usePromptSubmission: Redirecting to create-event with data:", eventDataParam);
+            
+            // Use replace to prevent back button taking user back to chat
             window.location.href = `/create-event?data=${eventDataParam}`;
           } catch (error) {
             console.error("Error during redirect:", error);
@@ -42,14 +45,14 @@ export const usePromptSubmission = (
               content: "I created your event but encountered an error preparing the form. Please try again."
             }]);
           }
-        }, 1500); // 1.5 second delay
+        }, 2000); // 2 second delay for reading success message
         
         return () => clearTimeout(redirectTimeout);
       } catch (error) {
         console.error("Error preparing redirect:", error);
       }
     }
-  }, [generatedEvent, missingFields]);
+  }, [generatedEvent, missingFields, setChatMessages]);
 
   /**
    * Handle prompt submission to AI
