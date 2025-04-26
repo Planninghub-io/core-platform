@@ -129,9 +129,11 @@ export const ChatInterfaceRefactored = ({
           setPrompt={setPrompt}
           isGenerating={isGenerating}
           onSubmit={handleSubmit}
-          suggestions={[]}
-          onSuggestionClick={handleSuggestionClick}
+          promptCount={promptCount}
+          chatMessages={chatMessages}
           onTranscriptReceived={onTranscriptReceived}
+          modelProvider={modelProvider}
+          onModelChange={onModelChange}
         />
       </div>
     </Card>

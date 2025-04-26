@@ -6,17 +6,21 @@ import React, { FormEvent, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatInputAreaProps {
-  chatMessages: Array<{ type: 'user' | 'ai', content: string }>;
+  chatMessages?: Array<{ type: 'user' | 'ai', content: string }>;
   prompt: string;
   setPrompt: (prompt: string) => void;
   isGenerating: boolean;
-  promptCount: number;
-  handlePromptSubmit: (prompt: string) => void;
-  generatedEvent: any | null;
+  promptCount?: number;
+  handlePromptSubmit?: (prompt: string) => void;
+  onSubmit?: (input: string, modelProvider?: 'openai' | 'anthropic') => void;
+  suggestions?: string[];
+  onSuggestionClick?: (suggestion: string) => void;
+  generatedEvent?: any | null;
   hasMissingFields?: boolean;
   requiredFieldsCollected?: boolean;
-  modelProvider: 'openai' | 'anthropic';
-  onModelChange: (model: 'openai' | 'anthropic') => void;
+  modelProvider?: 'openai' | 'anthropic';
+  onModelChange?: (model: 'openai' | 'anthropic') => void;
+  onTranscriptReceived?: (transcript: string) => void;
 }
 
 export const ChatInputArea = ({
@@ -24,13 +28,17 @@ export const ChatInputArea = ({
   prompt,
   setPrompt,
   isGenerating,
-  promptCount,
+  promptCount = 0,
   handlePromptSubmit,
+  onSubmit,
+  suggestions = [],
+  onSuggestionClick,
   generatedEvent,
   hasMissingFields = false,
   requiredFieldsCollected = false,
-  modelProvider,
-  onModelChange
+  modelProvider = 'openai',
+  onModelChange,
+  onTranscriptReceived
 }: ChatInputAreaProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const isMobile = useIsMobile();
@@ -54,7 +62,11 @@ export const ChatInputArea = ({
 
     console.log("ChatInputArea: handleSubmit called with prompt:", trimmedPrompt);
     
-    handlePromptSubmit(trimmedPrompt);
+    if (onSubmit) {
+      onSubmit(trimmedPrompt, modelProvider);
+    } else if (handlePromptSubmit) {
+      handlePromptSubmit(trimmedPrompt);
+    }
   };
 
   // Handle transcript received from voice assistant
@@ -62,6 +74,10 @@ export const ChatInputArea = ({
     // We need to directly set the prompt rather than using a callback function
     const newPrompt = prompt ? `${prompt} ${transcript}` : transcript;
     setPrompt(newPrompt);
+    
+    if (onTranscriptReceived) {
+      onTranscriptReceived(transcript);
+    }
   };
 
   return (
