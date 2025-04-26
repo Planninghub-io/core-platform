@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 const EventCreationPage = () => {
   const [searchParams] = useSearchParams();
   const [isLoadingData, setIsLoadingData] = useState(true);
+  const [dataLoadError, setDataLoadError] = useState<string | null>(null);
   
   const {
     formData,
@@ -26,11 +27,12 @@ const EventCreationPage = () => {
   useEffect(() => {
     // Try to get event data from URL
     const eventDataParam = searchParams.get('data');
+    console.log("EventCreationPage: URL param data:", eventDataParam ? "Present (length: " + eventDataParam.length + ")" : "Missing");
     
     if (eventDataParam) {
       try {
         const eventData = JSON.parse(decodeURIComponent(eventDataParam));
-        console.log("Received event data from URL:", eventData);
+        console.log("EventCreationPage: Received event data from URL:", eventData);
 
         // Parse date - handle both ISO string and date string formats
         let startDate = null;
@@ -94,11 +96,14 @@ const EventCreationPage = () => {
         toast.success("Event details have been loaded from your chat");
       } catch (error) {
         console.error("Error parsing event data from URL:", error);
+        setDataLoadError("Could not load event details from the URL. Please try creating your event again.");
         toast.error("Could not load event details");
       } finally {
         setIsLoadingData(false);
       }
     } else {
+      console.log("EventCreationPage: No data parameter in URL");
+      setDataLoadError("No event details were provided. You can still manually create your event below.");
       setIsLoadingData(false);
     }
   }, [searchParams, setFormData]);
@@ -117,6 +122,13 @@ const EventCreationPage = () => {
   return (
     <div className="container py-8">
       <h1 className="text-3xl font-bold mb-6">Create Event</h1>
+      
+      {dataLoadError && (
+        <div className="mb-6 p-4 border border-yellow-300 bg-yellow-50 rounded-md">
+          <p className="text-yellow-800">{dataLoadError}</p>
+        </div>
+      )}
+      
       <div className="p-6 rounded-lg bg-white shadow-sm">
         <EventForm
           formData={formData}

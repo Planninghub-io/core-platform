@@ -63,7 +63,7 @@ export const processResponse = (
     setPromptCount(prev => prev + 1);
   }
   
-  // Always return the event data, even with missing fields
+  // Return the event data so it can be used by the parent component
   return {
     validatedEvent: eventData,
     missing: missing,

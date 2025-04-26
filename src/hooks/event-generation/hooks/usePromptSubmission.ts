@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { ChatMessage } from "../types";
 import { generateEventAPI } from "./services/eventGenerationService";
@@ -19,6 +20,7 @@ export const usePromptSubmission = (
   const [isResubmitting, setIsResubmitting] = useState(false);
   const [previouslyRequestedFields, setPreviouslyRequestedFields] = useState<string[]>([]);
   const [latestApiCallId, setLatestApiCallId] = useState<string | null>(null);
+  const [shouldRedirect, setShouldRedirect] = useState(false);
 
   /**
    * Handle prompt submission to AI
@@ -83,10 +85,20 @@ export const usePromptSubmission = (
           console.log(`usePromptSubmission [${apiCallId}]: Result from processResponse:`, result);
           
           if (result && result.validatedEvent) {
+            // After processing, check if we should redirect with the processed event data
             // Encode event data and redirect
-            const eventDataParam = encodeURIComponent(JSON.stringify(result.validatedEvent));
-            console.log(`usePromptSubmission [${apiCallId}]: Redirecting to create-event with data:`, eventDataParam);
-            window.location.href = `/create-event?data=${eventDataParam}`;
+            try {
+              const eventDataParam = encodeURIComponent(JSON.stringify(result.validatedEvent));
+              console.log(`usePromptSubmission [${apiCallId}]: Redirecting to create-event with data:`, eventDataParam);
+              window.location.href = `/create-event?data=${eventDataParam}`;
+            } catch (encodeError) {
+              console.error("Error encoding event data:", encodeError);
+              // Show error toast instead of redirecting
+              setChatMessages(prev => [...prev, { 
+                type: 'ai', 
+                content: "I created your event but encountered an error preparing the form. Please try again." 
+              }]);
+            }
             return result;
           }
         }
