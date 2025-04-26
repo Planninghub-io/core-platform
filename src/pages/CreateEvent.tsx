@@ -96,8 +96,7 @@ const CreateEvent = () => {
   }, [location.search, setFormData, toast, setPendingEventData]);
 
   // Custom submit handler that checks authentication
-  // Fixed: Updated to wrap the form submission properly
-  const handleFormSubmit = async (e: React.FormEvent) => {
+  const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
     // Check if user is authenticated before submitting

@@ -124,6 +124,12 @@ const EventCreationPage = () => {
     }
   }, [searchParams, setFormData]);
 
+  // Create a wrapper function to handle the form submission
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    handleSubmit(formData);
+  };
+
   if (isLoadingData) {
     return (
       <div className="container py-8 flex justify-center items-center min-h-[300px]">
@@ -153,7 +159,7 @@ const EventCreationPage = () => {
           handleDateChange={handleDateChange}
           handleTimeChange={handleTimeChange}
           handleCheckboxChange={handleCheckboxChange}
-          handleSubmit={handleSubmit}
+          handleSubmit={handleFormSubmit}
           handleCancel={() => window.history.back()}
         />
       </div>

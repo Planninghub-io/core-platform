@@ -12,8 +12,7 @@ export const useEventSubmission = () => {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = async (formData: EventFormData, e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const handleSubmit = async (formData: EventFormData) => {
     setIsSubmitting(true);
 
     const requiredFields = validateRequiredFields(formData);
