@@ -11,12 +11,10 @@ export const processSuccessfulResponse = (
 ) => {
   console.log("Processing successful response:", response);
   
-  // Process the event response - ensure we're getting the data regardless of model
   if (response && (response.data || response.validatedEvent)) {
     const eventData = response.data || response.validatedEvent;
     console.log("Setting generated event data:", eventData);
     
-    // Ensure we have all required fields for a valid event
     const validEvent = {
       ...eventData,
       title: eventData.title || "",
@@ -29,24 +27,13 @@ export const processSuccessfulResponse = (
     
     console.log("Setting validated event data:", validEvent);
     
-    // Make sure to set the generated event before redirecting
     setGeneratedEvent(validEvent);
-    
-    // Always increment prompt count to ensure UI updates
     setPromptCount(prev => prev + 1);
 
-    // Add success message
     addAIMessage(
       setChatMessages,
       `Perfect! I've created your ${validEvent.category.toLowerCase()} event on ${validEvent.date ? new Date(validEvent.date).toLocaleDateString() : 'the selected date'} in ${validEvent.location}.`
     );
-
-    // Encode the event data and redirect
-    const eventDataParam = encodeURIComponent(JSON.stringify(validEvent));
-    console.log("Redirecting to create-event with data:", eventDataParam);
-    
-    // Immediate redirect to ensure form is displayed
-    window.location.href = `/create-event?data=${eventDataParam}`;
 
     return {
       validatedEvent: validEvent,

@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { ChatMessage } from "../types";
 import { generateEventAPI } from "./services/eventGenerationService";
@@ -43,8 +42,6 @@ export const usePromptSubmission = (
     const apiCallId = `${Date.now()}-${Math.random().toString(36).substring(2, 9)}`;
     setLatestApiCallId(apiCallId);
     
-    console.log(`usePromptSubmission [${apiCallId}]: Submitting prompt:`, prompt);
-    
     try {
       // Add loading message to chat
       setChatMessages(prev => [...prev, { 
@@ -60,34 +57,22 @@ export const usePromptSubmission = (
         modelProvider
       });
       
-      console.log(`usePromptSubmission [${apiCallId}]: Received API response:`, apiResponse);
-      
       // Remove loading message
       setChatMessages(prev => prev.filter(msg => msg.id !== `loading-${apiCallId}`));
       
       // Only process the response if this is the latest API call
       if (apiCallId === latestApiCallId) {
-        // Check if there's an error in the response
         if (apiResponse.error) {
           throw apiResponse.error;
         }
         
-        // If we have data, process the response
         if (apiResponse.data) {
           // Process the response 
-          const responseData = {
-            data: apiResponse.data,
-            missing: Array.isArray(apiResponse.missing) ? apiResponse.missing : []
-          };
-          
-          console.log(`usePromptSubmission [${apiCallId}]: Processing response with data:`, responseData);
-          
-          // Set the generated event right away
-          setGeneratedEvent(apiResponse.data);
-          
-          // Process the response - this should redirect to the event creation form
           const result = processResponse(
-            responseData,
+            {
+              data: apiResponse.data,
+              missing: Array.isArray(apiResponse.missing) ? apiResponse.missing : []
+            },
             setChatMessages, 
             setGeneratedEvent,
             setPromptCount,
@@ -97,23 +82,18 @@ export const usePromptSubmission = (
           
           console.log(`usePromptSubmission [${apiCallId}]: Result from processResponse:`, result);
           
-          // Navigate directly to create-event page with data
           if (result && result.validatedEvent) {
+            // Encode event data and redirect
             const eventDataParam = encodeURIComponent(JSON.stringify(result.validatedEvent));
+            console.log(`usePromptSubmission [${apiCallId}]: Redirecting to create-event with data:`, eventDataParam);
             window.location.href = `/create-event?data=${eventDataParam}`;
             return result;
           }
-        } else {
-          console.error(`usePromptSubmission [${apiCallId}]: No data in API response:`, apiResponse);
-          throw new Error("No data in API response");
         }
-      } else {
-        console.log(`usePromptSubmission [${apiCallId}]: Ignoring result as a newer API call was made`);
       }
     } catch (error) {
       console.error(`usePromptSubmission [${apiCallId}]: Error generating event:`, error);
       
-      // Add error message to chat
       setChatMessages(prev => [...prev, { 
         type: 'ai', 
         content: "I'm sorry, I couldn't generate an event based on your request. Please try again with more details." 
