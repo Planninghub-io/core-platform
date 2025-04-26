@@ -34,7 +34,8 @@ const NewPasswordForm = () => {
           title: "Password Updated Successfully",
           description: "Your password has been reset. You can now log in with your new password.",
         });
-        navigate("/auth"); // Redirect to login page after success
+        // Always redirect back to login after password reset success
+        navigate("/auth"); 
       };
       
       const result = await setNewPassword(password, toast, redirectCallback);

@@ -67,9 +67,9 @@ const ResetPassword = () => {
           type: hashType 
         });
         
-        // If we have token params from the URL hash for recovery
+        // IMPORTANT: We're now handling 'recovery' type specifically, not just any token
         if (accessToken && hashType === 'recovery') {
-          console.log("Found access token in URL hash, setting session...");
+          console.log("Found access token in URL hash for recovery, setting session...");
           
           const { error } = await supabase.auth.setSession({
             access_token: accessToken,
@@ -93,13 +93,24 @@ const ResetPassword = () => {
         }
         
         // As a fallback, check if there's already a valid session
+        // But make sure it's from a recovery flow, not a regular login
         const { data: sessionData } = await supabase.auth.getSession();
         
         console.log("Session check:", sessionData?.session ? "session exists" : "no session");
         
-        if (sessionData.session) {
+        // Only accept the session if we're in a recovery flow
+        const urlHasRecoveryIndicator = 
+          window.location.href.includes('type=recovery') || 
+          window.location.href.includes('new-password');
+        
+        if (sessionData.session && urlHasRecoveryIndicator) {
+          console.log("Valid recovery session found");
           setIsValidSession(true);
           setIsLoading(false);
+          return;
+        } else if (sessionData.session) {
+          console.log("Session exists but not from recovery flow, redirecting to home");
+          navigate("/");
           return;
         }
         
