@@ -20,6 +20,7 @@ interface ChatInterfaceProps {
   eventTitle?: string;
   setEventTitle?: (title: string) => void;
   handleCreateEvent?: () => void;
+  showSignUpPrompt?: boolean; // Add this prop
 }
 
 export const ChatInterface = (props: ChatInterfaceProps) => {

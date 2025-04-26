@@ -1,8 +1,11 @@
+
 import { EventGeneratorContent } from "./EventGeneratorContent";
 import { WelcomeHeader } from "../WelcomeHeader";
 import { ManualEventButton } from "../ManualEventButton";
 import { useState, useEffect } from "react";
 import { useEventGeneration } from "@/hooks/event-generation";
+import { SignUpDialog } from "@/components/EventGenerator/SignUpDialog";
+import { MissingInfoDialog } from "@/components/EventGenerator/MissingInfoDialog";
 
 interface EventGeneratorContainerProps {
   onCreateManualEvent?: () => void;
@@ -33,6 +36,7 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
     handleAdditionalInfoChange,
     handleMissingInfoSubmit,
     waitingForBudget,
+    missingInfo
   } = useEventGeneration();
 
   const getLatestUserPrompt = () => {

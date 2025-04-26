@@ -21,6 +21,7 @@ interface EventGeneratorContentProps {
   modelProvider: 'openai' | 'anthropic';
   onModelChange: (model: 'openai' | 'anthropic') => void;
   promptCount: number;
+  showSignUpPrompt: boolean; // Add this prop
 }
 
 export const EventGeneratorContent = ({
@@ -39,7 +40,8 @@ export const EventGeneratorContent = ({
   latestPrompt,
   modelProvider,
   onModelChange,
-  promptCount
+  promptCount,
+  showSignUpPrompt
 }: EventGeneratorContentProps) => {
   const { prompt, setPrompt, isGenerating, handlePromptSubmit } = useEventGeneration();
   
@@ -90,6 +92,7 @@ export const EventGeneratorContent = ({
           eventTitle={eventTitle}
           setEventTitle={setEventTitle}
           handleCreateEvent={handleCreateEvent}
+          showSignUpPrompt={showSignUpPrompt}
         />
       </div>
     </div>

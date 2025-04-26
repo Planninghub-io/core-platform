@@ -1,246 +1,131 @@
-import { useState, useEffect, useRef } from "react";
-import { ChatContainer } from "./ChatContainer";
+import React, { useEffect, useRef, useState } from 'react';
+import { Card } from "@/components/ui/card";
+import { ChatMessages } from "./ChatMessages";
 import { ChatInputArea } from "./ChatInputArea";
-import { usePromptHandler } from "./PromptHandler";
-import { EventReviewDialog } from "./EventReviewDialog";
+import { ModelDropdown } from "./ModelDropdown";
 import { GeneratedEventSummary } from "./GeneratedEventSummary";
-import { toast } from "sonner";
 import { SignUpPrompt } from "./SignUpPrompt";
 
-interface ChatInterfaceProps {
+interface ChatInterfaceRefactoredProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
+  setChatMessages: React.Dispatch<React.SetStateAction<Array<{ type: 'user' | 'ai', content: string, id?: string }>>>;
   prompt: string;
   setPrompt: (prompt: string) => void;
   isGenerating: boolean;
   promptCount: number;
   handlePromptSubmit: (prompt: string, modelProvider?: 'openai' | 'anthropic') => void;
-  welcomeMessage: string;
-  generatedEvent: any | null;
-  modelProvider?: 'openai' | 'anthropic';
-  onModelChange?: (model: 'openai' | 'anthropic') => void;
-  setChatMessages: React.Dispatch<React.SetStateAction<Array<{ type: 'user' | 'ai', content: string, id?: string }>>>;
+  welcomeMessage?: string;
+  generatedEvent?: any;
+  onTranscriptReceived?: (transcript: string) => void;
   setSelectedDate?: (date: string) => void;
   setLocation?: (location: string) => void;
+  modelProvider?: 'openai' | 'anthropic';
+  onModelChange?: (model: 'openai' | 'anthropic') => void;
   eventTitle?: string;
   setEventTitle?: (title: string) => void;
   handleCreateEvent?: () => void;
-  onTranscriptReceived?: (transcript: string) => void;
   showSignUpPrompt?: boolean;
 }
 
-export const ChatInterfaceRefactored = (props: ChatInterfaceProps) => {
-  const [modelProvider, setModelProvider] = useState<'openai' | 'anthropic'>(props.modelProvider || 'openai');
-  const [showEventForm, setShowEventForm] = useState(false);
-  const [selectedDate, setSelectedDateLocal] = useState(props.generatedEvent?.date || "");
-  const [location, setLocationLocal] = useState(props.generatedEvent?.location || "");
-  const [eventTitle, setEventTitleLocal] = useState(props.eventTitle || props.generatedEvent?.title || "");
+export const ChatInterfaceRefactored = ({
+  chatMessages,
+  setChatMessages,
+  prompt,
+  setPrompt,
+  isGenerating,
+  promptCount,
+  handlePromptSubmit,
+  welcomeMessage = "",
+  generatedEvent,
+  onTranscriptReceived,
+  setSelectedDate,
+  setLocation,
+  modelProvider = 'openai',
+  onModelChange,
+  eventTitle,
+  setEventTitle,
+  handleCreateEvent,
+  showSignUpPrompt = false
+}: ChatInterfaceRefactoredProps) => {
+  const [isSpeechRecognitionAvailable, setIsSpeechRecognitionAvailable] = useState(false);
+  const [isSpeechRecognitionActive, setIsSpeechRecognitionActive] = useState(false);
+  const [speechRecognitionTranscript, setSpeechRecognitionTranscript] = useState('');
+  const [speechRecognitionError, setSpeechRecognitionError] = useState<string | null>(null);
 
-  const lastProcessedEventRef = useRef<string | null>(null);
-  const lastPromptCountRef = useRef<number>(props.promptCount || 0);
-  const forceShowFormRef = useRef<boolean>(false);
+  const chatMessagesRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
 
-  const {
-    handleSubmit,
-    pendingInfo,
-    requiredFieldsCollected,
-    hasMissingFields
-  } = usePromptHandler({
-    setChatMessages: props.setChatMessages,
-    setSelectedDate: props.setSelectedDate,
-    setLocation: props.setLocation,
-    setPrompt: props.setPrompt,
-    handlePromptSubmit: props.handlePromptSubmit,
-    modelProvider
-  });
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'SpeechRecognition' in window) {
+      setIsSpeechRecognitionAvailable(true);
+    } else if (typeof window !== 'undefined' && 'webkitSpeechRecognition' in window) {
+      setIsSpeechRecognitionAvailable(true);
+    }
+  }, []);
 
-  const handleModelChange = (model: 'openai' | 'anthropic') => {
-    if (model === modelProvider) return;
-    setModelProvider(model);
-    if (props.onModelChange) {
-      props.onModelChange(model);
+  const handleSubmit = (input: string, modelProvider?: 'openai' | 'anthropic') => {
+    if (input.trim()) {
+      handlePromptSubmit(input, modelProvider);
+      setPrompt('');
+      if (inputRef.current) {
+        inputRef.current.style.height = 'inherit';
+      }
     }
   };
 
-  useEffect(() => {
-    console.log("ChatInterface: Current state check:", {
-      generatedEvent: props.generatedEvent ? "YES" : "NO",
-      generatedEventTitle: props.generatedEvent?.title,
-      generatedEventDate: props.generatedEvent?.date,
-      generatedEventLocation: props.generatedEvent?.location,
-      showDialog: showEventForm,
-      promptCount: props.promptCount,
-      lastPromptCount: lastPromptCountRef.current,
-      eventTitle,
-      selectedDate,
-      location,
-      forceShowForm: forceShowFormRef.current
-    });
-
-    if (forceShowFormRef.current && props.generatedEvent) {
-      console.log("Forcing dialog to show based on user interaction");
-      setShowEventForm(true);
-      forceShowFormRef.current = false;
-    }
-  }, [props.generatedEvent, showEventForm, props.promptCount, eventTitle, selectedDate, location]);
-
-  useEffect(() => {
-    if (props.generatedEvent) {
-      console.log("Generated event received:", props.generatedEvent);
-      
-      setEventTitleLocal(props.generatedEvent.title || eventTitle || "");
-      setSelectedDateLocal(props.generatedEvent.date || selectedDate || "");
-      setLocationLocal(props.generatedEvent.location || location || "");
-      
-      const eventFingerprint = JSON.stringify({
-        title: props.generatedEvent.title,
-        date: props.generatedEvent.date,
-        location: props.generatedEvent.location,
-        description: props.generatedEvent.description?.substring(0, 50),
-        promptCount: props.promptCount
-      });
-      
-      const isNewEvent = (
-        eventFingerprint !== lastProcessedEventRef.current || 
-        props.promptCount > lastPromptCountRef.current
-      );
-      
-      if (isNewEvent) {
-        console.log("New event detected, showing form:", eventFingerprint);
-        lastProcessedEventRef.current = eventFingerprint;
-        lastPromptCountRef.current = props.promptCount;
-        
-        setShowEventForm(true);
-        
-        console.log("Opening event review dialog immediately for new event");
-      }
-    }
-  }, [props.generatedEvent, props.promptCount]);
-
-  useEffect(() => {
-    if (props.setSelectedDate && selectedDate) {
-      props.setSelectedDate(selectedDate);
-    }
-    if (props.setLocation && location) {
-      props.setLocation(location);
-    }
-    if (props.setEventTitle && eventTitle) {
-      props.setEventTitle(eventTitle);
-    }
-  }, [selectedDate, location, eventTitle, props.setSelectedDate, props.setLocation, props.setEventTitle]);
-
-  const onCreateEvent = () => {
-    console.log("Attempting to create event with:", {
-      title: eventTitle,
-      date: selectedDate,
-      location: location
-    });
-    
-    if (!eventTitle || !eventTitle.trim()) {
-      toast.error("Please enter an event title");
-      return;
-    }
-    
-    if (props.handleCreateEvent) {
-      console.log("Calling handleCreateEvent from parent");
-      props.handleCreateEvent();
-    } else {
-      console.error("No handleCreateEvent function provided");
-      toast.error("Unable to create event: Setup not complete");
+  const handleSuggestionClick = (suggestion: string) => {
+    setPrompt(suggestion);
+    if (inputRef.current) {
+      inputRef.current.focus();
     }
   };
 
   return (
-    <div className="w-full min-h-[50vh] max-h-[85vh] flex flex-col">
-      <div className="flex flex-col flex-grow bg-white shadow-md border border-gray-200 rounded-xl overflow-hidden w-full relative">
-        <div className="flex-grow overflow-hidden relative">
-          <ChatContainer
-            chatMessages={props.chatMessages}
-            isGenerating={props.isGenerating}
-            promptCount={props.promptCount}
-            welcomeMessage={props.welcomeMessage}
-            generatedEvent={props.generatedEvent}
-            requiredFieldsCollected={requiredFieldsCollected}
-            hasMissingFields={hasMissingFields}
-            onTranscriptReceived={props.onTranscriptReceived}
-            modelProvider={modelProvider}
-            onModelChange={handleModelChange}
-          />
-        </div>
-        <div className="border-t border-gray-200">
-          <ChatInputArea
-            chatMessages={props.chatMessages}
-            prompt={props.prompt}
-            setPrompt={props.setPrompt}
-            isGenerating={props.isGenerating}
-            promptCount={props.promptCount}
-            handlePromptSubmit={handleSubmit}
-            generatedEvent={props.generatedEvent}
-            hasMissingFields={hasMissingFields}
-            requiredFieldsCollected={requiredFieldsCollected}
-            modelProvider={modelProvider}
-            onModelChange={handleModelChange}
-          />
-        </div>
+    <Card className="relative flex flex-col h-full overflow-hidden shadow-md border border-gray-200 rounded-lg">
+      <div className="absolute top-3 right-3">
+        <ModelDropdown
+          selectedModel={modelProvider}
+          onSelectModel={onModelChange || (() => {})}
+        />
       </div>
 
-      <EventReviewDialog
-        open={showEventForm}
-        generatedEvent={props.generatedEvent}
-        eventTitle={eventTitle}
-        setEventTitle={setEventTitleLocal}
-        onClose={() => setShowEventForm(false)}
-        onSubmit={() => {
-          onCreateEvent();
-          setShowEventForm(false);
-        }}
-      />
-
-      {props.generatedEvent && !showEventForm && (
-        <div className="mt-4 text-center">
-          <button 
-            onClick={() => {
-              console.log("Manual review button clicked");
-              forceShowFormRef.current = true;
-              setShowEventForm(true);
-            }}
-            className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-          >
-            Review & Create Your Event
-          </button>
+      <div className="flex-1 overflow-y-auto p-4">
+        <ChatMessages
+          messages={chatMessages}
+          isLoading={isGenerating}
+          welcomeMessage={welcomeMessage}
+        />
+      </div>
+      
+      {generatedEvent ? (
+        <div className="p-4 border-t border-gray-200">
+          <GeneratedEventSummary
+            generatedEvent={generatedEvent}
+            eventTitle={eventTitle}
+            setEventTitle={setEventTitle}
+            handleCreateEvent={handleCreateEvent}
+          />
         </div>
-      )}
-
-      {props.generatedEvent && !showEventForm && (
-        <GeneratedEventSummary
-          generatedEvent={props.generatedEvent}
-          eventTitle={eventTitle}
-          setEventTitle={setEventTitleLocal}
-          selectedDate={selectedDate}
-          setSelectedDate={setSelectedDateLocal}
-          location={location}
-          setLocation={setLocationLocal}
-          hasMissingDate={!selectedDate && !props.generatedEvent.date}
-          hasMissingLocation={!location && !props.generatedEvent.location}
-          handleCreateEvent={onCreateEvent}
-          prompt={props.prompt}
-          onReview={() => {
-            console.log("onReview called, opening dialog");
-            forceShowFormRef.current = true;
-            setShowEventForm(true);
-          }}
+      ) : showSignUpPrompt ? (
+        <div className="px-4 pb-4">
+          <SignUpPrompt 
+            onSignUpIndividual={() => window.location.href = `/auth?type=user&redirectPath=/create-event`} 
+            onSignUpBusiness={() => window.location.href = `/auth?type=business&redirectPath=/create-event`}
+          />
+        </div>
+      ) : null}
+      
+      <div className="p-4 border-t border-gray-200">
+        <ChatInputArea
+          prompt={prompt}
+          setPrompt={setPrompt}
+          isLoading={isGenerating}
+          onSubmit={handleSubmit}
+          suggestions={[]}
+          onSuggestionClick={handleSuggestionClick}
+          onTranscriptReceived={onTranscriptReceived}
         />
-      )}
-
-      {props.showSignUpPrompt && (
-        <SignUpPrompt 
-          onSignUpIndividual={() => {
-            window.location.href = `/auth?redirectPath=/create-event`;
-          }}
-          onSignUpBusiness={() => {
-            window.location.href = `/auth?type=business&redirectPath=/create-event`;
-          }}
-        />
-      )}
-    </div>
+      </div>
+    </Card>
   );
 };
