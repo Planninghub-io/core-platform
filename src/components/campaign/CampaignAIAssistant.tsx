@@ -4,9 +4,9 @@ import { Dialog } from "@/components/ui/dialog";
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-import { useEventAssistant } from './hooks/useEventAssistant';
-import { AIAssistantDialogContent } from './dialog-content/AIAssistantDialogContent';
-import { EventHandler } from './event-handling/EventHandler';
+import { useEventAssistant } from './ai-assistant/hooks/useEventAssistant';
+import { AIAssistantDialogContent } from './ai-assistant/dialog-content/AIAssistantDialogContent';
+import { EventHandler } from './ai-assistant/event-handling/EventHandler';
 import { Card, CardContent } from "@/components/ui/card";
 import { X } from 'lucide-react';
 import { Button } from "@/components/ui/button";
