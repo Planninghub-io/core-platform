@@ -47,7 +47,7 @@ export const SignUpDialog = ({
             className="w-full gap-2 bg-blue-300/40 text-black hover:bg-blue-400/70 border-0"
           >
             <Building className="h-4 w-4" />
-            Register as Business
+            Sign Up as Business
           </Button>
         </div>
       </DialogContent>
