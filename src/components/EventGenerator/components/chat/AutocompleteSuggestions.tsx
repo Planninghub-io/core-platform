@@ -43,7 +43,8 @@ export const AutocompleteSuggestions: React.FC<AutocompleteSuggestionsProps> = (
   return (
     <div 
       ref={suggestionsRef} 
-      className="absolute z-10 w-full bg-white shadow-lg rounded-md mt-1 border border-gray-200 max-h-60 overflow-y-auto"
+      className="absolute z-50 w-full bg-white shadow-lg rounded-md mt-1 border border-gray-200 max-h-60 overflow-y-auto"
+      style={{ top: "100%", left: 0, visibility: "visible" }}
     >
       <ul className="py-1">
         {suggestions.map((suggestion, index) => (

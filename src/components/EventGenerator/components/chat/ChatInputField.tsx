@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import React from "react";
 import { Button } from "@/components/ui/button";
@@ -82,7 +83,9 @@ export const ChatInputField = React.forwardRef<HTMLInputElement, ChatInputFieldP
           onFocus={showSuggestionsOnFocus}
         />
         
-        {suggestionsElement}
+        <div className="relative w-full">
+          {suggestionsElement}
+        </div>
         
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
           {/* Microphone button */}
