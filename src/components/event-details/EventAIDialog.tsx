@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { AIModelSelector } from "@/components/EventGenerator/components/AIModelSelector";
+import { AIModelSelector } from "@/components/campaign/ai-assistant/AIModelSelector";
 
 interface EventAIDialogProps {
   event: {
@@ -78,7 +78,7 @@ export const EventAIDialog = ({ event, embedded = false }: EventAIDialogProps) =
       <div className="mb-4">
         <AIModelSelector 
           selectedModel={modelProvider} 
-          onChange={setModelProvider} 
+          onModelChange={setModelProvider} 
         />
       </div>
       
