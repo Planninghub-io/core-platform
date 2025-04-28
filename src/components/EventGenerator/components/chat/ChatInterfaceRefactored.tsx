@@ -92,7 +92,7 @@ export const ChatInterfaceRefactored = ({
         />
       </div>
 
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 pb-6">
         <ChatMessages
           chatMessages={chatMessages}
           isGenerating={isGenerating}
@@ -125,7 +125,7 @@ export const ChatInterfaceRefactored = ({
         </div>
       ) : null}
       
-      <div className="p-4 border-t border-gray-200">
+      <div className="border-t border-gray-200 mb-4">
         <ChatInputArea
           prompt={prompt}
           setPrompt={setPrompt}

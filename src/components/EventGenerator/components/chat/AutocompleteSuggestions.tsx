@@ -6,6 +6,7 @@ interface AutocompleteSuggestionsProps {
   showSuggestions: boolean;
   selectedSuggestionIndex: number;
   onSuggestionSelect: (suggestion: string) => void;
+  position?: 'above' | 'below';
 }
 
 export const AutocompleteSuggestions: React.FC<AutocompleteSuggestionsProps> = ({
@@ -13,6 +14,7 @@ export const AutocompleteSuggestions: React.FC<AutocompleteSuggestionsProps> = (
   showSuggestions,
   selectedSuggestionIndex,
   onSuggestionSelect,
+  position = 'below'
 }) => {
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(showSuggestions);
@@ -40,11 +42,16 @@ export const AutocompleteSuggestions: React.FC<AutocompleteSuggestionsProps> = (
     return null;
   }
 
+  // Determine position styling based on the position prop
+  const positionStyle = position === 'above' 
+    ? { bottom: "100%", left: 0, marginBottom: "4px" } 
+    : { top: "100%", left: 0, marginTop: "4px" };
+
   return (
     <div 
       ref={suggestionsRef} 
-      className="absolute z-50 w-full bg-white shadow-lg rounded-md mt-1 border border-gray-200 max-h-60 overflow-y-auto"
-      style={{ top: "100%", left: 0, visibility: "visible" }}
+      className="absolute z-50 w-full bg-white shadow-lg rounded-md border border-gray-200 max-h-60 overflow-y-auto"
+      style={{ ...positionStyle, visibility: "visible" }}
     >
       <ul className="py-1">
         {suggestions.map((suggestion, index) => (

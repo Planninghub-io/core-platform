@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AutocompleteSuggestions } from './AutocompleteSuggestions';
 import { generateSuggestions } from './suggestionData';
 
@@ -12,6 +12,29 @@ export function useSuggestionManager(
   const [suggestions, setSuggestions] = React.useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = React.useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = React.useState(-1);
+  const [dropdownPosition, setDropdownPosition] = React.useState<'above' | 'below'>('below');
+  const inputRef = React.useRef<HTMLElement | null>(null);
+
+  // Set reference to the input element
+  const setInputElementRef = (ref: HTMLElement | null) => {
+    inputRef.current = ref;
+  };
+
+  // Determine dropdown position based on input position
+  useEffect(() => {
+    if (inputRef.current) {
+      const rect = inputRef.current.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const bottomSpace = viewportHeight - rect.bottom;
+      
+      // If there's less than 200px of space below the input, show suggestions above
+      if (bottomSpace < 200) {
+        setDropdownPosition('above');
+      } else {
+        setDropdownPosition('below');
+      }
+    }
+  }, [showSuggestions]);
 
   React.useEffect(() => {
     if (isGenerating) {
@@ -85,12 +108,14 @@ export function useSuggestionManager(
     handleSuggestionSelect,
     handleKeyNavigation,
     showSuggestionsOnFocus,
+    setInputElementRef,
     suggestionsElement: (
       <AutocompleteSuggestions
         suggestions={suggestions}
         showSuggestions={showSuggestions}
         selectedSuggestionIndex={selectedSuggestionIndex}
         onSuggestionSelect={handleSuggestionSelect}
+        position={dropdownPosition}
       />
     )
   };

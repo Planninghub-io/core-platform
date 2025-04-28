@@ -1,6 +1,6 @@
 
 import { Input } from "@/components/ui/input";
-import React from "react";
+import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { VoiceInputButton } from "./VoiceInputButton";
@@ -36,12 +36,20 @@ export const ChatInputField = React.forwardRef<HTMLInputElement, ChatInputFieldP
     const {
       handleKeyNavigation,
       showSuggestionsOnFocus,
-      suggestionsElement
+      suggestionsElement,
+      setInputElementRef
     } = useSuggestionManager(
       prompt,
       setPrompt,
       isGenerating
     );
+
+    // Set reference to input element for position calculation
+    useEffect(() => {
+      if (ref && 'current' in ref && ref.current) {
+        setInputElementRef(ref.current);
+      }
+    }, [ref, setInputElementRef]);
 
     const clearInput = () => {
       setPrompt("");

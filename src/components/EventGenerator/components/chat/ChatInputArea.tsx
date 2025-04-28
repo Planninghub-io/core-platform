@@ -81,7 +81,7 @@ export const ChatInputArea = ({
   };
 
   return (
-    <div className="px-4 py-3 bg-white w-full rounded-b-xl">
+    <div className="px-4 py-6 bg-white w-full rounded-b-xl">
       <form onSubmit={submitPrompt} className="flex items-center gap-2 w-full">
         <ChatInputField
           ref={inputRef}
