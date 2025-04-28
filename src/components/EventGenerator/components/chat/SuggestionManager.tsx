@@ -36,6 +36,7 @@ export function useSuggestionManager(
     }
   }, [showSuggestions]);
 
+  // Generate suggestions whenever prompt changes
   React.useEffect(() => {
     if (isGenerating) {
       setSuggestions([]);
@@ -46,16 +47,23 @@ export function useSuggestionManager(
     const newSuggestions = generateSuggestions(prompt);
     setSuggestions(newSuggestions);
     setShowSuggestions(newSuggestions.length > 0);
+    
+    // Reset selected index when suggestions change
+    setSelectedSuggestionIndex(-1);
   }, [prompt, isGenerating]);
 
   const handleSuggestionSelect = (suggestion: string) => {
-    const words = prompt.split(' ');
+    // Get the current prompt text and find the last word
+    const words = prompt.split(/\s+/);
     const lastWord = words[words.length - 1].toLowerCase();
     
+    // Replace only the last word with the suggestion
     if (suggestion.toLowerCase().startsWith(lastWord) && lastWord.length > 0) {
       const newPrompt = prompt.substring(0, prompt.lastIndexOf(lastWord)) + suggestion;
       setPrompt(newPrompt);
     } else {
+      // If the suggestion doesn't start with the last word or there's no last word
+      // append it to the prompt
       setPrompt(prompt ? `${prompt} ${suggestion}` : suggestion);
     }
     

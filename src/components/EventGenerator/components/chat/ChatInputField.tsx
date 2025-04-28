@@ -86,7 +86,7 @@ export const ChatInputField = React.forwardRef<HTMLInputElement, ChatInputFieldP
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="rounded-full pr-20 h-11" // Extended right padding for both icons
+          className="rounded-full pr-20 h-11 shadow-sm border-gray-300" // Enhanced styling
           disabled={isGenerating}
           onFocus={showSuggestionsOnFocus}
         />

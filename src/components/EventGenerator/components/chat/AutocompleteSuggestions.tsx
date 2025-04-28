@@ -18,6 +18,7 @@ export const AutocompleteSuggestions: React.FC<AutocompleteSuggestionsProps> = (
 }) => {
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(showSuggestions);
+  const [highlightedText, setHighlightedText] = useState<Record<number, { text: string, isHighlighted: boolean }[]>>({});
 
   // Close suggestions when clicking outside
   useEffect(() => {
