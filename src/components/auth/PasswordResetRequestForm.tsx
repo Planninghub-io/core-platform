@@ -35,7 +35,7 @@ const PasswordResetRequestForm = () => {
   };
 
   return (
-    <div className="rounded-xl bg-white p-8 shadow-lg">
+    <div className="rounded-lg bg-white p-8">
       <div className="flex justify-end">
         <Button 
           variant="ghost" 
@@ -47,18 +47,23 @@ const PasswordResetRequestForm = () => {
         </Button>
       </div>
       
-      <h1 className="mb-6 text-2xl font-bold">Reset Password</h1>
-      <p className="mb-6 text-gray-600">
+      <h1 className="mb-6 text-3xl font-bold">Reset Password</h1>
+      <p className="mb-8 text-gray-600 text-lg">
         Enter your email address and we'll send you a link to reset your password.
       </p>
 
-      <form className="space-y-4" onSubmit={handleSubmit}>
-        <EmailInput
-          id="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Enter your email"
-        />
+      <form className="space-y-6" onSubmit={handleSubmit}>
+        <div className="space-y-2">
+          <label htmlFor="email" className="text-xl font-medium">Email</label>
+          <div className="relative">
+            <EmailInput
+              id="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+            />
+          </div>
+        </div>
         
         {error && (
           <Alert variant="destructive" className="mt-4">
@@ -69,7 +74,11 @@ const PasswordResetRequestForm = () => {
           </Alert>
         )}
         
-        <Button type="submit" disabled={isLoading} className="w-full">
+        <Button 
+          type="submit" 
+          disabled={isLoading} 
+          className="w-full h-12 text-lg font-medium"
+        >
           {isLoading ? 'Sending...' : 'Send Reset Link'}
         </Button>
       </form>
