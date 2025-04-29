@@ -36,9 +36,9 @@ const handler = async (req: Request): Promise<Response> => {
     console.log("With reset URL:", resetUrl);
 
     const emailResponse = await resend.emails.send({
-      from: "Planning Hub <noreply@planninghub.io>",
+      from: "PlannerAI <noreply@planninghub.io>",
       to: [targetEmail],
-      subject: "Reset your Planning Hub password",
+      subject: "Reset your PlannerAI password",
       html: `
 <!DOCTYPE html>
 <html>
@@ -67,7 +67,7 @@ const handler = async (req: Request): Promise<Response> => {
       font-size: 28px;
       font-weight: bold;
       margin-bottom: 30px;
-      color: #6c5ce7;
+      color: #8B5CF6;
       display: inline-block;
     }
     h1 {
@@ -83,7 +83,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
     .button {
       display: inline-block;
-      background-color: #6c5ce7;
+      background-color: #8B5CF6;
       color: #ffffff;
       padding: 12px 24px;
       text-decoration: none;
@@ -93,7 +93,7 @@ const handler = async (req: Request): Promise<Response> => {
       transition: background-color 0.3s;
     }
     .button:hover {
-      background-color: #5649c0;
+      background-color: #7C5AE0;
     }
     .note {
       font-size: 14px;
@@ -109,7 +109,7 @@ const handler = async (req: Request): Promise<Response> => {
 </head>
 <body>
   <div class="container">
-    <div class="logo">Planning Hub</div>
+    <div class="logo">PlannerAI</div>
     
     <h1>Reset your password</h1>
     
@@ -120,7 +120,7 @@ const handler = async (req: Request): Promise<Response> => {
     <p class="note">If you didn't request a password reset, you can safely ignore this email - nothing will be changed.</p>
     
     <div class="footer">
-      &copy; 2025 Planning Hub. All rights reserved.
+      &copy; 2025 PlannerAI. All rights reserved.
     </div>
   </div>
 </body>

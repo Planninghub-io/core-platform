@@ -36,7 +36,8 @@ const PasswordResetRequestForm = () => {
 
   return (
     <div className="rounded-lg bg-white p-8">
-      <div className="flex justify-end">
+      <div className="flex justify-between items-center mb-6">
+        <div className="text-[#8B5CF6] text-3xl font-bold">PlannerAI</div>
         <Button 
           variant="ghost" 
           size="icon" 
@@ -47,14 +48,14 @@ const PasswordResetRequestForm = () => {
         </Button>
       </div>
       
-      <h1 className="mb-6 text-3xl font-bold">Reset Password</h1>
+      <h1 className="mb-6 text-3xl font-bold text-gray-900">Reset Password</h1>
       <p className="mb-8 text-gray-600 text-lg">
         Enter your email address and we'll send you a link to reset your password.
       </p>
 
       <form className="space-y-6" onSubmit={handleSubmit}>
         <div className="space-y-2">
-          <label htmlFor="email" className="text-xl font-medium">Email</label>
+          <label htmlFor="email" className="text-xl font-medium text-gray-700">Email</label>
           <div className="relative">
             <EmailInput
               id="email"
@@ -77,7 +78,7 @@ const PasswordResetRequestForm = () => {
         <Button 
           type="submit" 
           disabled={isLoading} 
-          className="w-full h-12 text-lg font-medium"
+          className="w-full h-12 text-lg font-medium bg-[#8B5CF6] hover:bg-[#7C5AE0] text-white"
         >
           {isLoading ? 'Sending...' : 'Send Reset Link'}
         </Button>
