@@ -52,13 +52,13 @@ const NewPasswordForm = () => {
   };
 
   return (
-    <div className="rounded-xl bg-gray-800 p-8 text-white shadow-lg">
+    <div className="rounded-xl bg-white p-8 text-gray-800 shadow-lg">
       <div className="flex justify-center mb-8">
-        <div className="text-[#8B5CF6] text-3xl font-bold">Planning Hub</div>
+        <div className="text-[#8B5CF6] text-3xl font-bold">PlannerAI</div>
       </div>
 
-      <h1 className="mb-4 text-3xl font-bold">Set up a new password</h1>
-      <p className="mb-8 text-gray-300">
+      <h1 className="mb-4 text-3xl font-bold text-gray-900">Set up a new password</h1>
+      <p className="mb-8 text-gray-600">
         Your password must be different from your previous one.
       </p>
 
@@ -70,35 +70,35 @@ const NewPasswordForm = () => {
         )}
         
         <div className="space-y-2">
-          <label className="text-xl font-medium text-gray-200">New password</label>
+          <label className="text-xl font-medium text-gray-700">New password</label>
           <PasswordInput
             id="password"
             label=""
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Enter your password"
-            darkMode={true}
+            darkMode={false}
           />
         </div>
         
         <div className="space-y-2">
-          <label className="text-xl font-medium text-gray-200">Confirm new password</label>
+          <label className="text-xl font-medium text-gray-700">Confirm new password</label>
           <PasswordInput
             id="confirmPassword"
             label=""
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             placeholder="Enter your password again"
-            darkMode={true}
+            darkMode={false}
           />
         </div>
         
-        <PasswordRequirements validations={validations} darkMode={true} />
+        <PasswordRequirements validations={validations} darkMode={false} />
         
         <Button 
           type="submit" 
           disabled={isLoading || !isFormValid} 
-          className="w-full h-14 mt-8 text-xl font-medium bg-gray-400 hover:bg-gray-300 text-black"
+          className="w-full h-14 mt-8 text-xl font-medium bg-[#8B5CF6] hover:bg-[#7C5AE0] text-white"
         >
           {isLoading ? 'Updating...' : 'Update password'}
         </Button>
