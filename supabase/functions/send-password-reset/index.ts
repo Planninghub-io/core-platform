@@ -10,7 +10,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// Production URL constant
+// Production URL constant - ensure it's pointing to the actual application
 const PRODUCTION_URL = 'https://yourplanner.ai';
 
 const handler = async (req: Request): Promise<Response> => {
@@ -23,7 +23,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Parse the request body to get reset URL and email
     const body = await req.json();
     
-    // Always use production URL for reset links
+    // Always use production URL for reset links - fix for the incorrect redirect issue
     const resetUrl = `${PRODUCTION_URL}/auth/new-password`;
     
     const targetEmail = body.email || "";

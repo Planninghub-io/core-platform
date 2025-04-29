@@ -22,7 +22,7 @@ export const usePasswordReset = () => {
     
     try {
       // ALWAYS use the production URL for password reset links
-      // IMPORTANT: Ensure we're using the /auth/new-password path explicitly
+      // This ensures users are directed to the actual app URL, not the development environment
       const redirectTo = `${PRODUCTION_URL}/auth/new-password`;
       console.log("Password reset redirect URL:", redirectTo);
       

@@ -10,7 +10,7 @@ export const corsHeaders = {
   "Expires": "0"
 };
 
-// Production URL constant
+// Production URL constant - ensure it's pointing to your app's actual URL
 const PRODUCTION_URL = 'https://yourplanner.ai';
 
 // Handle CORS preflight requests
