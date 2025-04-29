@@ -1,16 +1,17 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Contact, InvitationTemplate } from "../../types/invitation-dialog";
+import { ensureUUID } from "@/utils/supabaseHelpers";
 
 // Fetch contacts from Supabase
-export const fetchContacts = async () => {
+export const fetchContacts = async (): Promise<Contact[]> => {
   try {
     const { data, error } = await supabase
       .from('contacts')
       .select('*');
     
     if (error) throw error;
-    return data || [];
+    return (data || []) as Contact[];
   } catch (error) {
     console.error("Error fetching contacts:", error);
     return [];
@@ -18,13 +19,13 @@ export const fetchContacts = async () => {
 };
 
 // Fetch invitation templates for a specific event
-export const fetchEventTemplates = async (eventId: string) => {
+export const fetchEventTemplates = async (eventId: string): Promise<InvitationTemplate[] | null> => {
   try {
     // First get the template IDs used for this event
     const { data: eventInvitations, error: invitationsError } = await supabase
       .from('invitations')
       .select('template_id')
-      .eq('event_id', eventId);
+      .eq('event_id', ensureUUID(eventId));
     
     if (invitationsError) throw invitationsError;
     
@@ -56,16 +57,16 @@ export const fetchEventTemplates = async (eventId: string) => {
 };
 
 // Fetch generic templates for an event type
-export const fetchGenericTemplates = async (eventType: string) => {
+export const fetchGenericTemplates = async (eventType: string): Promise<InvitationTemplate[]> => {
   try {
     const { data: genericTemplates, error: templatesError } = await supabase
       .from('invitation_templates')
       .select('*')
-      .eq('event_type', eventType);
+      .eq('event_type', eventType as any);
     
     if (templatesError) throw templatesError;
     
-    return genericTemplates as InvitationTemplate[] || [];
+    return (genericTemplates || []) as InvitationTemplate[];
   } catch (error) {
     console.error("Error fetching generic templates:", error);
     return [];
@@ -90,10 +91,10 @@ export const createInvitation = async (eventId: string, templateId: string) => {
     const { data, error } = await supabase
       .from('invitations')
       .insert({
-        event_id: eventId,
-        template_id: templateId,
+        event_id: ensureUUID(eventId),
+        template_id: ensureUUID(templateId),
         status: "pending"
-      })
+      } as any)
       .select()
       .single();
 

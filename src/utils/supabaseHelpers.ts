@@ -40,6 +40,7 @@ export const isValidData = <T>(data: T | PostgrestError | null): data is T => {
 
 /**
  * Helper function to check and convert string IDs for database queries
+ * Returns the string as-is since Supabase handles UUID validation
  */
 export function ensureUUID(id: string): string {
   // Simple regex to validate if string looks like a UUID
