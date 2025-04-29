@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Contact, InvitationTemplate } from "../../types/invitation-dialog";
-import { ensureUUID } from "@/utils/supabaseHelpers";
+import { ensureUUID, asTableRow } from "@/utils/supabaseHelpers";
 
 // Fetch contacts from Supabase
 export const fetchContacts = async (): Promise<Contact[]> => {
@@ -11,7 +11,7 @@ export const fetchContacts = async (): Promise<Contact[]> => {
       .select('*');
     
     if (error) throw error;
-    return (data || []) as Contact[];
+    return data ? data.map(contact => asTableRow<Contact>(contact)) : [];
   } catch (error) {
     console.error("Error fetching contacts:", error);
     return [];
@@ -32,7 +32,7 @@ export const fetchEventTemplates = async (eventId: string): Promise<InvitationTe
     // If we have event-specific templates, query them
     if (eventInvitations && eventInvitations.length > 0) {
       const templateIds = eventInvitations
-        .filter(inv => inv.template_id)
+        .filter(inv => inv && 'template_id' in inv && inv.template_id)
         .map(inv => inv.template_id);
       
       if (templateIds.length === 0) return null;
@@ -45,7 +45,7 @@ export const fetchEventTemplates = async (eventId: string): Promise<InvitationTe
       if (templatesError) throw templatesError;
       
       if (eventTemplates && eventTemplates.length > 0) {
-        return eventTemplates as InvitationTemplate[];
+        return eventTemplates.map(template => asTableRow<InvitationTemplate>(template));
       }
     }
     
@@ -62,11 +62,13 @@ export const fetchGenericTemplates = async (eventType: string): Promise<Invitati
     const { data: genericTemplates, error: templatesError } = await supabase
       .from('invitation_templates')
       .select('*')
-      .eq('event_type', eventType as any);
+      .eq('event_type', eventType);
     
     if (templatesError) throw templatesError;
     
-    return (genericTemplates || []) as InvitationTemplate[];
+    return genericTemplates 
+      ? genericTemplates.map(template => asTableRow<InvitationTemplate>(template)) 
+      : [];
   } catch (error) {
     console.error("Error fetching generic templates:", error);
     return [];
@@ -94,7 +96,7 @@ export const createInvitation = async (eventId: string, templateId: string) => {
         event_id: ensureUUID(eventId),
         template_id: ensureUUID(templateId),
         status: "pending"
-      } as any)
+      })
       .select()
       .single();
 

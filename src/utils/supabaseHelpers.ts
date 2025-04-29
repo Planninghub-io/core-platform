@@ -60,10 +60,20 @@ export function ensureUUID(id: string): string {
 
 /**
  * Safe type assertion for database operations
+ * With improved error handling and type safety
  */
 export function asTableRow<T>(data: unknown): T {
   if (!data || typeof data !== 'object') {
+    console.error('Invalid data structure:', data);
     throw new Error('Invalid data structure');
   }
+  
+  // Check if the data is an error object from Supabase
+  if (isPostgrestError(data)) {
+    console.error('Postgrest error:', data);
+    throw new Error(`Database error: ${data.message}`);
+  }
+  
+  // If data is valid, cast it to the requested type
   return data as T;
 }
