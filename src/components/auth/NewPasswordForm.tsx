@@ -52,43 +52,55 @@ const NewPasswordForm = () => {
   };
 
   return (
-    <div className="rounded-xl bg-white p-8 shadow-lg">
-      <h1 className="mb-6 text-2xl font-bold">Set New Password</h1>
-      <p className="mb-6 text-gray-600">
-        Create a new password for your account.
+    <div className="rounded-xl bg-gray-800 p-8 text-white shadow-lg">
+      <div className="flex justify-center mb-8">
+        <div className="text-[#8B5CF6] text-3xl font-bold">Planning Hub</div>
+      </div>
+
+      <h1 className="mb-4 text-3xl font-bold">Set up a new password</h1>
+      <p className="mb-8 text-gray-300">
+        Your password must be different from your previous one.
       </p>
 
-      <form className="space-y-4" onSubmit={handleSubmit}>
+      <form className="space-y-6" onSubmit={handleSubmit}>
         {error && (
           <Alert variant="destructive">
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
         
-        <PasswordInput
-          id="password"
-          label="New Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Enter your new password"
-        />
+        <div className="space-y-2">
+          <label className="text-xl font-medium text-gray-200">New password</label>
+          <PasswordInput
+            id="password"
+            label=""
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Enter your password"
+            darkMode={true}
+          />
+        </div>
         
-        <PasswordInput
-          id="confirmPassword"
-          label="Confirm New Password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          placeholder="Confirm your new password"
-        />
+        <div className="space-y-2">
+          <label className="text-xl font-medium text-gray-200">Confirm new password</label>
+          <PasswordInput
+            id="confirmPassword"
+            label=""
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            placeholder="Enter your password again"
+            darkMode={true}
+          />
+        </div>
         
-        <PasswordRequirements validations={validations} />
+        <PasswordRequirements validations={validations} darkMode={true} />
         
         <Button 
           type="submit" 
           disabled={isLoading || !isFormValid} 
-          className="w-full mt-6"
+          className="w-full h-14 mt-8 text-xl font-medium bg-gray-400 hover:bg-gray-300 text-black"
         >
-          {isLoading ? 'Updating...' : 'Update Password'}
+          {isLoading ? 'Updating...' : 'Update password'}
         </Button>
       </form>
     </div>
