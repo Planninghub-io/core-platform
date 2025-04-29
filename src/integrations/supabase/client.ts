@@ -36,6 +36,8 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce', // Using PKCE flow for security
+    // IMPORTANT: Use a fully qualified URL for the site and redirect URLs
+    redirectTo: `${PRODUCTION_URL}/auth/callback`,
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
   }
 });

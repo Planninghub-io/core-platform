@@ -23,7 +23,8 @@ const handler = async (req: Request): Promise<Response> => {
     // Parse the request body to get reset URL and email
     const body = await req.json();
     
-    // Always use production URL for reset links - fix for the incorrect redirect issue
+    // Always use production URL for reset links - this doesn't actually control the redirection,
+    // but is used as a visual URL in the email
     const resetUrl = `${PRODUCTION_URL}/auth/new-password`;
     
     const targetEmail = body.email || "";

@@ -26,7 +26,7 @@ export const usePasswordReset = () => {
       const redirectTo = `${PRODUCTION_URL}/auth/new-password`;
       console.log("Password reset redirect URL:", redirectTo);
       
-      // Make sure we're using passwordForEmail to trigger the recovery flow
+      // This is the critical line that controls where the email link redirects to
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo
       });
