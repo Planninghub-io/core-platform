@@ -28,7 +28,7 @@ export function useInvitationData(isOpen: boolean, eventId: string, eventType: s
         setTemplates(eventTemplates);
       } else {
         // Fall back to generic templates
-        const genericTemplates = await fetchGenericTemplates(eventType);
+        const genericTemplates = await fetchGenericTemplates(eventType || 'custom');
         setTemplates(genericTemplates);
       }
     } catch (error) {

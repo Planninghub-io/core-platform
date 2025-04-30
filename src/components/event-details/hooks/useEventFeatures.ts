@@ -76,9 +76,13 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
         throw eventError;
       }
       
+      // Make sure we have event data before proceeding
       if (!eventData) {
         throw new Error("No event data found");
       }
+
+      // Type check for title field
+      const eventTitle = eventData.title || 'Event';
       
       // Generate invitation template using the edge function
       const { data: generatedTemplate, error: generationError } = await supabase.functions.invoke(
@@ -103,12 +107,12 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
       // Create a new template record
       const { data: templateData, error: templateError } = await supabase
         .from('invitation_templates')
-        .insert({
-          name: `${eventData.title || 'Event'} Invitation`,
+        .insert([{
+          name: `${eventTitle} Invitation`,
           description: theme || 'Elegant and Professional Theme',
           event_type: 'custom',
           template_html: generatedTemplate.template
-        } as any)
+        }])
         .select()
         .single();
 
@@ -124,11 +128,11 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
       // Create the invitation using the template
       const { data: invitationData, error: invitationError } = await supabase
         .from('invitations')
-        .insert({
+        .insert([{
           event_id: ensureUUID(eventId),
           template_id: templateData.id,
           status: 'draft'
-        } as any)
+        }])
         .select();
 
       if (invitationError) {

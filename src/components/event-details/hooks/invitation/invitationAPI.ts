@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Contact, InvitationTemplate } from "../../types/invitation-dialog";
-import { ensureUUID, safelyExtractData, safelyExtractSingleRow, safeCast } from "@/utils/supabaseHelpers";
+import { ensureUUID, safelyExtractData, safelyExtractSingleRow, safeCast, wrapForInsert, toStringId } from "@/utils/supabaseHelpers";
 
 // Fetch contacts from Supabase
 export const fetchContacts = async (): Promise<Contact[]> => {
@@ -33,7 +33,7 @@ export const fetchEventTemplates = async (eventId: string): Promise<InvitationTe
       // Safely extract template IDs with type checking
       const templateIds = eventInvitations
         .filter((inv: any) => inv && typeof inv === 'object' && 'template_id' in inv && inv.template_id)
-        .map((inv: any) => inv.template_id);
+        .map((inv: any) => String(inv.template_id));
       
       if (templateIds.length === 0) return null;
       
@@ -60,7 +60,7 @@ export const fetchGenericTemplates = async (eventType: string): Promise<Invitati
     const { data: genericTemplates, error: templatesError } = await supabase
       .from('invitation_templates')
       .select('*')
-      .eq('event_type', ensureUUID(eventType));
+      .eq('event_type', eventType);
     
     if (templatesError) throw templatesError;
     
@@ -88,11 +88,11 @@ export const createInvitation = async (eventId: string, templateId: string) => {
   try {
     const { data, error } = await supabase
       .from('invitations')
-      .insert({
+      .insert([{
         event_id: ensureUUID(eventId),
         template_id: ensureUUID(templateId),
         status: "pending"
-      } as any)
+      }])
       .select()
       .single();
 
@@ -107,7 +107,12 @@ export const createInvitation = async (eventId: string, templateId: string) => {
 };
 
 // Insert recipients for an invitation
-export const insertRecipients = async (recipients: any[]) => {
+export const insertRecipients = async (recipients: Array<{
+  invitation_id: string;
+  contact_id: string;
+  delivery_method: "email" | "sms";
+  status: string;
+}>) => {
   try {
     if (!recipients || recipients.length === 0) {
       throw new Error("No recipients provided");
@@ -115,7 +120,7 @@ export const insertRecipients = async (recipients: any[]) => {
     
     const { error } = await supabase
       .from('invitation_recipients')
-      .insert(recipients as any);
+      .insert(recipients);
 
     if (error) throw error;
     return true;
@@ -149,7 +154,7 @@ export const createTempContacts = async (tempContactsToAdd: any[]) => {
     
     const { data, error } = await supabase
       .from('contacts')
-      .insert(tempContactsToAdd as any)
+      .insert(tempContactsToAdd)
       .select();
     
     if (error) throw error;

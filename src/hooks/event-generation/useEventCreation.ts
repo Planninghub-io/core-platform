@@ -105,10 +105,10 @@ export const useEventCreation = () => {
 
       console.log("Event data for DB insert:", eventData);
 
-      // Create the event in Supabase
+      // Create the event in Supabase - using array syntax for insert
       const { data, error } = await supabase
         .from('events')
-        .insert(eventData)
+        .insert([eventData])
         .select()
         .single();
       

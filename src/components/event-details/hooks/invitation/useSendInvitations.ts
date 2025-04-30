@@ -9,7 +9,7 @@ import {
   getCurrentUserSession, 
   createTempContacts 
 } from "./invitationAPI";
-import { safeCast } from "@/utils/supabaseHelpers";
+import { safeCast, toStringId } from "@/utils/supabaseHelpers";
 
 export function useSendInvitations(eventId: string, contacts: Contact[]) {
   const [isLoading, setIsLoading] = useState(false);
@@ -42,6 +42,9 @@ export function useSendInvitations(eventId: string, contacts: Contact[]) {
         throw new Error("Failed to create invitation");
       }
 
+      // Get the invitation ID as a string
+      const invitationId = toStringId(invitation.id);
+      
       // Prepare recipients array for permanent contacts
       let recipients: Array<{
         invitation_id: string;
@@ -49,7 +52,7 @@ export function useSendInvitations(eventId: string, contacts: Contact[]) {
         delivery_method: "email" | "sms";
         status: string;
       }> = permanentContactIds.map(contactId => ({
-        invitation_id: invitation.id,
+        invitation_id: invitationId,
         contact_id: contactId,
         delivery_method: deliveryMethod,
         status: 'pending'
@@ -85,8 +88,8 @@ export function useSendInvitations(eventId: string, contacts: Contact[]) {
             }
             
             return {
-              invitation_id: invitation.id,
-              contact_id: contact.id as string,
+              invitation_id: invitationId,
+              contact_id: toStringId(contact.id),
               delivery_method: deliveryMethod,
               status: 'pending'
             };
@@ -101,7 +104,7 @@ export function useSendInvitations(eventId: string, contacts: Contact[]) {
       }
 
       await insertRecipients(recipients);
-      await sendInvitations(invitation.id);
+      await sendInvitations(invitationId);
 
       toast({
         title: "Success",

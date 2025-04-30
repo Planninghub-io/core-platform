@@ -62,8 +62,8 @@ export const useEventData = (eventId: string) => {
       
       if (data) {
         console.log('Event data retrieved:', data);
-        // Use type assertion to bypass TypeScript's strict typing
-        setEvent(data as Event);
+        // Use explicit type casting to safely handle the response
+        setEvent(safeCast<Event>(data));
       } else {
         console.warn('No event found with ID:', eventId);
         setEvent(null);

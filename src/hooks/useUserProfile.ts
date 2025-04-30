@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile, Company } from "@/types/user";
-import { ensureUUID } from "@/utils/supabaseHelpers";
+import { ensureUUID, safeCast } from "@/utils/supabaseHelpers";
 
 export function useUserProfile() {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -45,12 +45,21 @@ export function useUserProfile() {
       }
 
       // Format the date properly before setting it in state
-      const formattedProfile = {
+      const formattedProfile: UserProfile = {
         id: user.id,
         email: user.email || '',
-        ...profileData,
-        dob: profileData.dob || null // Ensure dob is properly handled
-      } as UserProfile;
+        first_name: profileData.first_name || null,
+        last_name: profileData.last_name || null,
+        contact_number: profileData.contact_number || null,
+        middle_name: profileData.middle_name || null,
+        name_suffix: profileData.name_suffix || null,
+        address: profileData.address || null,
+        avatar_url: profileData.avatar_url || null,
+        stripe_account_id: profileData.stripe_account_id || null,
+        dob: profileData.dob || null,
+        user_type: profileData.user_type || 'individual',
+        created_at: profileData.created_at || new Date().toISOString()
+      };
 
       console.log('Fetched profile:', formattedProfile); // Debug log
       setUserProfile(formattedProfile);
@@ -79,15 +88,21 @@ export function useUserProfile() {
 
       if (userRoles && userRoles.length > 0) {
         const userCompanies: Company[] = userRoles
-          .filter(role => role.companies)
-          .map(role => ({
-            id: role.companies?.id || '',
-            name: role.companies?.name || '',
-            logo_url: role.companies?.logo_url,
-            business_email: role.companies?.business_email,
-            business_phone: role.companies?.business_phone,
-            website_url: role.companies?.website_url
-          }));
+          .filter(role => role && typeof role === 'object' && role.companies)
+          .map(role => {
+            const company = role.companies;
+            if (!company) return null;
+            
+            return {
+              id: company.id || '',
+              name: company.name || '',
+              logo_url: company.logo_url || null,
+              business_email: company.business_email || null,
+              business_phone: company.business_phone || null,
+              website_url: company.website_url || null
+            };
+          })
+          .filter((company): company is Company => company !== null);
 
         setCompanies(userCompanies);
         setIsBusinessUser(userCompanies.length > 0);

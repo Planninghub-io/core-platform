@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { safeCast } from '@/utils/supabaseHelpers';
 
 export const useEventCreation = () => {
   const { toast } = useToast();
@@ -38,25 +39,28 @@ export const useEventCreation = () => {
         budget: parseFloat(eventData.estimatedPrice || eventData.budget) || null,
         image_url: eventData.imageUrl,
         user_id: data.user.id
-      } as any;  // Type assertion to bypass strict checking
+      };
 
-      // Insert into database
+      console.log("Formatted event data:", formattedData);
+
+      // Insert into database (using array syntax)
       const { data: createdEvent, error } = await supabase
         .from('events')
-        .insert([formattedData])  // Use array syntax to fix type error
+        .insert([formattedData])
         .select()
         .single();
 
       if (error) throw error;
       
       if (createdEvent && 'id' in createdEvent) {
-        setCreatedEventId(createdEvent.id);
+        const eventId = String(createdEvent.id);
+        setCreatedEventId(eventId);
         toast({
           description: 'Event created successfully!'
         });
 
         // Redirect to event page
-        window.location.href = `/events/${createdEvent.id}`;
+        window.location.href = `/events/${eventId}`;
         return createdEvent;
       } else {
         throw new Error("Failed to get created event data");

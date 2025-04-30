@@ -42,7 +42,7 @@ export const isValidData = <T>(data: T | PostgrestError | null): data is T => {
  * Helper function to check and convert string IDs for database queries
  * Provides explicit typecasting to bypass TypeScript's stricter type checking with Supabase
  */
-export function ensureUUID(id: string): any {
+export function ensureUUID(id: string): string {
   // Simple regex to validate if string looks like a UUID
   const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
   
@@ -55,8 +55,8 @@ export function ensureUUID(id: string): any {
     console.warn('ID does not match UUID format:', id);
   }
   
-  // Return the ID with 'any' type to bypass TypeScript's strict typing
-  return id as any;
+  // Return the string as is
+  return id;
 }
 
 /**
@@ -127,4 +127,39 @@ export function safelyExtractSingleRow<T>(data: any, error: PostgrestError | nul
  */
 export function safeCast<T>(data: any): T {
   return data as unknown as T;
+}
+
+/**
+ * Ensure type safety for Supabase insert/update operations by wrapping values in an array
+ * This helps with TypeScript's stricter type checking in Supabase client v2
+ */
+export function wrapForInsert<T>(data: T): [T] {
+  return [data];
+}
+
+/**
+ * Safely extract ID as string from Supabase response
+ * Useful when dealing with Supabase responses where we need the ID as a string
+ */
+export function extractId(data: any): string {
+  if (!data) {
+    throw new Error('No data provided to extract ID');
+  }
+  
+  if (typeof data === 'object' && 'id' in data) {
+    return String(data.id);
+  }
+  
+  throw new Error('Object does not contain an ID field');
+}
+
+/**
+ * Safe string conversion for IDs
+ * Use this for ensuring IDs are strings when needed for comparison or display
+ */
+export function toStringId(id: unknown): string {
+  if (id === null || id === undefined) {
+    throw new Error('ID cannot be null or undefined');
+  }
+  return String(id);
 }
