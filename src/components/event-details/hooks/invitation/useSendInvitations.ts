@@ -9,7 +9,7 @@ import {
   getCurrentUserSession, 
   createTempContacts 
 } from "./invitationAPI";
-import { asTableRow, safelyExtractSingleRow } from "@/utils/supabaseHelpers";
+import { safeCast } from "@/utils/supabaseHelpers";
 
 export function useSendInvitations(eventId: string, contacts: Contact[]) {
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +43,12 @@ export function useSendInvitations(eventId: string, contacts: Contact[]) {
       }
 
       // Prepare recipients array for permanent contacts
-      let recipients = permanentContactIds.map(contactId => ({
+      let recipients: Array<{
+        invitation_id: string;
+        contact_id: string;
+        delivery_method: "email" | "sms";
+        status: string;
+      }> = permanentContactIds.map(contactId => ({
         invitation_id: invitation.id,
         contact_id: contactId,
         delivery_method: deliveryMethod,
@@ -81,7 +86,7 @@ export function useSendInvitations(eventId: string, contacts: Contact[]) {
             
             return {
               invitation_id: invitation.id,
-              contact_id: contact.id,
+              contact_id: contact.id as string,
               delivery_method: deliveryMethod,
               status: 'pending'
             };

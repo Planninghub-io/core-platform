@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { ensureUUID } from "@/utils/supabaseHelpers";
+import { ensureUUID, safeCast } from "@/utils/supabaseHelpers";
 
 interface EventFeaturesProps {
   eventId: string;
@@ -104,11 +104,11 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
       const { data: templateData, error: templateError } = await supabase
         .from('invitation_templates')
         .insert({
-          name: `${eventData.title} Invitation`,
+          name: `${eventData.title || 'Event'} Invitation`,
           description: theme || 'Elegant and Professional Theme',
           event_type: 'custom',
           template_html: generatedTemplate.template
-        } as any) // Use type assertion to bypass TypeScript's strict typing
+        } as any)
         .select()
         .single();
 
@@ -128,7 +128,7 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
           event_id: ensureUUID(eventId),
           template_id: templateData.id,
           status: 'draft'
-        } as any) // Use type assertion
+        } as any)
         .select();
 
       if (invitationError) {

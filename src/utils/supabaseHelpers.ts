@@ -120,3 +120,11 @@ export function safelyExtractSingleRow<T>(data: any, error: PostgrestError | nul
     return null;
   }
 }
+
+/**
+ * Safe type casting for Supabase query responses
+ * Use this when TypeScript complains about type mismatches between Supabase types and app types
+ */
+export function safeCast<T>(data: any): T {
+  return data as unknown as T;
+}

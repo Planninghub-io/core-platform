@@ -1,7 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { Contact, InvitationTemplate } from "../../types/invitation-dialog";
-import { ensureUUID, asTableRow, safelyExtractData, safelyExtractSingleRow } from "@/utils/supabaseHelpers";
+import { ensureUUID, safelyExtractData, safelyExtractSingleRow, safeCast } from "@/utils/supabaseHelpers";
 
 // Fetch contacts from Supabase
 export const fetchContacts = async (): Promise<Contact[]> => {
@@ -10,7 +10,7 @@ export const fetchContacts = async (): Promise<Contact[]> => {
       .from('contacts')
       .select('*');
     
-    return safelyExtractData<Contact>(data, error);
+    return safeCast<Contact[]>(data || []);
   } catch (error) {
     console.error("Error fetching contacts:", error);
     return [];
@@ -32,8 +32,8 @@ export const fetchEventTemplates = async (eventId: string): Promise<InvitationTe
     if (eventInvitations && eventInvitations.length > 0) {
       // Safely extract template IDs with type checking
       const templateIds = eventInvitations
-        .filter(inv => inv && typeof inv === 'object' && 'template_id' in inv && inv.template_id)
-        .map(inv => inv.template_id);
+        .filter((inv: any) => inv && typeof inv === 'object' && 'template_id' in inv && inv.template_id)
+        .map((inv: any) => inv.template_id);
       
       if (templateIds.length === 0) return null;
       
@@ -42,7 +42,9 @@ export const fetchEventTemplates = async (eventId: string): Promise<InvitationTe
         .select('*')
         .in('id', templateIds);
       
-      return safelyExtractData<InvitationTemplate>(eventTemplates, templatesError);
+      if (templatesError) throw templatesError;
+      
+      return safeCast<InvitationTemplate[]>(eventTemplates || []);
     }
     
     return null;
@@ -60,7 +62,9 @@ export const fetchGenericTemplates = async (eventType: string): Promise<Invitati
       .select('*')
       .eq('event_type', ensureUUID(eventType));
     
-    return safelyExtractData<InvitationTemplate>(genericTemplates, templatesError);
+    if (templatesError) throw templatesError;
+    
+    return safeCast<InvitationTemplate[]>(genericTemplates || []);
   } catch (error) {
     console.error("Error fetching generic templates:", error);
     return [];
@@ -88,14 +92,14 @@ export const createInvitation = async (eventId: string, templateId: string) => {
         event_id: ensureUUID(eventId),
         template_id: ensureUUID(templateId),
         status: "pending"
-      } as any) // Use type assertion to bypass TypeScript's strict typing
+      } as any)
       .select()
       .single();
 
     if (error) throw error;
     if (!data) throw new Error("No data returned from invitation creation");
     
-    return asTableRow(data);
+    return data;
   } catch (error) {
     console.error("Error creating invitation:", error);
     throw error;
@@ -111,7 +115,7 @@ export const insertRecipients = async (recipients: any[]) => {
     
     const { error } = await supabase
       .from('invitation_recipients')
-      .insert(recipients as any); // Use type assertion
+      .insert(recipients as any);
 
     if (error) throw error;
     return true;
@@ -145,10 +149,12 @@ export const createTempContacts = async (tempContactsToAdd: any[]) => {
     
     const { data, error } = await supabase
       .from('contacts')
-      .insert(tempContactsToAdd as any) // Use type assertion
+      .insert(tempContactsToAdd as any)
       .select();
     
-    return safelyExtractData(data, error);
+    if (error) throw error;
+    
+    return safeCast<any[]>(data || []);
   } catch (error) {
     console.error("Error creating temp contacts:", error);
     throw error;

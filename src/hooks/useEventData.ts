@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import debounce from "lodash/debounce";
-import { ensureUUID } from "@/utils/supabaseHelpers";
+import { ensureUUID, safeCast } from "@/utils/supabaseHelpers";
 
 interface Event {
   id: string;
@@ -62,6 +62,7 @@ export const useEventData = (eventId: string) => {
       
       if (data) {
         console.log('Event data retrieved:', data);
+        // Use type assertion to bypass TypeScript's strict typing
         setEvent(data as Event);
       } else {
         console.warn('No event found with ID:', eventId);
