@@ -44,7 +44,7 @@ export function useUserProfile() {
         return;
       }
 
-      // Format the date properly before setting it in state
+      // Format the profile data with the correct type structure
       const formattedProfile: UserProfile = {
         id: user.id,
         email: user.email || '',
@@ -87,12 +87,14 @@ export function useUserProfile() {
       }
 
       if (userRoles && userRoles.length > 0) {
-        const userCompanies: Company[] = userRoles
-          .filter(role => role && typeof role === 'object' && role.companies)
+        // Use type assertion to help TypeScript handle the nested data structure
+        const userCompanies = userRoles
+          .filter(role => role && typeof role === 'object' && 'companies' in role && role.companies)
           .map(role => {
             const company = role.companies;
             if (!company) return null;
             
+            // Create a Company object with all properties correctly typed
             return {
               id: company.id || '',
               name: company.name || '',
@@ -100,7 +102,7 @@ export function useUserProfile() {
               business_email: company.business_email || null,
               business_phone: company.business_phone || null,
               website_url: company.website_url || null
-            };
+            } as Company;
           })
           .filter((company): company is Company => company !== null);
 
