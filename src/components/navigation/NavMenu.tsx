@@ -1,5 +1,5 @@
 
-import { Home, Calendar, Compass, Store, Megaphone } from "lucide-react";
+import { Home, Calendar, Compass, Store } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 import {
   SidebarGroup,
@@ -19,11 +19,6 @@ const menuItems = [
     title: "Events Hub",
     icon: Calendar,
     path: "/events-hub",
-  },
-  {
-    title: "Campaign Hub",
-    icon: Megaphone,
-    path: "/campaign-hub",
   },
   {
     title: "Marketplace",
