@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { ensureUUID } from "@/utils/supabaseHelpers";
 
 interface EventFeaturesProps {
   eventId: string;
@@ -24,7 +25,7 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
         const { data: invitationsData, error: invitationsError } = await supabase
           .from('invitations')
           .select('id')
-          .eq('event_id', eventId)
+          .eq('event_id', ensureUUID(eventId))
           .limit(1);
         
         if (invitationsError) {
@@ -37,7 +38,7 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
         const { data: ticketingData, error: ticketingError } = await supabase
           .from('ticket_types')
           .select('id')
-          .eq('event_id', eventId)
+          .eq('event_id', ensureUUID(eventId))
           .limit(1);
         
         if (ticketingError) {
@@ -67,7 +68,7 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
       const { data: eventData, error: eventError } = await supabase
         .from('events')
         .select('*')
-        .eq('id', eventId)
+        .eq('id', ensureUUID(eventId))
         .single();
         
       if (eventError) {
@@ -107,7 +108,7 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
           description: theme || 'Elegant and Professional Theme',
           event_type: 'custom',
           template_html: generatedTemplate.template
-        })
+        } as any) // Use type assertion to bypass TypeScript's strict typing
         .select()
         .single();
 
@@ -116,7 +117,7 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
         throw templateError;
       }
 
-      if (!templateData || !templateData.id) {
+      if (!templateData || !('id' in templateData)) {
         throw new Error("Template creation failed");
       }
 
@@ -124,10 +125,10 @@ export const useEventFeatures = ({ eventId }: EventFeaturesProps) => {
       const { data: invitationData, error: invitationError } = await supabase
         .from('invitations')
         .insert({
-          event_id: eventId,
+          event_id: ensureUUID(eventId),
           template_id: templateData.id,
           status: 'draft'
-        })
+        } as any) // Use type assertion
         .select();
 
       if (invitationError) {

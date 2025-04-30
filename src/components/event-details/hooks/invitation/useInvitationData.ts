@@ -24,7 +24,7 @@ export function useInvitationData(isOpen: boolean, eventId: string, eventType: s
       // Try to get event-specific templates first
       const eventTemplates = await fetchEventTemplates(eventId);
       
-      if (eventTemplates) {
+      if (eventTemplates && eventTemplates.length > 0) {
         setTemplates(eventTemplates);
       } else {
         // Fall back to generic templates

@@ -9,6 +9,7 @@ import {
   getCurrentUserSession, 
   createTempContacts 
 } from "./invitationAPI";
+import { asTableRow, safelyExtractSingleRow } from "@/utils/supabaseHelpers";
 
 export function useSendInvitations(eventId: string, contacts: Contact[]) {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,7 +38,7 @@ export function useSendInvitations(eventId: string, contacts: Contact[]) {
       // Create the invitation
       const invitation = await createInvitation(eventId, selectedTemplate);
 
-      if (!invitation || !invitation.id) {
+      if (!invitation || !('id' in invitation)) {
         throw new Error("Failed to create invitation");
       }
 
@@ -74,7 +75,7 @@ export function useSendInvitations(eventId: string, contacts: Contact[]) {
         // Add new permanent contacts to recipients
         if (addedContacts && addedContacts.length > 0) {
           const newRecipients = addedContacts.map(contact => {
-            if (!contact || !contact.id) {
+            if (!contact || !('id' in contact)) {
               throw new Error("Added contact missing ID");
             }
             
