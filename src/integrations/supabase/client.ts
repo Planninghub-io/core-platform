@@ -22,8 +22,19 @@ const getAppUrl = () => {
     return PRODUCTION_URL;
   }
   
-  // Development or preview environment
-  return window.location.origin;
+  // For local development
+  if (hostname === 'localhost' || hostname.includes('.localhost') || hostname.includes('127.0.0.1')) {
+    return window.location.origin;
+  }
+  
+  // For preview environments (e.g., Lovable preview domains)
+  // Check if is a Lovable URL
+  if (hostname.includes('lovable.app') || hostname.includes('gptengineer.app')) {
+    return window.location.origin;
+  }
+  
+  // Default to production as a fallback
+  return PRODUCTION_URL;
 };
 
 // Export the APP_URL for use in other parts of the application
@@ -61,12 +72,10 @@ export async function safeQuery<T>(queryFn: () => Promise<{ data: T | null; erro
   }
 }
 
-// IMPORTANT: Always use https://yourplanner.ai/auth/callback for OAuth redirects
-// This must match the URL configured in both Supabase AND Google Cloud Console
+// IMPORTANT: Configure OAuth redirect
 export const configureOAuthRedirect = (provider: string) => {
-  // Always use the production URL for OAuth redirects
-  // This is critical for Google OAuth to work properly
-  const redirectTo = `${PRODUCTION_URL}/auth/callback`;
+  // Determine the appropriate callback URL based on environment
+  const redirectTo = `${APP_URL}/auth/callback`;
   
   console.log(`[OAuth Config] Provider: ${provider}, Redirect URL: ${redirectTo}`);
   

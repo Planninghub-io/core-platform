@@ -8,6 +8,7 @@ export const handleGoogleSignIn = async (
   try {
     console.log("Starting Google sign-in process");
     
+    // Save current path for redirecting back after authentication
     const currentPath = window.location.pathname;
     if (currentPath !== '/auth') {
       localStorage.setItem('authRedirectPath', currentPath);
@@ -15,12 +16,15 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    // IMPORTANT: This uses the production URL (https://yourplanner.ai/auth/callback)
-    // The redirect URL MUST match exactly in Supabase and Google Cloud Console
+    // Get OAuth configuration using the production URL as redirect
     const oauthConfig = configureOAuthRedirect('google');
     console.log("Google OAuth config:", oauthConfig);
     console.log("Redirect URL being used:", PRODUCTION_URL + "/auth/callback");
     
+    // Clear any existing query parameters from local storage to prevent conflicts
+    localStorage.removeItem('supabase.auth.callback_params');
+    
+    // Initiate the OAuth sign-in process
     const { data, error } = await supabase.auth.signInWithOAuth(oauthConfig);
     
     if (error) {
@@ -62,7 +66,6 @@ export const handleGoogleSignIn = async (
       console.log("Full redirect URL:", data.url);
       
       // Use replace instead of href to completely reload the page
-      // and avoid any potential state issues
       window.location.replace(data.url);
     } else {
       console.error("No redirect URL provided by Supabase");

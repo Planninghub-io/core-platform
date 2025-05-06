@@ -10,6 +10,7 @@ const OAuthCallback = () => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<any>(null);
 
   useEffect(() => {
     const handleCallback = async () => {
@@ -23,6 +24,18 @@ const OAuthCallback = () => {
         const code = urlParams.get('code');
         const errorParam = urlParams.get('error');
         const errorDescriptionParam = urlParams.get('error_description');
+        
+        // Collect debug info
+        const callbackDebugInfo = {
+          url: window.location.href,
+          code: code ? "present" : "missing",
+          error: errorParam,
+          errorDescription: errorDescriptionParam,
+          hasLocalStorage: typeof localStorage !== 'undefined',
+          savedRedirectPath: localStorage.getItem('authRedirectPath')
+        };
+        setDebugInfo(callbackDebugInfo);
+        console.log("Debug info:", callbackDebugInfo);
         
         // Handle error parameters first
         if (errorParam || errorDescriptionParam) {
@@ -192,6 +205,14 @@ const OAuthCallback = () => {
           <div className="rounded-md bg-red-100 p-4 text-red-700">
             <p className="font-medium">Error: {error}</p>
             <p className="mt-2">Please try again or contact support if this issue persists.</p>
+            {debugInfo && (
+              <details className="mt-4">
+                <summary className="cursor-pointer text-sm">Debug Information</summary>
+                <pre className="mt-2 overflow-auto bg-gray-100 p-2 text-xs">
+                  {JSON.stringify(debugInfo, null, 2)}
+                </pre>
+              </details>
+            )}
             <button 
               onClick={() => navigate('/auth')}
               className="mt-4 rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
