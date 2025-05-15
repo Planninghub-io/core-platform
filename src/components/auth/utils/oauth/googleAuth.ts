@@ -1,5 +1,5 @@
 
-import { supabase, configureOAuthRedirect, PRODUCTION_URL } from "@/integrations/supabase/client";
+import { supabase, configureOAuthRedirect, PRODUCTION_URL, APP_URL } from "@/integrations/supabase/client";
 import type { SignInResult } from "../types/auth";
 
 export const handleGoogleSignIn = async (
@@ -16,10 +16,23 @@ export const handleGoogleSignIn = async (
       localStorage.setItem('authRedirectPath', '/');
     }
     
-    // Get OAuth configuration using the production URL as redirect
-    const oauthConfig = configureOAuthRedirect('google');
+    // Get OAuth configuration using the APP_URL instead of production URL
+    // This ensures proper redirection based on environment
+    const redirectTo = `${APP_URL}/auth/callback`;
+    console.log("Google OAuth redirect URL:", redirectTo);
+    
+    const oauthConfig = {
+      provider: 'google',
+      options: {
+        redirectTo,
+        queryParams: {
+          prompt: 'select_account',
+          access_type: 'offline'
+        }
+      }
+    };
+    
     console.log("Google OAuth config:", oauthConfig);
-    console.log("Redirect URL being used:", PRODUCTION_URL + "/auth/callback");
     
     // Clear any existing query parameters from local storage to prevent conflicts
     localStorage.removeItem('supabase.auth.callback_params');
@@ -38,7 +51,7 @@ export const handleGoogleSignIn = async (
           variant: "destructive",
         });
         console.error("The redirect URL in your code doesn't match the one authorized in Google Cloud Console");
-        console.error("Expected redirect URL: " + PRODUCTION_URL + "/auth/callback");
+        console.error("Expected redirect URL: " + redirectTo);
         return { success: false, error: error.message, configError: true };
       }
       
