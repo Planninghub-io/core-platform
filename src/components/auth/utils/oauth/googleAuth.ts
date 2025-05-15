@@ -1,6 +1,7 @@
 
 import { supabase, configureOAuthRedirect, PRODUCTION_URL, APP_URL } from "@/integrations/supabase/client";
 import type { SignInResult } from "../types/auth";
+import { Provider } from "@supabase/supabase-js";
 
 export const handleGoogleSignIn = async (
   toast: any
@@ -22,7 +23,7 @@ export const handleGoogleSignIn = async (
     console.log("Google OAuth redirect URL:", redirectTo);
     
     const oauthConfig = {
-      provider: 'google',
+      provider: 'google' as Provider,
       options: {
         redirectTo,
         queryParams: {
