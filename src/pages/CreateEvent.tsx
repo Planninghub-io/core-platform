@@ -147,14 +147,6 @@ const CreateEvent = () => {
         <h1 className="mb-2 text-3xl font-bold text-gray-900">Create New Event</h1>
         <p className="mb-8 text-gray-600">Please input your event details</p>
         
-        {!user && (
-          <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <p className="text-blue-800">
-              You're not logged in. You can fill out the event details, but you'll need to sign in or create an account to save your event.
-            </p>
-          </div>
-        )}
-        
         <EventForm
           formData={formData}
           handleChange={handleChange}
