@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { VoiceInputButton } from "./VoiceInputButton";
 import { ClearInputButton } from "./ClearInputButton";
-import { useSuggestionManager } from "./SuggestionManager";
 
 interface ChatInputFieldProps {
   prompt: string;
@@ -32,24 +31,6 @@ export const ChatInputField = React.forwardRef<HTMLInputElement, ChatInputFieldP
     handlePromptSubmit 
   }, ref) => {
     const isMobile = useIsMobile();
-    
-    const {
-      handleKeyNavigation,
-      showSuggestionsOnFocus,
-      suggestionsElement,
-      setInputElementRef
-    } = useSuggestionManager(
-      prompt,
-      setPrompt,
-      isGenerating
-    );
-
-    // Set reference to input element for position calculation
-    useEffect(() => {
-      if (ref && 'current' in ref && ref.current) {
-        setInputElementRef(ref.current);
-      }
-    }, [ref, setInputElementRef]);
 
     const clearInput = () => {
       setPrompt("");
@@ -59,11 +40,7 @@ export const ChatInputField = React.forwardRef<HTMLInputElement, ChatInputFieldP
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-      // First check if suggestion navigation handled the key press
-      const suggestionHandled = handleKeyNavigation(e);
-      if (suggestionHandled) return;
-      
-      // Otherwise, handle submission on Enter
+      // Handle submission on Enter
       if (e.key === "Enter" && !e.shiftKey && prompt.trim() && !isGenerating) {
         e.preventDefault();
         onSubmit();
@@ -88,12 +65,7 @@ export const ChatInputField = React.forwardRef<HTMLInputElement, ChatInputFieldP
           onKeyDown={handleKeyDown}
           className="rounded-full pr-20 h-11 shadow-sm border-gray-300" // Enhanced styling
           disabled={isGenerating}
-          onFocus={showSuggestionsOnFocus}
         />
-        
-        <div className="relative w-full">
-          {suggestionsElement}
-        </div>
         
         <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center gap-2">
           {/* Microphone button */}
