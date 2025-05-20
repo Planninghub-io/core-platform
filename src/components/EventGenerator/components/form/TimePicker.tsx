@@ -13,13 +13,36 @@ interface TimePickerProps {
   value: string;
   onChange: (value: string) => void;
   disabled?: boolean;
+  minTime?: string; // Add minTime prop for validation
 }
 
 export const TimePicker: React.FC<TimePickerProps> = ({ 
   value, 
   onChange,
-  disabled = false 
+  disabled = false,
+  minTime
 }) => {
+  // Parse minTime to compare times
+  const getMinHoursMinutes = () => {
+    if (!minTime) return { hours: 0, minutes: 0 };
+    const [hours, minutes] = minTime.split(':').map(Number);
+    return { hours, minutes };
+  };
+
+  const { hours: minHours, minutes: minMinutes } = getMinHoursMinutes();
+  
+  // Helper to check if a time is before minTime
+  const isTimeBefore = (timeStr: string) => {
+    if (!minTime) return false;
+    
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    
+    if (hours < minHours) return true;
+    if (hours === minHours && minutes < minMinutes) return true;
+    
+    return false;
+  };
+
   // Generate time options in 30 minute increments
   const timeOptions = [];
   for (let hour = 0; hour < 24; hour++) {
@@ -27,6 +50,11 @@ export const TimePicker: React.FC<TimePickerProps> = ({
       const hourStr = hour.toString().padStart(2, "0");
       const minStr = minute.toString().padStart(2, "0");
       const timeStr = `${hourStr}:${minStr}`;
+      
+      // Skip if before minTime
+      if (minTime && isTimeBefore(timeStr)) {
+        continue;
+      }
       
       // Format for display (12-hour format)
       const ampm = hour < 12 ? "AM" : "PM";

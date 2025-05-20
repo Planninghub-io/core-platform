@@ -5,9 +5,31 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 interface TimeSelectorProps {
   value: string;
   onChange: (value: string) => void;
+  minTime?: string; // Add minTime prop for validation
 }
 
-export const TimeSelector = ({ value, onChange }: TimeSelectorProps) => {
+export const TimeSelector = ({ value, onChange, minTime }: TimeSelectorProps) => {
+  // Parse minTime to compare times
+  const getMinHoursMinutes = () => {
+    if (!minTime) return { hours: 0, minutes: 0 };
+    const [hours, minutes] = minTime.split(':').map(Number);
+    return { hours, minutes };
+  };
+
+  const { hours: minHours, minutes: minMinutes } = getMinHoursMinutes();
+  
+  // Helper to check if a time is before minTime
+  const isTimeBefore = (timeStr: string) => {
+    if (!minTime) return false;
+    
+    const [hours, minutes] = timeStr.split(':').map(Number);
+    
+    if (hours < minHours) return true;
+    if (hours === minHours && minutes < minMinutes) return true;
+    
+    return false;
+  };
+
   return (
     <Select
       value={value}
@@ -27,6 +49,11 @@ export const TimeSelector = ({ value, onChange }: TimeSelectorProps) => {
             const ampm = hour < 12 ? 'AM' : 'PM';
             const hour12 = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
             const displayTime = `${hour12}:${minuteStr} ${ampm}`;
+            
+            // Skip rendering this time option if it's before minTime
+            if (minTime && isTimeBefore(timeValue)) {
+              return null;
+            }
             
             return (
               <SelectItem key={timeValue} value={timeValue}>

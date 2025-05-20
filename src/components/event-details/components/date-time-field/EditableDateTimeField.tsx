@@ -2,6 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Check, X } from "lucide-react";
+import { useState, useEffect } from "react";
 
 interface EditableDateTimeFieldProps {
   id: string;
@@ -14,6 +15,8 @@ interface EditableDateTimeFieldProps {
   onCancel?: () => void;
   tempDateValue?: string;
   tempTimeValue?: string;
+  minDate?: string; // Add minDate constraint
+  minTime?: string; // Add minTime constraint
 }
 
 export const EditableDateTimeField = ({
@@ -26,7 +29,9 @@ export const EditableDateTimeField = ({
   onSave,
   onCancel,
   tempDateValue,
-  tempTimeValue
+  tempTimeValue,
+  minDate,
+  minTime
 }: EditableDateTimeFieldProps) => {
   const displayDateValue = isFieldEditing && tempDateValue !== undefined
     ? tempDateValue
@@ -46,6 +51,7 @@ export const EditableDateTimeField = ({
           onChange={(e) => onDateChange(e.target.value)}
           required
           className="rounded-r-none"
+          min={minDate} // Apply minDate constraint
         />
       </div>
       <div className="relative">
@@ -56,6 +62,7 @@ export const EditableDateTimeField = ({
           onChange={(e) => onTimeChange(e.target.value)}
           required
           className="rounded-l-none border-l-0"
+          min={displayDateValue === minDate ? minTime : undefined} // Only apply minTime when on same date
         />
         {isFieldEditing && onSave && onCancel && (
           <div className="absolute right-1 top-1/2 -translate-y-1/2 flex space-x-1">

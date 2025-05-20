@@ -98,6 +98,8 @@ export const EventInfo = ({
               onTimeChange={(value) => handleDateTimeChange('end_date', 'time', value)}
               showEditButton={!isEditing}
               onEditClick={() => onEditField && onEditField('end_date')}
+              minDate={formatDateOnly(event.date)}
+              minTime={formatTimeOnly(event.date)}
             />
           </div>
         </div>
