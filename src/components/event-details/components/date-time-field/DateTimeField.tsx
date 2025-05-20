@@ -18,6 +18,8 @@ interface DateTimeFieldProps {
   id: string;
   showEditButton?: boolean;
   onEditClick?: () => void;
+  minDate?: string; // Add minDate constraint
+  minTime?: string; // Add minTime constraint
 }
 
 export const DateTimeField = ({
@@ -29,7 +31,9 @@ export const DateTimeField = ({
   onTimeChange,
   id,
   showEditButton = false,
-  onEditClick
+  onEditClick,
+  minDate,
+  minTime
 }: DateTimeFieldProps) => {
   const [isFieldEditing, setIsFieldEditing] = useState(false);
   const [tempDateValue, setTempDateValue] = useState(dateValue || "");
@@ -49,8 +53,16 @@ export const DateTimeField = ({
   };
   
   const handleSaveField = () => {
-    onDateChange(tempDateValue);
-    onTimeChange(tempTimeValue);
+    // Validate date and time before saving
+    if (minDate && tempDateValue === minDate && minTime && tempTimeValue < minTime) {
+      // If time is before minTime on the same date, adjust to minTime
+      setTempTimeValue(minTime);
+      onDateChange(tempDateValue);
+      onTimeChange(minTime);
+    } else {
+      onDateChange(tempDateValue);
+      onTimeChange(tempTimeValue);
+    }
     setIsFieldEditing(false);
   };
 
@@ -92,6 +104,7 @@ export const DateTimeField = ({
             onChange={(e) => isFieldEditing ? setTempDateValue(e.target.value) : onDateChange(e.target.value)}
             required
             className="rounded-r-none"
+            min={minDate} // Apply minDate constraint
           />
         </div>
         <div className="relative">
@@ -103,6 +116,7 @@ export const DateTimeField = ({
               onChange={(e) => isFieldEditing ? setTempTimeValue(e.target.value) : onTimeChange(e.target.value)}
               required
               className="rounded-l-none border-l-0"
+              min={tempDateValue === minDate ? minTime : undefined} // Only apply minTime when on same date
             />
             {isFieldEditing && (
               <div className="absolute right-1 top-1/2 -translate-y-1/2 flex space-x-1">
