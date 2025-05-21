@@ -1,15 +1,17 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface ManualEventButtonProps {
   show: boolean;
   onClick: () => void;
+  eventPrompt?: string; // Add prop to receive event details
 }
 
-export const ManualEventButton = ({ show, onClick }: ManualEventButtonProps) => {
+export const ManualEventButton = ({ show, onClick, eventPrompt }: ManualEventButtonProps) => {
   const [scriptLoaded, setScriptLoaded] = useState(false);
+  const langflowRef = useRef<HTMLElement | null>(null);
   
   useEffect(() => {
     // Check if script is already loaded
@@ -30,6 +32,23 @@ export const ManualEventButton = ({ show, onClick }: ManualEventButtonProps) => 
     };
   }, []);
 
+  // Effect to send event prompt to langflow chat when available
+  useEffect(() => {
+    if (scriptLoaded && eventPrompt && langflowRef.current) {
+      // Use setTimeout to ensure the langflow-chat is fully initialized
+      setTimeout(() => {
+        // Try to send the message to the langflow chat
+        try {
+          const event = new CustomEvent('user-message', { detail: eventPrompt });
+          langflowRef.current?.dispatchEvent(event);
+          console.log('Sent event prompt to langflow chat:', eventPrompt);
+        } catch (error) {
+          console.error('Failed to send message to langflow chat:', error);
+        }
+      }, 1500);
+    }
+  }, [scriptLoaded, eventPrompt]);
+
   if (!show) return null;
   
   return (
@@ -46,6 +65,7 @@ export const ManualEventButton = ({ show, onClick }: ManualEventButtonProps) => 
       {scriptLoaded && (
         <div className="w-full max-w-md">
           <langflow-chat
+            ref={langflowRef}
             window_title="Planning Agent"
             flow_id="92ee8c63-7a3a-4f91-b507-a6f5a49a81d7"
             host_url="https://astra.datastax.com">

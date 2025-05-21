@@ -51,6 +51,7 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
   };
 
   const latestPrompt = getLatestUserPrompt();
+  const [showAgent, setShowAgent] = useState(false);
 
   const prepareEventData = () => {
     if (!generatedEvent) return null;
@@ -69,6 +70,12 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
   };
 
   const handleManualEventCreation = () => {
+    // Show the agent instead of redirecting when there's a prompt
+    if (latestPrompt) {
+      setShowAgent(true);
+      return;
+    }
+    
     let eventData = {};
     
     if (generatedEvent) {
@@ -89,7 +96,11 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
       };
     }
     
-    window.location.href = "/create-event";
+    if (onCreateManualEvent) {
+      onCreateManualEvent();
+    } else {
+      window.location.href = "/create-event";
+    }
   };
 
   const showSignUpPrompt = promptCount >= 1 && !generatedEvent;
@@ -130,8 +141,9 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
         {/* Bottom section with transparent background */}
         <div className="py-2 bg-gray-50/80 backdrop-blur-sm">
           <ManualEventButton 
-            show={chatMessages.length === 0} 
-            onClick={onCreateManualEvent || handleManualEventCreation} 
+            show={chatMessages.length === 0 || showAgent} 
+            onClick={handleManualEventCreation} 
+            eventPrompt={showAgent ? latestPrompt : undefined}
           />
         </div>
 
