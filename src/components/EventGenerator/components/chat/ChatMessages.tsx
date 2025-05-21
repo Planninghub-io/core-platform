@@ -2,7 +2,6 @@
 import { ChatMessage } from "../../ChatMessage";
 import { useEffect, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { ModelDropdown } from "./ModelDropdown";
 import { Wand, Sparkles } from "lucide-react";
 
 interface ChatMessagesProps {
@@ -34,7 +33,7 @@ export const ChatMessages = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isGenerating]);
 
-  const WelcomeMessageWithModelSelector = () => (
+  const WelcomeMessageWithoutModelSelector = () => (
     <div className="w-full relative">
       <div className="mb-4">
         <ChatMessage
@@ -49,17 +48,6 @@ export const ChatMessages = ({
           disableTyping={true}
         />
       </div>
-      
-      {onModelChange && (
-        <div className="absolute top-0 right-4">
-          <ModelDropdown 
-            modelProvider={modelProvider} 
-            onModelChange={model => {
-              if (onModelChange) onModelChange(model);
-            }}
-          />
-        </div>
-      )}
     </div>
   );
 
@@ -90,7 +78,7 @@ export const ChatMessages = ({
 
   return (
     <div className="p-3 overflow-y-auto flex-1 w-full flex flex-col min-h-[40vh] max-h-[50vh]">
-      {(!chatMessages || chatMessages.length === 0) && <WelcomeMessageWithModelSelector />}
+      {(!chatMessages || chatMessages.length === 0) && <WelcomeMessageWithoutModelSelector />}
 
       {chatMessages && chatMessages.map((message, index) => (
         <ChatMessage 

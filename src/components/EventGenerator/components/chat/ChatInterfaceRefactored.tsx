@@ -83,19 +83,18 @@ export const ChatInterfaceRefactored = ({
     }
   };
 
-  // Add model selector to the top of the card
+  // Position model selector in the top right corner without a header
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-md border border-gray-200 rounded-lg">
-      {/* Added model selector in the header for visibility */}
-      <div className="flex justify-between items-center border-b border-gray-100 p-2">
-        <p className="text-sm font-medium ml-2">AI Event Planner</p>
-        {onModelChange && (
+      {/* Only model selector in the top right, no header */}
+      {onModelChange && (
+        <div className="flex justify-end p-2 border-b border-gray-100">
           <ModelDropdown
             modelProvider={modelProvider}
-            onModelChange={onModelChange || (() => {})}
+            onModelChange={onModelChange}
           />
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Chat messages with flexible height */}
       <div className="flex-1 overflow-y-auto">

@@ -17,12 +17,11 @@ const LandingPage = () => {
         
         <div className="w-full max-w-3xl mx-auto mb-4">
           <div className="bg-gray-50 rounded-2xl p-4 shadow-sm border border-gray-100">
-            <div className="flex items-start gap-3 mb-2">
+            <div className="flex items-start gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8b73f4] text-white shrink-0">
                 <Sparkles size={18} />
               </div>
               <div>
-                <p className="font-medium mb-1">👋 Welcome to Your AI Event Planner!</p>
                 <p className="text-gray-600">Just type in the event details in the chat and I'll help you bring it to life!</p>
               </div>
             </div>

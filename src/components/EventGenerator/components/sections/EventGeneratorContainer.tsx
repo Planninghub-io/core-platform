@@ -96,8 +96,8 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
 
   // Optimize container height based on device - making it shorter to avoid content being cut off
   const containerClass = isMobile 
-    ? "container mx-auto px-2 py-1 flex flex-col h-[calc(100vh-100px)]" 
-    : "container mx-auto px-4 py-2 flex flex-col h-[calc(100vh-120px)]";
+    ? "container mx-auto px-2 py-1 flex flex-col h-[calc(100vh-140px)]" 
+    : "container mx-auto px-4 py-2 flex flex-col h-[calc(100vh-150px)]";
 
   return (
     <div className={containerClass}>
