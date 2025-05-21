@@ -94,17 +94,11 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
 
   const showSignUpPrompt = promptCount >= 1 && !generatedEvent;
 
-  // Optimize container height to remove extra space at top
-  const containerClass = isMobile 
-    ? "container mx-auto px-2 pt-0 pb-1 flex flex-col h-[calc(100vh-120px)]" 
-    : "container mx-auto px-4 pt-0 pb-2 flex flex-col h-[calc(100vh-130px)]";
-
+  // No need to show standalone welcome header since it's now in the chat interface
+  // Only show manual event button when there are no chat messages
   return (
-    <div className={containerClass}>
+    <div className="container mx-auto px-2 sm:px-4 pt-0 pb-1 sm:pb-2 flex flex-col h-[calc(100vh-120px)] sm:h-[calc(100vh-130px)]">
       <div className="mx-auto max-w-4xl w-full h-full flex flex-col">
-        {/* Only show standalone welcome header when there are no messages */}
-        {chatMessages.length === 0 && <WelcomeHeader show={true} />}
-
         <div className="animate-fade-up flex-grow flex flex-col">
           <EventGeneratorContent 
             chatMessages={chatMessages}

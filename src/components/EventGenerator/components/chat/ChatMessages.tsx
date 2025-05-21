@@ -33,23 +33,6 @@ export const ChatMessages = ({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isGenerating]);
 
-  const WelcomeMessageWithoutModelSelector = () => (
-    <div className="w-full relative">
-      <div>
-        <ChatMessage
-          key="welcome"
-          message={
-            "Just type in the event details in the chat and I'll help you bring it to life!"
-          }
-          type="ai"
-          isLoading={false}
-          isWelcomeMessage={true}
-          disableTyping={true}
-        />
-      </div>
-    </div>
-  );
-
   // Animation: Magic wand with sparkles and pulse
   const MagicWandLoader = () => (
     <div className="w-full flex justify-start">
@@ -77,8 +60,6 @@ export const ChatMessages = ({
 
   return (
     <div className="p-3 overflow-y-auto flex-1 w-full flex flex-col min-h-[40vh] max-h-[50vh]">
-      {(!chatMessages || chatMessages.length === 0) && <WelcomeMessageWithoutModelSelector />}
-
       {chatMessages && chatMessages.map((message, index) => (
         <ChatMessage 
           key={`message-${index}-${message.id || ''}`} 

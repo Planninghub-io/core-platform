@@ -7,6 +7,7 @@ import { ModelDropdown } from "./ModelDropdown";
 import { GeneratedEventSummary } from "./GeneratedEventSummary";
 import { SignUpPrompt } from "./SignUpPrompt";
 import { usePromptHandler } from "./PromptHandler";
+import { Sparkles } from "lucide-react";
 
 interface ChatInterfaceRefactoredProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -89,12 +90,13 @@ export const ChatInterfaceRefactored = ({
       {/* Combined header with welcome message and model selector */}
       <div className="flex justify-between items-center p-3 border-b border-gray-100">
         <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#8b73f4] text-white shrink-0">
-            <span className="text-xs">AI</span>
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8b73f4] text-white shrink-0">
+            <Sparkles className="h-4 w-4" />
           </div>
-          <p className="text-sm font-medium">
-            Just type in the event details and I'll help you bring it to life!
-          </p>
+          <div>
+            <p className="text-base font-medium text-gray-900">Welcome to Your AI Event Planner!</p>
+            <p className="text-sm text-gray-600">Just type in the event details in the chat and I'll help you bring it to life!</p>
+          </div>
         </div>
         
         {onModelChange && (
@@ -111,7 +113,7 @@ export const ChatInterfaceRefactored = ({
         <ChatMessages
           chatMessages={chatMessages}
           isGenerating={isGenerating}
-          welcomeMessage={welcomeMessage}
+          welcomeMessage=""
           modelProvider={modelProvider}
           onModelChange={onModelChange}
         />
