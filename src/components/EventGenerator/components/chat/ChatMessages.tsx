@@ -68,10 +68,10 @@ export const ChatMessages = ({
     <div className="w-full flex justify-start">
       <div className="max-w-[85%] bg-gray-100 text-gray-900 rounded-2xl border border-gray-200 shadow-sm px-5 py-4 my-2 flex items-center gap-3 animate-fade-in">
         <div className="flex flex-col items-center justify-center shrink-0 relative">
-          <Wand className="text-[#8B5CF6] animate-bounce" size={28} />
+          <Wand className="text-[#8B5CF6] animate-bounce" size={24} />
           <Sparkles
             className="text-yellow-400 absolute -top-2 -right-2 animate-pulse"
-            size={16}
+            size={14}
             style={{ zIndex: 1 }}
           />
         </div>
@@ -89,7 +89,7 @@ export const ChatMessages = ({
   );
 
   return (
-    <div className="p-4 overflow-y-auto flex-1 w-full flex flex-col min-h-[60vh]">
+    <div className="p-3 overflow-y-auto flex-1 w-full flex flex-col min-h-[40vh] max-h-[50vh]">
       {(!chatMessages || chatMessages.length === 0) && <WelcomeMessageWithModelSelector />}
 
       {chatMessages && chatMessages.map((message, index) => (

@@ -14,10 +14,10 @@ export const ManualEventButton = ({ show, onClick }: ManualEventButtonProps) => 
     <div className="flex justify-center w-full">
       <Button
         onClick={onClick}
-        className="animate-fade-up gap-2 bg-[#9b87f5] hover:bg-[#9b87f5]/90 py-4 sm:py-6 px-6 sm:px-8"
+        className="animate-fade-up gap-2 bg-[#9b87f5] hover:bg-[#9b87f5]/90 py-3 px-6 sm:px-8"
         size="lg"
       >
-        <span className="text-base sm:text-lg whitespace-nowrap">Create event on my own</span>
+        <span className="text-base whitespace-nowrap">Create event on my own</span>
         <ArrowRight className="h-5 w-5" />
       </Button>
     </div>

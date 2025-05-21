@@ -94,10 +94,10 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
 
   const showSignUpPrompt = promptCount >= 1 && !generatedEvent;
 
-  // Optimize container height based on device
+  // Optimize container height based on device - making it shorter to avoid content being cut off
   const containerClass = isMobile 
-    ? "container mx-auto px-2 py-2 flex flex-col h-[calc(100vh-80px)]" 
-    : "container mx-auto px-4 py-3 flex flex-col h-[calc(100vh-100px)]";
+    ? "container mx-auto px-2 py-1 flex flex-col h-[calc(100vh-100px)]" 
+    : "container mx-auto px-4 py-2 flex flex-col h-[calc(100vh-120px)]";
 
   return (
     <div className={containerClass}>

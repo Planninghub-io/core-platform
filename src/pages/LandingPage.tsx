@@ -6,18 +6,18 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 
 const LandingPage = () => {
   return (
-    <div className="container mx-auto px-4 py-4 md:py-8 flex flex-col min-h-[calc(100vh-80px)]">
+    <div className="container mx-auto px-4 py-2 md:py-4 flex flex-col min-h-[calc(100vh-80px)]">
       <div className="text-center flex-1 flex flex-col items-center justify-center">
-        <h1 className="text-3xl md:text-5xl font-bold mb-4">
+        <h1 className="text-2xl md:text-4xl font-bold mb-2 md:mb-3">
           What can I help you plan today?
         </h1>
-        <p className="text-lg text-gray-600 mb-8 max-w-2xl mx-auto">
+        <p className="text-md md:text-lg text-gray-600 mb-4 md:mb-6 max-w-2xl mx-auto">
           Create, discover, and experience amazing events. Start your journey with us today.
         </p>
         
-        <div className="w-full max-w-3xl mx-auto mb-6">
-          <div className="bg-gray-50 rounded-2xl p-5 shadow-sm border border-gray-100">
-            <div className="flex items-start gap-3 mb-3">
+        <div className="w-full max-w-3xl mx-auto mb-4">
+          <div className="bg-gray-50 rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div className="flex items-start gap-3 mb-2">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8b73f4] text-white shrink-0">
                 <Sparkles size={18} />
               </div>
@@ -28,7 +28,7 @@ const LandingPage = () => {
             </div>
             
             <Link to="/create-event" className="block w-full">
-              <Button className="w-full mt-3 py-5 text-lg" size="lg">
+              <Button className="w-full mt-3 py-4 text-lg" size="lg">
                 Get Started
                 <ArrowRight className="ml-2" />
               </Button>
