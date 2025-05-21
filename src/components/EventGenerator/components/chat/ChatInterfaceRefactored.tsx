@@ -83,18 +83,28 @@ export const ChatInterfaceRefactored = ({
     }
   };
 
-  // Position model selector in the top right corner without a header
+  // Combine welcome message and model selector in the same header row
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-md border border-gray-200 rounded-lg">
-      {/* Only model selector in the top right, no header */}
-      {onModelChange && (
-        <div className="flex justify-end p-2 border-b border-gray-100">
+      {/* Combined header with welcome message and model selector */}
+      <div className="flex justify-between items-center p-3 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#8b73f4] text-white shrink-0">
+            <span className="text-xs">AI</span>
+          </div>
+          <p className="text-sm font-medium">
+            Just type in the event details and I'll help you bring it to life!
+          </p>
+        </div>
+        
+        {onModelChange && (
           <ModelDropdown
             modelProvider={modelProvider}
             onModelChange={onModelChange}
+            className="ml-2"
           />
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Chat messages with flexible height */}
       <div className="flex-1 overflow-y-auto">

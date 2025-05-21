@@ -94,15 +94,16 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
 
   const showSignUpPrompt = promptCount >= 1 && !generatedEvent;
 
-  // Optimize container height based on device - making it shorter to avoid content being cut off
+  // Optimize container height to remove extra space at top
   const containerClass = isMobile 
-    ? "container mx-auto px-2 py-1 flex flex-col h-[calc(100vh-140px)]" 
-    : "container mx-auto px-4 py-2 flex flex-col h-[calc(100vh-150px)]";
+    ? "container mx-auto px-2 pt-0 pb-1 flex flex-col h-[calc(100vh-120px)]" 
+    : "container mx-auto px-4 pt-0 pb-2 flex flex-col h-[calc(100vh-130px)]";
 
   return (
     <div className={containerClass}>
       <div className="mx-auto max-w-4xl w-full h-full flex flex-col">
-        <WelcomeHeader show={chatMessages.length === 0} />
+        {/* Only show standalone welcome header when there are no messages */}
+        {chatMessages.length === 0 && <WelcomeHeader show={true} />}
 
         <div className="animate-fade-up flex-grow flex flex-col">
           <EventGeneratorContent 

@@ -35,11 +35,10 @@ export const ChatMessages = ({
 
   const WelcomeMessageWithoutModelSelector = () => (
     <div className="w-full relative">
-      <div className="mb-4">
+      <div>
         <ChatMessage
           key="welcome"
           message={
-            "👋 Welcome to Your AI Event Planner!\n" +
             "Just type in the event details in the chat and I'll help you bring it to life!"
           }
           type="ai"
