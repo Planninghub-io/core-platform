@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { ChatMessages } from "./ChatMessages";
@@ -7,7 +6,7 @@ import { ModelDropdown } from "./ModelDropdown";
 import { GeneratedEventSummary } from "./GeneratedEventSummary";
 import { SignUpPrompt } from "./SignUpPrompt";
 import { usePromptHandler } from "./PromptHandler";
-import { Sparkles } from "lucide-react";
+import { Sparkles, PartyPopper } from "lucide-react";
 
 interface ChatInterfaceRefactoredProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -88,14 +87,15 @@ export const ChatInterfaceRefactored = ({
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-md border border-gray-200 rounded-lg">
       {/* Combined header with welcome message and model selector */}
-      <div className="flex justify-between items-center p-3 border-b border-gray-100">
+      <div className="flex justify-between items-center p-3 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-pink-50">
         <div className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#8b73f4] text-white shrink-0">
-            <Sparkles className="h-4 w-4" />
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#8B5CF6] text-white shrink-0 relative">
+            <PartyPopper className="h-5 w-5" />
+            <Sparkles className="h-3 w-3 text-yellow-300 absolute -top-1 -right-1 animate-pulse" />
           </div>
           <div>
-            <p className="text-base font-medium text-gray-900">Welcome to Your AI Event Planner!</p>
-            <p className="text-sm text-gray-600">Just type in the event details in the chat and I'll help you bring it to life!</p>
+            <p className="text-base font-medium bg-gradient-to-r from-[#8B5CF6] to-[#D946EF] bg-clip-text text-transparent">Let's Plan Your Perfect Event!</p>
+            <p className="text-sm text-gray-600">Share your event ideas in the chat and I'll help make them a reality! ✨</p>
           </div>
         </div>
         
