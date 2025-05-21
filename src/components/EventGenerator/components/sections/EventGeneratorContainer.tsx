@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { useEventGeneration } from "@/hooks/event-generation";
 import { SignUpDialog } from "@/components/EventGenerator/SignUpDialog";
 import { MissingInfoDialog } from "@/components/EventGenerator/MissingInfoDialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface EventGeneratorContainerProps {
   onCreateManualEvent?: () => void;
@@ -13,6 +14,7 @@ interface EventGeneratorContainerProps {
 
 export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorContainerProps) => {
   const [modelProvider, setModelProvider] = useState<'openai' | 'anthropic'>('openai');
+  const isMobile = useIsMobile();
   
   const {
     promptCount,
@@ -92,20 +94,17 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
 
   const showSignUpPrompt = promptCount >= 1 && !generatedEvent;
 
-  useEffect(() => {
-    if (generatedEvent) {
-      console.log("EventGeneratorContainer: Generated event available:", JSON.stringify(generatedEvent, null, 2));
-    } else {
-      console.log("EventGeneratorContainer: No generated event available");
-    }
-  }, [generatedEvent]);
+  // Adjust container height based on device
+  const containerClass = isMobile 
+    ? "container py-2 min-h-[calc(100vh-120px)]" 
+    : "container py-4 sm:py-6 min-h-[calc(100vh-160px)]";
 
   return (
-    <div className="container py-4 sm:py-6">
-      <div className="mx-auto max-w-4xl">
+    <div className={containerClass}>
+      <div className="mx-auto max-w-4xl h-full flex flex-col">
         <WelcomeHeader show={chatMessages.length === 0} />
 
-        <div className="animate-fade-up space-y-4">
+        <div className="animate-fade-up flex-grow">
           <EventGeneratorContent 
             chatMessages={chatMessages}
             setChatMessages={setChatMessages}
@@ -127,7 +126,8 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
           />
         </div>
 
-        <div className="mt-4">
+        {/* Fixed position at bottom to ensure visibility */}
+        <div className="py-4 sticky bottom-0 bg-gray-50 z-10">
           <ManualEventButton 
             show={chatMessages.length === 0} 
             onClick={onCreateManualEvent || handleManualEventCreation} 

@@ -21,7 +21,7 @@ interface EventGeneratorContentProps {
   modelProvider: 'openai' | 'anthropic';
   onModelChange: (model: 'openai' | 'anthropic') => void;
   promptCount: number;
-  showSignUpPrompt: boolean; // Add this prop
+  showSignUpPrompt: boolean;
 }
 
 export const EventGeneratorContent = ({
@@ -66,15 +66,10 @@ export const EventGeneratorContent = ({
   // Using an empty string as the welcome message to let ChatMessages component use its enhanced version
   const welcomeMessage = "";
 
-  // Debug log to check if generatedEvent is properly passed
-  useEffect(() => {
-    console.log("EventGeneratorContent: Current generatedEvent:", generatedEvent);
-  }, [generatedEvent]);
-
   return (
     <div className="w-full">
-      {/* Full width container for chat interface */}
-      <div className="w-full mb-6">
+      {/* Full width container for chat interface with proper height to ensure chat input is visible */}
+      <div className="w-full h-[calc(100vh-220px)] min-h-[500px]">
         <ChatInterface
           chatMessages={chatMessages}
           setChatMessages={setChatMessages}
