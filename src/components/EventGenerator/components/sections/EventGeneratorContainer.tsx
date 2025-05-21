@@ -51,7 +51,6 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
   };
 
   const latestPrompt = getLatestUserPrompt();
-  const [showAgent, setShowAgent] = useState(false);
 
   const prepareEventData = () => {
     if (!generatedEvent) return null;
@@ -70,12 +69,6 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
   };
 
   const handleManualEventCreation = () => {
-    // Show the agent instead of redirecting when there's a prompt
-    if (latestPrompt) {
-      setShowAgent(true);
-      return;
-    }
-    
     let eventData = {};
     
     if (generatedEvent) {
@@ -96,19 +89,15 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
       };
     }
     
-    if (onCreateManualEvent) {
-      onCreateManualEvent();
-    } else {
-      window.location.href = "/create-event";
-    }
+    window.location.href = "/create-event";
   };
 
   const showSignUpPrompt = promptCount >= 1 && !generatedEvent;
 
-  // Optimize container height and give more space for the embedded chat
+  // Optimize container height to remove extra space at top
   const containerClass = isMobile 
-    ? "container mx-auto px-2 pt-0 pb-1 flex flex-col h-[calc(100vh-100px)]" 
-    : "container mx-auto px-4 pt-0 pb-2 flex flex-col h-auto min-h-[calc(100vh-130px)]";
+    ? "container mx-auto px-2 pt-0 pb-1 flex flex-col h-[calc(100vh-120px)]" 
+    : "container mx-auto px-4 pt-0 pb-2 flex flex-col h-[calc(100vh-130px)]";
 
   return (
     <div className={containerClass}>
@@ -138,12 +127,11 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
           />
         </div>
 
-        {/* Bottom section with transparent background */}
+        {/* Bottom button with transparent background to ensure it doesn't cover content */}
         <div className="py-2 bg-gray-50/80 backdrop-blur-sm">
           <ManualEventButton 
-            show={chatMessages.length === 0 || showAgent} 
-            onClick={handleManualEventCreation} 
-            eventPrompt={showAgent ? latestPrompt : undefined}
+            show={chatMessages.length === 0} 
+            onClick={onCreateManualEvent || handleManualEventCreation} 
           />
         </div>
 

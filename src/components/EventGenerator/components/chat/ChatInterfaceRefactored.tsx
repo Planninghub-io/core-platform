@@ -83,13 +83,13 @@ export const ChatInterfaceRefactored = ({
     }
   };
 
+  // Combine welcome message and model selector in the same header row
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-md border border-gray-200 rounded-lg">
-      {/* Header row with model selector on the right */}
-      <div className="flex justify-between items-center p-2 border-b border-gray-100">
-        {/* Empty div for spacing */}
-        <div className="flex items-center">
-          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#8b73f4] text-white shrink-0 mr-2">
+      {/* Combined header with welcome message and model selector */}
+      <div className="flex justify-between items-center p-3 border-b border-gray-100">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#8b73f4] text-white shrink-0">
             <span className="text-xs">AI</span>
           </div>
           <p className="text-sm font-medium">
@@ -101,6 +101,7 @@ export const ChatInterfaceRefactored = ({
           <ModelDropdown
             modelProvider={modelProvider}
             onModelChange={onModelChange}
+            className="ml-2"
           />
         )}
       </div>
