@@ -84,7 +84,7 @@ export const ChatInterfaceRefactored = ({
   };
 
   return (
-    <Card className="relative flex flex-col h-full overflow-hidden shadow-md border border-gray-200 rounded-lg">
+    <Card className="flex flex-col h-full overflow-hidden shadow-md border border-gray-200 rounded-lg">
       <div className="absolute top-3 right-3 z-10">
         <ModelDropdown
           modelProvider={modelProvider}
@@ -92,8 +92,8 @@ export const ChatInterfaceRefactored = ({
         />
       </div>
 
-      {/* Adjusted messages container with max height to ensure chat input is visible */}
-      <div className="flex-1 overflow-y-auto p-4 max-h-[calc(100%-120px)]">
+      {/* Chat messages with flexible height */}
+      <div className="flex-1 overflow-y-auto p-4">
         <ChatMessages
           chatMessages={chatMessages}
           isGenerating={isGenerating}
@@ -126,7 +126,7 @@ export const ChatInterfaceRefactored = ({
         </div>
       ) : null}
       
-      <div className="border-t border-gray-200 mt-auto">
+      <div className="border-t border-gray-200">
         <ChatInputArea
           prompt={prompt}
           setPrompt={setPrompt}

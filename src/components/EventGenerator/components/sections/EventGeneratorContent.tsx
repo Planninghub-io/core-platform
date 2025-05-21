@@ -67,9 +67,9 @@ export const EventGeneratorContent = ({
   const welcomeMessage = "";
 
   return (
-    <div className="w-full">
-      {/* Full width container for chat interface with proper height to ensure chat input is visible */}
-      <div className="w-full h-[calc(100vh-220px)] min-h-[500px]">
+    <div className="w-full h-full flex flex-col">
+      {/* Adjust height to ensure chat content fits within viewport */}
+      <div className="w-full flex-grow overflow-hidden">
         <ChatInterface
           chatMessages={chatMessages}
           setChatMessages={setChatMessages}

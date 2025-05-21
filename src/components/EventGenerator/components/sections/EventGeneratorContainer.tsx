@@ -94,17 +94,17 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
 
   const showSignUpPrompt = promptCount >= 1 && !generatedEvent;
 
-  // Adjust container height based on device
+  // Optimize container height based on device
   const containerClass = isMobile 
-    ? "container py-2 min-h-[calc(100vh-120px)]" 
-    : "container py-4 sm:py-6 min-h-[calc(100vh-160px)]";
+    ? "container mx-auto px-2 py-2 flex flex-col h-[calc(100vh-80px)]" 
+    : "container mx-auto px-4 py-3 flex flex-col h-[calc(100vh-100px)]";
 
   return (
     <div className={containerClass}>
-      <div className="mx-auto max-w-4xl h-full flex flex-col">
+      <div className="mx-auto max-w-4xl w-full h-full flex flex-col">
         <WelcomeHeader show={chatMessages.length === 0} />
 
-        <div className="animate-fade-up flex-grow">
+        <div className="animate-fade-up flex-grow flex flex-col">
           <EventGeneratorContent 
             chatMessages={chatMessages}
             setChatMessages={setChatMessages}
@@ -126,8 +126,8 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
           />
         </div>
 
-        {/* Fixed position at bottom to ensure visibility */}
-        <div className="py-4 sticky bottom-0 bg-gray-50 z-10">
+        {/* Bottom button with transparent background to ensure it doesn't cover content */}
+        <div className="py-2 bg-gray-50/80 backdrop-blur-sm">
           <ManualEventButton 
             show={chatMessages.length === 0} 
             onClick={onCreateManualEvent || handleManualEventCreation} 
