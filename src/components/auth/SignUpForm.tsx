@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,19 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness, error }: SignUpFormProps)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+
+  // Load hCaptcha script on component mount
+  useEffect(() => {
+    // Add hCaptcha script if it doesn't exist
+    if (typeof window !== 'undefined' && !document.getElementById('hcaptcha-script')) {
+      const script = document.createElement('script');
+      script.id = 'hcaptcha-script';
+      script.src = 'https://js.hcaptcha.com/1/api.js';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -83,6 +96,9 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness, error }: SignUpFormProps)
           </button>
         </div>
       </div>
+      
+      {/* Hidden container for hCaptcha */}
+      <div id="h-captcha" style={{ display: 'none' }}></div>
       
       <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading ? 'Loading...' : 'Sign Up'}

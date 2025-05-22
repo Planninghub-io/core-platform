@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,10 +16,38 @@ interface SignInFormProps {
   error?: string | null;
 }
 
+declare global {
+  interface Window {
+    hcaptcha?: any;
+  }
+}
+
 const SignInForm = ({ onSubmit, isLoading, error }: SignInFormProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  
+  // Load hCaptcha script on component mount
+  useEffect(() => {
+    // Add hCaptcha script if it doesn't exist
+    if (typeof window !== 'undefined' && !document.getElementById('hcaptcha-script')) {
+      const script = document.createElement('script');
+      script.id = 'hcaptcha-script';
+      script.src = 'https://js.hcaptcha.com/1/api.js';
+      script.async = true;
+      script.defer = true;
+      document.head.appendChild(script);
+    }
+    
+    // Clean up function to handle unmounting
+    return () => {
+      // Remove the hCaptcha script if this component unmounts
+      const script = document.getElementById('hcaptcha-script');
+      if (script && script.parentNode) {
+        script.parentNode.removeChild(script);
+      }
+    };
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,6 +119,9 @@ const SignInForm = ({ onSubmit, isLoading, error }: SignInFormProps) => {
           </Button>
         </div>
       </div>
+      
+      {/* Hidden container for hCaptcha */}
+      <div id="h-captcha" style={{ display: 'none' }}></div>
       
       <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading ? 'Loading...' : 'Sign In'}

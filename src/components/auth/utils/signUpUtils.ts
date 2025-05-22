@@ -1,16 +1,9 @@
 
-import { supabase, APP_URL } from "@/integrations/supabase/client";
-import { Database } from "@/integrations/supabase/types";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface SignUpData {
   email: string;
   password: string;
-  role?: string;
-}
-
-export interface SignUpResult {
-  success: boolean;
-  error: string | null;
 }
 
 export const handleUserSignUp = async (
@@ -18,83 +11,95 @@ export const handleUserSignUp = async (
   isBusiness: boolean,
   toast: any,
   redirectCallback: () => void
-): Promise<SignUpResult> => {
-  const { email, password, role } = formData;
-
-  if (password.length < 6) {
-    toast({
-      title: "Error",
-      description: "Password must be at least 6 characters long",
-      variant: "destructive",
-    });
-    return { success: false, error: "Password must be at least 6 characters long" };
-  }
+) => {
+  const { email, password } = formData;
 
   try {
-    // Important: set emailRedirectTo to null to prevent auto sign-in after signup
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // Get CAPTCHA token if hCaptcha is available
+    let captchaToken = null;
+    if (typeof window !== 'undefined' && window.hcaptcha) {
+      try {
+        // Render hCaptcha if not already rendered
+        const captchaContainer = document.getElementById('h-captcha');
+        if (!captchaContainer) {
+          const container = document.createElement('div');
+          container.id = 'h-captcha';
+          container.style.display = 'none';
+          document.body.appendChild(container);
+          
+          window.hcaptcha.render('h-captcha', {
+            sitekey: '0x4AAAAAAAAjPBF8Abbp7OG3',  // Default hCaptcha site key for Supabase
+            size: 'invisible'
+          });
+        }
+        
+        // Get the token
+        captchaToken = await window.hcaptcha.execute();
+        console.log("CAPTCHA token obtained for signup:", captchaToken ? "Token received" : "No token");
+      } catch (captchaError) {
+        console.error("CAPTCHA error during signup:", captchaError);
+      }
+    }
+    
+    // Sign up with the Supabase client
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: null, // Prevent default redirect
+        captchaToken,
         data: {
-          role: role || (isBusiness ? 'business_admin' : 'user'),
-          is_business: isBusiness,
-          needs_profile_setup: true, // Mark user as needing profile setup
-          email_verified: false // Explicitly mark as not verified
-        }
-      }
+          account_type: isBusiness ? 'business' : 'individual',
+          needs_profile_setup: true,
+          email_verified: false
+        },
+      },
     });
 
-    if (authError) {
-      console.error("Signup error:", authError.message);
-      
-      if (authError.message.includes("User already registered")) {
+    if (error) {
+      if (error.message.includes("User already registered")) {
         toast({
-          title: "Account Exists",
-          description: "An account with this email already exists. Please sign in instead.",
+          title: "Registration Error",
+          description: "This email is already registered. Please sign in instead.",
           variant: "destructive",
         });
-        return { success: false, error: "An account with this email already exists. Please sign in instead." };
+      } else if (error.message.includes("captcha verification")) {
+        toast({
+          title: "CAPTCHA Verification Failed",
+          description: "Please try again with CAPTCHA verification.",
+          variant: "destructive",
+        });
       } else {
         toast({
-          title: "Sign Up Error",
-          description: authError.message,
+          title: "Registration Error",
+          description: error.message,
           variant: "destructive",
         });
-        return { success: false, error: authError.message };
       }
+      return { success: false, error: error.message };
     }
 
-    // Send welcome email with verification code
-    try {
-      await supabase.functions.invoke('welcome-email', {
-        body: { email, isBusiness }
-      });
-      
-      console.log("Verification email sent to:", email);
-      
+    // Check if email confirmation is required
+    if (data.session === null) {
       toast({
-        title: "Account Created!",
-        description: "Please check your email for a verification code.",
+        title: "Verification Email Sent",
+        description: "Please check your email for a verification link.",
       });
       
-      // Navigate to email verification page with email parameter
-      window.location.href = "/auth/email-verification?email=" + encodeURIComponent(email);
+      // Redirect to email verification page
+      if (data.user?.email) {
+        window.location.href = `/auth/email-verification?email=${encodeURIComponent(data.user.email)}`;
+      }
+      
       return { success: true, error: null };
-    } catch (emailError) {
-      console.error("Welcome email could not be sent:", emailError);
-      toast({
-        title: "Warning",
-        description: "Account created, but verification email could not be sent. Please contact support.",
-        variant: "destructive",
-      });
-      return { success: false, error: "Account created, but verification email could not be sent." };
     }
+
+    // Redirect to profile setup
+    redirectCallback();
+    return { success: true, error: null };
   } catch (error: any) {
     toast({
-      title: "Sign Up Error",
-      description: error.message,
+      title: "Registration Error",
+      description: "An unexpected error occurred. Please try again.",
       variant: "destructive",
     });
     return { success: false, error: error.message };
