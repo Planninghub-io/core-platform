@@ -15,30 +15,39 @@ export const handleUserSignUp = async (
   const { email, password } = formData;
 
   try {
-    // Get CAPTCHA token if hCaptcha is available
+    // Get Turnstile token if available
     let captchaToken = null;
-    if (typeof window !== 'undefined' && window.hcaptcha) {
+    if (typeof window !== 'undefined' && window.turnstile) {
       try {
-        // Render hCaptcha if not already rendered
-        const captchaContainer = document.getElementById('h-captcha');
-        if (!captchaContainer) {
-          const container = document.createElement('div');
-          container.id = 'h-captcha';
-          container.style.display = 'none';
-          document.body.appendChild(container);
+        // Render Turnstile if not already rendered
+        const captchaContainer = document.getElementById('cf-turnstile');
+        if (captchaContainer) {
+          // Clear previous instances
+          captchaContainer.innerHTML = '';
           
-          window.hcaptcha.render('h-captcha', {
-            sitekey: '0x4AAAAAAAAjPBF8Abbp7OG3',  // Default hCaptcha site key for Supabase
-            size: 'invisible'
+          // Create a widget ID
+          const widgetId = window.turnstile.render('#cf-turnstile', {
+            sitekey: '0x4AAAAAAAEGsBbr9CuGHcR1', // Default Turnstile site key for Supabase
+            theme: 'light',
+            callback: function(token: string) {
+              captchaToken = token;
+            }
           });
+          
+          // Get token directly if not obtained via callback
+          if (!captchaToken) {
+            captchaToken = await window.turnstile.execute(widgetId);
+          }
+          
+          console.log("Turnstile token obtained for signup:", captchaToken ? "Token received" : "No token");
+        } else {
+          console.error("Turnstile container not found");
         }
-        
-        // Get the token
-        captchaToken = await window.hcaptcha.execute();
-        console.log("CAPTCHA token obtained for signup:", captchaToken ? "Token received" : "No token");
       } catch (captchaError) {
-        console.error("CAPTCHA error during signup:", captchaError);
+        console.error("Turnstile error during signup:", captchaError);
       }
+    } else {
+      console.warn("Turnstile not available");
     }
     
     // Sign up with the Supabase client

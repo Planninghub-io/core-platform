@@ -18,7 +18,7 @@ interface SignInFormProps {
 
 declare global {
   interface Window {
-    hcaptcha?: any;
+    turnstile?: any;
   }
 }
 
@@ -27,26 +27,25 @@ const SignInForm = ({ onSubmit, isLoading, error }: SignInFormProps) => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   
-  // Load hCaptcha script on component mount
+  // Load Turnstile script on component mount
   useEffect(() => {
-    // Add hCaptcha script if it doesn't exist
-    if (typeof window !== 'undefined' && !document.getElementById('hcaptcha-script')) {
+    // Add Turnstile script if it doesn't exist
+    if (typeof window !== 'undefined' && !document.getElementById('turnstile-script')) {
       const script = document.createElement('script');
-      script.id = 'hcaptcha-script';
-      script.src = 'https://js.hcaptcha.com/1/api.js';
+      script.id = 'turnstile-script';
+      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
       script.async = true;
       script.defer = true;
       document.head.appendChild(script);
+      
+      return () => {
+        // Clean up if component unmounts
+        const scriptElement = document.getElementById('turnstile-script');
+        if (scriptElement && scriptElement.parentNode) {
+          scriptElement.parentNode.removeChild(scriptElement);
+        }
+      };
     }
-    
-    // Clean up function to handle unmounting
-    return () => {
-      // Remove the hCaptcha script if this component unmounts
-      const script = document.getElementById('hcaptcha-script');
-      if (script && script.parentNode) {
-        script.parentNode.removeChild(script);
-      }
-    };
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -120,8 +119,8 @@ const SignInForm = ({ onSubmit, isLoading, error }: SignInFormProps) => {
         </div>
       </div>
       
-      {/* Hidden container for hCaptcha */}
-      <div id="h-captcha" style={{ display: 'none' }}></div>
+      {/* Hidden container for Turnstile */}
+      <div id="cf-turnstile" className="mt-4"></div>
       
       <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading ? 'Loading...' : 'Sign In'}

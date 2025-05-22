@@ -17,54 +17,40 @@ export const handleUserSignIn = async (
     return { success: false, error: "Please enter both email and password" };
   }
   
-  // Load the hCaptcha script if it hasn't been loaded yet
-  if (typeof window !== 'undefined' && !window.hcaptcha) {
-    try {
-      // Create and load the hCaptcha script
-      const script = document.createElement('script');
-      script.src = 'https://js.hcaptcha.com/1/api.js';
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-      
-      // Wait for the script to load
-      await new Promise((resolve) => {
-        script.onload = resolve;
-      });
-      
-      console.log("hCaptcha script loaded successfully");
-    } catch (error) {
-      console.error("Failed to load hCaptcha script:", error);
-    }
-  }
-  
   try {
-    // Get CAPTCHA token if hCaptcha is available
+    // Get Turnstile token if available
     let captchaToken = null;
-    if (typeof window !== 'undefined' && window.hcaptcha) {
+    if (typeof window !== 'undefined' && window.turnstile) {
       try {
-        // Render hCaptcha if not already rendered
-        const captchaContainer = document.getElementById('h-captcha');
-        if (!captchaContainer) {
-          const container = document.createElement('div');
-          container.id = 'h-captcha';
-          container.style.display = 'none';
-          document.body.appendChild(container);
+        // Render Turnstile if not already rendered
+        const captchaContainer = document.getElementById('cf-turnstile');
+        if (captchaContainer) {
+          // Clear previous instances
+          captchaContainer.innerHTML = '';
           
-          window.hcaptcha.render('h-captcha', {
-            sitekey: '0x4AAAAAAAAjPBF8Abbp7OG3',  // Default hCaptcha site key for Supabase
-            size: 'invisible'
+          // Create a widget ID
+          const widgetId = window.turnstile.render('#cf-turnstile', {
+            sitekey: '0x4AAAAAAAEGsBbr9CuGHcR1', // Default Turnstile site key for Supabase
+            theme: 'light',
+            callback: function(token: string) {
+              captchaToken = token;
+            }
           });
+          
+          // Get token directly if not obtained via callback
+          if (!captchaToken) {
+            captchaToken = await window.turnstile.execute(widgetId);
+          }
+          
+          console.log("Turnstile token obtained for signin:", captchaToken ? "Token received" : "No token");
+        } else {
+          console.error("Turnstile container not found");
         }
-        
-        // Get the token
-        captchaToken = await window.hcaptcha.execute();
-        console.log("CAPTCHA token obtained:", captchaToken ? "Token received" : "No token");
       } catch (captchaError) {
-        console.error("CAPTCHA error:", captchaError);
+        console.error("Turnstile error during signin:", captchaError);
       }
     } else {
-      console.warn("hCaptcha not available, proceeding without CAPTCHA");
+      console.warn("Turnstile not available");
     }
     
     // Include the captcha token in the auth request

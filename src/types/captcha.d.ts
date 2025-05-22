@@ -1,28 +1,25 @@
 
-// Type definitions for hCaptcha
-interface HCaptcha {
-  render(container: string | HTMLElement, params: HCaptchaParams): string;
-  reset(widgetId?: string): void;
-  remove(widgetId?: string): void;
-  execute(widgetId?: string, options?: { async: boolean }): Promise<string>;
+// Type definitions for Cloudflare Turnstile
+interface Turnstile {
+  render: (container: string | HTMLElement, params: TurnstileParams) => string;
+  reset: (widgetId?: string) => void;
+  remove: (widgetId?: string) => void;
+  execute: (widgetId?: string) => Promise<string>;
 }
 
-interface HCaptchaParams {
+interface TurnstileParams {
   sitekey: string;
-  theme?: 'light' | 'dark';
-  size?: 'normal' | 'compact' | 'invisible';
+  theme?: 'light' | 'dark' | 'auto';
+  size?: 'normal' | 'compact';
   tabindex?: number;
-  callback?: (response: string) => void;
+  callback?: (token: string) => void;
   'expired-callback'?: () => void;
-  'chalexpired-callback'?: () => void;
   'error-callback'?: (error: any) => void;
-  'open-callback'?: () => void;
-  'close-callback'?: () => void;
 }
 
 declare global {
   interface Window {
-    hcaptcha?: HCaptcha;
+    turnstile?: Turnstile;
   }
 }
 
