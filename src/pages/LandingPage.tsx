@@ -8,7 +8,7 @@ const LandingPage = () => {
   return (
     <div className="container mx-auto px-4 py-2 md:py-4 flex flex-col min-h-[calc(100vh-80px)]">
       <div className="text-center flex-1 flex flex-col items-center justify-center">
-        <h1 className="text-4xl md:text-6xl font-bold mb-2 md:mb-3">
+        <h1 className="text-4xl md:text-6xl font-bold mb-2 md:mb-3 text-[#8b73f4]">
           What can I help you plan today?
         </h1>
         <p className="text-md md:text-lg text-gray-600 mb-4 md:mb-6 max-w-2xl mx-auto">
