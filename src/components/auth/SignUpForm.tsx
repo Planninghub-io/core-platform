@@ -20,30 +20,54 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness, error }: SignUpFormProps)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [turnstileLoaded, setTurnstileLoaded] = useState(false);
 
   // Load Turnstile script on component mount
   useEffect(() => {
-    // Add Turnstile script if it doesn't exist
-    if (typeof window !== 'undefined' && !document.getElementById('turnstile-script')) {
-      const script = document.createElement('script');
-      script.id = 'turnstile-script';
-      script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
-      script.async = true;
-      script.defer = true;
-      document.head.appendChild(script);
-      
-      return () => {
-        // Clean up if component unmounts
-        const scriptElement = document.getElementById('turnstile-script');
-        if (scriptElement && scriptElement.parentNode) {
-          scriptElement.parentNode.removeChild(scriptElement);
+    const loadTurnstile = () => {
+      if (typeof window !== 'undefined' && !document.getElementById('turnstile-script')) {
+        const script = document.createElement('script');
+        script.id = 'turnstile-script';
+        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
+        script.async = true;
+        script.defer = true;
+        
+        script.onload = () => {
+          setTurnstileLoaded(true);
+          console.log("Turnstile script loaded");
+        };
+        
+        document.head.appendChild(script);
+      } else if (typeof window !== 'undefined' && window.turnstile) {
+        setTurnstileLoaded(true);
+      }
+    };
+    
+    loadTurnstile();
+    
+    return () => {
+      // Clean up if component unmounts
+      if (typeof window !== 'undefined' && window.turnstile) {
+        try {
+          window.turnstile.reset();
+        } catch (e) {
+          console.error("Failed to reset turnstile on unmount", e);
         }
-      };
-    }
+      }
+    };
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Reset Turnstile before submitting
+    if (typeof window !== 'undefined' && window.turnstile) {
+      try {
+        window.turnstile.reset();
+      } catch (e) {
+        console.error("Failed to reset turnstile before submission", e);
+      }
+    }
     
     onSubmit({
       email,

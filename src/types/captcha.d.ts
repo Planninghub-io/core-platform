@@ -5,6 +5,8 @@ interface Turnstile {
   reset: (widgetId?: string) => void;
   remove: (widgetId?: string) => void;
   execute: (widgetId?: string) => Promise<string>;
+  getResponse: (widgetId?: string) => string | undefined;
+  isExpired: (widgetId?: string) => boolean;
 }
 
 interface TurnstileParams {
@@ -15,6 +17,12 @@ interface TurnstileParams {
   callback?: (token: string) => void;
   'expired-callback'?: () => void;
   'error-callback'?: (error: any) => void;
+  action?: string;
+  cData?: string;
+  retry?: 'auto' | 'never';
+  'retry-interval'?: number;
+  'refresh-expired'?: 'auto' | 'manual' | 'never';
+  appearance?: 'always' | 'execute' | 'interaction-only';
 }
 
 declare global {

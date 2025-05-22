@@ -28,6 +28,9 @@ export const handleUserSignIn = async (
           // Clear previous instances
           captchaContainer.innerHTML = '';
           
+          // Reset any existing widgets first
+          window.turnstile.reset();
+          
           // Create a widget ID
           const widgetId = window.turnstile.render('#cf-turnstile', {
             sitekey: '0x4AAAAAAAEGsBbr9CuGHcR1', // Default Turnstile site key for Supabase
@@ -37,9 +40,13 @@ export const handleUserSignIn = async (
             }
           });
           
-          // Get token directly if not obtained via callback
-          if (!captchaToken) {
-            captchaToken = await window.turnstile.execute(widgetId);
+          // Wait for token to be set through callback
+          const startTime = Date.now();
+          const timeout = 3000; // 3 seconds timeout
+          
+          while (!captchaToken && (Date.now() - startTime < timeout)) {
+            // Small delay to allow callback to fire
+            await new Promise(resolve => setTimeout(resolve, 100));
           }
           
           console.log("Turnstile token obtained for signin:", captchaToken ? "Token received" : "No token");
