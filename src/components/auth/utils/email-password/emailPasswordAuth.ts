@@ -22,37 +22,22 @@ export const handleUserSignIn = async (
     let captchaToken = null;
     if (typeof window !== 'undefined' && window.turnstile) {
       try {
-        // Render Turnstile if not already rendered
-        const captchaContainer = document.getElementById('cf-turnstile');
-        if (captchaContainer) {
-          // Clear previous instances
-          captchaContainer.innerHTML = '';
+        // Get the token from the existing widget
+        captchaToken = window.turnstile.getResponse();
+        
+        if (!captchaToken) {
+          console.log("No token found from existing widget, forcing execution");
           
-          // Reset any existing widgets first
-          window.turnstile.reset();
-          
-          // Create a widget ID
-          const widgetId = window.turnstile.render('#cf-turnstile', {
-            sitekey: '0x4AAAAAAAEGsBbr9CuGHcR1', // Default Turnstile site key for Supabase
-            theme: 'light',
-            callback: function(token: string) {
-              captchaToken = token;
-            }
-          });
-          
-          // Wait for token to be set through callback
-          const startTime = Date.now();
-          const timeout = 3000; // 3 seconds timeout
-          
-          while (!captchaToken && (Date.now() - startTime < timeout)) {
-            // Small delay to allow callback to fire
-            await new Promise(resolve => setTimeout(resolve, 100));
+          try {
+            // Try to execute the widget to get a token
+            captchaToken = await window.turnstile.execute();
+            console.log("Token obtained via execute:", captchaToken ? "Success" : "Failed");
+          } catch (execError) {
+            console.error("Error executing Turnstile:", execError);
           }
-          
-          console.log("Turnstile token obtained for signin:", captchaToken ? "Token received" : "No token");
-        } else {
-          console.error("Turnstile container not found");
         }
+        
+        console.log("Turnstile token for signin:", captchaToken ? "Token received" : "No token");
       } catch (captchaError) {
         console.error("Turnstile error during signin:", captchaError);
       }

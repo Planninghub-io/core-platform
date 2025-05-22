@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +20,8 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness, error }: SignUpFormProps)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [turnstileLoaded, setTurnstileLoaded] = useState(false);
+  const turnstileWidgetId = useRef<string | null>(null);
+  const turnstileLoaded = useRef(false);
 
   // Load Turnstile script on component mount
   useEffect(() => {
@@ -33,41 +34,78 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness, error }: SignUpFormProps)
         script.defer = true;
         
         script.onload = () => {
-          setTurnstileLoaded(true);
+          turnstileLoaded.current = true;
           console.log("Turnstile script loaded");
+          renderTurnstile();
         };
         
         document.head.appendChild(script);
       } else if (typeof window !== 'undefined' && window.turnstile) {
-        setTurnstileLoaded(true);
+        turnstileLoaded.current = true;
+        renderTurnstile();
       }
     };
     
     loadTurnstile();
     
     return () => {
-      // Clean up if component unmounts
-      if (typeof window !== 'undefined' && window.turnstile) {
-        try {
-          window.turnstile.reset();
-        } catch (e) {
-          console.error("Failed to reset turnstile on unmount", e);
-        }
-      }
+      // Clean up Turnstile widget when component unmounts
+      cleanupTurnstile();
     };
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Reset Turnstile before submitting
-    if (typeof window !== 'undefined' && window.turnstile) {
+  const renderTurnstile = () => {
+    // Only render if the script is loaded and window.turnstile exists
+    if (typeof window !== 'undefined' && window.turnstile && turnstileLoaded.current) {
       try {
-        window.turnstile.reset();
+        // First clean up any existing widgets
+        cleanupTurnstile();
+        
+        // Get the container element
+        const captchaContainer = document.getElementById('cf-turnstile');
+        if (!captchaContainer) {
+          console.error("Turnstile container not found");
+          return;
+        }
+        
+        // Make sure the container is empty
+        captchaContainer.innerHTML = '';
+        
+        console.log("Rendering new Turnstile widget");
+        
+        // Render a new widget
+        turnstileWidgetId.current = window.turnstile.render('#cf-turnstile', {
+          sitekey: '0x4AAAAAAAEGsBbr9CuGHcR1', // Default Turnstile site key for Supabase
+          theme: 'light',
+          callback: function(token: string) {
+            console.log("Turnstile token received");
+          }
+        });
+        
+        console.log("Turnstile widget ID:", turnstileWidgetId.current);
       } catch (e) {
-        console.error("Failed to reset turnstile before submission", e);
+        console.error("Error rendering Turnstile widget:", e);
       }
     }
+  };
+
+  const cleanupTurnstile = () => {
+    if (typeof window !== 'undefined' && window.turnstile) {
+      try {
+        // Only remove if we have a widget ID
+        if (turnstileWidgetId.current) {
+          console.log("Removing Turnstile widget:", turnstileWidgetId.current);
+          window.turnstile.remove(turnstileWidgetId.current);
+          turnstileWidgetId.current = null;
+        }
+      } catch (e) {
+        console.error("Error cleaning up Turnstile widget:", e);
+      }
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     
     onSubmit({
       email,
