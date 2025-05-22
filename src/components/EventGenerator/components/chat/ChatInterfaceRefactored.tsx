@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { ChatMessages } from "./ChatMessages";
@@ -90,12 +89,12 @@ export const ChatInterfaceRefactored = ({
       {/* Combined header with welcome message and model selector */}
       <div className="flex justify-between items-center p-3 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-pink-50">
         <div className="flex items-center gap-2">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#0EA5E9] text-white shrink-0 relative shadow-lg">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#8B5CF6] text-white shrink-0 relative">
             <PartyPopper className="h-5 w-5" />
             <Sparkles className="h-3 w-3 text-yellow-300 absolute -top-1 -right-1 animate-pulse" />
           </div>
           <div>
-            <p className="text-base font-medium bg-gradient-to-r from-[#8B5CF6] via-[#D946EF] to-[#0EA5E9] bg-clip-text text-transparent">Let's Plan Your Perfect Event!</p>
+            <p className="text-base font-medium bg-gradient-to-r from-[#8B5CF6] to-[#D946EF] bg-clip-text text-transparent">Let's Plan Your Perfect Event!</p>
             <p className="text-sm text-gray-600">Share your event ideas in the chat and I'll help make them a reality! ✨</p>
           </div>
         </div>
