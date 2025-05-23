@@ -7,14 +7,17 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 const LandingPage = () => {
   return (
     <div className="container mx-auto px-4 py-2 md:py-4 flex flex-col min-h-[calc(100vh-80px)]">
-      <div className="text-center flex-1 flex flex-col items-center justify-center">
+      {/* Header */}
+      <header className="text-center mb-8">
         <h1 className="text-4xl md:text-6xl font-bold mb-2 md:mb-3 text-[#8b73f4]">
           What can I help you plan today?
         </h1>
         <p className="text-md md:text-lg text-gray-600 mb-4 md:mb-6 max-w-2xl mx-auto">
           Create, discover, and experience amazing events. Start your journey with us today.
         </p>
-        
+      </header>
+
+      <div className="text-center flex-1 flex flex-col items-center justify-center">
         <div className="w-full max-w-3xl mx-auto mb-4">
           <div className="bg-gray-50 rounded-2xl p-4 shadow-sm border border-gray-100">
             <div className="flex items-start gap-3">
@@ -22,6 +25,7 @@ const LandingPage = () => {
                 <Sparkles size={18} />
               </div>
               <div>
+                <p className="font-medium text-[#8b73f4] mb-1">Welcome to Your AI Event Planner!</p>
                 <p className="text-gray-600">Just type in the event details in the chat and I'll help you bring it to life!</p>
               </div>
             </div>
