@@ -5,6 +5,8 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles } from 'lucide-react';
 
 const LandingPage = () => {
+  console.log("LandingPage component is rendering");
+  
   return (
     <div className="container mx-auto px-4 py-2 md:py-4 flex flex-col min-h-[calc(100vh-80px)]">
       {/* Header */}
