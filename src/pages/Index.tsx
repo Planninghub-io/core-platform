@@ -13,7 +13,7 @@ const Index = () => {
   return (
     <div className="flex-1">
       {/* Main Header - What can I help you plan today? */}
-      <div className="text-center mb-8 pt-12 pb-8">
+      <div className="text-center mb-4 pt-8 pb-4">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 text-gray-900 leading-tight max-w-4xl mx-auto px-4">
           What can I help you plan today?
         </h1>
@@ -22,7 +22,7 @@ const Index = () => {
         </p>
       </div>
       
-      <div className="container mx-auto py-8">
+      <div className="container mx-auto py-2">
         <EventGeneratorSection onCreateManualEvent={handleCreateManualEvent} />
       </div>
     </div>

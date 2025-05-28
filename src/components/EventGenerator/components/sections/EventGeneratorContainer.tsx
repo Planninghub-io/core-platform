@@ -94,10 +94,9 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
 
   const showSignUpPrompt = promptCount >= 1 && !generatedEvent;
 
-  // No need to show standalone welcome header since it's now in the chat interface
-  // Only show manual event button when there are no chat messages
+  // Adjusted container height to fit everything within viewport
   return (
-    <div className="container mx-auto px-2 sm:px-4 pt-0 pb-1 sm:pb-2 flex flex-col h-[calc(100vh-120px)] sm:h-[calc(100vh-130px)]">
+    <div className="container mx-auto px-2 sm:px-4 pt-0 pb-1 sm:pb-2 flex flex-col h-[calc(100vh-180px)] sm:h-[calc(100vh-190px)]">
       <div className="mx-auto max-w-4xl w-full h-full flex flex-col">
         <div className="animate-fade-up flex-grow flex flex-col">
           <EventGeneratorContent 
@@ -121,8 +120,8 @@ export const EventGeneratorContainer = ({ onCreateManualEvent }: EventGeneratorC
           />
         </div>
 
-        {/* Bottom button with transparent background to ensure it doesn't cover content */}
-        <div className="py-2 bg-gray-50/80 backdrop-blur-sm">
+        {/* Bottom button with reduced padding to save space */}
+        <div className="py-1 bg-gray-50/80 backdrop-blur-sm">
           <ManualEventButton 
             show={chatMessages.length === 0} 
             onClick={onCreateManualEvent || handleManualEventCreation} 
