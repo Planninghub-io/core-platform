@@ -5,16 +5,16 @@ import { Button } from '@/components/ui/button';
 import { ArrowRight, Sparkles } from 'lucide-react';
 
 const LandingPage = () => {
-  console.log("LandingPage component is rendering");
+  console.log("LandingPage component is rendering - checking header visibility");
   
   return (
     <div className="container mx-auto px-4 py-8 flex flex-col min-h-[calc(100vh-80px)]">
-      {/* Main Header Title - Very Top */}
-      <div className="text-center mb-16 pt-8">
-        <h1 className="text-5xl md:text-7xl font-bold mb-6 text-gray-900 leading-tight">
+      {/* MAIN HEADER - SHOULD BE VISIBLE AT TOP */}
+      <div className="text-center mb-16 pt-8 bg-red-100 border-2 border-red-500">
+        <h1 className="text-6xl md:text-8xl font-bold mb-6 text-gray-900 leading-tight">
           What can I help you plan today?
         </h1>
-        <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed">
+        <p className="text-2xl md:text-3xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed">
           Create, discover, and experience amazing events. Start your journey with us today.
         </p>
       </div>
