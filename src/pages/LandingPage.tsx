@@ -9,12 +9,12 @@ const LandingPage = () => {
   
   return (
     <div className="container mx-auto px-4 py-8 flex flex-col min-h-[calc(100vh-80px)]">
-      {/* Main Header - matching the screenshot */}
-      <div className="text-center mb-12">
-        <h1 className="text-5xl md:text-6xl font-bold mb-4 text-gray-900">
+      {/* Main Header Title - Very Top */}
+      <div className="text-center mb-16 pt-8">
+        <h1 className="text-5xl md:text-7xl font-bold mb-6 text-gray-900 leading-tight">
           What can I help you plan today?
         </h1>
-        <p className="text-lg md:text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+        <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-4xl mx-auto leading-relaxed">
           Create, discover, and experience amazing events. Start your journey with us today.
         </p>
       </div>
