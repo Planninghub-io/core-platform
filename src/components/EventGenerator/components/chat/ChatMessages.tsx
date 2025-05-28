@@ -58,32 +58,8 @@ export const ChatMessages = ({
     </div>
   );
 
-  // Welcome message with purple background
-  const WelcomeMessage = () => {
-    if (chatMessages.length > 0) return null;
-    
-    return (
-      <div className="w-full mb-6 px-4 flex justify-center">
-        <div className="bg-[#8b73f4] bg-opacity-10 border border-[#8b73f4] border-opacity-30 rounded-lg p-4 max-w-[85%]">
-          <div className="flex items-start gap-3">
-            <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#8b73f4] text-white shrink-0">
-              <Sparkles size={18} />
-            </div>
-            <div>
-              <p className="font-medium text-[#8b73f4]">Welcome to Your AI Event Planner!</p>
-              <p className="text-gray-700">Just type in the event details in the chat and I'll help you bring it to life!</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="p-3 overflow-y-auto flex-1 w-full flex flex-col min-h-[40vh] max-h-[50vh]">
-      {/* Add the welcome message */}
-      <WelcomeMessage />
-      
       {chatMessages && chatMessages.map((message, index) => (
         <ChatMessage 
           key={`message-${index}-${message.id || ''}`} 
