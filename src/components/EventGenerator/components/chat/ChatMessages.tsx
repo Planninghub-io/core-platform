@@ -58,7 +58,7 @@ export const ChatMessages = ({
     </div>
   );
 
-  // Welcome message with purple background
+  // Welcome message with purple background - updated to remove specific content
   const WelcomeMessage = () => {
     if (chatMessages.length > 0) return null;
     
