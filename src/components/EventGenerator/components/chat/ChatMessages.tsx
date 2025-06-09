@@ -59,13 +59,13 @@ export const ChatMessages = ({
     </div>
   );
 
-  // Welcome message with purple background and model selector
+  // Welcome message with purple background and model selector - full width
   const WelcomeMessage = () => {
     if (chatMessages.length > 0) return null;
     
     return (
-      <div className="w-full mb-6 px-4 flex justify-center">
-        <div className="bg-[#8b73f4] bg-opacity-10 border border-[#8b73f4] border-opacity-30 rounded-lg p-4 max-w-[85%]">
+      <div className="w-full">
+        <div className="bg-[#8b73f4] bg-opacity-10 border border-[#8b73f4] border-opacity-30 rounded-lg p-4 mx-3">
           <div className="flex items-start gap-3">
             <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#8b73f4] text-white shrink-0">
               <Sparkles size={18} />
