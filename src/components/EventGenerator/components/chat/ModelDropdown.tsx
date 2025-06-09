@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import { Check, Sparkles } from "lucide-react";
+import { Check, Settings } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,14 +24,14 @@ export const ModelDropdown = ({ modelProvider, onModelChange, className }: Model
       id: 'openai',
       name: 'GPT-4',
       description: 'Balanced and efficient',
-      icon: Sparkles,
+      icon: Settings,
       iconColor: 'text-green-500',
     },
     {
       id: 'anthropic',
       name: 'Claude 3',
       description: 'Advanced reasoning',
-      icon: Sparkles,
+      icon: Settings,
       iconColor: 'text-purple-500',
     },
   ];
