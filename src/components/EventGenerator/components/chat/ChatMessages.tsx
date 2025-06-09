@@ -34,7 +34,7 @@ export const ChatMessages = ({
   }, [chatMessages, isGenerating]);
 
   // Animation: Magic wand with sparkles and pulse
-  /*const MagicWandLoader = () => (
+  const MagicWandLoader = () => (
     <div className="w-full flex justify-start">
       <div className="max-w-[85%] bg-gray-100 text-gray-900 rounded-2xl border border-gray-200 shadow-sm px-5 py-4 my-2 flex items-center gap-3 animate-fade-in">
         <div className="flex flex-col items-center justify-center shrink-0 relative">
@@ -56,7 +56,7 @@ export const ChatMessages = ({
         </div>
       </div>
     </div>
-  );*/
+  );
 
   // Welcome message with purple background
   const WelcomeMessage = () => {
