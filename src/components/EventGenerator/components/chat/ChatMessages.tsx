@@ -3,6 +3,7 @@ import { ChatMessage } from "../../ChatMessage";
 import { useEffect, useRef } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Wand, Sparkles } from "lucide-react";
+import { ModelDropdown } from "./ModelDropdown";
 
 interface ChatMessagesProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -58,7 +59,7 @@ export const ChatMessages = ({
     </div>
   );
 
-  // Welcome message with purple background
+  // Welcome message with purple background and model selector
   const WelcomeMessage = () => {
     if (chatMessages.length > 0) return null;
     
@@ -69,8 +70,16 @@ export const ChatMessages = ({
             <div className="mt-1 flex h-8 w-8 items-center justify-center rounded-full bg-[#8b73f4] text-white shrink-0">
               <Sparkles size={18} />
             </div>
-            <div>
-              <p className="font-medium text-[#8b73f4]">Welcome to Your AI Event Planner!</p>
+            <div className="flex-1">
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <p className="font-medium text-[#8b73f4]">Welcome to Your AI Event Planner!</p>
+                {onModelChange && (
+                  <ModelDropdown
+                    modelProvider={modelProvider}
+                    onModelChange={onModelChange}
+                  />
+                )}
+              </div>
               <p className="text-gray-700">Just type in the event details in the chat and I'll help you bring it to life!</p>
             </div>
           </div>

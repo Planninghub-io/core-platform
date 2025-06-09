@@ -1,13 +1,10 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { ChatMessages } from "./ChatMessages";
 import { ChatInputArea } from "./ChatInputArea";
-import { ModelDropdown } from "./ModelDropdown";
 import { GeneratedEventSummary } from "./GeneratedEventSummary";
 import { SignUpPrompt } from "./SignUpPrompt";
 import { usePromptHandler } from "./PromptHandler";
-import { Sparkles, PartyPopper } from "lucide-react";
 
 interface ChatInterfaceRefactoredProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -84,20 +81,8 @@ export const ChatInterfaceRefactored = ({
     }
   };
 
-  // Combine welcome message and model selector in the same header row
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-md border border-gray-200 rounded-lg">
-      {/* Combined header with model selector only */}
-      <div className="flex justify-end items-center p-3 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-pink-50">
-        {onModelChange && (
-          <ModelDropdown
-            modelProvider={modelProvider}
-            onModelChange={onModelChange}
-            className="ml-2"
-          />
-        )}
-      </div>
-
       {/* Chat messages with flexible height */}
       <div className="flex-1 overflow-y-auto">
         <ChatMessages
