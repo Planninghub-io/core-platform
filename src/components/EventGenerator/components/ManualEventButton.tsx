@@ -41,9 +41,9 @@ export const ManualEventButton = ({ show, onClick }: ManualEventButtonProps) => 
   if (!show) return null;
   
   return (
-    <div className="flex flex-col items-center gap-6 w-full">
-      {/* Button centered below chat */}
-      <div className="flex justify-center w-full">
+    <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6 w-full justify-center">
+      {/* Button positioned on the left */}
+      <div className="flex justify-center lg:justify-start">
         <Button
           onClick={onClick}
           className="animate-fade-up gap-2 bg-[#9b87f5] hover:bg-[#9b87f5]/90 py-3 px-6 sm:px-8"
@@ -54,8 +54,8 @@ export const ManualEventButton = ({ show, onClick }: ManualEventButtonProps) => 
         </Button>
       </div>
       
-      {/* Planning Agent beside the button area */}
-      <div className="flex justify-center w-full max-w-2xl">
+      {/* Planning Agent positioned on the right */}
+      <div className="flex justify-center lg:justify-start">
         <langflow-chat
           ref={chatRef}
           window_title="Planning Agent"
