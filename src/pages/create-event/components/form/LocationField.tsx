@@ -4,22 +4,39 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MapPin } from "lucide-react";
+import { getTimezoneFromLocation } from "../../utils/timezoneUtils";
+import { useEffect } from "react";
 
 interface LocationFieldProps {
   location: string;
   preferredLocations: string;
   isFlexibleLocation: boolean;
+  timezone: string;
   handleChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   handleCheckboxChange: (field: string, checked: boolean) => void;
+  handleSelectChange: (field: string, value: string) => void;
 }
 
 export const LocationField = ({
   location,
   preferredLocations,
   isFlexibleLocation,
+  timezone,
   handleChange,
-  handleCheckboxChange
+  handleCheckboxChange,
+  handleSelectChange
 }: LocationFieldProps) => {
+  
+  // Auto-update timezone when location changes
+  useEffect(() => {
+    if (location && !isFlexibleLocation) {
+      const detectedTimezone = getTimezoneFromLocation(location);
+      if (detectedTimezone !== timezone) {
+        handleSelectChange('timezone', detectedTimezone);
+      }
+    }
+  }, [location, isFlexibleLocation, timezone, handleSelectChange]);
+
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">

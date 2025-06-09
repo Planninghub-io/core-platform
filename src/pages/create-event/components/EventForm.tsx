@@ -1,4 +1,3 @@
-
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -71,8 +70,10 @@ export const EventForm = ({
         location={formData.location}
         preferredLocations={formData.preferredLocations}
         isFlexibleLocation={formData.isFlexibleLocation}
+        timezone={formData.timezone}
         handleChange={handleChange}
         handleCheckboxChange={handleCheckboxChange}
+        handleSelectChange={handleSelectChange}
       />
 
       <BudgetFields 

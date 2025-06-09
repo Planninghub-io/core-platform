@@ -5,17 +5,22 @@ import { Input } from "@/components/ui/input";
 import { MapPin } from "lucide-react";
 import { FlexibleLocationCheckbox } from "../../FlexibleLocationCheckbox";
 import { parseLocationComponents } from "@/hooks/event-generation/utils/prompt-extraction/locationExtractor/extractor";
+import { getTimezoneFromLocation, getTimezoneShort } from "@/pages/create-event/utils/timezoneUtils";
 
 interface LocationSectionProps {
   location: string;
   setLocation: (location: string) => void;
   hasMissingLocation: boolean;
+  timezone?: string;
+  setTimezone?: (timezone: string) => void;
 }
 
 export const LocationSection: React.FC<LocationSectionProps> = ({
   location,
   setLocation,
-  hasMissingLocation
+  hasMissingLocation,
+  timezone,
+  setTimezone
 }) => {
   const [isFlexibleLocation, setIsFlexibleLocation] = useState(false);
   const [cityState, setCityState] = useState<{ city: string; state: string }>({ 
@@ -28,8 +33,14 @@ export const LocationSection: React.FC<LocationSectionProps> = ({
       // Use the enhanced location parser
       const parsedLocation = parseLocationComponents(location);
       setCityState(parsedLocation);
+      
+      // Auto-detect and set timezone when location changes
+      if (setTimezone && !isFlexibleLocation) {
+        const detectedTimezone = getTimezoneFromLocation(location);
+        setTimezone(detectedTimezone);
+      }
     }
-  }, [location]);
+  }, [location, isFlexibleLocation, setTimezone]);
 
   const handleFlexibleLocationChange = (checked: boolean) => {
     setIsFlexibleLocation(checked);
@@ -83,6 +94,11 @@ export const LocationSection: React.FC<LocationSectionProps> = ({
           {cityState.state 
             ? `Detected: ${cityState.city}, ${cityState.state}` 
             : `Detected: ${cityState.city}`}
+          {timezone && (
+            <span className="ml-2 text-xs text-blue-600">
+              ({getTimezoneShort(timezone)})
+            </span>
+          )}
         </div>
       )}
     </div>
