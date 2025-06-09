@@ -41,11 +41,12 @@ export const ManualEventButton = ({ show, onClick }: ManualEventButtonProps) => 
   if (!show) return null;
   
   return (
-    <div className="flex flex-col lg:flex-row items-start lg:items-center gap-6 w-full">
-      <div className="flex flex-col items-center lg:items-start">
+    <div className="flex flex-col items-center gap-6 w-full">
+      {/* Button centered below chat */}
+      <div className="flex justify-center w-full">
         <Button
           onClick={onClick}
-          className="animate-fade-up gap-2 bg-[#9b87f5] hover:bg-[#9b87f5]/90 py-3 px-6 sm:px-8 mb-4"
+          className="animate-fade-up gap-2 bg-[#9b87f5] hover:bg-[#9b87f5]/90 py-3 px-6 sm:px-8"
           size="lg"
         >
           <span className="text-base whitespace-nowrap">Create event on my own</span>
@@ -53,7 +54,8 @@ export const ManualEventButton = ({ show, onClick }: ManualEventButtonProps) => 
         </Button>
       </div>
       
-      <div className="flex-1 w-full lg:max-w-2xl">
+      {/* Planning Agent beside the button area */}
+      <div className="flex justify-center w-full max-w-2xl">
         <langflow-chat
           ref={chatRef}
           window_title="Planning Agent"
