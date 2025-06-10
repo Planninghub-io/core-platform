@@ -1,3 +1,4 @@
+
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -48,8 +49,8 @@ export const EventForm = ({
       </div>
 
       <DateTimeFields 
-        date={formData.date}
-        endDate={formData.endDate}
+        date={typeof formData.date === 'string' ? formData.date : formData.date.toISOString()}
+        endDate={typeof formData.endDate === 'string' ? formData.endDate : formData.endDate.toISOString()}
         startTime={formData.startTime}
         endTime={formData.endTime}
         timezone={formData.timezone}

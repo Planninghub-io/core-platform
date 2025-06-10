@@ -6,34 +6,39 @@ import { CalendarIcon } from "lucide-react";
 import { formatDateMDY } from "../../utils/dateTimeUtils";
 
 interface DateSelectorProps {
-  date: string | Date;
-  onSelect: (date: Date) => void;
+  id?: string;
+  value: string | Date;
+  onChange: (date: Date) => void;
   disabled?: (date: Date) => boolean;
   placeholder?: string;
+  minDate?: string;
 }
 
 export const DateSelector = ({ 
-  date, 
-  onSelect, 
+  id,
+  value, 
+  onChange, 
   disabled, 
-  placeholder = "Select date" 
+  placeholder = "Select date",
+  minDate
 }: DateSelectorProps) => {
   return (
     <Popover>
       <PopoverTrigger asChild>
         <Button
+          id={id}
           variant="outline"
-          className={`w-full justify-start text-left font-normal ${!date && "text-muted-foreground"}`}
+          className={`w-full justify-start text-left font-normal ${!value && "text-muted-foreground"}`}
         >
           <CalendarIcon className="mr-2 h-4 w-4" />
-          {date ? formatDateMDY(date) : <span>{placeholder}</span>}
+          {value ? formatDateMDY(value) : <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
           mode="single"
-          selected={date ? new Date(date) : undefined}
-          onSelect={(date) => date && onSelect(date)}
+          selected={value ? new Date(value) : undefined}
+          onSelect={(date) => date && onChange(date)}
           initialFocus
           className="p-3 pointer-events-auto"
           disabled={disabled}

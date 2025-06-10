@@ -47,7 +47,7 @@ export const useEventForm = () => {
   };
 
   const handleDateChange = (field: string, value: Date) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: value.toISOString() }));
   };
 
   const handleTimeChange = (field: string, value: string) => {
