@@ -351,10 +351,6 @@ session_not_after = "2592000"
 # Configure the expiry of refresh tokens. Defaults to 7776000 seconds (90 days).
 refresh_token_not_after = "7776000"
 
-# CAPTCHA SETTINGS - COMPLETELY DISABLED
-[auth.security.captcha]
-enabled = false
-
 [edge_runtime]
 enabled = true
 # Configure one of the supported request policies: `oneshot`, `per_worker`.
@@ -367,6 +363,3 @@ port = 54327
 vector_port = 54328
 # Configure one of the supported backends: `postgres`, `bigquery`.
 backend = "postgres"
-
-# ... keep existing code (all functions configurations)
-
