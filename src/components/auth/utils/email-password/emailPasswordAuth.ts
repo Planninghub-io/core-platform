@@ -18,40 +18,10 @@ export const handleUserSignIn = async (
   }
   
   try {
-    // Get Turnstile token if available
-    let captchaToken = null;
-    if (typeof window !== 'undefined' && window.turnstile) {
-      try {
-        // Get the token from the existing widget
-        captchaToken = window.turnstile.getResponse();
-        
-        if (!captchaToken) {
-          console.log("No token found from existing widget, forcing execution");
-          
-          try {
-            // Try to execute the widget to get a token
-            captchaToken = await window.turnstile.execute();
-            console.log("Token obtained via execute:", captchaToken ? "Success" : "Failed");
-          } catch (execError) {
-            console.error("Error executing Turnstile:", execError);
-          }
-        }
-        
-        console.log("Turnstile token for signin:", captchaToken ? "Token received" : "No token");
-      } catch (captchaError) {
-        console.error("Turnstile error during signin:", captchaError);
-      }
-    } else {
-      console.warn("Turnstile not available");
-    }
-    
-    // Include the captcha token in the auth request
+    // Sign in without captcha token
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
-      password,
-      options: captchaToken ? {
-        captchaToken
-      } : undefined
+      password
     });
     
     if (error) {
@@ -59,12 +29,6 @@ export const handleUserSignIn = async (
         toast({
           title: "Sign In Failed",
           description: "Incorrect email or password. Please try again.",
-          variant: "destructive",
-        });
-      } else if (error.message.includes("captcha verification")) {
-        toast({
-          title: "CAPTCHA Verification Failed",
-          description: "Please try again with CAPTCHA verification.",
           variant: "destructive",
         });
       } else {

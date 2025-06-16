@@ -1,5 +1,5 @@
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,89 +20,6 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness, error }: SignUpFormProps)
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const turnstileWidgetId = useRef<string | null>(null);
-  const turnstileLoaded = useRef(false);
-
-  // Load Turnstile script on component mount
-  useEffect(() => {
-    const loadTurnstile = () => {
-      if (typeof window !== 'undefined' && !document.getElementById('turnstile-script')) {
-        const script = document.createElement('script');
-        script.id = 'turnstile-script';
-        script.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js';
-        script.async = true;
-        script.defer = true;
-        
-        script.onload = () => {
-          turnstileLoaded.current = true;
-          console.log("Turnstile script loaded");
-          renderTurnstile();
-        };
-        
-        document.head.appendChild(script);
-      } else if (typeof window !== 'undefined' && window.turnstile) {
-        turnstileLoaded.current = true;
-        renderTurnstile();
-      }
-    };
-    
-    loadTurnstile();
-    
-    return () => {
-      // Clean up Turnstile widget when component unmounts
-      cleanupTurnstile();
-    };
-  }, []);
-
-  const renderTurnstile = () => {
-    // Only render if the script is loaded and window.turnstile exists
-    if (typeof window !== 'undefined' && window.turnstile && turnstileLoaded.current) {
-      try {
-        // First clean up any existing widgets
-        cleanupTurnstile();
-        
-        // Get the container element
-        const captchaContainer = document.getElementById('cf-turnstile');
-        if (!captchaContainer) {
-          console.error("Turnstile container not found");
-          return;
-        }
-        
-        // Make sure the container is empty
-        captchaContainer.innerHTML = '';
-        
-        console.log("Rendering new Turnstile widget");
-        
-        // Render a new widget
-        turnstileWidgetId.current = window.turnstile.render('#cf-turnstile', {
-          sitekey: '0x4AAAAAAAEGsBbr9CuGHcR1', // Default Turnstile site key for Supabase
-          theme: 'light',
-          callback: function(token: string) {
-            console.log("Turnstile token received");
-          }
-        });
-        
-        console.log("Turnstile widget ID:", turnstileWidgetId.current);
-      } catch (e) {
-        console.error("Error rendering Turnstile widget:", e);
-      }
-    }
-  };
-
-  const cleanupTurnstile = () => {
-    if (typeof window !== 'undefined' && window.turnstile) {
-      try {
-        // Only remove if we have a widget ID
-        if (turnstileWidgetId.current) {
-          console.log("Removing Turnstile widget:", turnstileWidgetId.current);
-          window.turnstile.remove(turnstileWidgetId.current);
-          turnstileWidgetId.current = null;
-        }
-      } catch (e) {
-        console.error("Error cleaning up Turnstile widget:", e);
-      }
-    }
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,9 +83,6 @@ const SignUpForm = ({ onSubmit, isLoading, isBusiness, error }: SignUpFormProps)
           </button>
         </div>
       </div>
-      
-      {/* Hidden container for Turnstile */}
-      <div id="cf-turnstile" className="mt-4"></div>
       
       <Button type="submit" disabled={isLoading} className="w-full">
         {isLoading ? 'Loading...' : 'Sign Up'}

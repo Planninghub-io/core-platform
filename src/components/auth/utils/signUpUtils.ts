@@ -15,39 +15,11 @@ export const handleUserSignUp = async (
   const { email, password } = formData;
 
   try {
-    // Get Turnstile token if available
-    let captchaToken = null;
-    if (typeof window !== 'undefined' && window.turnstile) {
-      try {
-        // Get the token from the existing widget
-        captchaToken = window.turnstile.getResponse();
-        
-        if (!captchaToken) {
-          console.log("No token found from existing widget, forcing execution");
-          
-          try {
-            // Try to execute the widget to get a token
-            captchaToken = await window.turnstile.execute();
-            console.log("Token obtained via execute:", captchaToken ? "Success" : "Failed");
-          } catch (execError) {
-            console.error("Error executing Turnstile:", execError);
-          }
-        }
-        
-        console.log("Turnstile token for signup:", captchaToken ? "Token received" : "No token");
-      } catch (captchaError) {
-        console.error("Turnstile error during signup:", captchaError);
-      }
-    } else {
-      console.warn("Turnstile not available");
-    }
-    
-    // Sign up with the Supabase client
+    // Sign up with the Supabase client (without captcha)
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        captchaToken,
         data: {
           account_type: isBusiness ? 'business' : 'individual',
           needs_profile_setup: true,
@@ -61,12 +33,6 @@ export const handleUserSignUp = async (
         toast({
           title: "Registration Error",
           description: "This email is already registered. Please sign in instead.",
-          variant: "destructive",
-        });
-      } else if (error.message.includes("captcha verification")) {
-        toast({
-          title: "CAPTCHA Verification Failed",
-          description: "Please try again with CAPTCHA verification.",
           variant: "destructive",
         });
       } else {
