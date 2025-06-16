@@ -18,13 +18,29 @@ export const handleUserSignIn = async (
   }
   
   try {
-    // Sign in without captcha token
+    console.log("Attempting sign in with email:", email);
+    
+    // Sign in without any captcha-related parameters
     const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
+      email: email.trim(),
+      password: password
     });
     
+    console.log("Sign in response:", { data, error });
+    
     if (error) {
+      console.error("Sign in error:", error);
+      
+      // Handle specific error cases
+      if (error.message.includes("captcha")) {
+        toast({
+          title: "Authentication Error",
+          description: "There's a configuration issue with authentication. Please try again later.",
+          variant: "destructive",
+        });
+        return { success: false, error: "Authentication configuration error" };
+      }
+      
       if (error.message.includes("Invalid login credentials")) {
         toast({
           title: "Sign In Failed",
@@ -50,17 +66,24 @@ export const handleUserSignIn = async (
       return { success: false, error: "Verification required" };
     }
 
-    const { data: mfaData, error: mfaError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    
-    if (!mfaError && mfaData.currentLevel === 'aal1' && mfaData.nextLevel === 'aal2') {
-      localStorage.setItem('authRedirectPath', '/auth/mfa-challenge');
-      redirectCallback();
-      return { success: false, error: "MFA challenge required" };
+    // Check for MFA requirements
+    try {
+      const { data: mfaData, error: mfaError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      
+      if (!mfaError && mfaData.currentLevel === 'aal1' && mfaData.nextLevel === 'aal2') {
+        localStorage.setItem('authRedirectPath', '/auth/mfa-challenge');
+        redirectCallback();
+        return { success: false, error: "MFA challenge required" };
+      }
+    } catch (mfaCheckError) {
+      console.log("MFA check failed, continuing without MFA:", mfaCheckError);
     }
 
+    console.log("Sign in successful");
     redirectCallback();
     return { success: true, error: null };
   } catch (error: any) {
+    console.error("Unexpected sign in error:", error);
     toast({
       title: "Sign In Error",
       description: "An unexpected error occurred. Please try again.",

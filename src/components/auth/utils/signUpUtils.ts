@@ -15,11 +15,17 @@ export const handleUserSignUp = async (
   const { email, password } = formData;
 
   try {
-    // Sign up with the Supabase client (without captcha)
+    console.log("Attempting sign up with email:", email);
+    
+    // Get the current origin for redirect URL
+    const redirectUrl = `${window.location.origin}/`;
+    
+    // Sign up without any captcha-related parameters
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
+      email: email.trim(),
+      password: password,
       options: {
+        emailRedirectTo: redirectUrl,
         data: {
           account_type: isBusiness ? 'business' : 'individual',
           needs_profile_setup: true,
@@ -28,7 +34,21 @@ export const handleUserSignUp = async (
       },
     });
 
+    console.log("Sign up response:", { data, error });
+
     if (error) {
+      console.error("Sign up error:", error);
+      
+      // Handle specific error cases
+      if (error.message.includes("captcha")) {
+        toast({
+          title: "Registration Error",
+          description: "There's a configuration issue with registration. Please try again later.",
+          variant: "destructive",
+        });
+        return { success: false, error: "Registration configuration error" };
+      }
+      
       if (error.message.includes("User already registered")) {
         toast({
           title: "Registration Error",
@@ -60,10 +80,12 @@ export const handleUserSignUp = async (
       return { success: true, error: null };
     }
 
+    console.log("Sign up successful");
     // Redirect to profile setup
     redirectCallback();
     return { success: true, error: null };
   } catch (error: any) {
+    console.error("Unexpected sign up error:", error);
     toast({
       title: "Registration Error",
       description: "An unexpected error occurred. Please try again.",
