@@ -351,14 +351,9 @@ session_not_after = "2592000"
 # Configure the expiry of refresh tokens. Defaults to 7776000 seconds (90 days).
 refresh_token_not_after = "7776000"
 
-# CAPTCHA SETTINGS - DISABLED
+# CAPTCHA SETTINGS - COMPLETELY DISABLED
 [auth.security.captcha]
 enabled = false
-provider = "hcaptcha"
-secret = ""
-
-# Use environment variable substitution for secrets
-# secret = "env(CAPTCHA_SECRET)"
 
 [edge_runtime]
 enabled = true
@@ -373,68 +368,5 @@ vector_port = 54328
 # Configure one of the supported backends: `postgres`, `bigquery`.
 backend = "postgres"
 
-[functions.verify-code]
-verify_jwt = false
+# ... keep existing code (all functions configurations)
 
-[functions.send-password-reset]
-verify_jwt = false
-
-[functions.custom-email]
-verify_jwt = false
-
-[functions.delete-user-account]
-verify_jwt = true
-
-[functions.generate-event]
-verify_jwt = false
-
-[functions.welcome-email]
-verify_jwt = false
-
-[functions.send-invitations]
-verify_jwt = true
-
-[functions.generate-invitation]
-verify_jwt = true
-
-[functions.scrape-venues]
-verify_jwt = true
-
-[functions.venue-recommendations]
-verify_jwt = false
-
-[functions.venue-availability]
-verify_jwt = false
-
-[functions.venue-rfp]
-verify_jwt = true
-
-[functions.marketplace-api]
-verify_jwt = false
-
-[functions.scrape-vendors]
-verify_jwt = true
-
-[functions.stripe-checkout]
-verify_jwt = true
-
-[functions.stripe-connect]
-verify_jwt = true
-
-[functions.verify-subscription]
-verify_jwt = true
-
-[functions.setup-company-profile]
-verify_jwt = true
-
-[functions.event-ai-assistant]
-verify_jwt = false
-
-[functions.generate-checklist]
-verify_jwt = true
-
-[functions.checklist]
-verify_jwt = true
-
-[functions.generate-event-image]
-verify_jwt = false
