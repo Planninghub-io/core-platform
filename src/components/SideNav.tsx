@@ -7,8 +7,7 @@ import {
   Users, 
   Settings, 
   Compass,
-  Building,
-  PlusCircle
+  Building
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -23,11 +22,9 @@ export const SideNav: React.FC<SideNavProps> = ({ onNavigate }) => {
 
   const navItems = [
     { icon: Home, label: 'Home', path: '/' },
-    { icon: PlusCircle, label: 'Create Event', path: '/create-event' },
     { icon: Calendar, label: 'Events Hub', path: '/events-hub' },
     { icon: Compass, label: 'Discover', path: '/discover' },
     { icon: Building, label: 'Marketplace', path: '/marketplace' },
-    { icon: Users, label: 'Campaign Hub', path: '/campaign-hub' },
     { icon: Settings, label: 'Settings', path: '/settings/profile' },
   ];
 
