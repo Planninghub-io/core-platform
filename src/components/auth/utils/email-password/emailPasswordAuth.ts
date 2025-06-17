@@ -20,7 +20,7 @@ export const handleUserSignIn = async (
   try {
     console.log("Attempting sign in with email:", email);
     
-    // Sign in without any captcha-related parameters
+    // Clean sign in request with minimal parameters
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim(),
       password: password
@@ -31,14 +31,19 @@ export const handleUserSignIn = async (
     if (error) {
       console.error("Sign in error:", error);
       
-      // Handle specific error cases
-      if (error.message.includes("captcha")) {
+      // Handle specific error cases with more detailed logging
+      if (error.message.includes("captcha") || error.message.includes("verification")) {
+        console.error("Captcha/verification error details:", {
+          message: error.message,
+          status: error.status,
+          details: error
+        });
         toast({
-          title: "Authentication Error",
-          description: "There's a configuration issue with authentication. Please try again later.",
+          title: "Sign In Error",
+          description: "There's a temporary authentication issue. Please try again in a moment.",
           variant: "destructive",
         });
-        return { success: false, error: "Authentication configuration error" };
+        return { success: false, error: "Authentication service temporarily unavailable" };
       }
       
       if (error.message.includes("Invalid login credentials")) {

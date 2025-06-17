@@ -20,7 +20,7 @@ export const handleUserSignUp = async (
     // Get the current origin for redirect URL
     const redirectUrl = `${window.location.origin}/`;
     
-    // Sign up without any captcha-related parameters
+    // Clean sign up request with minimal parameters
     const { data, error } = await supabase.auth.signUp({
       email: email.trim(),
       password: password,
@@ -39,14 +39,19 @@ export const handleUserSignUp = async (
     if (error) {
       console.error("Sign up error:", error);
       
-      // Handle specific error cases
-      if (error.message.includes("captcha")) {
+      // Handle specific error cases with detailed logging
+      if (error.message.includes("captcha") || error.message.includes("verification")) {
+        console.error("Captcha/verification error details:", {
+          message: error.message,
+          status: error.status,
+          details: error
+        });
         toast({
           title: "Registration Error",
-          description: "There's a configuration issue with registration. Please try again later.",
+          description: "There's a temporary registration issue. Please try again in a moment.",
           variant: "destructive",
         });
-        return { success: false, error: "Registration configuration error" };
+        return { success: false, error: "Registration service temporarily unavailable" };
       }
       
       if (error.message.includes("User already registered")) {
