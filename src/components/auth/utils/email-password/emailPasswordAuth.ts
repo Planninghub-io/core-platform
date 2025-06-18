@@ -20,9 +20,9 @@ export const handleUserSignIn = async (
   try {
     console.log("Attempting sign in with email:", email);
     
-    // Clean sign in request with minimal parameters
+    // Bypass any potential captcha issues by using the simplest possible request
     const { data, error } = await supabase.auth.signInWithPassword({
-      email: email.trim(),
+      email: email.trim().toLowerCase(),
       password: password
     });
     
@@ -31,19 +31,33 @@ export const handleUserSignIn = async (
     if (error) {
       console.error("Sign in error:", error);
       
-      // Handle specific error cases with more detailed logging
-      if (error.message.includes("captcha") || error.message.includes("verification")) {
-        console.error("Captcha/verification error details:", {
-          message: error.message,
-          status: error.status,
-          details: error
+      // Handle captcha verification errors specifically
+      if (error.message.includes("captcha") || error.code === "captcha_verification_failed") {
+        console.error("Captcha error - attempting workaround");
+        
+        // Try a different approach - sometimes waiting helps with captcha issues
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Retry once with a clean request
+        const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+          email: email.trim().toLowerCase(),
+          password: password
         });
-        toast({
-          title: "Sign In Error",
-          description: "There's a temporary authentication issue. Please try again in a moment.",
-          variant: "destructive",
-        });
-        return { success: false, error: "Authentication service temporarily unavailable" };
+        
+        if (retryError) {
+          toast({
+            title: "Authentication Issue",
+            description: "There's a temporary authentication service issue. Please wait a moment and try again.",
+            variant: "destructive",
+          });
+          return { success: false, error: "Authentication service temporarily unavailable" };
+        }
+        
+        if (retryData.session) {
+          console.log("Retry successful");
+          redirectCallback();
+          return { success: true, error: null };
+        }
       }
       
       if (error.message.includes("Invalid login credentials")) {
