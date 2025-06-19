@@ -20,7 +20,7 @@ export const handleUserSignUp = async (
     // Get the current origin for redirect URL
     const redirectUrl = `${window.location.origin}/`;
     
-    // Use the simplest possible sign up request to bypass captcha issues
+    // Use the most basic sign up request possible
     const { data, error } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password: password,
@@ -28,8 +28,7 @@ export const handleUserSignUp = async (
         emailRedirectTo: redirectUrl,
         data: {
           account_type: isBusiness ? 'business' : 'individual',
-          needs_profile_setup: true,
-          email_verified: true  // Skip email verification to avoid captcha
+          needs_profile_setup: true
         },
       },
     });
@@ -39,63 +38,80 @@ export const handleUserSignUp = async (
     if (error) {
       console.error("Sign up error:", error);
       
-      // Handle captcha verification errors specifically
-      if (error.message.includes("captcha") || error.code === "captcha_verification_failed") {
-        console.error("Captcha error during sign up - attempting workaround");
-        
-        // Wait and retry
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        const { data: retryData, error: retryError } = await supabase.auth.signUp({
-          email: email.trim().toLowerCase(),
-          password: password,
-          options: {
-            emailRedirectTo: redirectUrl,
-            data: {
-              account_type: isBusiness ? 'business' : 'individual',
-              needs_profile_setup: true,
-              email_verified: true
-            },
-          },
-        });
-        
-        if (retryError) {
-          toast({
-            title: "Registration Issue",
-            description: "There's a temporary registration service issue. Please wait a moment and try again.",
-            variant: "destructive",
-          });
-          return { success: false, error: "Registration service temporarily unavailable" };
-        }
-        
-        if (retryData.user) {
-          toast({
-            title: "Registration Successful",
-            description: "Your account has been created successfully!",
-          });
-          redirectCallback();
-          return { success: true, error: null };
-        }
-      }
-      
+      // Handle specific error cases
       if (error.message.includes("User already registered")) {
         toast({
-          title: "Registration Error",
-          description: "This email is already registered. Please sign in instead.",
+          title: "Account Already Exists",
+          description: "An account with this email already exists. Please sign in instead.",
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "Registration Error",
-          description: error.message,
-          variant: "destructive",
-        });
+        return { success: false, error: "User already exists" };
       }
+      
+      if (error.message.includes("captcha") || 
+          error.code === "captcha_verification_failed" ||
+          error.message.includes("Authentication service temporarily unavailable")) {
+        
+        console.log("Captcha/service error detected during sign up");
+        
+        // Wait and try again
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        try {
+          const { data: retryData, error: retryError } = await supabase.auth.signUp({
+            email: email.trim().toLowerCase(),
+            password: password,
+            options: {
+              emailRedirectTo: redirectUrl,
+              data: {
+                account_type: isBusiness ? 'business' : 'individual',
+                needs_profile_setup: true
+              },
+            },
+          });
+          
+          if (retryError) {
+            console.error("Sign up retry failed:", retryError);
+            toast({
+              title: "Registration Issue",
+              description: "Unable to create account at the moment. Please try again in a few minutes.",
+              variant: "destructive",
+            });
+            return { success: false, error: "Service temporarily unavailable" };
+          }
+          
+          if (retryData.user) {
+            toast({
+              title: "Registration Successful",
+              description: "Your account has been created successfully!",
+            });
+            redirectCallback();
+            return { success: true, error: null };
+          }
+        } catch (retryErr) {
+          console.error("Sign up retry attempt failed:", retryErr);
+        }
+        
+        toast({
+          title: "Registration Service Issue",
+          description: "The registration service is experiencing issues. Please try again shortly.",
+          variant: "destructive",
+        });
+        return { success: false, error: "Service temporarily unavailable" };
+      }
+      
+      // Handle other errors
+      toast({
+        title: "Registration Error",
+        description: error.message || "An error occurred during registration",
+        variant: "destructive",
+      });
       return { success: false, error: error.message };
     }
 
-    // Since we're skipping email confirmation, proceed directly
+    // Check for successful sign up
     if (data.user) {
+      console.log("Sign up successful");
       toast({
         title: "Registration Successful",
         description: "Your account has been created successfully!",
@@ -104,9 +120,14 @@ export const handleUserSignUp = async (
       return { success: true, error: null };
     }
 
-    console.log("Sign up successful");
-    redirectCallback();
-    return { success: true, error: null };
+    // Fallback for unexpected cases
+    toast({
+      title: "Registration Error", 
+      description: "An unexpected error occurred during registration.",
+      variant: "destructive",
+    });
+    return { success: false, error: "Unexpected registration state" };
+
   } catch (error: any) {
     console.error("Unexpected sign up error:", error);
     toast({
@@ -114,6 +135,6 @@ export const handleUserSignUp = async (
       description: "An unexpected error occurred. Please try again.",
       variant: "destructive",
     });
-    return { success: false, error: error.message };
+    return { success: false, error: error.message || "An unexpected error occurred" };
   }
 };

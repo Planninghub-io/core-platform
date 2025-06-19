@@ -20,7 +20,7 @@ export const handleUserSignIn = async (
   try {
     console.log("Attempting sign in with email:", email);
     
-    // Bypass any potential captcha issues by using the simplest possible request
+    // Use the most basic sign-in request possible
     const { data, error } = await supabase.auth.signInWithPassword({
       email: email.trim().toLowerCase(),
       password: password
@@ -31,76 +31,109 @@ export const handleUserSignIn = async (
     if (error) {
       console.error("Sign in error:", error);
       
-      // Handle captcha verification errors specifically
-      if (error.message.includes("captcha") || error.code === "captcha_verification_failed") {
-        console.error("Captcha error - attempting workaround");
-        
-        // Try a different approach - sometimes waiting helps with captcha issues
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Retry once with a clean request
-        const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
-          email: email.trim().toLowerCase(),
-          password: password
-        });
-        
-        if (retryError) {
-          toast({
-            title: "Authentication Issue",
-            description: "There's a temporary authentication service issue. Please wait a moment and try again.",
-            variant: "destructive",
-          });
-          return { success: false, error: "Authentication service temporarily unavailable" };
-        }
-        
-        if (retryData.session) {
-          console.log("Retry successful");
-          redirectCallback();
-          return { success: true, error: null };
-        }
-      }
-      
+      // Handle specific error cases
       if (error.message.includes("Invalid login credentials")) {
         toast({
           title: "Sign In Failed",
           description: "Incorrect email or password. Please try again.",
           variant: "destructive",
         });
-      } else {
+        return { success: false, error: "Invalid credentials" };
+      }
+      
+      if (error.message.includes("captcha") || 
+          error.code === "captcha_verification_failed" ||
+          error.message.includes("Authentication service temporarily unavailable")) {
+        
+        console.log("Captcha/service error detected, attempting alternative approach");
+        
+        // Wait a moment and try again with a clean session
+        await new Promise(resolve => setTimeout(resolve, 1500));
+        
+        try {
+          // Clear any existing session first
+          await supabase.auth.signOut();
+          
+          // Try again with fresh session
+          const { data: retryData, error: retryError } = await supabase.auth.signInWithPassword({
+            email: email.trim().toLowerCase(),
+            password: password
+          });
+          
+          if (retryError) {
+            console.error("Retry also failed:", retryError);
+            toast({
+              title: "Authentication Issue",
+              description: "Unable to sign in at the moment. Please try again in a few minutes.",
+              variant: "destructive",
+            });
+            return { success: false, error: "Service temporarily unavailable" };
+          }
+          
+          if (retryData.session) {
+            console.log("Retry successful");
+            redirectCallback();
+            return { success: true, error: null };
+          }
+        } catch (retryErr) {
+          console.error("Retry attempt failed:", retryErr);
+        }
+        
         toast({
-          title: "Sign In Error",
-          description: error.message,
+          title: "Authentication Service Issue",
+          description: "The authentication service is experiencing issues. Please try again shortly.",
           variant: "destructive",
         });
+        return { success: false, error: "Service temporarily unavailable" };
       }
+      
+      // Handle other errors
+      toast({
+        title: "Sign In Error",
+        description: error.message || "An error occurred during sign in",
+        variant: "destructive",
+      });
       return { success: false, error: error.message };
     }
 
-    if (data.session === null && data.user) {
+    // Check for successful authentication
+    if (data.session && data.user) {
+      console.log("Sign in successful");
+      
+      // Check for MFA requirements
+      try {
+        const { data: mfaData, error: mfaError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+        
+        if (!mfaError && mfaData.currentLevel === 'aal1' && mfaData.nextLevel === 'aal2') {
+          localStorage.setItem('authRedirectPath', '/auth/mfa-challenge');
+          redirectCallback();
+          return { success: false, error: "MFA challenge required" };
+        }
+      } catch (mfaCheckError) {
+        console.log("MFA check failed, continuing without MFA:", mfaCheckError);
+      }
+      
+      redirectCallback();
+      return { success: true, error: null };
+    }
+
+    // Handle case where session is missing but no error
+    if (!data.session && data.user) {
       toast({
         title: "Verification Required",
-        description: "A verification code has been sent to your email.",
+        description: "Please check your email for a verification link.",
       });
-      
-      return { success: false, error: "Verification required" };
+      return { success: false, error: "Email verification required" };
     }
 
-    // Check for MFA requirements
-    try {
-      const { data: mfaData, error: mfaError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      
-      if (!mfaError && mfaData.currentLevel === 'aal1' && mfaData.nextLevel === 'aal2') {
-        localStorage.setItem('authRedirectPath', '/auth/mfa-challenge');
-        redirectCallback();
-        return { success: false, error: "MFA challenge required" };
-      }
-    } catch (mfaCheckError) {
-      console.log("MFA check failed, continuing without MFA:", mfaCheckError);
-    }
+    // Fallback for unexpected cases
+    toast({
+      title: "Sign In Error",
+      description: "An unexpected error occurred. Please try again.",
+      variant: "destructive",
+    });
+    return { success: false, error: "Unexpected authentication state" };
 
-    console.log("Sign in successful");
-    redirectCallback();
-    return { success: true, error: null };
   } catch (error: any) {
     console.error("Unexpected sign in error:", error);
     toast({
