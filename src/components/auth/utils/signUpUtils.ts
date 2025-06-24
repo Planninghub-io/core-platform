@@ -53,34 +53,6 @@ export const handleUserSignUp = async (
 
     if (error) {
       console.error("Sign up error:", error);
-      
-      if (error.message.includes("User already registered")) {
-        toast({
-          title: "Account Already Exists",
-          description: "An account with this email already exists. Please sign in instead.",
-          variant: "destructive",
-        });
-        return { success: false, error: "User already exists" };
-      }
-      
-      if (error.message.includes("Password should be at least")) {
-        toast({
-          title: "Weak Password",
-          description: "Password must be at least 6 characters long",
-          variant: "destructive",
-        });
-        return { success: false, error: "Password too weak" };
-      }
-      
-      if (error.message.includes("Unable to validate email address")) {
-        toast({
-          title: "Invalid Email",
-          description: "Please enter a valid email address",
-          variant: "destructive",
-        });
-        return { success: false, error: "Invalid email" };
-      }
-      
       toast({
         title: "Registration Error",
         description: error.message || "An error occurred during registration",
@@ -93,14 +65,12 @@ export const handleUserSignUp = async (
       console.log("Sign up successful");
       
       if (data.session) {
-        // User is immediately signed in
         toast({
           title: "Registration Successful",
           description: "Your account has been created successfully!",
         });
         redirectCallback();
       } else {
-        // User needs to verify email
         toast({
           title: "Registration Successful",
           description: "Please check your email for a verification link to complete your registration.",

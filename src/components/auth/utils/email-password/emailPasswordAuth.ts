@@ -30,35 +30,6 @@ export const handleUserSignIn = async (
     
     if (error) {
       console.error("Sign in error:", error);
-      
-      // Handle specific error cases
-      if (error.message.includes("Invalid login credentials")) {
-        toast({
-          title: "Sign In Failed",
-          description: "Incorrect email or password. Please try again.",
-          variant: "destructive",
-        });
-        return { success: false, error: "Invalid credentials" };
-      }
-      
-      if (error.message.includes("Email not confirmed")) {
-        toast({
-          title: "Email Not Verified",
-          description: "Please check your email and click the verification link before signing in.",
-          variant: "destructive",
-        });
-        return { success: false, error: "Email not verified" };
-      }
-      
-      if (error.message.includes("Too many requests")) {
-        toast({
-          title: "Too Many Attempts",
-          description: "Please wait a moment before trying again.",
-          variant: "destructive",
-        });
-        return { success: false, error: "Rate limited" };
-      }
-      
       toast({
         title: "Sign In Error",
         description: error.message || "An error occurred during sign in",
@@ -75,14 +46,6 @@ export const handleUserSignIn = async (
       });
       redirectCallback();
       return { success: true, error: null };
-    }
-
-    if (!data.session && data.user) {
-      toast({
-        title: "Verification Required",
-        description: "Please check your email for a verification link.",
-      });
-      return { success: false, error: "Email verification required" };
     }
 
     toast({
