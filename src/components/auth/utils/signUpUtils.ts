@@ -14,6 +14,24 @@ export const handleUserSignUp = async (
 ) => {
   const { email, password } = formData;
 
+  if (!email || !password) {
+    toast({
+      title: "Missing Information",
+      description: "Please enter both email and password",
+      variant: "destructive",
+    });
+    return { success: false, error: "Please enter both email and password" };
+  }
+
+  if (password.length < 6) {
+    toast({
+      title: "Weak Password",
+      description: "Password must be at least 6 characters long",
+      variant: "destructive",
+    });
+    return { success: false, error: "Password too short" };
+  }
+
   try {
     console.log("Attempting sign up with email:", email);
     
@@ -45,6 +63,24 @@ export const handleUserSignUp = async (
         return { success: false, error: "User already exists" };
       }
       
+      if (error.message.includes("Password should be at least")) {
+        toast({
+          title: "Weak Password",
+          description: "Password must be at least 6 characters long",
+          variant: "destructive",
+        });
+        return { success: false, error: "Password too weak" };
+      }
+      
+      if (error.message.includes("Unable to validate email address")) {
+        toast({
+          title: "Invalid Email",
+          description: "Please enter a valid email address",
+          variant: "destructive",
+        });
+        return { success: false, error: "Invalid email" };
+      }
+      
       toast({
         title: "Registration Error",
         description: error.message || "An error occurred during registration",
@@ -55,11 +91,22 @@ export const handleUserSignUp = async (
 
     if (data.user) {
       console.log("Sign up successful");
-      toast({
-        title: "Registration Successful",
-        description: "Your account has been created successfully!",
-      });
-      redirectCallback();
+      
+      if (data.session) {
+        // User is immediately signed in
+        toast({
+          title: "Registration Successful",
+          description: "Your account has been created successfully!",
+        });
+        redirectCallback();
+      } else {
+        // User needs to verify email
+        toast({
+          title: "Registration Successful",
+          description: "Please check your email for a verification link to complete your registration.",
+        });
+      }
+      
       return { success: true, error: null };
     }
 

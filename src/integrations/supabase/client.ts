@@ -28,7 +28,6 @@ const getAppUrl = () => {
   }
   
   // For preview environments (e.g., Lovable preview domains)
-  // Check if is a Lovable URL
   if (hostname.includes('lovable.app') || hostname.includes('gptengineer.app')) {
     return window.location.origin;
   }
@@ -46,7 +45,7 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'pkce', // Using PKCE flow for security
+    flowType: 'pkce',
     storage: typeof window !== 'undefined' ? window.localStorage : undefined,
   }
 });
@@ -72,9 +71,8 @@ export async function safeQuery<T>(queryFn: () => Promise<{ data: T | null; erro
   }
 }
 
-// IMPORTANT: Configure OAuth redirect
+// Configure OAuth redirect
 export const configureOAuthRedirect = (provider: string) => {
-  // Determine the appropriate callback URL based on environment
   const redirectTo = `${APP_URL}/auth/callback`;
   
   console.log(`[OAuth Config] Provider: ${provider}, Redirect URL: ${redirectTo}`);
@@ -83,7 +81,6 @@ export const configureOAuthRedirect = (provider: string) => {
     provider: provider as Provider,
     options: {
       redirectTo,
-      // Add prompt parameter for Google to force account selection
       ...(provider === 'google' && {
         queryParams: {
           prompt: 'select_account',

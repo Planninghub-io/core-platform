@@ -20,18 +20,33 @@ export const useAuthRedirect = ({
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     // Check current auth status
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (error) {
+          console.error("Error getting session:", error);
+          if (mounted) {
+            setUser(null);
+            setLoading(false);
+          }
+          return;
+        }
+
         console.log("Auth check: Session", session?.user ? "user exists" : "no user");
-        setUser(session?.user ?? null);
+        
+        if (mounted) {
+          setUser(session?.user ?? null);
+        }
         
         // If user is authenticated, check if they need to complete profile setup
-        if (session?.user && !skipRedirect) {
+        if (session?.user && !skipRedirect && mounted) {
           // Check if email is verified
           console.log("Checking email verification status");
-          const emailVerified = session.user.user_metadata.email_verified === true;
+          const emailVerified = session.user.email_confirmed_at !== null;
           
           // Check if we're already on the verification page to avoid redirect loops
           const isOnVerificationPage = location.pathname === '/auth/email-verification';
@@ -43,30 +58,39 @@ export const useAuthRedirect = ({
             console.log("Email not verified, redirecting to verification page");
             const email = session.user.email;
             navigate(`/auth/email-verification?email=${encodeURIComponent(email || '')}`, { replace: true });
-            setLoading(false);
+            if (mounted) setLoading(false);
             return;
           }
           
           // Don't check profile setup if we're on the verification page
           if (isOnVerificationPage) {
-            setLoading(false);
+            if (mounted) setLoading(false);
             return;
           }
           
           // Only check profile setup if email is verified
           if (emailVerified) {
             console.log("Email verified, checking profile setup");
-            const needsProfileSetup = await checkProfileSetup();
-            if (needsProfileSetup && location.pathname !== '/profile-setup') {
-              console.log("Profile setup needed, redirecting");
-              navigate('/profile-setup', { replace: true });
+            try {
+              const needsProfileSetup = await checkProfileSetup();
+              if (needsProfileSetup && location.pathname !== '/profile-setup' && mounted) {
+                console.log("Profile setup needed, redirecting");
+                navigate('/profile-setup', { replace: true });
+              }
+            } catch (error) {
+              console.error("Error checking profile setup:", error);
             }
           }
         }
       } catch (error) {
         console.error("Error checking session:", error);
+        if (mounted) {
+          setUser(null);
+        }
       } finally {
-        setLoading(false);
+        if (mounted) {
+          setLoading(false);
+        }
       }
     };
     
@@ -77,6 +101,9 @@ export const useAuthRedirect = ({
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed", event, session?.user ? "user exists" : "no user");
+      
+      if (!mounted) return;
+      
       setUser(session?.user ?? null);
       
       // Skip verification checks if we're already on the verification page
@@ -88,7 +115,7 @@ export const useAuthRedirect = ({
       // Check if email is verified for new user session
       if (session?.user && !skipRedirect) {
         console.log("Checking email verification after auth state change");
-        const emailVerified = session.user.user_metadata.email_verified === true;
+        const emailVerified = session.user.email_confirmed_at !== null;
         
         // If email is not verified, redirect to verification page
         if (!emailVerified) {
@@ -101,11 +128,14 @@ export const useAuthRedirect = ({
         // Only check profile setup if email is verified
         if (emailVerified) {
           console.log("Email verified, checking profile setup");
-          // Check if user needs profile setup after auth state change
-          const needsProfileSetup = await checkProfileSetup();
-          if (needsProfileSetup && location.pathname !== '/profile-setup') {
-            console.log("Profile setup needed, redirecting");
-            navigate('/profile-setup', { replace: true });
+          try {
+            const needsProfileSetup = await checkProfileSetup();
+            if (needsProfileSetup && location.pathname !== '/profile-setup') {
+              console.log("Profile setup needed, redirecting");
+              navigate('/profile-setup', { replace: true });
+            }
+          } catch (error) {
+            console.error("Error checking profile setup:", error);
           }
         }
       }
@@ -117,7 +147,10 @@ export const useAuthRedirect = ({
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate, redirectPath, skipRedirect, location.pathname]);
 
   // Redirect if no user and not loading
