@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase, PRODUCTION_URL } from "../../../integrations/supabase/client";
+import { sendPasswordResetOTP } from "../utils/passwordResetUtils";
 
 export const usePasswordReset = () => {
   const [email, setEmail] = useState("");
@@ -21,33 +21,8 @@ export const usePasswordReset = () => {
     setIsLoading(true);
     
     try {
-      // ALWAYS use the production URL for password reset links
-      // This ensures users are directed to the actual app URL, not the development environment
-      const redirectTo = `${PRODUCTION_URL}/auth/new-password`;
-      console.log("Password reset redirect URL:", redirectTo);
-      
-      // This is the critical line that controls where the email link redirects to
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo
-      });
-      
-      if (error) {
-        toast({
-          title: "Password Reset Failed",
-          description: error.message,
-          variant: "destructive",
-        });
-        
-        return { success: false, error: error.message };
-      }
-      
-      // Show success information to help the user understand what to do next
-      toast({
-        title: "Reset Email Sent",
-        description: "A password reset link has been sent to your email. Please check your inbox and click the link to reset your password.",
-      });
-      
-      return { success: true, error: null };
+      const result = await sendPasswordResetOTP(email, toast);
+      return result;
     } catch (error: any) {
       const errorMessage = error.message || "An unexpected error occurred";
       
