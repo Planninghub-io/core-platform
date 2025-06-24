@@ -1,3 +1,4 @@
+
 # A string used to distinguish different Supabase projects on the same host. Defaults to the
 # working directory name when running `supabase init`.
 project_id = "asexlqsjachwhabzvzwk"
@@ -81,6 +82,8 @@ refresh_token_rotation_enabled = true
 # refresh_token_reuse_interval = 10
 # Allow/disallow new user signups to your project.
 enable_signup = true
+# Disable captcha verification - this was causing authentication failures
+enable_captcha = false
 
 [auth.email]
 # Allow/disallow new user signups via email to your project.
@@ -363,3 +366,4 @@ port = 54327
 vector_port = 54328
 # Configure one of the supported backends: `postgres`, `bigquery`.
 backend = "postgres"
+
