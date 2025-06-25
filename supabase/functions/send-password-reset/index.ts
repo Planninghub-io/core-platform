@@ -1,5 +1,6 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.1';
 import { Resend } from "npm:resend@2.0.0";
 
 const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
@@ -20,13 +21,8 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   try {
-    // Parse the request body to get reset URL and email
+    // Parse the request body to get email
     const body = await req.json();
-    
-    // Always use production URL for reset links - this doesn't actually control the redirection,
-    // but is used as a visual URL in the email
-    const resetUrl = `${PRODUCTION_URL}/auth/new-password`;
-    
     const targetEmail = body.email || "";
     
     if (!targetEmail) {
@@ -34,7 +30,34 @@ const handler = async (req: Request): Promise<Response> => {
     }
     
     console.log("Sending password reset email to:", targetEmail);
-    console.log("With reset URL:", resetUrl);
+
+    // Create Supabase client with service role to generate recovery link
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
+
+    // Generate a recovery link using Supabase Admin API
+    const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'recovery',
+      email: targetEmail,
+      options: {
+        redirectTo: `${PRODUCTION_URL}/auth/new-password`
+      }
+    });
+
+    if (error) {
+      console.error("Error generating recovery link:", error);
+      throw new Error(`Failed to generate recovery link: ${error.message}`);
+    }
+
+    const recoveryLink = data.properties?.action_link;
+    
+    if (!recoveryLink) {
+      throw new Error("No recovery link generated");
+    }
+
+    console.log("Generated recovery link successfully");
 
     const emailResponse = await resend.emails.send({
       from: "PlannerAI <noreply@planninghub.io>",
@@ -116,7 +139,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     <p>We received a request to reset your password. Click the button below to create a new password.</p>
     
-    <a href="${resetUrl}" target="_blank" class="button">Reset Password</a>
+    <a href="${recoveryLink}" target="_blank" class="button">Reset Password</a>
     
     <p class="note">If you didn't request a password reset, you can safely ignore this email - nothing will be changed.</p>
     
