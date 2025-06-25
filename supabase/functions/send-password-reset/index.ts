@@ -37,7 +37,7 @@ const handler = async (req: Request): Promise<Response> => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Generate a recovery link using Supabase Admin API
+    // Generate recovery link using Supabase Admin API
     const { data, error } = await supabaseAdmin.auth.admin.generateLink({
       type: 'recovery',
       email: targetEmail,
@@ -154,7 +154,11 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify(emailResponse), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: "Password reset email sent successfully",
+      data: emailResponse 
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
@@ -164,7 +168,10 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error sending password reset email:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false,
+        error: error.message || "Failed to send password reset email"
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },
