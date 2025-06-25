@@ -3,65 +3,104 @@ import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.1';
 import { Resend } from "npm:resend@2.0.0";
 
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
-
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
 
-// Production URL constant - ensure it's pointing to the actual application
-const PRODUCTION_URL = 'https://yourplanner.ai';
-
 const handler = async (req: Request): Promise<Response> => {
+  console.log("Password reset function called");
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Parse the request body to get email
+    // Check if required environment variables are set
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+
+    if (!supabaseUrl || !serviceRoleKey || !resendApiKey) {
+      console.error("Missing required environment variables");
+      return new Response(
+        JSON.stringify({ error: "Server configuration error" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Parse the request body
     const body = await req.json();
-    const targetEmail = body.email || "";
+    const { email, resetUrl } = body;
     
-    if (!targetEmail) {
-      throw new Error("Email address is required");
+    if (!email) {
+      return new Response(
+        JSON.stringify({ error: "Email is required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
     
-    console.log("Sending password reset email to:", targetEmail);
+    console.log("Processing password reset for:", email);
 
-    // Create Supabase client with service role to generate recovery link
-    const supabaseAdmin = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    // Create Supabase admin client
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
 
-    // Generate recovery link using Supabase Admin API
+    // Generate recovery link
     const { data, error } = await supabaseAdmin.auth.admin.generateLink({
       type: 'recovery',
-      email: targetEmail,
+      email: email,
       options: {
-        redirectTo: `${PRODUCTION_URL}/auth/new-password`
+        redirectTo: resetUrl || 'https://yourplanner.ai/auth/new-password'
       }
     });
 
     if (error) {
       console.error("Error generating recovery link:", error);
-      throw new Error(`Failed to generate recovery link: ${error.message}`);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Failed to generate recovery link: ${error.message}` 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
 
     const recoveryLink = data.properties?.action_link;
     
     if (!recoveryLink) {
-      throw new Error("No recovery link generated");
+      console.error("No recovery link generated");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Failed to generate recovery link" 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
 
-    console.log("Generated recovery link successfully");
+    console.log("Recovery link generated successfully");
 
+    // Initialize Resend
+    const resend = new Resend(resendApiKey);
+
+    // Send email
     const emailResponse = await resend.emails.send({
       from: "PlannerAI <noreply@planninghub.io>",
-      to: [targetEmail],
+      to: [email],
       subject: "Reset your PlannerAI password",
       html: `
 <!DOCTYPE html>
@@ -156,8 +195,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     return new Response(JSON.stringify({ 
       success: true, 
-      message: "Password reset email sent successfully",
-      data: emailResponse 
+      message: "Password reset email sent successfully" 
     }), {
       status: 200,
       headers: {
@@ -165,12 +203,13 @@ const handler = async (req: Request): Promise<Response> => {
         ...corsHeaders,
       },
     });
+
   } catch (error: any) {
-    console.error("Error sending password reset email:", error);
+    console.error("Error in password reset function:", error);
     return new Response(
       JSON.stringify({ 
         success: false,
-        error: error.message || "Failed to send password reset email"
+        error: error.message || "An unexpected error occurred"
       }),
       {
         status: 500,
