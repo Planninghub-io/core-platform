@@ -54,24 +54,37 @@ const AuthForm = ({ type }: AuthFormProps) => {
     setOauthError(null);
     setIsGoogleLoading(true);
     console.log("Google sign-in button clicked");
+    
     try {
       const result = await signInWithGoogle();
+      console.log("Google sign-in result:", result);
+      
       if (!result.success) {
+        console.error("Google sign-in failed:", result.error);
+        
         if (result.providerDisabled) {
           setGoogleButtonDisabled(true);
+          setOauthError("Google sign-in is currently disabled. Please use email and password.");
+        } else {
+          setOauthError(result.error || "Failed to sign in with Google");
         }
-        setOauthError(result.error || "Failed to sign in with Google");
+        setIsGoogleLoading(false);
       }
-      // Note: We don't set loading to false here because
-      // successful sign-in redirects the page
+      // Note: If successful, the page will redirect to Google OAuth
+      // so we don't set loading to false here
     } catch (err) {
       console.error("Error in Google sign-in handler:", err);
-      setOauthError("An unexpected error occurred");
+      setOauthError("An unexpected error occurred during Google sign-in");
       setIsGoogleLoading(false);
     }
     
-    // If the redirect didn't happen, reset loading state after timeout
-    setTimeout(() => setIsGoogleLoading(false), 5000);
+    // Fallback: If the redirect didn't happen after 10 seconds, reset loading state
+    setTimeout(() => {
+      if (isGoogleLoading) {
+        console.log("Google OAuth redirect timeout - resetting loading state");
+        setIsGoogleLoading(false);
+      }
+    }, 10000);
   };
 
   return (
@@ -145,7 +158,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
                 />
               </svg>
             )}
-            Google
+            {isGoogleLoading ? "Connecting..." : "Google"}
           </Button>
           
           <Button
@@ -161,7 +174,7 @@ const AuthForm = ({ type }: AuthFormProps) => {
             ) : (
               <Apple className="mr-2 h-4 w-4" />
             )}
-            Apple
+            {isAppleLoading ? "Connecting..." : "Apple"}
           </Button>
         </div>
       </div>
