@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import SignUpForm from "./SignUpForm";
@@ -65,6 +64,8 @@ const AuthForm = ({ type }: AuthFormProps) => {
         if (result.providerDisabled) {
           setGoogleButtonDisabled(true);
           setOauthError("Google sign-in is currently disabled. Please use email and password.");
+        } else if (result.configError) {
+          setOauthError("Google authentication requires accessing the app from the correct domain. Please try from https://yourplanner.ai or contact support.");
         } else {
           setOauthError(result.error || "Failed to sign in with Google");
         }
