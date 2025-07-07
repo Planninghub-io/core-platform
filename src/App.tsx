@@ -30,6 +30,7 @@ import MarketplaceLayout from './pages/marketplace/MarketplaceLayout';
 import Marketplace from './pages/marketplace/Marketplace';
 import Venues from './pages/marketplace/Venues';
 import Vendors from './pages/marketplace/Vendors';
+import ILEAMarketplace from './pages/marketplace/ILEAMarketplace';
 import VenueRecommendations from './pages/marketplace/VenueRecommendations';
 import PasswordReset from './pages/auth/PasswordReset';
 import ResetPassword from './pages/auth/ResetPassword';
@@ -93,6 +94,7 @@ function App() {
             <Route index element={<Marketplace />} />
             <Route path="venues" element={<Venues />} />
             <Route path="vendors" element={<Vendors />} />
+            <Route path="ilea" element={<ILEAMarketplace />} />
             <Route path="recommendations" element={<VenueRecommendations />} />
             <Route path="embed" element={<EmbedMarketplace />} />
           </Route>
