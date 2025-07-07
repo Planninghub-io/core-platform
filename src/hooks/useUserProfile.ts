@@ -92,7 +92,7 @@ export function useUserProfile() {
           .filter(role => role && typeof role === 'object' && 'companies' in role && role.companies)
           .map(role => {
             const company = role.companies;
-            if (!company) return null;
+            if (!company || Array.isArray(company)) return null;
             
             // Create a Company object with all properties correctly typed
             return {
