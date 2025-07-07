@@ -87,22 +87,26 @@ export function useUserProfile() {
       }
 
       if (userRoles && userRoles.length > 0) {
-        // Use type assertion to help TypeScript handle the nested data structure
+        // Process the nested company data with proper typing
         const userCompanies = userRoles
           .filter(role => role && typeof role === 'object' && 'companies' in role && role.companies)
           .map(role => {
-            const company = role.companies;
-            if (!company || Array.isArray(company)) return null;
+            const companyData = role.companies as any;
+            
+            // Handle both single object and array cases, and ensure it's not null
+            if (!companyData || Array.isArray(companyData)) return null;
             
             // Create a Company object with all properties correctly typed
-            return {
-              id: company.id || '',
-              name: company.name || '',
-              logo_url: company.logo_url || null,
-              business_email: company.business_email || null,
-              business_phone: company.business_phone || null,
-              website_url: company.website_url || null
-            } as Company;
+            const company: Company = {
+              id: companyData.id || '',
+              name: companyData.name || '',
+              logo_url: companyData.logo_url || null,
+              business_email: companyData.business_email || null,
+              business_phone: companyData.business_phone || null,
+              website_url: companyData.website_url || null
+            };
+            
+            return company;
           })
           .filter((company): company is Company => company !== null);
 
