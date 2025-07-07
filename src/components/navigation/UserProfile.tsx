@@ -27,11 +27,6 @@ export const UserProfile = ({ userProfile }: UserProfileProps) => {
           <span className="text-sm font-medium truncate text-purple-900">
             {getDisplayName(userProfile)}
           </span>
-          {userProfile.email && (
-            <span className="text-xs truncate text-muted-foreground">
-              {userProfile.email}
-            </span>
-          )}
         </div>
       </div>
     </div>
