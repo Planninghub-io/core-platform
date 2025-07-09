@@ -22,27 +22,34 @@ export const CitySelector = ({ onCitySelect, selectedCity, type = 'venues' }: Ci
       setError(null);
 
       try {
-        const { data, error } = await supabase.functions.invoke("marketplace-api", {
-          body: {
-            endpoint: 'cities',
-            type: type
-          }
-        });
+        // Fetch cities directly from the database based on type
+        let query;
+        if (type === 'vendors') {
+          query = supabase
+            .from('vendor_services')
+            .select('city')
+            .not('city', 'is', null);
+        } else {
+          query = supabase
+            .from('venues')
+            .select('city')
+            .not('city', 'is', null);
+        }
+
+        const { data, error } = await query;
 
         if (error) {
           throw new Error(error.message);
         }
 
-        if (data?.success && Array.isArray(data?.data)) {
-          setCities(data.data);
-        } else {
-          setCities([]);
-        }
+        // Extract unique cities from the data
+        const uniqueCities = [...new Set(data?.map(item => item.city).filter(Boolean))] as string[];
+        setCities(uniqueCities.sort());
       } catch (err: any) {
         console.error("Failed to fetch cities:", err);
         setError(err.message || "Failed to load cities");
-        // Continue with empty cities array instead of breaking the UI
-        setCities([]);
+        // Fallback to common cities if the query fails
+        setCities(['Austin', 'Dallas', 'Houston', 'San Antonio']);
       } finally {
         setIsLoading(false);
       }
