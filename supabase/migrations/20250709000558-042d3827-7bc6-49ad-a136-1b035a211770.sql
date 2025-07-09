@@ -1,0 +1,36 @@
+
+-- First, create companies for the venues that don't already exist
+INSERT INTO companies (name, type, business_email, business_phone, website_url, address) VALUES
+('Austin Convention Center', 'venue', 'info@austinconventioncenter.com', '(512) 404-4000', 'https://www.austinconventioncenter.com', '500 E Cesar Chavez St, Austin, TX 78701'),
+('JW Marriott Austin', 'venue', 'sales@jwmarriottaustin.com', '(512) 474-4777', 'https://www.marriott.com/hotels/travel/ausjw-jw-marriott-austin/', '110 E 2nd St, Austin, TX 78701'),
+('Hotel Van Zandt', 'venue', 'events@hotelvanzandt.com', '(512) 542-5300', 'https://www.hotelvanzandt.com', '605 Davis St, Austin, TX 78701'),
+('Speakeasy Austin', 'venue', 'info@speakeasyaustin.com', '(512) 476-8017', 'https://speakeasyaustin.com', '412 Congress Ave, Austin, TX 78701'),
+('Palmer Events Center', 'venue', 'info@palmereventscenter.com', '(512) 404-4500', 'https://www.palmereventscenter.com', '900 Barton Springs Rd, Austin, TX 78704'),
+('Lone Star Court', 'venue', 'groupsales@lonestarcourt.com', '(512) 814-2625', 'https://www.lonestarcourt.com', '10901 Domain Drive, Austin, TX 78758'),
+('Austin Central Library', 'venue', 'centralevents@austintexas.gov', '(512) 974-7400', 'https://library.austintexas.gov', '710 W Cesar Chavez St, Austin, TX 78701'),
+('Emo''s Austin', 'venue', 'emosaustinevents@livenation.com', '(512) 777-0873', 'https://www.emosaustin.com', '2015 E Riverside Dr, Austin, TX 78741'),
+('Scoot Inn', 'venue', 'scootinnevents@livenation.com', '(512) 777-0873', 'https://www.scootinnaustin.com', '1308 E 4th St, Austin, TX 78702'),
+('Brazos Hall', 'venue', 'events@brazos-hall.com', '(512) 729-0073', 'https://www.brazos-hall.com', '204 E 4th St, Austin, TX 78701'),
+('ACL Live', 'venue', 'info@acl-live.com', '(877) 435-9849', 'https://www.acl-live.com', '310 Willie Nelson Blvd, Austin, TX 78701'),
+('Fair Market', 'venue', 'info@fairmarketaustin.com', '(512) 494-9093', 'https://www.fairmarketaustin.com', '1100 E 5th St, Austin, TX 78702'),
+('The Long Center', 'venue', 'events@thelongcenter.org', '(512) 474-5664', 'https://thelongcenter.org', '701 W Riverside Dr, Austin, TX 78704'),
+('Paramount Theatre', 'venue', 'rentals@austintheatre.org', '(512) 472-5470', 'https://www.austintheatre.org', '713 Congress Ave, Austin, TX 78701')
+ON CONFLICT (name) DO NOTHING;
+
+-- Insert venues into the venues table
+INSERT INTO venues (name, location, city, zipcode, capacity, company_id, amenities) VALUES
+('Austin Convention Center', '500 E Cesar Chavez St, Austin, TX 78701', 'Austin', '78701', 10000, (SELECT id FROM companies WHERE name = 'Austin Convention Center' LIMIT 1), '{"space_sqft": 200000, "venue_type": "convention_center", "booking_link": "https://www.austinconventioncenter.com/planners/event-space/"}'),
+('JW Marriott Austin', '110 E 2nd St, Austin, TX 78701', 'Austin', '78701', 1000, (SELECT id FROM companies WHERE name = 'JW Marriott Austin' LIMIT 1), '{"space_sqft": 120000, "venue_type": "hotel", "booking_link": "https://www.marriott.com/meeting-event-hotels/"}'),
+('Hotel Van Zandt', '605 Davis St, Austin, TX 78701', 'Austin', '78701', 319, (SELECT id FROM companies WHERE name = 'Hotel Van Zandt' LIMIT 1), '{"space_sqft": 5240, "venue_type": "boutique_hotel", "location_note": "Rainey Street", "booking_link": "https://www.hotelvanzandt.com/events/"}'),
+('Speakeasy Austin', '412 Congress Ave, Austin, TX 78701', 'Austin', '78701', 350, (SELECT id FROM companies WHERE name = 'Speakeasy Austin' LIMIT 1), '{"levels": 3, "capacity_range": "100-350", "venue_type": "entertainment", "features": ["live_music", "private_events"], "booking_link": "https://speakeasyaustin.com/private-events/"}'),
+('Palmer Events Center', '900 Barton Springs Rd, Austin, TX 78704', 'Austin', '78704', 5000, (SELECT id FROM companies WHERE name = 'Palmer Events Center' LIMIT 1), '{"venue_type": "event_center", "features": ["trade_shows", "banquets", "concerts"], "city_owned": true, "booking_link": "https://www.palmereventscenter.com/book-an-event/"}'),
+('Lone Star Court', '10901 Domain Drive, Austin, TX 78758', 'Austin', '78758', 200, (SELECT id FROM companies WHERE name = 'Lone Star Court' LIMIT 1), '{"indoor_sqft": 2000, "pavilion_sqft": 1600, "lawn_sqft": 1800, "venue_type": "boutique_hotel", "booking_link": "https://www.lonestarcourt.com/meetings-events.htm"}'),
+('Austin Central Library Event Center', '710 W Cesar Chavez St, Austin, TX 78701', 'Austin', '78701', 300, (SELECT id FROM companies WHERE name = 'Austin Central Library' LIMIT 1), '{"space_sqft": 4749, "features": ["indoor_outdoor", "rooftop_garden", "av_equipped"], "venue_type": "library", "booking_link": "https://library.austintexas.gov/spaces/central-event-center"}'),
+('Emo''s Austin', '2015 E Riverside Dr, Austin, TX 78741', 'Austin', '78741', 1700, (SELECT id FROM companies WHERE name = 'Emo''s Austin' LIMIT 1), '{"venue_type": "music_venue", "features": ["live_music", "private_events"], "booking_link": "https://www.emosaustin.com/private-events"}'),
+('Scoot Inn', '1308 E 4th St, Austin, TX 78702', 'Austin', '78702', 400, (SELECT id FROM companies WHERE name = 'Scoot Inn' LIMIT 1), '{"venue_type": "historic_venue", "features": ["indoor_outdoor", "concerts", "private_events"], "historic": true, "booking_link": "https://www.scootinnaustin.com/private-events"}'),
+('Brazos Hall', '204 E 4th St, Austin, TX 78701', 'Austin', '78701', 900, (SELECT id FROM companies WHERE name = 'Brazos Hall' LIMIT 1), '{"venue_type": "industrial", "features": ["multi_level", "rooftop"], "style": "industrial", "booking_link": "https://www.brazos-hall.com/contact"}'),
+('ACL Live at the Moody Theater', '310 Willie Nelson Blvd, Austin, TX 78701', 'Austin', '78701', 2750, (SELECT id FROM companies WHERE name = 'ACL Live' LIMIT 1), '{"venue_type": "theater", "features": ["state_of_the_art", "downtown_location"], "booking_link": "https://www.acl-live.com/private-events"}'),
+('Circuit of the Americas', '9201 Circuit of the Americas Blvd, Austin, TX 78617', 'Austin', '78617', 20000, (SELECT id FROM companies WHERE name = 'Circuit of the Americas' LIMIT 1), '{"venue_type": "motorsports", "features": ["amphitheater", "track_side_hospitality", "large_scale"], "booking_link": "https://www.circuitoftheamericas.com/venue-rentals"}'),
+('Fair Market', '1100 E 5th St, Austin, TX 78702', 'Austin', '78702', 1500, (SELECT id FROM companies WHERE name = 'Fair Market' LIMIT 1), '{"venue_type": "warehouse", "style": "industrial", "capacity": "1500+", "booking_link": "https://www.fairmarketaustin.com/contact"}'),
+('The Long Center for the Performing Arts', '701 W Riverside Dr, Austin, TX 78704', 'Austin', '78704', 2442, (SELECT id FROM companies WHERE name = 'The Long Center' LIMIT 1), '{"venue_type": "performing_arts", "features": ["multiple_spaces", "outdoor_terraces"], "dell_hall_capacity": 2442, "booking_link": "https://thelongcenter.org/rentals/"}'),
+('Paramount Theatre', '713 Congress Ave, Austin, TX 78701', 'Austin', '78701', 1270, (SELECT id FROM companies WHERE name = 'Paramount Theatre' LIMIT 1), '{"venue_type": "historic_theater", "features": ["ornate_interior", "av_included"], "historic": true, "booking_link": "https://www.austintheatre.org/about/rent-our-theatres/"}');
