@@ -57,7 +57,8 @@ const fetchILEAVendors = async (city: string = ""): Promise<ILEAVendor[]> => {
       zipcode,
       price_range_start,
       price_range_end,
-      companies!inner (
+      company_id,
+      companies (
         name,
         id,
         business_email,
@@ -101,7 +102,8 @@ const fetchILEAVenues = async (city: string = ""): Promise<ILEAVenue[]> => {
       zipcode,
       capacity,
       amenities,
-      companies!inner (
+      company_id,
+      companies (
         name,
         id,
         business_email,
