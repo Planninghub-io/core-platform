@@ -3,23 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, DollarSign, Building, ExternalLink, Phone, Mail, Globe } from "lucide-react";
-
-interface ILEAVendor {
-  id: string;
-  name: string;
-  description?: string;
-  city?: string;
-  zipcode?: string;
-  price_range_start?: number;
-  price_range_end?: number;
-  company?: {
-    name: string;
-    id: string;
-    business_email?: string;
-    business_phone?: string;
-    website_url?: string;
-  };
-}
+import { ILEAVendor } from "@/types/ilea";
 
 interface ILEAVendorCardProps {
   vendor: ILEAVendor;

@@ -4,24 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Users, Building, ExternalLink, Phone, Mail, Globe } from "lucide-react";
-
-interface ILEAVenue {
-  id: string;
-  name: string;
-  location?: string;
-  city?: string;
-  zipcode?: string;
-  capacity?: number;
-  amenities?: any;
-  company?: {
-    name: string;
-    id: string;
-    business_email?: string;
-    business_phone?: string;
-    website_url?: string;
-    address?: string;
-  };
-}
+import { ILEAVenue } from "@/types/ilea";
 
 interface ILEAVenueCardProps {
   venue: ILEAVenue;

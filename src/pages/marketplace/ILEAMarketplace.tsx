@@ -1,168 +1,18 @@
 
 import React, { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CitySelector } from "@/components/venue-filters/components/CitySelector";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { ILEAMarketplaceHeader } from "@/components/marketplace/ilea/ILEAMarketplaceHeader";
 import { ILEAVenuesTab } from "@/components/marketplace/ilea/ILEAVenuesTab";
 import { ILEAVendorsTab } from "@/components/marketplace/ilea/ILEAVendorsTab";
-
-interface ILEAVendor {
-  id: string;
-  name: string;
-  description?: string;
-  city?: string;
-  zipcode?: string;
-  price_range_start?: number;
-  price_range_end?: number;
-  company?: {
-    name: string;
-    id: string;
-    business_email?: string;
-    business_phone?: string;
-    website_url?: string;
-  };
-}
-
-interface ILEAVenue {
-  id: string;
-  name: string;
-  location?: string;
-  city?: string;
-  zipcode?: string;
-  capacity?: number;
-  amenities?: any;
-  company?: {
-    name: string;
-    id: string;
-    business_email?: string;
-    business_phone?: string;
-    website_url?: string;
-    address?: string;
-  };
-}
-
-const fetchILEAVendors = async (city: string = ""): Promise<ILEAVendor[]> => {
-  console.log("Fetching ILEA vendors for city:", city);
-  
-  let query = supabase
-    .from("vendor_services")
-    .select(`
-      id,
-      name,
-      description,
-      city,
-      zipcode,
-      price_range_start,
-      price_range_end,
-      company_id,
-      companies (
-        name,
-        id,
-        business_email,
-        business_phone,
-        website_url
-      )
-    `);
-  
-  if (city) {
-    query = query.eq("city", city);
-  }
-  
-  const { data, error } = await query;
-  
-  if (error) {
-    console.error("Error fetching ILEA vendors:", error);
-    throw new Error("Failed to fetch vendors");
-  }
-  
-  console.log("Fetched vendors data:", data);
-  
-  // Transform the data to match our interface
-  const transformedData = (data || []).map(item => ({
-    ...item,
-    company: Array.isArray(item.companies) ? item.companies[0] : item.companies
-  }));
-  
-  return transformedData;
-};
-
-const fetchILEAVenues = async (city: string = ""): Promise<ILEAVenue[]> => {
-  console.log("Fetching ILEA venues for city:", city);
-  
-  try {
-    let query = supabase
-      .from("venues")
-      .select(`
-        id,
-        name,
-        location,
-        city,
-        zipcode,
-        capacity,
-        amenities,
-        company_id,
-        companies (
-          name,
-          id,
-          business_email,
-          business_phone,
-          website_url,
-          address
-        )
-      `);
-    
-    if (city) {
-      query = query.eq("city", city);
-    }
-    
-    console.log("About to execute venues query for city:", city);
-    const { data, error } = await query;
-    
-    console.log("Venues query result:", { data, error, count: data?.length });
-    
-    if (error) {
-      console.error("Error fetching ILEA venues:", error);
-      throw new Error(`Failed to fetch venues: ${error.message}`);
-    }
-    
-    console.log("Raw venues data before transformation:", data);
-    
-    // Transform the data to match our interface
-    const transformedData = (data || []).map(item => {
-      console.log("Transforming venue item:", item);
-      return {
-        ...item,
-        company: Array.isArray(item.companies) ? item.companies[0] : item.companies
-      };
-    });
-    
-    console.log("Final transformed venues data:", transformedData);
-    return transformedData;
-  } catch (err) {
-    console.error("Exception in fetchILEAVenues:", err);
-    throw err;
-  }
-};
+import { useILEAVendors, useILEAVenues } from "@/hooks/useILEAData";
 
 const ILEAMarketplace = () => {
-  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("venues");
   const [selectedCity, setSelectedCity] = useState("Austin");
 
-  const { data: vendors, isLoading: vendorsLoading, error: vendorsError } = useQuery({
-    queryKey: ["ilea_vendors", selectedCity],
-    queryFn: () => fetchILEAVendors(selectedCity),
-    retry: 2,
-  });
-
-  const { data: venues, isLoading: venuesLoading, error: venuesError } = useQuery({
-    queryKey: ["ilea_venues", selectedCity],
-    queryFn: () => fetchILEAVenues(selectedCity),
-    retry: 2,
-  });
+  const { data: vendors, isLoading: vendorsLoading, error: vendorsError } = useILEAVendors(selectedCity);
+  const { data: venues, isLoading: venuesLoading, error: venuesError } = useILEAVenues(selectedCity);
 
   const handleCityChange = (city: string) => {
     console.log("City changed to:", city);

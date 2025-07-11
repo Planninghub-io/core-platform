@@ -2,23 +2,7 @@
 import React from "react";
 import { Compass } from "lucide-react";
 import { ILEAVendorCard } from "./ILEAVendorCard";
-
-interface ILEAVendor {
-  id: string;
-  name: string;
-  description?: string;
-  city?: string;
-  zipcode?: string;
-  price_range_start?: number;
-  price_range_end?: number;
-  company?: {
-    name: string;
-    id: string;
-    business_email?: string;
-    business_phone?: string;
-    website_url?: string;
-  };
-}
+import { ILEAVendor } from "@/types/ilea";
 
 interface ILEAVendorsTabProps {
   vendors: ILEAVendor[] | undefined;
