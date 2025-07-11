@@ -62,7 +62,7 @@ const fetchILEAVenues = async (city: string = ""): Promise<ILEAVenue[]> => {
         capacity,
         amenities,
         company_id,
-        companies (
+        companies!inner (
           name,
           id,
           business_email,
