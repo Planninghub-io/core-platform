@@ -92,47 +92,59 @@ const fetchILEAVendors = async (city: string = ""): Promise<ILEAVendor[]> => {
 const fetchILEAVenues = async (city: string = ""): Promise<ILEAVenue[]> => {
   console.log("Fetching ILEA venues for city:", city);
   
-  let query = supabase
-    .from("venues")
-    .select(`
-      id,
-      name,
-      location,
-      city,
-      zipcode,
-      capacity,
-      amenities,
-      company_id,
-      companies (
-        name,
+  try {
+    let query = supabase
+      .from("venues")
+      .select(`
         id,
-        business_email,
-        business_phone,
-        website_url,
-        address
-      )
-    `);
-  
-  if (city) {
-    query = query.eq("city", city);
+        name,
+        location,
+        city,
+        zipcode,
+        capacity,
+        amenities,
+        company_id,
+        companies (
+          name,
+          id,
+          business_email,
+          business_phone,
+          website_url,
+          address
+        )
+      `);
+    
+    if (city) {
+      query = query.eq("city", city);
+    }
+    
+    console.log("About to execute venues query for city:", city);
+    const { data, error } = await query;
+    
+    console.log("Venues query result:", { data, error, count: data?.length });
+    
+    if (error) {
+      console.error("Error fetching ILEA venues:", error);
+      throw new Error(`Failed to fetch venues: ${error.message}`);
+    }
+    
+    console.log("Raw venues data before transformation:", data);
+    
+    // Transform the data to match our interface
+    const transformedData = (data || []).map(item => {
+      console.log("Transforming venue item:", item);
+      return {
+        ...item,
+        company: Array.isArray(item.companies) ? item.companies[0] : item.companies
+      };
+    });
+    
+    console.log("Final transformed venues data:", transformedData);
+    return transformedData;
+  } catch (err) {
+    console.error("Exception in fetchILEAVenues:", err);
+    throw err;
   }
-  
-  const { data, error } = await query;
-  
-  if (error) {
-    console.error("Error fetching ILEA venues:", error);
-    throw new Error("Failed to fetch venues");
-  }
-  
-  console.log("Fetched venues data:", data);
-  
-  // Transform the data to match our interface
-  const transformedData = (data || []).map(item => ({
-    ...item,
-    company: Array.isArray(item.companies) ? item.companies[0] : item.companies
-  }));
-  
-  return transformedData;
 };
 
 const ILEAMarketplace = () => {
