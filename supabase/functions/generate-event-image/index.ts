@@ -81,12 +81,7 @@ serve(async (req) => {
     
     if (uploadError) {
       console.error('Storage upload error:', uploadError);
-      // If bucket doesn't exist, fall back to returning the original URL
-      console.log('Falling back to returning the original OpenAI URL');
-      return new Response(
-        JSON.stringify({ image_url }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-      );
+      throw new Error(`Failed to store image: ${uploadError.message}`);
     }
     
     // Get the public URL for the uploaded image
