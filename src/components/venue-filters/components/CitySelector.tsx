@@ -57,15 +57,10 @@ export const CitySelector = ({ onCitySelect, selectedCity, type = 'venues' }: Ci
           const uniqueCities = [...new Set(data?.map(item => item.city).filter(Boolean))] as string[];
           console.log('Unique cities found:', uniqueCities);
           
-          // If no cities found in database, use fallback
-          if (uniqueCities.length === 0) {
-            console.log('No cities found in database, using fallback cities');
-            setCities(fallbackCities.sort());
-          } else {
-            // Combine database cities with fallback cities and remove duplicates
-            const allCities = [...new Set([...uniqueCities, ...fallbackCities])];
-            setCities(allCities.sort());
-          }
+          // Always combine with fallback cities to ensure Austin is available
+          const allCities = [...new Set([...uniqueCities, ...fallbackCities])];
+          console.log('All cities (with fallbacks):', allCities);
+          setCities(allCities.sort());
         }
       } catch (err: any) {
         console.error("Failed to fetch cities:", err);
@@ -93,7 +88,8 @@ export const CitySelector = ({ onCitySelect, selectedCity, type = 'venues' }: Ci
     cities: cities.length, 
     selectedCity, 
     selectValue,
-    isLoading 
+    isLoading,
+    citiesList: cities
   });
 
   return (

@@ -53,6 +53,7 @@ const fetchILEAVenues = async (city: string = ""): Promise<ILEAVenue[]> => {
   console.log("Fetching ILEA venues for city:", city);
   
   try {
+    // First, let's try a simpler query without the inner join to see if we get any venues
     let query = supabase
       .from("venues")
       .select(`
@@ -64,7 +65,7 @@ const fetchILEAVenues = async (city: string = ""): Promise<ILEAVenue[]> => {
         capacity,
         amenities,
         company_id,
-        companies!inner (
+        companies (
           name,
           id,
           business_email,
