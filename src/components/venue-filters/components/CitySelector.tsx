@@ -70,7 +70,8 @@ export const CitySelector = ({ onCitySelect, selectedCity, type = 'venues' }: Ci
 
   const handleCityChange = (value: string) => {
     console.log('City selected:', value);
-    onCitySelect(value);
+    // Convert "all" back to empty string for the parent component
+    onCitySelect(value === "all" ? "" : value);
   };
 
   return (
@@ -78,12 +79,12 @@ export const CitySelector = ({ onCitySelect, selectedCity, type = 'venues' }: Ci
       <Label htmlFor="city-select" className="mb-1.5 block">City</Label>
       <div className="relative">
         <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 z-10" />
-        <Select value={selectedCity} onValueChange={handleCityChange} disabled={isLoading}>
+        <Select value={selectedCity === "" ? "all" : selectedCity} onValueChange={handleCityChange} disabled={isLoading}>
           <SelectTrigger id="city-select" className="pl-9">
             <SelectValue placeholder={isLoading ? "Loading cities..." : "Select a city"} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">All Cities</SelectItem>
+            <SelectItem value="all">All Cities</SelectItem>
             {cities.map((city) => (
               <SelectItem key={city} value={city}>{city}</SelectItem>
             ))}
