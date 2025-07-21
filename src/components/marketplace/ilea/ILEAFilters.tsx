@@ -29,7 +29,7 @@ export const ILEAFilters: React.FC<ILEAFiltersProps> = ({
     onSortChange("name");
   };
 
-  const hasActiveFilters = selectedCity && selectedCity !== "all";
+  const hasActiveFilters = selectedCity && selectedCity !== "" && selectedCity !== "all";
 
   return (
     <div className="space-y-6">
@@ -51,7 +51,7 @@ export const ILEAFilters: React.FC<ILEAFiltersProps> = ({
             </Button>
           </div>
           <div className="flex flex-wrap gap-2">
-            {selectedCity && selectedCity !== "all" && (
+            {selectedCity && selectedCity !== "" && selectedCity !== "all" && (
               <Badge variant="secondary" className="flex items-center gap-1">
                 <MapPin className="h-3 w-3" />
                 {selectedCity}

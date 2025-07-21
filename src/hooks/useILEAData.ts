@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ILEAVendor, ILEAVenue } from "@/types/ilea";
@@ -25,7 +26,7 @@ const fetchILEAVendors = async (city: string = ""): Promise<ILEAVendor[]> => {
       )
     `);
   
-  if (city) {
+  if (city && city !== "" && city !== "all") {
     query = query.eq("city", city);
   }
   
@@ -72,7 +73,7 @@ const fetchILEAVenues = async (city: string = ""): Promise<ILEAVenue[]> => {
         )
       `);
     
-    if (city) {
+    if (city && city !== "" && city !== "all") {
       query = query.eq("city", city);
     }
     
@@ -110,6 +111,7 @@ export const useILEAVendors = (selectedCity: string) => {
     queryKey: ["ilea_vendors", selectedCity],
     queryFn: () => fetchILEAVendors(selectedCity),
     retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
 
@@ -118,5 +120,6 @@ export const useILEAVenues = (selectedCity: string) => {
     queryKey: ["ilea_venues", selectedCity],
     queryFn: () => fetchILEAVenues(selectedCity),
     retry: 2,
+    staleTime: 5 * 60 * 1000, // 5 minutes
   });
 };
