@@ -10,7 +10,7 @@ import { useILEAVendors, useILEAVenues } from "@/hooks/useILEAData";
 
 const ILEAMarketplace = () => {
   const [activeTab, setActiveTab] = useState("venues");
-  const [selectedCity, setSelectedCity] = useState("Austin");
+  const [selectedCity, setSelectedCity] = useState(""); // Start with "all cities"
   const [sortBy, setSortBy] = useState("name");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 

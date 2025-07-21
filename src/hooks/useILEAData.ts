@@ -26,7 +26,8 @@ const fetchILEAVendors = async (city: string = ""): Promise<ILEAVendor[]> => {
       )
     `);
   
-  if (city && city !== "") {
+  // Only apply city filter if city is provided and not "all"
+  if (city && city !== "" && city !== "all") {
     query = query.eq("city", city);
   }
   
@@ -73,7 +74,8 @@ const fetchILEAVenues = async (city: string = ""): Promise<ILEAVenue[]> => {
         )
       `);
     
-    if (city && city !== "") {
+    // Only apply city filter if city is provided and not "all"
+    if (city && city !== "" && city !== "all") {
       query = query.eq("city", city);
     }
     
