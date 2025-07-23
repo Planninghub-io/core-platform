@@ -10,7 +10,7 @@ import { useILEAVendors, useILEAVenues } from "@/hooks/useILEAData";
 
 const ILEAMarketplace = () => {
   const [activeTab, setActiveTab] = useState("venues");
-  const [selectedCity, setSelectedCity] = useState(""); // Start with "all cities"
+  const [selectedCity, setSelectedCity] = useState(""); 
   const [sortBy, setSortBy] = useState("name");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
@@ -43,77 +43,84 @@ const ILEAMarketplace = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-8">
+      {/* Hero Header */}
+      <div className="bg-white border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <ILEAMarketplaceHeader />
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6">
-        {/* Navigation Tabs */}
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-          <div className="flex flex-col lg:flex-row gap-6">
-            {/* Sidebar Filters */}
-            <div className="w-full lg:w-80 shrink-0">
-              <div className="bg-white rounded-lg border p-6 sticky top-6">
-                <TabsList className="grid w-full grid-cols-2 mb-6">
-                  <TabsTrigger value="venues" className="text-sm">
-                    Venues ({venues?.length || 0})
-                  </TabsTrigger>
-                  <TabsTrigger value="vendors" className="text-sm">
-                    Vendors ({vendors?.length || 0})
-                  </TabsTrigger>
-                </TabsList>
+          {/* Tab Navigation - Airbnb style */}
+          <div className="mb-8">
+            <TabsList className="grid w-full max-w-md grid-cols-2 h-12 bg-gray-100 rounded-xl p-1">
+              <TabsTrigger 
+                value="venues" 
+                className="text-sm font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+              >
+                Venues ({venues?.length || 0})
+              </TabsTrigger>
+              <TabsTrigger 
+                value="vendors" 
+                className="text-sm font-medium rounded-lg data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+              >
+                Vendors ({vendors?.length || 0})
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-                <ILEAFilters 
-                  selectedCity={selectedCity}
-                  onCityChange={handleCityChange}
-                  activeTab={activeTab}
-                  sortBy={sortBy}
-                  onSortChange={setSortBy}
-                />
-              </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="flex-1">
-              {/* Results Header */}
-              <ILEAResultsHeader
-                activeTab={activeTab}
+          {/* Filters Bar */}
+          <div className="mb-8">
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+              <ILEAFilters 
                 selectedCity={selectedCity}
-                resultCount={currentData?.length || 0}
-                isLoading={isLoading}
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
+                onCityChange={handleCityChange}
+                activeTab={activeTab}
                 sortBy={sortBy}
                 onSortChange={setSortBy}
               />
-
-              {/* Tab Content */}
-              <div className="mt-6">
-                <TabsContent value="venues" className="mt-0">
-                  <ILEAVenuesTab 
-                    venues={venues}
-                    isLoading={venuesLoading}
-                    error={venuesError}
-                    selectedCity={selectedCity}
-                    viewMode={viewMode}
-                    sortBy={sortBy}
-                  />
-                </TabsContent>
-
-                <TabsContent value="vendors" className="mt-0">
-                  <ILEAVendorsTab 
-                    vendors={vendors}
-                    isLoading={vendorsLoading}
-                    error={vendorsError}
-                    selectedCity={selectedCity}
-                    viewMode={viewMode}
-                    sortBy={sortBy}
-                  />
-                </TabsContent>
-              </div>
             </div>
+          </div>
+
+          {/* Results Header */}
+          <div className="mb-6">
+            <ILEAResultsHeader
+              activeTab={activeTab}
+              selectedCity={selectedCity}
+              resultCount={currentData?.length || 0}
+              isLoading={isLoading}
+              viewMode={viewMode}
+              onViewModeChange={setViewMode}
+              sortBy={sortBy}
+              onSortChange={setSortBy}
+            />
+          </div>
+
+          {/* Tab Content */}
+          <div className="min-h-[600px]">
+            <TabsContent value="venues" className="mt-0">
+              <ILEAVenuesTab 
+                venues={venues}
+                isLoading={venuesLoading}
+                error={venuesError}
+                selectedCity={selectedCity}
+                viewMode={viewMode}
+                sortBy={sortBy}
+              />
+            </TabsContent>
+
+            <TabsContent value="vendors" className="mt-0">
+              <ILEAVendorsTab 
+                vendors={vendors}
+                isLoading={vendorsLoading}
+                error={vendorsError}
+                selectedCity={selectedCity}
+                viewMode={viewMode}
+                sortBy={sortBy}
+              />
+            </TabsContent>
           </div>
         </Tabs>
       </div>

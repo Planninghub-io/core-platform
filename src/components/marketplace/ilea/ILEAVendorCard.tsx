@@ -1,9 +1,9 @@
 
 import React from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { MapPin, DollarSign, Building, ExternalLink, Phone, Mail, Globe, Star } from "lucide-react";
+import { MapPin, DollarSign, Building, ExternalLink, Phone, Mail, Globe, Star, Heart } from "lucide-react";
 import { ILEAVendor } from "@/types/ilea";
 
 interface ILEAVendorCardProps {
@@ -28,71 +28,82 @@ export const ILEAVendorCard: React.FC<ILEAVendorCardProps> = ({ vendor }) => {
   };
 
   return (
-    <Card className="h-full hover:shadow-lg transition-all duration-200 border-gray-200 group">
-      {/* Image Placeholder */}
-      <div className="aspect-[16/10] bg-gradient-to-br from-purple-100 to-purple-200 rounded-t-lg relative overflow-hidden">
-        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition-all duration-200"></div>
-        <div className="absolute top-4 left-4">
-          <Badge className="bg-white/90 text-purple-700 hover:bg-white/90">
+    <Card className="group cursor-pointer overflow-hidden border-0 shadow-sm hover:shadow-xl transition-all duration-300 bg-white rounded-2xl">
+      {/* Image Container */}
+      <div className="relative aspect-[4/3] bg-gradient-to-br from-blue-100 via-blue-50 to-indigo-50 overflow-hidden">
+        {/* Favorite Button */}
+        <button className="absolute top-3 right-3 z-10 p-2 rounded-full bg-white/90 hover:bg-white hover:scale-110 transition-all duration-200 shadow-sm">
+          <Heart className="h-4 w-4 text-gray-600 hover:text-red-500" />
+        </button>
+        
+        {/* ILEA Badge */}
+        <div className="absolute top-3 left-3 z-10">
+          <Badge className="bg-white/95 text-purple-700 hover:bg-white border-0 shadow-sm font-medium">
             ILEA Member
           </Badge>
         </div>
-        <div className="absolute top-4 right-4">
-          <div className="bg-white/90 rounded-full p-2">
-            <Star className="h-4 w-4 text-yellow-500" />
+        
+        {/* Rating Badge */}
+        <div className="absolute bottom-3 left-3 z-10">
+          <div className="bg-white/95 rounded-full px-2 py-1 flex items-center gap-1 shadow-sm">
+            <Star className="h-3 w-3 text-yellow-500 fill-current" />
+            <span className="text-xs font-medium text-gray-800">4.9</span>
           </div>
         </div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <Building className="h-12 w-12 text-purple-600/60" />
+
+        {/* Placeholder Image with Icon */}
+        <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-blue-100 to-blue-200 group-hover:scale-105 transition-transform duration-300">
+          <Building className="h-16 w-16 text-blue-400/60" />
         </div>
       </div>
 
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="text-lg font-semibold text-gray-900 mb-1 line-clamp-1">
+      {/* Content */}
+      <CardContent className="p-5 space-y-3">
+        {/* Header */}
+        <div className="space-y-1">
+          <div className="flex items-start justify-between">
+            <h3 className="font-semibold text-gray-900 text-lg line-clamp-1 group-hover:text-purple-700 transition-colors">
               {vendor.name}
-            </CardTitle>
-            <Badge variant="secondary" className="bg-purple-100 text-purple-800 text-xs">
-              Vendor Service
-            </Badge>
+            </h3>
           </div>
+          <Badge variant="secondary" className="bg-blue-50 text-blue-700 text-xs font-medium">
+            Vendor Service
+          </Badge>
         </div>
-      </CardHeader>
 
-      <CardContent className="pt-0 space-y-4">
         {/* Description */}
         {vendor.description && (
-          <p className="text-sm text-gray-600 line-clamp-2">
+          <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
             {vendor.description}
           </p>
         )}
 
-        {/* Location */}
-        {getLocation() && (
-          <div className="flex items-start gap-2 text-sm text-gray-600">
-            <MapPin className="h-4 w-4 mt-0.5 text-purple-600 flex-shrink-0" />
-            <span className="line-clamp-1">{getLocation()}</span>
-          </div>
-        )}
-
-        {/* Price Range */}
-        {getPriceRange() && (
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <DollarSign className="h-4 w-4 text-purple-600" />
-            <span className="font-medium">{getPriceRange()}</span>
-          </div>
-        )}
+        {/* Location & Price */}
+        <div className="space-y-2">
+          {getLocation() && (
+            <div className="flex items-center gap-2 text-gray-600">
+              <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
+              <span className="text-sm line-clamp-1">{getLocation()}</span>
+            </div>
+          )}
+          
+          {getPriceRange() && (
+            <div className="flex items-center gap-2 text-gray-600">
+              <DollarSign className="h-4 w-4 text-gray-400" />
+              <span className="text-sm font-medium">{getPriceRange()}</span>
+            </div>
+          )}
+        </div>
 
         {/* Company Info */}
         {vendor.company && (
-          <div className="pt-3 border-t space-y-2">
-            <h4 className="font-medium text-gray-900 text-sm">{vendor.company.name}</h4>
+          <div className="pt-3 border-t border-gray-100 space-y-2">
+            <p className="font-medium text-gray-900 text-sm">{vendor.company.name}</p>
             <div className="flex flex-wrap gap-3">
               {vendor.company.business_phone && (
                 <a
                   href={`tel:${vendor.company.business_phone}`}
-                  className="inline-flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 transition-colors"
+                  className="inline-flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 transition-colors font-medium"
                 >
                   <Phone className="h-3 w-3" />
                   <span>Call</span>
@@ -101,7 +112,7 @@ export const ILEAVendorCard: React.FC<ILEAVendorCardProps> = ({ vendor }) => {
               {vendor.company.business_email && (
                 <a
                   href={`mailto:${vendor.company.business_email}`}
-                  className="inline-flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 transition-colors"
+                  className="inline-flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 transition-colors font-medium"
                 >
                   <Mail className="h-3 w-3" />
                   <span>Email</span>
@@ -112,7 +123,7 @@ export const ILEAVendorCard: React.FC<ILEAVendorCardProps> = ({ vendor }) => {
                   href={vendor.company.website_url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-xs text-purple-600 hover:text-purple-800 transition-colors"
+                  className="inline-flex items-center gap-1 text-xs text-purple-600 hover:text-purple-700 transition-colors font-medium"
                 >
                   <Globe className="h-3 w-3" />
                   <span>Website</span>
@@ -126,17 +137,16 @@ export const ILEAVendorCard: React.FC<ILEAVendorCardProps> = ({ vendor }) => {
         {vendor.company?.website_url && (
           <Button
             asChild
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white transition-colors"
-            size="sm"
+            className="w-full bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white border-0 rounded-xl h-11 font-medium transition-all duration-200 hover:scale-[1.02]"
           >
             <a
               href={vendor.company.website_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2"
+              className="inline-flex items-center justify-center gap-2"
             >
               <span>Contact Vendor</span>
-              <ExternalLink className="h-3 w-3" />
+              <ExternalLink className="h-4 w-4" />
             </a>
           </Button>
         )}
