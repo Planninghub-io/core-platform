@@ -17,15 +17,16 @@ const Venues = () => {
   const [isScrapingVenues, setIsScrapingVenues] = useState(false);
   const [activeTab, setActiveTab] = useState("browse");
   
-  const { venues, isLoading, error, refetch } = useVenues(filters);
+  const { data: venues, isLoading, error, refetch } = useVenues(filters);
   
-  // Effect to fetch venues when filters change
-  useEffect(() => {
-    refetch();
-  }, [filters]);
+  console.log("Venues page - filters:", filters);
+  console.log("Venues page - data:", venues);
+  console.log("Venues page - isLoading:", isLoading);
+  console.log("Venues page - error:", error);
 
   // Handle filter changes
   const handleFilterChange = (newFilters: VenueFilterValues) => {
+    console.log("Filter change:", newFilters);
     setFilters(newFilters);
   };
 
@@ -180,7 +181,7 @@ const Venues = () => {
           <div className="bg-gray-50 p-4 rounded-md mb-6">
             <VenueFilters onFilterChange={handleFilterChange} />
           </div>
-          <VenuesList venues={venues} isLoading={isLoading} error={error} />
+          <VenuesList venues={venues} isLoading={isLoading} error={error?.message || null} />
         </TabsContent>
         <TabsContent value="recommendations" className="pt-4">
           <VenueRecommendations />
