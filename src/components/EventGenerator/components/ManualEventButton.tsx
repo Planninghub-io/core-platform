@@ -41,9 +41,9 @@ export const ManualEventButton = ({ show, onClick }: ManualEventButtonProps) => 
   if (!show) return null;
   
   return (
-    <div className="flex flex-row items-center justify-center gap-6 w-full">
-      {/* Button positioned on the left */}
-      <div className="flex justify-center">
+    <>
+      {/* Button centered */}
+      <div className="flex justify-center w-full">
         <Button
           onClick={onClick}
           className="animate-fade-up gap-2 bg-[#9b87f5] hover:bg-[#9b87f5]/90 py-3 px-6 sm:px-8"
@@ -54,8 +54,8 @@ export const ManualEventButton = ({ show, onClick }: ManualEventButtonProps) => 
         </Button>
       </div>
       
-      {/* Planning Agent positioned on the right */}
-      <div className="flex justify-center">
+      {/* Planning Agent positioned at bottom right of page */}
+      <div className="fixed bottom-4 right-4 z-50">
         <langflow-chat
           ref={chatRef}
           window_title="Planning Agent"
@@ -63,6 +63,6 @@ export const ManualEventButton = ({ show, onClick }: ManualEventButtonProps) => 
           host_url="https://astra.datastax.com">
         </langflow-chat>
       </div>
-    </div>
+    </>
   );
 };
