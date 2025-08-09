@@ -58,9 +58,9 @@ export const ManualEventButton = ({ show, onClick }: ManualEventButtonProps) => 
       <div 
         className="fixed bottom-4 right-4 z-[9999]" 
         style={{ 
-          position: 'fixed',
-          bottom: '16px',
-          right: '16px',
+          position: 'dynamic',
+          bottom: '20px',
+          right: '20px',
           zIndex: 9999
         }}
       >
