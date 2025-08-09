@@ -54,8 +54,16 @@ export const ManualEventButton = ({ show, onClick }: ManualEventButtonProps) => 
         </Button>
       </div>
       
-      {/* Planning Agent positioned at bottom right corner with proper spacing */}
-      <div className="fixed bottom-6 right-6 z-[9999]">
+      {/* Planning Agent positioned at bottom right corner of viewport */}
+      <div 
+        className="fixed bottom-4 right-4 z-[9999]" 
+        style={{ 
+          position: 'fixed',
+          bottom: '16px',
+          right: '16px',
+          zIndex: 9999
+        }}
+      >
         <langflow-chat
           ref={chatRef}
           window_title="Planning Agent"
