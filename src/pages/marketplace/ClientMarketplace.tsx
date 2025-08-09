@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -47,7 +46,7 @@ const ClientMarketplace = () => {
   const [preferredVendors, setPreferredVendors] = useState<PreferredVendor[]>([]);
   const [activeTab, setActiveTab] = useState("venues");
   const [filters, setFilters] = useState({});
-  const { venues, isLoading, error } = useVenues(filters);
+  const { data: venues, isLoading, error } = useVenues(filters);
   const [isClientLoading, setIsClientLoading] = useState(true);
   const [clientError, setClientError] = useState<string | null>(null);
   const [selectedCity, setSelectedCity] = useState("");
@@ -246,7 +245,7 @@ const ClientMarketplace = () => {
           <div className="bg-gray-50 p-4 rounded-md mb-6">
             <VenueFilters onFilterChange={handleFilterChange} />
           </div>
-          <VenuesList venues={venues} isLoading={isLoading} error={error} />
+          <VenuesList venues={venues} isLoading={isLoading} error={error?.message || null} />
         </TabsContent>
         
         <TabsContent value="vendors" className="pt-4">
