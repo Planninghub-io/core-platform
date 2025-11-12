@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -773,33 +773,21 @@ export type Database = {
         Args: { target_user_id: string }
         Returns: boolean
       }
-      delete_current_user: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      delete_user_with_data: {
-        Args: { user_id: string }
-        Returns: undefined
-      }
+      delete_current_user: { Args: never; Returns: undefined }
+      delete_user_with_data: { Args: { user_id: string }; Returns: undefined }
       has_role: {
         Args: {
-          _user_id: string
           _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
         }
         Returns: boolean
       }
-      is_super_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      is_super_admin: { Args: never; Returns: boolean }
       is_venue_available: {
-        Args: { venue_id: string; check_date: string }
+        Args: { check_date: string; venue_id: string }
         Returns: boolean
       }
-      update_event_status: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
+      update_event_status: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user" | "super_admin"

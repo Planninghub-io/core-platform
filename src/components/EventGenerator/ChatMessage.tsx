@@ -4,6 +4,7 @@ import { Copy, ThumbsUp, ThumbsDown, RotateCcw, Sparkles, User } from "lucide-re
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import DOMPurify from 'dompurify';
 
 interface ChatMessageProps {
   message: string;
@@ -94,10 +95,16 @@ export const ChatMessage = ({
     const urlRegex = /(https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|www\.[a-zA-Z0-9][a-zA-Z0-9-]+[a-zA-Z0-9]\.[^\s]{2,}|https?:\/\/(?:www\.|(?!www))[a-zA-Z0-9]+\.[^\s]{2,}|www\.[a-zA-Z0-9]+\.[^\s]{2,})/g;
     
     // Replace URLs with anchor tags that explicitly open in a new tab
-    return content
+    const processedContent = content
       .replace(urlRegex, '<a href="$&" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:underline" onclick="event.stopPropagation(); window.open(\'$&\', \'_blank\');">$&</a>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       .replace(/\n/g, '<br />');
+    
+    // Sanitize to prevent XSS attacks
+    return DOMPurify.sanitize(processedContent, {
+      ALLOWED_TAGS: ['a', 'strong', 'br', 'p', 'div', 'span'],
+      ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'onclick']
+    });
   };
   
   // ChatGPT style: user messages on right, AI messages on left

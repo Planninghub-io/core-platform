@@ -17,9 +17,34 @@ serve(async (req) => {
   }
 
   try {
+    // Verify authentication
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+        }
+      );
+    }
+
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    
+    if (userError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Invalid token' }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 401,
+        }
+      );
+    }
+
     const { invitationId } = await req.json();
 
-    // Fetch invitation details
+    // Fetch invitation details and verify user owns the event
     const { data: invitation, error: invitationError } = await supabase
       .from("invitations")
       .select(`
@@ -28,7 +53,8 @@ serve(async (req) => {
           title,
           description,
           date,
-          location
+          location,
+          user_id
         ),
         template:invitation_templates(
           template_html
@@ -46,6 +72,17 @@ serve(async (req) => {
       .single();
 
     if (invitationError) throw invitationError;
+
+    // Verify user owns the event
+    if (invitation.event.user_id !== user.id) {
+      return new Response(
+        JSON.stringify({ error: 'Forbidden: You do not own this event' }),
+        {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 403,
+        }
+      );
+    }
 
     // Process each recipient
     for (const recipient of invitation.recipients) {
