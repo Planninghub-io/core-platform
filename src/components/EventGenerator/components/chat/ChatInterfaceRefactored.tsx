@@ -60,7 +60,8 @@ export const ChatInterfaceRefactored = ({
     handleSubmit,
     pendingInfo,
     requiredFieldsCollected,
-    hasMissingFields
+    hasMissingFields,
+    isGettingAIResponse
   } = usePromptHandler({
     setChatMessages,
     setSelectedDate,
@@ -113,10 +114,11 @@ export const ChatInterfaceRefactored = ({
       <div className="flex-1 overflow-y-auto">
         <ChatMessages
           chatMessages={chatMessages}
-          isGenerating={isGenerating}
+          isGenerating={isGenerating || isGettingAIResponse}
           welcomeMessage=""
           modelProvider={modelProvider}
           onModelChange={onModelChange}
+          onSuggestionClick={handleSuggestionClick}
         />
       </div>
       
@@ -149,7 +151,7 @@ export const ChatInterfaceRefactored = ({
         <ChatInputArea
           prompt={prompt}
           setPrompt={setPrompt}
-          isGenerating={isGenerating}
+          isGenerating={isGenerating || isGettingAIResponse}
           onSubmit={handleSubmit}
           promptCount={promptCount}
           chatMessages={chatMessages}

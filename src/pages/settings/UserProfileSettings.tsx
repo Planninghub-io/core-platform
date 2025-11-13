@@ -4,6 +4,8 @@ import { ProfileForm } from "./components/ProfileForm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PreferencesTab from "./components/PreferencesTab";
 import NotificationsTab from "./components/NotificationsTab";
+import { EventTemplates } from "@/components/event-templates/EventTemplates";
+import { ExportImport } from "@/components/export-import/ExportImport";
 
 const UserProfileSettings = () => {
   const { userProfile, refreshUserProfile } = useUserProfile();
@@ -25,6 +27,8 @@ const UserProfileSettings = () => {
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="preferences">Preferences</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="templates">Event Templates</TabsTrigger>
+          <TabsTrigger value="export">Export/Import</TabsTrigger>
         </TabsList>
         
         <TabsContent value="profile" className="space-y-6">
@@ -40,6 +44,14 @@ const UserProfileSettings = () => {
         
         <TabsContent value="notifications">
           <NotificationsTab />
+        </TabsContent>
+        
+        <TabsContent value="templates">
+          <EventTemplates />
+        </TabsContent>
+        
+        <TabsContent value="export">
+          <ExportImport />
         </TabsContent>
       </Tabs>
     </div>

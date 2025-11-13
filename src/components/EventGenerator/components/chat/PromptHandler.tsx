@@ -2,9 +2,10 @@
 import { useCallback, useRef, useState } from "react";
 import { extractDateFromPrompt } from "@/hooks/event-generation/utils/prompt-extraction/dateExtractor";
 import { extractLocationFromPrompt } from "@/hooks/event-generation/utils/prompt-extraction/locationExtractor";
+import { chatAssistantAPI } from "@/hooks/event-generation/api/chatAssistantAPI";
 
 interface PromptHandlerProps {
-  setChatMessages: React.Dispatch<React.SetStateAction<Array<{ type: 'user' | 'ai', content: string, id?: string }>>>;
+  setChatMessages: React.Dispatch<React.SetStateAction<Array<{ type: 'user' | 'ai', content: string, id?: string, suggestions?: string[] }>>>;
   setSelectedDate?: (date: string) => void;
   setLocation?: (location: string) => void;
   setPrompt: (prompt: string) => void;
@@ -30,6 +31,8 @@ export const usePromptHandler = ({
   }>({});
   const [requiredFieldsCollected, setRequiredFieldsCollected] = useState(false);
   const [askedForFields, setAskedForFields] = useState<string[]>([]);
+  const [conversationHistory, setConversationHistory] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([]);
+  const [isGettingAIResponse, setIsGettingAIResponse] = useState(false);
   
   const hasMissingFields = !pendingInfo.date || !pendingInfo.location || !pendingInfo.eventType;
   
@@ -37,7 +40,7 @@ export const usePromptHandler = ({
     console.log(`PromptHandler [${action}]:`, JSON.stringify(state));
   };
   
-  const handleSubmit = useCallback((userPrompt: string) => {
+  const handleSubmit = useCallback(async (userPrompt: string) => {
     if (!userPrompt || userPrompt.trim() === '') return;
     
     console.log("PromptHandler: Submit button clicked with prompt:", userPrompt);
@@ -52,9 +55,50 @@ export const usePromptHandler = ({
     
     setChatMessages(prev => [...prev, { type: 'user', content: userPrompt }]);
     
+    // Add to conversation history
+    const updatedHistory = [...conversationHistory, { role: 'user', content: userPrompt }];
+    setConversationHistory(updatedHistory);
+    
     const eventTypeRegex = /(birthday|wedding|party|meeting|conference|dinner|lunch|brunch|gathering|ceremony|celebration|corporate|team building|reception)/i;
     const eventTypeMatch = userPrompt.match(eventTypeRegex);
     const extractedEventType = eventTypeMatch ? eventTypeMatch[0] : null;
+    
+    // Get conversational AI response
+    setIsGettingAIResponse(true);
+    try {
+      const aiResponse = await chatAssistantAPI({
+        messages: updatedHistory,
+        modelProvider,
+        context: {
+          hasDate: Boolean(pendingInfo.date || extractDateFromPrompt(userPrompt)),
+          hasLocation: Boolean(pendingInfo.location || extractLocationFromPrompt(userPrompt)),
+          hasEventType: Boolean(pendingInfo.eventType || extractedEventType),
+          collectedInfo: {
+            ...pendingInfo,
+            date: pendingInfo.date || extractDateFromPrompt(userPrompt),
+            location: pendingInfo.location || extractLocationFromPrompt(userPrompt),
+            eventType: pendingInfo.eventType || extractedEventType,
+          },
+        },
+      });
+      
+      // Add AI response to conversation history
+      const newHistory = [...updatedHistory, { role: 'assistant', content: aiResponse.message }];
+      setConversationHistory(newHistory);
+      
+      // Add AI response to chat messages with suggestions
+      setChatMessages(prev => [...prev, {
+        type: 'ai',
+        content: aiResponse.message,
+        id: `ai-response-${Date.now()}`,
+        suggestions: aiResponse.suggestions,
+      }]);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      // Fallback to original behavior if AI fails
+    } finally {
+      setIsGettingAIResponse(false);
+    }
     
     if (pendingInfo.originalPrompt) {
       console.log("PromptHandler: Processing follow-up information for original prompt");
@@ -131,23 +175,18 @@ export const usePromptHandler = ({
         
         setRequiredFieldsCollected(true);
         
-        // Add confirmation message that all required details are collected
-        setChatMessages(prev => [...prev, { 
-          type: 'ai', 
-          content: "Great! I have all the required details for event planning. Let me create the event for your review.",
-          id: `confirmation-${Date.now()}`
-        }]);
-        
+        // The AI response above should have already been added, so we proceed directly
         lastSubmissionRef.current = { prompt: completePrompt, timestamp: now };
         
         setTimeout(() => {
           handlePromptSubmit(completePrompt, modelProvider);
-        }, 100);
+        }, 1000); // Give user time to see the AI response
         
         setPrompt("");
         
         setPendingInfo({});
         setAskedForFields([]);
+        setConversationHistory([]); // Reset conversation history after event creation
         return;
       } else {
         let missingFieldsMessage = "I still need more information to create your event. ";
@@ -173,12 +212,7 @@ export const usePromptHandler = ({
         setAskedForFields(newAskedForFields);
         logState("Asked for fields", newAskedForFields);
         
-        setChatMessages(prev => [...prev, { 
-          type: 'ai', 
-          content: missingFieldsMessage,
-          id: `missing-fields-${Date.now()}`
-        }]);
-        
+        // The AI response above should have already been added, so we just return
         setPrompt("");
         return;
       }
@@ -240,12 +274,7 @@ export const usePromptHandler = ({
       setAskedForFields(newAskedForFields);
       logState("Initially asked for fields", newAskedForFields);
       
-      setChatMessages(prev => [...prev, { 
-        type: 'ai', 
-        content: missingFieldsMessage,
-        id: `initial-missing-fields-${Date.now()}`
-      }]);
-      
+      // The AI response above should have already been added, so we just return
       setPrompt("");
       return;
     }
@@ -254,13 +283,7 @@ export const usePromptHandler = ({
     
     setRequiredFieldsCollected(true);
     
-    // Add confirmation message for all details being collected
-    setChatMessages(prev => [...prev, { 
-      type: 'ai', 
-      content: "Great! I have all the required details for event planning. Let me create the event for your review.",
-      id: `confirmation-initial-${Date.now()}`
-    }]);
-    
+    // The AI response above should have already been added, so we proceed
     setPrompt("");
     
     lastSubmissionRef.current = { prompt: userPrompt, timestamp: now };
@@ -268,13 +291,14 @@ export const usePromptHandler = ({
     setTimeout(() => {
       console.log("PromptHandler: Calling parent handlePromptSubmit with model:", modelProvider);
       handlePromptSubmit(userPrompt, modelProvider);
-    }, 100);
-  }, [pendingInfo, askedForFields, modelProvider, setChatMessages, setSelectedDate, setLocation, setPrompt, handlePromptSubmit]);
+    }, 1000); // Give user time to see the AI response
+  }, [pendingInfo, askedForFields, modelProvider, setChatMessages, setSelectedDate, setLocation, setPrompt, handlePromptSubmit, conversationHistory]);
 
   return {
     handleSubmit,
     pendingInfo,
     requiredFieldsCollected,
-    hasMissingFields
+    hasMissingFields,
+    isGettingAIResponse
   };
 };
