@@ -6,8 +6,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { TeamManagement } from "./components/TeamManagement";
-import { Checklist } from "./components/checklist";
+import { Checklist } from "./components/Checklist";
 import { EventPlanner } from "./components/EventPlanner";
+import { ExpenseTracker } from "@/components/expense-tracking/ExpenseTracker";
+import { EventTimeline } from "@/components/event-timeline/EventTimeline";
 
 const EventManagement: React.FC = () => {
   const { eventId } = useParams<{ eventId: string }>();
@@ -63,10 +65,12 @@ const EventManagement: React.FC = () => {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-8">
+        <TabsList className="grid grid-cols-5 mb-8">
           <TabsTrigger value="team">Event Team</TabsTrigger>
           <TabsTrigger value="checklist">Checklist</TabsTrigger>
           <TabsTrigger value="planner">Event Planner</TabsTrigger>
+          <TabsTrigger value="expenses">Expenses</TabsTrigger>
+          <TabsTrigger value="timeline">Timeline</TabsTrigger>
         </TabsList>
         
         <TabsContent value="team" className="mt-6">
@@ -79,6 +83,14 @@ const EventManagement: React.FC = () => {
         
         <TabsContent value="planner" className="mt-6">
           <EventPlanner eventId={eventId || ""} event={event} />
+        </TabsContent>
+        
+        <TabsContent value="expenses" className="mt-6">
+          <ExpenseTracker eventId={eventId || ""} eventBudget={typeof event.budget === 'string' ? parseFloat(event.budget) || null : event.budget ?? null} />
+        </TabsContent>
+        
+        <TabsContent value="timeline" className="mt-6">
+          <EventTimeline eventId={eventId || ""} eventDate={event.date} eventTitle={event.title} />
         </TabsContent>
       </Tabs>
     </div>
