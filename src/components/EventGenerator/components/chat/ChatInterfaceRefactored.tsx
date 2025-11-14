@@ -5,6 +5,7 @@ import { ChatInputArea } from "./ChatInputArea";
 import { GeneratedEventSummary } from "./GeneratedEventSummary";
 import { SignUpPrompt } from "./SignUpPrompt";
 import { usePromptHandler } from "./PromptHandler";
+// import { Sparkles, PartyPopper } from "lucide-react"; // Commented out - top header is hidden
 
 interface ChatInterfaceRefactoredProps {
   chatMessages: Array<{ type: 'user' | 'ai', content: string, id?: string }>;
@@ -57,7 +58,8 @@ export const ChatInterfaceRefactored = ({
     handleSubmit,
     pendingInfo,
     requiredFieldsCollected,
-    hasMissingFields
+    hasMissingFields,
+    isGettingAIResponse
   } = usePromptHandler({
     setChatMessages,
     setSelectedDate,
@@ -83,14 +85,37 @@ export const ChatInterfaceRefactored = ({
 
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-md border border-gray-200 rounded-lg">
+      {/* Combined header with welcome message and model selector - COMMENTED OUT */}
+      {/* <div className="flex justify-between items-center p-3 border-b border-gray-100 bg-gradient-to-r from-purple-50 to-pink-50">
+        <div className="flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-r from-[#8B5CF6] to-[#0EA5E9] text-white shrink-0 relative shadow-lg">
+            <PartyPopper className="h-5 w-5" />
+            <Sparkles className="h-3 w-3 text-yellow-300 absolute -top-1 -right-1 animate-pulse" />
+          </div>
+          <div>
+            <p className="text-base font-medium bg-gradient-to-r from-[#8B5CF6] via-[#D946EF] to-[#0EA5E9] bg-clip-text text-transparent">Let's Plan Your Perfect Event!</p>
+            <p className="text-sm text-gray-600">Share your event ideas in the chat and I'll help make them a reality! ✨</p>
+          </div>
+        </div>
+        
+        {onModelChange && (
+          <ModelDropdown
+            modelProvider={modelProvider}
+            onModelChange={onModelChange}
+            className="ml-2"
+          />
+        )}
+      </div> */}
+
       {/* Chat messages with flexible height */}
       <div className="flex-1 overflow-y-auto">
         <ChatMessages
           chatMessages={chatMessages}
-          isGenerating={isGenerating}
+          isGenerating={isGenerating || isGettingAIResponse}
           welcomeMessage=""
           modelProvider={modelProvider}
           onModelChange={onModelChange}
+          onSuggestionClick={handleSuggestionClick}
         />
       </div>
       
@@ -123,7 +148,7 @@ export const ChatInterfaceRefactored = ({
         <ChatInputArea
           prompt={prompt}
           setPrompt={setPrompt}
-          isGenerating={isGenerating}
+          isGenerating={isGenerating || isGettingAIResponse}
           onSubmit={handleSubmit}
           promptCount={promptCount}
           chatMessages={chatMessages}

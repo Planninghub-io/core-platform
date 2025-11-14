@@ -4,6 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CampaignHeader } from '@/components/campaign/CampaignHeader';
 import { EventsTabContent } from '@/components/campaign/EventsTabContent';
 import { TabContent } from '@/components/campaign/TabContent';
+import { AnalyticsTabContent } from '@/components/campaign/AnalyticsTabContent';
 
 const CampaignHub = () => {
   // We no longer need to show the AI assistant at the bottom
@@ -44,10 +45,7 @@ const CampaignHub = () => {
         </TabsContent>
         
         <TabsContent value="analytics" className="space-y-4">
-          <TabContent 
-            title="Campaign Analytics" 
-            description="Track performance and measure impact."
-          />
+          <AnalyticsTabContent />
         </TabsContent>
       </Tabs>
 
