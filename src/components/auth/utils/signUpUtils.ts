@@ -14,95 +14,86 @@ export const handleUserSignUp = async (
 ) => {
   const { email, password } = formData;
 
+  if (!email || !password) {
+    toast({
+      title: "Missing Information",
+      description: "Please enter both email and password",
+      variant: "destructive",
+    });
+    return { success: false, error: "Please enter both email and password" };
+  }
+
+  if (password.length < 6) {
+    toast({
+      title: "Weak Password",
+      description: "Password must be at least 6 characters long",
+      variant: "destructive",
+    });
+    return { success: false, error: "Password too short" };
+  }
+
   try {
-    // Get Turnstile token if available
-    let captchaToken = null;
-    if (typeof window !== 'undefined' && window.turnstile) {
-      try {
-        // Get the token from the existing widget
-        captchaToken = window.turnstile.getResponse();
-        
-        if (!captchaToken) {
-          console.log("No token found from existing widget, forcing execution");
-          
-          try {
-            // Try to execute the widget to get a token
-            captchaToken = await window.turnstile.execute();
-            console.log("Token obtained via execute:", captchaToken ? "Success" : "Failed");
-          } catch (execError) {
-            console.error("Error executing Turnstile:", execError);
-          }
-        }
-        
-        console.log("Turnstile token for signup:", captchaToken ? "Token received" : "No token");
-      } catch (captchaError) {
-        console.error("Turnstile error during signup:", captchaError);
-      }
-    } else {
-      console.warn("Turnstile not available");
-    }
+    console.log("Attempting sign up with email:", email);
     
-    // Sign up with the Supabase client
+    const redirectUrl = `${window.location.origin}/`;
+    
     const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
+      email: email.trim().toLowerCase(),
+      password: password,
       options: {
-        captchaToken,
+        emailRedirectTo: redirectUrl,
         data: {
           account_type: isBusiness ? 'business' : 'individual',
-          needs_profile_setup: true,
-          email_verified: false
+          needs_profile_setup: true
         },
       },
     });
 
+    console.log("Sign up response:", { data, error });
+
     if (error) {
-      if (error.message.includes("User already registered")) {
-        toast({
-          title: "Registration Error",
-          description: "This email is already registered. Please sign in instead.",
-          variant: "destructive",
-        });
-      } else if (error.message.includes("captcha verification")) {
-        toast({
-          title: "CAPTCHA Verification Failed",
-          description: "Please try again with CAPTCHA verification.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Registration Error",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
+      console.error("Sign up error:", error);
+      toast({
+        title: "Registration Error",
+        description: error.message || "An error occurred during registration",
+        variant: "destructive",
+      });
       return { success: false, error: error.message };
     }
 
-    // Check if email confirmation is required
-    if (data.session === null) {
-      toast({
-        title: "Verification Email Sent",
-        description: "Please check your email for a verification link.",
-      });
+    if (data.user) {
+      console.log("Sign up successful");
       
-      // Redirect to email verification page
-      if (data.user?.email) {
-        window.location.href = `/auth/email-verification?email=${encodeURIComponent(data.user.email)}`;
+      if (data.session) {
+        toast({
+          title: "Registration Successful",
+          description: "Your account has been created successfully!",
+        });
+        redirectCallback();
+      } else {
+        toast({
+          title: "Registration Successful",
+          description: "Please check your email for a verification link to complete your registration.",
+        });
       }
       
       return { success: true, error: null };
     }
 
-    // Redirect to profile setup
-    redirectCallback();
-    return { success: true, error: null };
+    toast({
+      title: "Registration Error", 
+      description: "An unexpected error occurred during registration.",
+      variant: "destructive",
+    });
+    return { success: false, error: "Unexpected registration state" };
+
   } catch (error: any) {
+    console.error("Unexpected sign up error:", error);
     toast({
       title: "Registration Error",
       description: "An unexpected error occurred. Please try again.",
       variant: "destructive",
     });
-    return { success: false, error: error.message };
+    return { success: false, error: error.message || "An unexpected error occurred" };
   }
 };

@@ -42,12 +42,27 @@ const OAuthCallback = () => {
           const errorMessage = errorDescriptionParam || errorParam || 'Unknown error';
           console.error("OAuth error from URL:", errorMessage);
           setError(errorMessage);
-          toast({
-            title: "Authentication Error",
-            description: errorMessage,
-            variant: "destructive",
-          });
+          
+          // Handle specific Google OAuth errors
+          if (errorMessage.includes('access_denied')) {
+            toast({
+              title: "Authentication Cancelled",
+              description: "You cancelled the Google sign-in process. Please try again if you want to sign in.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Authentication Error",
+              description: errorMessage,
+              variant: "destructive",
+            });
+          }
           setLoading(false);
+          
+          // Redirect to auth page after a delay
+          setTimeout(() => {
+            navigate('/auth', { replace: true });
+          }, 3000);
           return;
         }
         
@@ -55,10 +70,10 @@ const OAuthCallback = () => {
           console.log("Found authorization code, exchanging for session");
           
           try {
-            // Wait a moment to ensure browser state is updated (helps with race conditions)
-            await new Promise(resolve => setTimeout(resolve, 300));
+            // Wait a moment to ensure browser state is updated
+            await new Promise(resolve => setTimeout(resolve, 500));
             
-            // Exchange the code for a session with better error handling
+            // Exchange the code for a session
             const { data, error } = await supabase.auth.exchangeCodeForSession(code);
             
             if (error) {
@@ -66,71 +81,69 @@ const OAuthCallback = () => {
               setError(error.message);
               toast({
                 title: "Authentication Error",
-                description: error.message,
+                description: `Failed to complete sign-in: ${error.message}`,
                 variant: "destructive",
               });
               setLoading(false);
+              
+              // Redirect to auth page after a delay
+              setTimeout(() => {
+                navigate('/auth', { replace: true });
+              }, 3000);
               return;
             }
             
             console.log("Successfully exchanged code for session:", data);
             
-            if (data.session) {
+            if (data.session && data.user) {
+              console.log("User authenticated successfully:", data.user.email);
+              
               toast({
-                title: "Authentication Successful",
-                description: "You have been successfully signed in.",
+                title: "Welcome!",
+                description: `Successfully signed in with Google as ${data.user.email}`,
               });
               
               // Get redirect path from localStorage or default to home
               const redirectPath = localStorage.getItem('authRedirectPath') || '/';
               localStorage.removeItem('authRedirectPath'); // Clean up
               
-              // For production environments using yourplanner.ai domain
-              const hostname = window.location.hostname;
-              if (hostname !== 'yourplanner.ai' && hostname !== 'www.yourplanner.ai' && 
-                  hostname !== 'localhost' && !hostname.includes('.localhost') && 
-                  !hostname.includes('127.0.0.1')) {
-                
-                console.log("We are not on production or local, redirecting to production URL");
-                // We're on a preview environment, but need to redirect to production
-                const productionRedirectUrl = `${APP_URL}${redirectPath}`;
-                console.log("Redirecting to production URL:", productionRedirectUrl);
-                
-                // Delay redirect to ensure toast is shown
-                setTimeout(() => {
-                  window.location.replace(productionRedirectUrl);
-                }, 500);
-                return;
-              }
+              console.log("Redirecting to:", redirectPath);
               
-              // Local development or already on production, use React Router
-              console.log("Navigating to:", redirectPath);
-              // Delay redirect to ensure toast is shown
+              // Small delay to ensure toast is shown
               setTimeout(() => {
                 navigate(redirectPath, { replace: true });
-              }, 500);
+              }, 1000);
             } else {
-              console.error("No session returned after code exchange");
-              setError("Failed to retrieve session");
+              console.error("No session or user returned after code exchange");
+              setError("Failed to retrieve user session");
               toast({
                 title: "Authentication Error",
-                description: "Failed to retrieve session. Please try again.",
+                description: "Failed to retrieve user information. Please try again.",
                 variant: "destructive",
               });
               setLoading(false);
+              
+              setTimeout(() => {
+                navigate('/auth', { replace: true });
+              }, 3000);
             }
           } catch (exchangeError: any) {
             console.error("Error during code exchange:", exchangeError);
             setError(exchangeError.message || "Failed to process authentication");
             toast({
               title: "Authentication Error",
-              description: "Failed to process authentication. Please try again.",
+              description: "Failed to process Google authentication. Please try again.",
               variant: "destructive",
             });
             setLoading(false);
+            
+            setTimeout(() => {
+              navigate('/auth', { replace: true });
+            }, 3000);
           }
         } else {
-          console.error("No code found in URL");
+          console.log("No code found in URL, checking for existing session");
+          
           // Check if we already have a session
           const { data, error } = await supabase.auth.getSession();
           
@@ -148,37 +161,28 @@ const OAuthCallback = () => {
           
           if (data.session) {
             toast({
-              title: "Authentication Successful",
-              description: "You have been successfully signed in.",
+              title: "Welcome back!",
+              description: "You are already signed in.",
             });
             
             const redirectPath = localStorage.getItem('authRedirectPath') || '/';
             localStorage.removeItem('authRedirectPath');
             
-            // For production environments using yourplanner.ai domain
-            const hostname = window.location.hostname;
-            if (hostname !== 'yourplanner.ai' && hostname !== 'www.yourplanner.ai' && 
-                hostname !== 'localhost' && !hostname.includes('.localhost') && 
-                !hostname.includes('127.0.0.1')) {
-              
-              console.log("We are not on production or local, redirecting to production URL");
-              // We're on a preview environment, but need to redirect to production
-              const productionRedirectUrl = `${APP_URL}${redirectPath}`;
-              console.log("Redirecting to production URL:", productionRedirectUrl);
-              
-              setTimeout(() => {
-                window.location.replace(productionRedirectUrl);
-              }, 500);
-              return;
-            }
-            
-            // Local development or already on production, use React Router
             setTimeout(() => {
               navigate(redirectPath, { replace: true });
-            }, 500);
+            }, 1000);
           } else {
             console.log("No session found and no code parameter, redirecting to auth page");
-            navigate("/auth");
+            setError("No authentication data found");
+            toast({
+              title: "Authentication Required",
+              description: "Please sign in to continue.",
+              variant: "destructive",
+            });
+            
+            setTimeout(() => {
+              navigate("/auth", { replace: true });
+            }, 2000);
           }
         }
       } catch (err: any) {
@@ -186,10 +190,14 @@ const OAuthCallback = () => {
         setError(err.message || "An unexpected error occurred");
         toast({
           title: "Authentication Error",
-          description: "An unexpected error occurred. Please try again.",
+          description: "An unexpected error occurred during authentication. Please try again.",
           variant: "destructive",
         });
         setLoading(false);
+        
+        setTimeout(() => {
+          navigate('/auth', { replace: true });
+        }, 3000);
       }
     };
 
@@ -197,33 +205,34 @@ const OAuthCallback = () => {
   }, [navigate, toast, location]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50">
       <div className="w-full max-w-md rounded-lg bg-white p-8 shadow-lg">
-        <h1 className="mb-6 text-2xl font-bold">Processing Authentication...</h1>
+        <h1 className="mb-6 text-2xl font-bold text-center">Processing Authentication...</h1>
         
         {error ? (
-          <div className="rounded-md bg-red-100 p-4 text-red-700">
+          <div className="rounded-md bg-red-50 border border-red-200 p-4 text-red-700">
             <p className="font-medium">Error: {error}</p>
-            <p className="mt-2">Please try again or contact support if this issue persists.</p>
+            <p className="mt-2 text-sm">Redirecting you back to sign in...</p>
             {debugInfo && (
               <details className="mt-4">
-                <summary className="cursor-pointer text-sm">Debug Information</summary>
-                <pre className="mt-2 overflow-auto bg-gray-100 p-2 text-xs">
+                <summary className="cursor-pointer text-sm font-medium">Debug Information</summary>
+                <pre className="mt-2 overflow-auto bg-gray-100 p-2 text-xs text-gray-800 rounded">
                   {JSON.stringify(debugInfo, null, 2)}
                 </pre>
               </details>
             )}
             <button 
               onClick={() => navigate('/auth')}
-              className="mt-4 rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700"
+              className="mt-4 w-full rounded bg-red-600 px-4 py-2 text-white hover:bg-red-700 transition-colors"
             >
-              Return to sign in
+              Return to Sign In
             </button>
           </div>
         ) : (
           <div className="flex flex-col items-center">
             <div className="h-12 w-12 animate-spin rounded-full border-4 border-t-4 border-gray-200 border-t-purple-500"></div>
-            <p className="mt-4 text-gray-600">Please wait while we sign you in...</p>
+            <p className="mt-4 text-gray-600 text-center">Please wait while we sign you in with Google...</p>
+            <p className="mt-2 text-sm text-gray-500 text-center">This may take a few moments.</p>
           </div>
         )}
       </div>

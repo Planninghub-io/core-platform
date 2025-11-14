@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { EventFormData } from "../types";
 import { useEventSubmission } from "./useEventSubmission";
+import { getTimezoneFromLocation } from "../utils/timezoneUtils";
 
 export const useEventForm = () => {
   const [formData, setFormData] = useState<EventFormData>({
@@ -28,7 +29,17 @@ export const useEventForm = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData(prev => {
+      const newData = { ...prev, [name]: value };
+      
+      // Auto-update timezone when location changes
+      if (name === 'location' && value && !newData.isFlexibleLocation) {
+        const detectedTimezone = getTimezoneFromLocation(value);
+        newData.timezone = detectedTimezone;
+      }
+      
+      return newData;
+    });
   };
 
   const handleSelectChange = (field: string, value: string) => {
@@ -36,7 +47,7 @@ export const useEventForm = () => {
   };
 
   const handleDateChange = (field: string, value: Date) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({ ...prev, [field]: value.toISOString() }));
   };
 
   const handleTimeChange = (field: string, value: string) => {

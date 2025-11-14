@@ -10,6 +10,7 @@ import {
 import { useState } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import DOMPurify from 'dompurify';
 
 interface InvitationCardProps {
   invitation: Invitation;
@@ -85,7 +86,12 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
               <div className={`mt-6 overflow-y-auto ${isMobile ? 'max-h-[60vh]' : 'max-h-[calc(100vh-10rem)]'}`}>
                 <div 
                   className="border rounded-lg overflow-hidden shadow-sm"
-                  dangerouslySetInnerHTML={{ __html: invitation.invitation_templates.template_html }} 
+                  dangerouslySetInnerHTML={{ 
+                    __html: DOMPurify.sanitize(invitation.invitation_templates.template_html, {
+                      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'h1', 'h2', 'h3', 'h4', 'div', 'a', 'span', 'img'],
+                      ALLOWED_ATTR: ['class', 'style', 'href', 'src', 'alt']
+                    })
+                  }} 
                 />
               </div>
             </SheetContent>
@@ -107,7 +113,12 @@ export const InvitationCard = ({ invitation, onEdit }: InvitationCardProps) => {
       <div className="border rounded-lg overflow-hidden shadow-sm p-4">
         <div 
           className="invitation-content"
-          dangerouslySetInnerHTML={{ __html: invitation.invitation_templates.template_html }} 
+          dangerouslySetInnerHTML={{ 
+            __html: DOMPurify.sanitize(invitation.invitation_templates.template_html, {
+              ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'h1', 'h2', 'h3', 'h4', 'div', 'a', 'span', 'img'],
+              ALLOWED_ATTR: ['class', 'style', 'href', 'src', 'alt']
+            })
+          }} 
         />
       </div>
 

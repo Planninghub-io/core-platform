@@ -1,166 +1,99 @@
 
-import { Link, useNavigate } from "react-router-dom";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarFooter,
-  SidebarSeparator,
-} from "@/components/ui/sidebar";
-import { useUserProfile } from "@/hooks/useUserProfile";
-import { NavMenu } from "@/components/navigation/NavMenu";
-import { CompanySwitcher } from "@/components/navigation/CompanySwitcher";
-import { UserProfile } from "@/components/navigation/UserProfile";
-import { Button } from "@/components/ui/button";
-import { LogOut, Settings, User } from "lucide-react";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
-import { useEffect, useState } from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { 
+  Home, 
+  Calendar, 
+  Users, 
+  Settings, 
+  Compass,
+  Building
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { UserProfile } from '@/components/navigation/UserProfile';
+import { useUserProfile } from '@/hooks/useUserProfile';
 
-const SideNav = () => {
-  const navigate = useNavigate();
-  const { userProfile, companies, selectedCompany, setSelectedCompany, isLoading } = useUserProfile();
-  const [isOpen, setIsOpen] = useState(false);
+interface SideNavProps {
+  onNavigate?: () => void;
+}
 
-  const handleLogout = async () => {
-    try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      toast({
-        title: "Logged out successfully",
-        description: "You have been logged out of your account",
-      });
-      // Force navigation to auth page
-      navigate('/auth', { replace: true });
-    } catch (error: any) {
-      toast({
-        title: "Logout failed",
-        description: error.message || "An error occurred during logout",
-        variant: "destructive",
-      });
-    }
-  };
+export const SideNav: React.FC<SideNavProps> = ({ onNavigate }) => {
+  const location = useLocation();
+  const isMobile = useIsMobile();
+  const { userProfile } = useUserProfile();
 
-  // Listen for auth state changes and redirect if not logged in
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_OUT') {
-        navigate('/auth', { replace: true });
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
+  const navItems = [
+    { icon: Home, label: 'Home', path: '/' },
+    { icon: Calendar, label: 'Events Hub', path: '/events-hub' },
+    { icon: Building, label: 'Marketplace', path: '/marketplace' },
+    { icon: Compass, label: 'Discover', path: '/discover' },
+  ];
 
   return (
-    <Sidebar className="border-r w-56">
-      <SidebarContent>
-        <div className="mt-2 mb-2 p-2 flex justify-center">
-          <Link to="/" className="block transition-transform hover:scale-105">
-            <img
-              src="/lovable-uploads/cb9a4c3e-89f7-4f9f-9cc2-9c506bc7be70.png"
-              alt="Company Logo"
-              className="h-16 w-16 brightness-110"
-            />
-          </Link>
-        </div>
-        <NavMenu />
-      </SidebarContent>
-      <SidebarFooter className="mt-auto">
-        <SidebarSeparator />
-        {isLoading ? (
-          <div className="p-4">
-            <div className="flex items-center gap-3">
-              <Skeleton className="h-10 w-10 rounded-full" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-32" />
-              </div>
-            </div>
-          </div>
-        ) : (
-          <Popover open={isOpen} onOpenChange={setIsOpen}>
-            <PopoverTrigger asChild>
-              <div>
-                {userProfile ? (
-                  <UserProfile userProfile={userProfile} />
-                ) : (
-                  <div className="p-4 cursor-pointer hover:bg-accent/10 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="h-10 w-10 bg-purple-100 rounded-full flex items-center justify-center">
-                        <User className="h-5 w-5 text-purple-500" />
-                      </div>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-sm font-medium truncate text-purple-900">
-                          Sign In
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </PopoverTrigger>
-            <PopoverContent className="w-56 p-2 space-y-2">
-              {userProfile && (
-                <>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start gap-2"
-                    onClick={() => {
-                      setIsOpen(false);
-                      navigate('/settings');
-                    }}
-                  >
-                    <Settings className="h-4 w-4" />
-                    <span className="text-sm">Settings</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="w-full justify-start gap-2 text-red-500 hover:text-red-600 hover:bg-red-50"
-                    onClick={() => {
-                      setIsOpen(false);
-                      handleLogout();
-                    }}
-                  >
-                    <LogOut className="h-4 w-4" />
-                    <span className="text-sm">Logout</span>
-                  </Button>
-                  {companies && companies.length > 1 && (
-                    <>
-                      <SidebarSeparator />
-                      <CompanySwitcher
-                        companies={companies}
-                        selectedCompany={selectedCompany}
-                        onCompanySelect={(company) => {
-                          setSelectedCompany(company);
-                          setIsOpen(false);
-                        }}
-                      />
-                    </>
+    <nav className={`
+      h-full bg-white border-r border-gray-200 flex flex-col
+      ${isMobile ? 'pt-4' : 'pt-6'}
+    `}>
+      {/* Logo/Title */}
+      <div className={`px-4 ${isMobile ? 'pb-4' : 'pb-6'}`}>
+        <h2 className="text-xl font-bold text-gray-900">Event Generator</h2>
+      </div>
+
+      {/* Navigation Items */}
+      <div className="flex-1 px-2">
+        <ul className="space-y-1">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location.pathname === item.path || 
+              (item.path !== '/' && location.pathname.startsWith(item.path));
+            
+            return (
+              <li key={item.path}>
+                <Link
+                  to={item.path}
+                  onClick={onNavigate}
+                  className={cn(
+                    "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+                    "hover:bg-gray-100 active:bg-gray-200",
+                    isActive 
+                      ? "bg-primary/10 text-primary border border-primary/20" 
+                      : "text-gray-700 hover:text-gray-900"
                   )}
-                </>
-              )}
-              {!userProfile && (
-                <Button
-                  variant="default"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => {
-                    setIsOpen(false);
-                    navigate('/auth');
-                  }}
                 >
-                  Sign In
-                </Button>
-              )}
-            </PopoverContent>
-          </Popover>
-        )}
-      </SidebarFooter>
-    </Sidebar>
+                  <Icon size={isMobile ? 20 : 18} />
+                  <span>{item.label}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
+      {/* Settings Link */}
+      <div className="px-2 pb-2">
+        <Link
+          to="/settings/profile"
+          onClick={onNavigate}
+          className={cn(
+            "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors",
+            "hover:bg-gray-100 active:bg-gray-200",
+            location.pathname.startsWith('/settings')
+              ? "bg-primary/10 text-primary border border-primary/20" 
+              : "text-gray-700 hover:text-gray-900"
+          )}
+        >
+          <Settings size={isMobile ? 20 : 18} />
+          <span>Settings</span>
+        </Link>
+      </div>
+
+      {/* User Profile */}
+      {userProfile && (
+        <div className="border-t border-gray-200">
+          <UserProfile userProfile={userProfile} />
+        </div>
+      )}
+    </nav>
   );
 };
-
-export default SideNav;

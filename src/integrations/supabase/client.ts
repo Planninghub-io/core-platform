@@ -1,95 +1,32 @@
 
-import { createClient, Provider } from '@supabase/supabase-js';
-import type { Database } from './types';
+import { createClient } from '@supabase/supabase-js'
 
-export const SUPABASE_URL = "https://asexlqsjachwhabzvzwk.supabase.co";
-export const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZXhscXNqYWNod2hhYnp2endrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkyMDczMzAsImV4cCI6MjA1NDc4MzMzMH0.LmkXoRHxqsRfQUK1KEyn70Z7gkxLVnAGY_G6nKeZFCw";
+const supabaseUrl = "https://asexlqsjachwhabzvzwk.supabase.co"
+const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFzZXhscXNqYWNod2hhYnp2endrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzkyMDczMzAsImV4cCI6MjA1NDc4MzMzMH0.LmkXoRHxqsRfQUK1KEyn70Z7gkxLVnAGY_G6nKeZFCw"
 
-// Production URL constant - single source of truth
-export const PRODUCTION_URL = 'https://yourplanner.ai';
+// Production URL for redirects
+export const PRODUCTION_URL = "https://yourplanner.ai";
+export const APP_URL = typeof window !== 'undefined' 
+  ? window.location.origin 
+  : PRODUCTION_URL;
 
-// Determine the base URL based on the environment
-const getAppUrl = () => {
-  // For server-side (Edge functions or SSR)
-  if (typeof window === 'undefined') {
-    return PRODUCTION_URL;
-  }
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+// Configure OAuth redirect with proper domain handling
+export const configureOAuthRedirect = (provider: 'google' | 'apple') => {
+  // Always use the production URL for OAuth redirects to avoid domain issues
+  const redirectTo = `${PRODUCTION_URL}/auth/callback`;
   
-  const hostname = window.location.hostname;
-  
-  // Production environment
-  if (hostname === 'yourplanner.ai' || hostname === 'www.yourplanner.ai') {
-    return PRODUCTION_URL;
-  }
-  
-  // For local development
-  if (hostname === 'localhost' || hostname.includes('.localhost') || hostname.includes('127.0.0.1')) {
-    return window.location.origin;
-  }
-  
-  // For preview environments (e.g., Lovable preview domains)
-  // Check if is a Lovable URL
-  if (hostname.includes('lovable.app') || hostname.includes('gptengineer.app')) {
-    return window.location.origin;
-  }
-  
-  // Default to production as a fallback
-  return PRODUCTION_URL;
-};
-
-// Export the APP_URL for use in other parts of the application
-export const APP_URL = getAppUrl();
-
-// Create a Supabase client with the correct auth options
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-    flowType: 'pkce', // Using PKCE flow for security
-    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-  }
-});
-
-// Helper function to safely handle Supabase queries with proper error checking
-export async function safeQuery<T>(queryFn: () => Promise<{ data: T | null; error: any }>) {
-  try {
-    const { data, error } = await queryFn();
-    
-    if (error) {
-      console.error("Supabase query error:", error);
-      throw error;
-    }
-    
-    if (data === null) {
-      throw new Error("No data returned from query");
-    }
-    
-    return data as T;
-  } catch (err) {
-    console.error("Error in safeQuery:", err);
-    throw err;
-  }
-}
-
-// IMPORTANT: Configure OAuth redirect
-export const configureOAuthRedirect = (provider: string) => {
-  // Determine the appropriate callback URL based on environment
-  const redirectTo = `${APP_URL}/auth/callback`;
-  
-  console.log(`[OAuth Config] Provider: ${provider}, Redirect URL: ${redirectTo}`);
+  console.log(`Configuring ${provider} OAuth with redirect:`, redirectTo);
   
   return {
-    provider: provider as Provider,
+    provider,
     options: {
       redirectTo,
-      // Add prompt parameter for Google to force account selection
-      ...(provider === 'google' && {
-        queryParams: {
-          prompt: 'select_account',
-          access_type: 'offline'
-        }
-      })
+      queryParams: provider === 'google' ? {
+        access_type: 'offline',
+        prompt: 'consent'
+      } : undefined
     }
   };
 };

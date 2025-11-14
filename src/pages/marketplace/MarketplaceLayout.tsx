@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Outlet, NavLink, useLocation } from 'react-router-dom';
-import { Store, Building, Compass, Code } from 'lucide-react';
+import { Store, Building, Compass, Code, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const MarketplaceLayout: React.FC = () => {
@@ -40,6 +40,16 @@ const MarketplaceLayout: React.FC = () => {
             <NavLink to="/marketplace/vendors">
               <Compass className="mr-2 h-4 w-4" />
               Vendors
+            </NavLink>
+          </Button>
+
+          <Button 
+            variant={location.pathname === '/marketplace/ilea' ? "default" : "outline"} 
+            asChild
+          >
+            <NavLink to="/marketplace/ilea">
+              <Users className="mr-2 h-4 w-4" />
+              ILEA
             </NavLink>
           </Button>
 

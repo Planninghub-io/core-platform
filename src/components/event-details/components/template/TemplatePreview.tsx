@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { InvitationTemplate } from "../../types/invitation-dialog";
+import DOMPurify from 'dompurify';
 
 interface TemplatePreviewProps {
   template: InvitationTemplate;
@@ -35,7 +36,12 @@ export const TemplatePreview = ({ template }: TemplatePreviewProps) => {
         <div className="p-1 max-h-[500px] overflow-y-auto">
           <div 
             className="border rounded-md shadow-sm overflow-hidden"
-            dangerouslySetInnerHTML={{ __html: template.template_html }} 
+            dangerouslySetInnerHTML={{ 
+              __html: DOMPurify.sanitize(template.template_html, {
+                ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'h1', 'h2', 'h3', 'h4', 'div', 'a', 'span', 'img'],
+                ALLOWED_ATTR: ['class', 'style', 'href', 'src', 'alt']
+              })
+            }} 
           />
         </div>
       </PopoverContent>

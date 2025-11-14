@@ -20,8 +20,8 @@ export const AvailabilityFilter: React.FC<AvailabilityFilterProps> = ({
       <div className="flex items-center gap-2">
         <div className="flex-1">
           <DateSelector
-            date={availabilityDate || ""}
-            onSelect={onChange}
+            value={availabilityDate || ""}
+            onChange={onChange}
             placeholder="Select a date"
           />
         </div>

@@ -3,12 +3,13 @@ import { Clock } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface TimeSelectorProps {
+  id?: string;
   value: string;
   onChange: (value: string) => void;
   minTime?: string; // Add minTime prop for validation
 }
 
-export const TimeSelector = ({ value, onChange, minTime }: TimeSelectorProps) => {
+export const TimeSelector = ({ id, value, onChange, minTime }: TimeSelectorProps) => {
   // Parse minTime to compare times
   const getMinHoursMinutes = () => {
     if (!minTime) return { hours: 0, minutes: 0 };
@@ -35,7 +36,7 @@ export const TimeSelector = ({ value, onChange, minTime }: TimeSelectorProps) =>
       value={value}
       onValueChange={onChange}
     >
-      <SelectTrigger className="w-full">
+      <SelectTrigger id={id} className="w-full">
         <Clock className="h-4 w-4 mr-1 opacity-70" />
         <SelectValue placeholder="Time" />
       </SelectTrigger>

@@ -8,6 +8,7 @@ import { EventTypeFields } from "./form/EventTypeFields";
 import { LocationField } from "./form/LocationField";
 import { BudgetFields } from "./form/BudgetFields";
 import { FormButtons } from "./form/FormButtons";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface EventFormProps {
   formData: EventFormData;
@@ -30,9 +31,17 @@ export const EventForm = ({
   handleSubmit,
   handleCancel
 }: EventFormProps) => {
+  const isMobile = useIsMobile();
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 rounded-xl bg-white p-8 shadow-lg">
-      <div className="mb-8 text-center">
+    <form 
+      onSubmit={handleSubmit} 
+      className={`
+        space-y-6 rounded-xl bg-white shadow-lg
+        ${isMobile ? 'p-4' : 'p-8'}
+      `}
+    >
+      <div className={`text-center ${isMobile ? 'mb-6' : 'mb-8'}`}>
         <p className="text-gray-600">Please input your event details</p>
       </div>
 
@@ -45,12 +54,13 @@ export const EventForm = ({
           onChange={handleChange}
           placeholder="Enter event name"
           required
+          className={isMobile ? 'text-base' : ''}
         />
       </div>
 
       <DateTimeFields 
-        date={formData.date}
-        endDate={formData.endDate}
+        date={typeof formData.date === 'string' ? formData.date : formData.date.toISOString()}
+        endDate={typeof formData.endDate === 'string' ? formData.endDate : formData.endDate.toISOString()}
         startTime={formData.startTime}
         endTime={formData.endTime}
         timezone={formData.timezone}
@@ -71,8 +81,10 @@ export const EventForm = ({
         location={formData.location}
         preferredLocations={formData.preferredLocations}
         isFlexibleLocation={formData.isFlexibleLocation}
+        timezone={formData.timezone}
         handleChange={handleChange}
         handleCheckboxChange={handleCheckboxChange}
+        handleSelectChange={handleSelectChange}
       />
 
       <BudgetFields 
@@ -91,7 +103,7 @@ export const EventForm = ({
           value={formData.description}
           onChange={handleChange}
           placeholder="Any special requirements or additional information"
-          className="min-h-[100px]"
+          className={`min-h-[100px] ${isMobile ? 'text-base' : ''}`}
         />
       </div>
 

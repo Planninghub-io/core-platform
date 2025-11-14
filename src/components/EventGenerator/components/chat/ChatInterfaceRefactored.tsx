@@ -1,9 +1,7 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Card } from "@/components/ui/card";
 import { ChatMessages } from "./ChatMessages";
 import { ChatInputArea } from "./ChatInputArea";
-import { ModelDropdown } from "./ModelDropdown";
 import { GeneratedEventSummary } from "./GeneratedEventSummary";
 import { SignUpPrompt } from "./SignUpPrompt";
 import { usePromptHandler } from "./PromptHandler";
@@ -85,7 +83,6 @@ export const ChatInterfaceRefactored = ({
     }
   };
 
-  // Combine welcome message and model selector in the same header row
   return (
     <Card className="flex flex-col h-full overflow-hidden shadow-md border border-gray-200 rounded-lg">
       {/* Combined header with welcome message and model selector - COMMENTED OUT */}

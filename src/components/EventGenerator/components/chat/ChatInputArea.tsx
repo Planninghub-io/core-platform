@@ -69,9 +69,7 @@ export const ChatInputArea = ({
     }
   };
 
-  // Handle transcript received from voice assistant
   const handleTranscriptReceived = (transcript: string) => {
-    // We need to directly set the prompt rather than using a callback function
     const newPrompt = prompt ? `${prompt} ${transcript}` : transcript;
     setPrompt(newPrompt);
     
@@ -81,7 +79,10 @@ export const ChatInputArea = ({
   };
 
   return (
-    <div className="px-3 py-2 bg-white w-full rounded-b-xl sticky bottom-0"> 
+    <div className={`
+      bg-white w-full rounded-b-xl sticky bottom-0
+      ${isMobile ? 'px-3 py-3' : 'px-3 py-2'}
+    `}> 
       <form onSubmit={submitPrompt} className="flex items-center gap-2 w-full">
         <ChatInputField
           ref={inputRef}
@@ -97,16 +98,22 @@ export const ChatInputArea = ({
             type="submit"
             size="icon"
             disabled={isGenerating || !prompt.trim()}
-            className="h-9 w-9 rounded-full bg-[#8B5CF6] hover:bg-[#8B5CF6]/90"
+            className={`
+              rounded-full bg-[#8B5CF6] hover:bg-[#8B5CF6]/90
+              ${isMobile ? 'h-10 w-10' : 'h-9 w-9'}
+            `}
             aria-label="Send message"
           >
-            <Send size={16} className="text-white" />
+            <Send size={isMobile ? 18 : 16} className="text-white" />
           </Button>
         </div>
       </form>
       
       {promptCount === 1 && (
-        <p className="text-xs text-gray-500 mt-1 text-center">
+        <p className={`
+          text-gray-500 mt-2 text-center
+          ${isMobile ? 'text-sm' : 'text-xs'}
+        `}>
           You have used your free prompt. Sign up to generate more events!
         </p>
       )}

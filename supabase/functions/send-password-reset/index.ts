@@ -1,8 +1,7 @@
 
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.48.1';
 import { Resend } from "npm:resend@2.0.0";
-
-const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -10,35 +9,98 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// Production URL constant - ensure it's pointing to the actual application
-const PRODUCTION_URL = 'https://yourplanner.ai';
-
 const handler = async (req: Request): Promise<Response> => {
+  console.log("Password reset function called");
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Parse the request body to get reset URL and email
+    // Check if required environment variables are set
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const serviceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    const resendApiKey = Deno.env.get('RESEND_API_KEY');
+
+    if (!supabaseUrl || !serviceRoleKey || !resendApiKey) {
+      console.error("Missing required environment variables");
+      return new Response(
+        JSON.stringify({ error: "Server configuration error" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    // Parse the request body
     const body = await req.json();
+    const { email, resetUrl } = body;
     
-    // Always use production URL for reset links - this doesn't actually control the redirection,
-    // but is used as a visual URL in the email
-    const resetUrl = `${PRODUCTION_URL}/auth/new-password`;
-    
-    const targetEmail = body.email || "";
-    
-    if (!targetEmail) {
-      throw new Error("Email address is required");
+    if (!email) {
+      return new Response(
+        JSON.stringify({ error: "Email is required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
     }
     
-    console.log("Sending password reset email to:", targetEmail);
-    console.log("With reset URL:", resetUrl);
+    console.log("Processing password reset for:", email);
 
+    // Create Supabase admin client
+    const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey);
+
+    // Generate recovery link
+    const { data, error } = await supabaseAdmin.auth.admin.generateLink({
+      type: 'recovery',
+      email: email,
+      options: {
+        redirectTo: resetUrl || 'https://yourplanner.ai/auth/new-password'
+      }
+    });
+
+    if (error) {
+      console.error("Error generating recovery link:", error);
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: `Failed to generate recovery link: ${error.message}` 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    const recoveryLink = data.properties?.action_link;
+    
+    if (!recoveryLink) {
+      console.error("No recovery link generated");
+      return new Response(
+        JSON.stringify({ 
+          success: false, 
+          error: "Failed to generate recovery link" 
+        }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        }
+      );
+    }
+
+    console.log("Recovery link generated successfully");
+
+    // Initialize Resend
+    const resend = new Resend(resendApiKey);
+
+    // Send email
     const emailResponse = await resend.emails.send({
       from: "PlannerAI <noreply@planninghub.io>",
-      to: [targetEmail],
+      to: [email],
       subject: "Reset your PlannerAI password",
       html: `
 <!DOCTYPE html>
@@ -116,7 +178,7 @@ const handler = async (req: Request): Promise<Response> => {
     
     <p>We received a request to reset your password. Click the button below to create a new password.</p>
     
-    <a href="${resetUrl}" target="_blank" class="button">Reset Password</a>
+    <a href="${recoveryLink}" target="_blank" class="button">Reset Password</a>
     
     <p class="note">If you didn't request a password reset, you can safely ignore this email - nothing will be changed.</p>
     
@@ -131,17 +193,24 @@ const handler = async (req: Request): Promise<Response> => {
 
     console.log("Email sent successfully:", emailResponse);
 
-    return new Response(JSON.stringify(emailResponse), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: "Password reset email sent successfully" 
+    }), {
       status: 200,
       headers: {
         "Content-Type": "application/json",
         ...corsHeaders,
       },
     });
+
   } catch (error: any) {
-    console.error("Error sending password reset email:", error);
+    console.error("Error in password reset function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        success: false,
+        error: error.message || "An unexpected error occurred"
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

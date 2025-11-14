@@ -22,27 +22,51 @@ export const CitySelector = ({ onCitySelect, selectedCity, type = 'venues' }: Ci
       setError(null);
 
       try {
-        const { data, error } = await supabase.functions.invoke("marketplace-api", {
-          body: {
-            endpoint: 'cities',
-            type: type
-          }
-        });
-
-        if (error) {
-          throw new Error(error.message);
+        console.log(`Fetching cities for type: ${type}`);
+        
+        // Always start with fallback cities to ensure dropdown works
+        const fallbackCities = ['Austin', 'Dallas', 'Houston', 'San Antonio'];
+        
+        // Fetch cities directly from the database based on type
+        let query;
+        if (type === 'vendors') {
+          query = supabase
+            .from('vendor_services')
+            .select('city')
+            .not('city', 'is', null)
+            .not('city', 'eq', '');
+        } else {
+          query = supabase
+            .from('venues')
+            .select('city')
+            .not('city', 'is', null)
+            .not('city', 'eq', '');
         }
 
-        if (data?.success && Array.isArray(data?.data)) {
-          setCities(data.data);
+        console.log('Executing query...');
+        const { data, error } = await query;
+        
+        console.log('Query result:', { data, error });
+
+        if (error) {
+          console.error('Database error:', error);
+          // Use fallback cities if query fails
+          setCities(fallbackCities.sort());
         } else {
-          setCities([]);
+          // Extract unique cities from the data
+          const uniqueCities = [...new Set(data?.map(item => item.city).filter(Boolean))] as string[];
+          console.log('Unique cities found:', uniqueCities);
+          
+          // Always combine with fallback cities to ensure Austin is available
+          const allCities = [...new Set([...uniqueCities, ...fallbackCities])];
+          console.log('All cities (with fallbacks):', allCities);
+          setCities(allCities.sort());
         }
       } catch (err: any) {
         console.error("Failed to fetch cities:", err);
         setError(err.message || "Failed to load cities");
-        // Continue with empty cities array instead of breaking the UI
-        setCities([]);
+        // Always fallback to Texas cities if everything fails
+        setCities(['Austin', 'Dallas', 'Houston', 'San Antonio'].sort());
       } finally {
         setIsLoading(false);
       }
@@ -51,14 +75,31 @@ export const CitySelector = ({ onCitySelect, selectedCity, type = 'venues' }: Ci
     fetchCities();
   }, [type]);
 
+  const handleCityChange = (value: string) => {
+    console.log('City selected:', value);
+    // Convert "all" back to empty string for the parent component
+    onCitySelect(value === "all" ? "" : value);
+  };
+
+  // Convert empty string to "all" for the Select component
+  const selectValue = selectedCity === "" ? "all" : selectedCity;
+
+  console.log('CitySelector render:', { 
+    cities: cities.length, 
+    selectedCity, 
+    selectValue,
+    isLoading,
+    citiesList: cities
+  });
+
   return (
     <div>
       <Label htmlFor="city-select" className="mb-1.5 block">City</Label>
       <div className="relative">
         <MapPin className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-500 z-10" />
-        <Select value={selectedCity} onValueChange={onCitySelect} disabled={isLoading}>
+        <Select value={selectValue} onValueChange={handleCityChange} disabled={isLoading}>
           <SelectTrigger id="city-select" className="pl-9">
-            <SelectValue placeholder="Select a city" />
+            <SelectValue placeholder={isLoading ? "Loading cities..." : "Select a city"} />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Cities</SelectItem>

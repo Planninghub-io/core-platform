@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useRef, useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import DOMPurify from 'dompurify';
 
 interface InvitationPreviewProps {
   isLoading: boolean;
@@ -103,8 +104,18 @@ export const InvitationPreview = ({
             </div>
             
             {/* Non-editable date and location */}
-            <div className={isMobile ? "text-sm" : ""} dangerouslySetInnerHTML={{ __html: parsedHtml.dateTimeHtml }} />
-            <div className={isMobile ? "text-sm" : ""} dangerouslySetInnerHTML={{ __html: parsedHtml.locationHtml }} />
+            <div className={isMobile ? "text-sm" : ""} dangerouslySetInnerHTML={{ 
+              __html: DOMPurify.sanitize(parsedHtml.dateTimeHtml, {
+                ALLOWED_TAGS: ['p', 'div', 'strong'],
+                ALLOWED_ATTR: ['style']
+              })
+            }} />
+            <div className={isMobile ? "text-sm" : ""} dangerouslySetInnerHTML={{ 
+              __html: DOMPurify.sanitize(parsedHtml.locationHtml, {
+                ALLOWED_TAGS: ['p', 'div', 'strong'],
+                ALLOWED_ATTR: ['style']
+              })
+            }} />
           </div>
         </div>
       ) : (
